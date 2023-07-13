@@ -87,6 +87,7 @@
 		<program>takin_moldyn</program>
 	</entry_15>
 
+<!--
 	<entry_16>
 		<type>separator</type>
 	</entry_16>
@@ -96,4 +97,5 @@
 		<name>TAS Pathfinding...</name>
 		<program>takin_taspaths</program>
 	</entry_17>
+-->
 </tools>

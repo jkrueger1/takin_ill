@@ -293,13 +293,13 @@ ResoResults calc_eck(const EckParams& eck)
 	// --------------------------------------------------------------------
 
 
-	const length lam = tl::k2lam(eck.ki);
-
 	angle coll_h_pre_mono = eck.coll_h_pre_mono;
 	angle coll_v_pre_mono = eck.coll_v_pre_mono;
 
 	if(eck.bGuide)
 	{
+		const length lam = tl::k2lam(eck.ki);
+
 		coll_h_pre_mono = lam*(eck.guide_div_h/angs);
 		coll_v_pre_mono = lam*(eck.guide_div_v/angs);
 	}

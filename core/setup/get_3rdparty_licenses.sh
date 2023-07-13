@@ -93,7 +93,8 @@ if ! wget https://raw.githubusercontent.com/dejavu-fonts/dejavu-fonts/master/LIC
 fi
 
 # libjpeg
-if ! wget https://raw.githubusercontent.com/freedesktop/libjpeg/master/README -O ${LICDIR}/libjpeg_license.txt; then
+if ! wget https://raw.githubusercontent.com/LuaDist/libjpeg/master/README -O ${LICDIR}/libjpeg_license.txt; then
+#if ! wget https://raw.githubusercontent.com/freedesktop/libjpeg/master/README -O ${LICDIR}/libjpeg_license.txt; then
 	echo -e "Error: Cannot download libjpg license.";
 fi
 

@@ -1124,12 +1124,14 @@ std::vector<std::string> FilePsi<t_real>::GetScannedVarsFromCommand(const std::s
 {
 	std::vector<std::string> vecVars;
 
+	// get tokens
 	std::vector<std::string> vecToks;
 	get_tokens<std::string, std::string>(cmd, " \t", vecToks);
 	for(std::string& strTok : vecToks)
 		trim(strTok);
-
 	std::transform(vecToks.begin(), vecToks.end(), vecToks.begin(), str_to_lower<std::string>);
+
+	// try to find the deltas for a Q/E scan
 	typename std::vector<std::string>::iterator iterTok
 		= std::find(vecToks.begin(), vecToks.end(), "dqh");
 
@@ -1149,7 +1151,7 @@ std::vector<std::string> FilePsi<t_real>::GetScannedVarsFromCommand(const std::s
 	// still nothing found, try regex
 	if(!vecVars.size())
 	{
-		const std::string strRegex = R"REX((sc|scan)[ \t]+([a-z0-9]+)[ \t]+[0-9\.-]+[ \t]+[d|D]([a-z0-9]+).*)REX";
+		const std::string strRegex = R"REX((sc|scan|bs)[ \t]+([a-z0-9]+)[ \t]+[0-9\.-]+[ \t]+[d|D]([a-z0-9]+).*)REX";
 		rex::regex rx(strRegex, rex::regex::ECMAScript|rex::regex_constants::icase);
 		rex::smatch m;
 		if(rex::regex_search(cmd, m, rx) && m.size() > 3)
@@ -3018,16 +3020,18 @@ bool FileH5<t_real>::Load(const char* pcFile)
 			return false;
 		}
 
+		std::vector<t_real> scanned_stddevs;
 		for(std::size_t idx = 0; idx<std::min(m_vecCols.size(), scanned.size()); ++idx)
 		{
 			const std::string& col_name = m_vecCols[idx];
 			const t_vecVals& col_vec = GetCol(col_name);
 
 			// add variable to parameter map
+			t_real dStd = t_real(0);
 			if(col_vec.size())
 			{
 				t_real dMean = mean_value(col_vec);
-				t_real dStd = std_dev(col_vec);
+				dStd = std_dev(col_vec);
 
 				std::string col_val = var_to_str(dMean, prec);
 				if(!float_equal(dStd, t_real(0), eps))
@@ -3036,7 +3040,10 @@ bool FileH5<t_real>::Load(const char* pcFile)
 			}
 
 			if(scanned[idx])
+			{
 				m_scanned_vars.push_back(col_name);
+				scanned_stddevs.push_back(dStd);
+			}
 		}
 
 		// if Q, E coordinates are among the scan variables, move them to the front
@@ -3063,6 +3070,21 @@ bool FileH5<t_real>::Load(const char* pcFile)
 		{
 			m_scanned_vars.erase(iterEN);
 			m_scanned_vars.insert(m_scanned_vars.begin(), "EN");
+		}
+
+		// move the first scan variable with non-zero deviation to the front
+		for(std::size_t i=0; i<m_scanned_vars.size(); ++i)
+		{
+			if(tl::float_equal<t_real>(scanned_stddevs[i], t_real(0), eps))
+				continue;
+
+			if(i > 0)
+			{
+				std::string cur_var = m_scanned_vars[i];
+				m_scanned_vars.erase(m_scanned_vars.begin() + i);
+				m_scanned_vars.insert(m_scanned_vars.begin(), cur_var);
+				break;
+			}
 		}
 
 		// get the name of the instrument if available

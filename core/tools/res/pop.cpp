@@ -128,7 +128,6 @@ ResoResults calc_pop(const PopParams& pop)
 	res.Q_avg[2] = 0.;
 	res.Q_avg[3] = pop.E / meV;
 
-	length lam = tl::k2lam(pop.ki);
 	angle twotheta = pop.twotheta * pop.dsample_sense;
 	angle thetaa = pop.thetaa * pop.dana_sense;
 	angle thetam = pop.thetam * pop.dmono_sense;
@@ -144,8 +143,12 @@ ResoResults calc_pop(const PopParams& pop)
 
 	if(pop.bGuide)
 	{
+		length lam = tl::k2lam(pop.ki);
+
 		coll_h_pre_mono = lam*(pop.guide_div_h/angs);
 		coll_v_pre_mono = lam*(pop.guide_div_v/angs);
+
+		//tl::log_info("Source-monochromator collimation from guides: h=", coll_h_pre_mono, ", v=", coll_v_pre_mono, ".");
 	}
 
 	// if no vertical mosaic is given, use the horizontal one
