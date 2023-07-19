@@ -764,8 +764,13 @@ t_real ScatteringTriangle::GetAngleKiQ(bool bPosSense) const
 {
 	try
 	{
+		t_real kiQ = tl::get_angle_ki_Q(GetKi()/angs, GetKf()/angs, GetQ()/angs, bPosSense) / rads;
+
 		t_real dTT = GetTwoTheta(bPosSense);
-		return tl::get_angle_ki_Q(GetKi()/angs, GetKf()/angs, GetQ()/angs, bPosSense) / rads;
+		if(dTT > tl::get_pi<t_real>())
+			kiQ = -kiQ;
+
+		return kiQ;
 	}
 	catch(const std::exception& ex)
 	{
@@ -779,9 +784,14 @@ t_real ScatteringTriangle::GetAngleKfQ(bool bPosSense) const
 {
 	try
 	{
-		t_real dTT = GetTwoTheta(bPosSense);
-		return tl::get_pi<t_real>()
+		t_real kfQ = tl::get_pi<t_real>()
 			- tl::get_angle_kf_Q(GetKi()/angs, GetKf()/angs, GetQ()/angs, bPosSense) / rads;
+
+		t_real dTT = GetTwoTheta(bPosSense);
+		if(dTT > tl::get_pi<t_real>())
+			kfQ = -kfQ;
+
+		return kfQ;
 	}
 	catch(const std::exception& ex)
 	{

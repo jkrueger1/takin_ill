@@ -1001,7 +1001,7 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 	}
 #endif
 
-	m_bReady = 1;
+	m_bReady = true;
 	UpdateDs();
 	CalcPeaks();
 
@@ -1169,7 +1169,7 @@ void TazDlg::dropEvent(QDropEvent *pEvt)
 
 void TazDlg::closeEvent(QCloseEvent* pEvt)
 {
-	m_bReady = 0;
+	m_bReady = false;
 
 	m_settings.setValue("main/geo", saveGeometry());
 	m_settings.setValue("main/recip_tab", groupRecip->currentIndex());
@@ -1322,7 +1322,7 @@ void TazDlg::UpdateMonoSense()
 	}
 
 	ResoParams params;
-	params.bSensesChanged[0] = 1;
+	params.bSensesChanged[0] = true;
 	params.bScatterSenses[0] = bSense;
 	emit ResoParamsChanged(params);
 }
@@ -1340,7 +1340,7 @@ void TazDlg::UpdateAnaSense()
 	}
 
 	ResoParams params;
-	params.bSensesChanged[2] = 1;
+	params.bSensesChanged[2] = true;
 	params.bScatterSenses[2] = bSense;
 	emit ResoParamsChanged(params);
 }

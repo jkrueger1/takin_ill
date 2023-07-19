@@ -45,6 +45,7 @@ static inline ublas::vector<t_real_glob> qpoint_to_vec(const QPointF& pt)
 	return vec;
 }
 
+
 static inline QPointF vec_to_qpoint(const ublas::vector<t_real_glob>& vec)
 {
 	if(vec.size() < 2)
@@ -53,17 +54,18 @@ static inline QPointF vec_to_qpoint(const ublas::vector<t_real_glob>& vec)
 	return QPointF(vec[0], vec[1]);
 }
 
+
 struct TriangleOptions
 {
-	bool bChangedTheta = 0;
-	bool bChangedTwoTheta = 0;
-	bool bChangedAnaTwoTheta = 0;
-	bool bChangedMonoTwoTheta = 0;
+	bool bChangedTheta = false;
+	bool bChangedTwoTheta = false;
+	bool bChangedAnaTwoTheta = false;
+	bool bChangedMonoTwoTheta = false;
 
-	bool bChangedMonoD = 0;
-	bool bChangedAnaD = 0;
+	bool bChangedMonoD = false;
+	bool bChangedAnaD = false;
 
-	bool bChangedAngleKiVec0 = 0;
+	bool bChangedAngleKiVec0 = false;
 
 
 	t_real_glob dTheta;
@@ -107,14 +109,15 @@ struct TriangleOptions
 	}
 };
 
+
 struct CrystalOptions
 {
-	bool bChangedLattice = 0;
-	bool bChangedLatticeAngles = 0;
-	bool bChangedSpacegroup = 0;
-	bool bChangedPlane1 = 0;
-	bool bChangedPlane2 = 0;
-	bool bChangedSampleName = 0;
+	bool bChangedLattice = false;
+	bool bChangedLatticeAngles = false;
+	bool bChangedSpacegroup = false;
+	bool bChangedPlane1 = false;
+	bool bChangedPlane2 = false;
+	bool bChangedSampleName = false;
 
 	t_real_glob dLattice[3];
 	t_real_glob dLatticeAngles[3];

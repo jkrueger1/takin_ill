@@ -538,9 +538,10 @@ void TasLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidg
 	// Q vector direction visible?
 	if(this->m_bRealQVisible)
 	{
-		const t_real &dAngleKiQ = m_dAngleKiQ;
+		t_real dAngleKiQ = m_dAngleKiQ;
 		t_mat matRotQ = tl::rotation_matrix_2d(dAngleKiQ);
-		t_vec vecKi = vecSample-vecMono;
+
+		t_vec vecKi = vecSample - vecMono;
 		t_vec vecQ = ublas::prod(matRotQ, vecKi);
 		vecQ /= ublas::norm_2(vecQ);
 		vecQ *= (m_dLenMonoSample + m_dLenSampleAna)/2.;	// some arbitrary length

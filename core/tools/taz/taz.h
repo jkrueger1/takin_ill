@@ -37,7 +37,6 @@
 	#include "sics.h"
 #endif
 
-//#include <QDialog>
 #include <QMainWindow>
 #include <QMenu>
 #include <QSettings>
