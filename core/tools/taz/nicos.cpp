@@ -235,7 +235,6 @@ void NicosCache::slot_receive(const std::string& str)
 	emit updated_cache_value(strKey, cacheval);
 
 
-
 	CrystalOptions crys;
 	TriangleOptions triag;
 	bool bUpdatedVals = 1;

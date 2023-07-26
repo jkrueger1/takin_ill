@@ -43,7 +43,7 @@ namespace tl {
  * reciprocal matrix to A: B = 2*pi * A^(-T)
  * @see e.g.: https://en.wikipedia.org/wiki/Reciprocal_lattice
  */
-template<typename T=double>
+template<typename T = double>
 bool reciprocal(const ublas::matrix<T>& matReal, ublas::matrix<T>& matRecip)
 {
 	ublas::matrix<T> matInv;
@@ -55,7 +55,7 @@ bool reciprocal(const ublas::matrix<T>& matReal, ublas::matrix<T>& matRecip)
 }
 
 
-template<typename T=double>
+template<typename T = double>
 class Lattice
 {
 	public:
@@ -129,7 +129,9 @@ Lattice<T>::Lattice(T a, T b, T c, T alpha, T beta, T gamma)
 	m_vecs[1].resize(3,0);
 	m_vecs[2].resize(3,0);
 
-	fractional_basis_from_angles(a,b,c, alpha,beta,gamma, m_vecs[0],m_vecs[1],m_vecs[2]);
+	fractional_basis_from_angles(a, b, c,
+		alpha, beta, gamma,
+		m_vecs[0], m_vecs[1], m_vecs[2]);
 }
 
 
@@ -367,7 +369,7 @@ bool Lattice<T>::IsCubic() const
  * @see e.g.: https://doi.org/10.1107/S0021889805004875
  */
 template<typename T = double>
-ublas::matrix<T> get_B(const Lattice<T>& lattice, bool bIsRealLattice=1)
+ublas::matrix<T> get_B(const Lattice<T>& lattice, bool bIsRealLattice = true)
 {
 	using t_mat = ublas::matrix<T>;
 
@@ -387,7 +389,7 @@ ublas::matrix<T> get_B(const Lattice<T>& lattice, bool bIsRealLattice=1)
  */
 template<typename T = double>
 ublas::matrix<T> get_U(const ublas::vector<T>& _vec1, const ublas::vector<T>& _vec2,
-	const ublas::matrix<T>* pmatB=nullptr)
+	const ublas::matrix<T>* pmatB = nullptr)
 {
 	using t_vec = ublas::vector<T>;
 	using t_mat = ublas::matrix<T>;

@@ -128,11 +128,17 @@ ResoResults calc_pop(const PopParams& pop)
 	res.Q_avg[2] = 0.;
 	res.Q_avg[3] = pop.E / meV;
 
+	// if the user moved the scattering angle to the other
+	// side of the scattering sense indicated by the flag
+	t_real manually_changed_sense = t_real(1);
+	if(pop.twotheta/rads < t_real(0))
+		manually_changed_sense = t_real(-1);
+
 	angle twotheta = pop.twotheta * pop.dsample_sense;
 	angle thetaa = pop.thetaa * pop.dana_sense;
 	angle thetam = pop.thetam * pop.dmono_sense;
-	angle ki_Q = pop.angle_ki_Q * pop.dsample_sense;
-	angle kf_Q = pop.angle_kf_Q * pop.dsample_sense;
+	angle ki_Q = pop.angle_ki_Q * pop.dsample_sense * manually_changed_sense;
+	angle kf_Q = pop.angle_kf_Q * pop.dsample_sense * manually_changed_sense;
 
 	// B matrix, [pop75], Appendix 1 -> U matrix in CN
 	t_mat B_trafo_QE = get_trafo_dkidkf_dQdE(ki_Q, kf_Q, pop.ki, pop.kf);

@@ -98,6 +98,11 @@ T j0_avg(T Q, const t_vec<T>& A, const t_vec<T>& a)
 }
 
 
+/**
+ * Magnetic form factors
+ * @see (ILL Neutron Data Booklet), sec. 2.5-1 (p. 60)
+ * @see https://www.ill.eu/sites/ccsl/ffacts/
+ */
 template<class T=double, template<class...> class t_vec=std::initializer_list>
 T j2_avg(T Q, const t_vec<T>& A, const t_vec<T>& a)
 {
@@ -106,6 +111,11 @@ T j2_avg(T Q, const t_vec<T>& A, const t_vec<T>& a)
 }
 
 
+/**
+ * Magnetic form factors
+ * @see (ILL Neutron Data Booklet), sec. 2.5-1 (p. 60)
+ * @see https://www.ill.eu/sites/ccsl/ffacts/
+ */
 template<class T=double, template<class...> class t_vec=std::initializer_list>
 T mag_formfact(T Q, T L, T S,
 	const t_vec<T>& A0, const t_vec<T>& a0,
@@ -119,6 +129,7 @@ T mag_formfact(T Q, T L, T S,
  * form factor for transition metals (d orbitals, weak LS, spin-only)
  * @see (Squires 2012), p. 138
  * @see http://www.neutron.ethz.ch/research/resources/magnetic-form-factors.html
+ * @see http://sato.issp.u-tokyo.ac.jp/ibuka/magform.html
  */
 template<class T=double, template<class...> class t_vec=std::initializer_list>
 std::tuple<T,T,T> mag_formfact_d(T Q, T g,
@@ -136,6 +147,7 @@ std::tuple<T,T,T> mag_formfact_d(T Q, T g,
  * form factor for rare earths (f orbitals, strong LS, jj)
  * @see (Squires 2012), p. 139
  * @see http://www.neutron.ethz.ch/research/resources/magnetic-form-factors.html
+ * @see http://sato.issp.u-tokyo.ac.jp/ibuka/magform.html
  */
 template<class T=double, template<class...> class t_vec=std::initializer_list>
 std::tuple<T,T,T> mag_formfact_f(T Q, T L, T S, T J,

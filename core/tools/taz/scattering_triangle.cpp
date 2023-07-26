@@ -764,7 +764,8 @@ t_real ScatteringTriangle::GetAngleKiQ(bool bPosSense) const
 {
 	try
 	{
-		t_real kiQ = tl::get_angle_ki_Q(GetKi()/angs, GetKf()/angs, GetQ()/angs, bPosSense) / rads;
+		t_real kiQ = tl::get_angle_ki_Q(GetKi()/angs, GetKf()/angs, GetQ()/angs,
+			bPosSense, false) / rads;
 
 		t_real dTT = GetTwoTheta(bPosSense);
 		if(dTT > tl::get_pi<t_real>())
@@ -784,8 +785,8 @@ t_real ScatteringTriangle::GetAngleKfQ(bool bPosSense) const
 {
 	try
 	{
-		t_real kfQ = tl::get_pi<t_real>()
-			- tl::get_angle_kf_Q(GetKi()/angs, GetKf()/angs, GetQ()/angs, bPosSense) / rads;
+		t_real kfQ = tl::get_angle_kf_Q(GetKi()/angs, GetKf()/angs, GetQ()/angs,
+			bPosSense, false) / rads;
 
 		t_real dTT = GetTwoTheta(bPosSense);
 		if(dTT > tl::get_pi<t_real>())
@@ -1560,7 +1561,8 @@ bool ScatteringTriangle::KeepAbsKiKf(t_real dQx, t_real dQy)
 		t_real dNewQ = ublas::norm_2(vecNewQ)/m_dScaleFactor;
 
 		bool bPosSense = m_scene.GetSampleSense();
-		t_real dAngKiQ = tl::get_angle_ki_Q(dKi/angs, dKf/angs, dNewQ/angs, bPosSense) / tl::radians;
+		t_real dAngKiQ = tl::get_angle_ki_Q(dKi/angs, dKf/angs, dNewQ/angs,
+			bPosSense, false) / tl::radians;
 
 		t_mat matRot = tl::rotation_matrix_2d(-dAngKiQ);
 		vecKi = ublas::prod(matRot, vecNewQ) / ublas::norm_2(vecNewQ);

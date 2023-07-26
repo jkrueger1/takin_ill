@@ -30,7 +30,6 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-//#include <boost/units/io.hpp>
 
 #include "tlibs/string/string.h"
 #include "tlibs/helper/flags.h"
@@ -63,7 +62,7 @@ static const auto sec = tl::get_one_second<t_real_reso>();
 
 
 ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
-	: QDialog(pParent), m_bDontCalc(1), m_pSettings(pSettings)
+	: QDialog(pParent), m_bDontCalc(true), m_pSettings(pSettings)
 {
 	setupUi(this);
 	spinMCSample->setEnabled(0);		// TODO
@@ -213,7 +212,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	connect(btnMonoRefl, &QToolButton::clicked, this, &ResoDlg::LoadMonoRefl);
 	connect(btnAnaEffic, &QToolButton::clicked, this, &ResoDlg::LoadAnaEffic);
 
-	m_bDontCalc = 0;
+	m_bDontCalc = false;
 	RefreshQEPos();
 	//Calc();
 }
@@ -245,9 +244,9 @@ void ResoDlg::RefreshQEPos()
 		//t_real_reso dE = editE->text().toDouble();
 		tl::t_energy_si<t_real_reso> E = tl::get_energy_transfer(ki, kf);
 
-		tl::t_angle_si<t_real_reso> kiQ = tl::get_angle_ki_Q(ki, kf, Q, 1);
-		tl::t_angle_si<t_real_reso> kfQ = tl::get_angle_kf_Q(ki, kf, Q, 1);
-		tl::t_angle_si<t_real_reso> twotheta = tl::get_sample_twotheta(ki, kf, Q, 1);
+		tl::t_angle_si<t_real_reso> kiQ = tl::get_angle_ki_Q(ki, kf, Q, true, false);
+		tl::t_angle_si<t_real_reso> kfQ = tl::get_angle_kf_Q(ki, kf, Q, true, true);
+		tl::t_angle_si<t_real_reso> twotheta = tl::get_sample_twotheta(ki, kf, Q, true);
 
 		const t_real_reso dMono = spinMonod->value();
 		const t_real_reso dAna = spinAnad->value();
@@ -261,8 +260,8 @@ void ResoDlg::RefreshQEPos()
 		m_simpleparams.angle_ki_Q = m_tofparams.angle_ki_Q = m_tasparams.angle_ki_Q = kiQ;
 		m_simpleparams.angle_kf_Q = m_tofparams.angle_kf_Q = m_tasparams.angle_kf_Q = kfQ;
 
-		m_tasparams.thetam = t_real_reso(0.5) * tl::get_mono_twotheta(ki, dMono*angs, 1);
-		m_tasparams.thetaa = t_real_reso(0.5) * tl::get_mono_twotheta(kf, dAna*angs, 1);
+		m_tasparams.thetam = t_real_reso(0.5) * tl::get_mono_twotheta(ki, dMono*angs, true);
+		m_tasparams.thetaa = t_real_reso(0.5) * tl::get_mono_twotheta(kf, dAna*angs, true);
 
 #ifndef NDEBUG
 		tl::log_debug("Manually changed parameters: ",
@@ -315,8 +314,9 @@ void ResoDlg::Calc()
 {
 	try
 	{
-		m_bEll4dCurrent = 0;
-		if(m_bDontCalc) return;
+		m_bEll4dCurrent = false;
+		if(m_bDontCalc)
+			return;
 
 		EckParams &cn = m_tasparams;
 		VioParams &tof = m_tofparams;
@@ -551,7 +551,7 @@ void ResoDlg::Calc()
 				+ tl::get_spec_char_utf8("sup3");
 
 #ifndef NDEBUG
-			// check against ELASTIC approximation for perp. slope from Shirane p. 268
+			// check against ELASTIC approximation for perp. slope from (Shirane 2002), p. 268
 			// valid for small mosaicities
 			t_real_reso dEoverQperp = tl::co::hbar*tl::co::hbar*cn.ki / tl::co::m_n
 				* units::cos(cn.twotheta/2.)
@@ -566,7 +566,7 @@ void ResoDlg::Calc()
 			if(checkElli4dAutoCalc->isChecked())
 			{
 				CalcElli4d();
-				m_bEll4dCurrent = 1;
+				m_bEll4dCurrent = true;
 			}
 
 			if(groupSim->isChecked())
@@ -836,11 +836,14 @@ void ResoDlg::ResoParamsChanged(const ResoParams& params)
 	//tl::log_debug("reso params changed, recalc: ", !m_bDontCalc);
 
 	bool bOldDontCalc = m_bDontCalc;
-	m_bDontCalc = 1;
+	m_bDontCalc = true;
 
-	if(params.bSensesChanged[0]) params.bScatterSenses[0] ? radioMonoScatterPlus->setChecked(1) : radioMonoScatterMinus->setChecked(1);
-	if(params.bSensesChanged[1]) params.bScatterSenses[1] ? radioSampleScatterPlus->setChecked(1) : radioSampleScatterMinus->setChecked(1);
-	if(params.bSensesChanged[2]) params.bScatterSenses[2] ? radioAnaScatterPlus->setChecked(1) : radioAnaScatterMinus->setChecked(1);
+	if(params.bSensesChanged[0])
+		params.bScatterSenses[0] ? radioMonoScatterPlus->setChecked(1) : radioMonoScatterMinus->setChecked(1);
+	if(params.bSensesChanged[1])
+		params.bScatterSenses[1] ? radioSampleScatterPlus->setChecked(1) : radioSampleScatterMinus->setChecked(1);
+	if(params.bSensesChanged[2])
+		params.bScatterSenses[2] ? radioAnaScatterPlus->setChecked(1) : radioAnaScatterMinus->setChecked(1);
 
 	if(params.bMonoDChanged) spinMonod->setValue(params.dMonoD);
 	if(params.bAnaDChanged) spinAnad->setValue(params.dAnaD);
@@ -859,13 +862,12 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	//tl::log_debug("recip params changed");
 
 	bool bOldDontCalc = m_bDontCalc;
-	m_bDontCalc = 1;
+	m_bDontCalc = true;
 
 	try
 	{
 		m_simpleparams.twotheta = m_tofparams.twotheta = m_tasparams.twotheta =
-			units::abs(t_real_reso(parms.d2Theta) * rads);
-		//std::cout << parms.dTheta/M_PI*180. << " " << parms.d2Theta/M_PI*180. << std::endl;
+			t_real_reso(parms.d2Theta) * rads;
 
 		m_simpleparams.ki = m_tofparams.ki = m_tasparams.ki = t_real_reso(parms.dki) / angs;
 		m_simpleparams.kf = m_tofparams.kf = m_tasparams.kf = t_real_reso(parms.dkf) / angs;
@@ -887,11 +889,9 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 		m_simpleparams.Q = m_tofparams.Q = m_tasparams.Q = dQ / angs;
 
 		m_simpleparams.angle_ki_Q = m_tofparams.angle_ki_Q = m_tasparams.angle_ki_Q =
-			/*M_PI*rads -*/ tl::get_angle_ki_Q(m_tasparams.ki, m_tasparams.kf, m_tasparams.Q, 1);
+			tl::get_angle_ki_Q(m_tasparams.ki, m_tasparams.kf, m_tasparams.Q, true, false);
 		m_simpleparams.angle_kf_Q = m_tofparams.angle_kf_Q = m_tasparams.angle_kf_Q =
-			/*M_PI*rads -*/ tl::get_angle_kf_Q(m_tasparams.ki, m_tasparams.kf, m_tasparams.Q, 1);
-		//m_tasparams.angle_ki_Q = units::abs(m_tasparams.angle_ki_Q);
-		//m_tasparams.angle_kf_Q = units::abs(m_tasparams.angle_kf_Q);
+			tl::get_angle_kf_Q(m_tasparams.ki, m_tasparams.kf, m_tasparams.Q, true, true);
 
 		editQ->setText(tl::var_to_str(dQ, g_iPrec).c_str());
 		editE->setText(tl::var_to_str(parms.dE, g_iPrec).c_str());
@@ -914,14 +914,13 @@ void ResoDlg::RealParamsChanged(const RealParams& parms)
 	//tl::log_debug("real params changed");
 
 	bool bOldDontCalc = m_bDontCalc;
-	m_bDontCalc = 1;
+	m_bDontCalc = true;
 
 	m_tasparams.thetam = units::abs(t_real_reso(parms.dMonoT) * rads);
 	m_tasparams.thetaa = units::abs(t_real_reso(parms.dAnaT) * rads);
 
-	m_tasparams.twotheta = t_real_reso(parms.dSampleTT) * rads;
-	m_tasparams.twotheta = units::abs(m_tasparams.twotheta);
-	m_simpleparams.twotheta = m_tofparams.twotheta = m_tasparams.twotheta;
+	m_simpleparams.twotheta = m_tofparams.twotheta = m_tasparams.twotheta =
+		t_real_reso(parms.dSampleTT) * rads;
 
 	m_bDontCalc = bOldDontCalc;
 	if(m_bUpdateOnRealEvent)
@@ -965,7 +964,7 @@ void ResoDlg::SampleParamsChanged(const SampleParams& parms)
 	}
 	catch(const std::exception& ex)
 	{
-		m_bHasUB = 0;
+		m_bHasUB = false;
 		tl::log_err("Cannot set sample parameters for resolution: ", ex.what(), ".");
 	}
 }

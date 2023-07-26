@@ -53,14 +53,14 @@ class DatFile
 		using t_map = std::unordered_map<t_str, t_str>;
 
 	protected:
-		bool m_bOk = 0;
+		bool m_bOk = false;
 
 		t_char m_chComm = '#';			// comment
 		t_str m_strSeps = {'=', ':'};		// key-value separator
 		t_str m_strDatSep = {' ', '\t'};	// data separators
 
 		t_dat m_vecCols;
-		std::size_t m_iCurLine = 0;
+		std::size_t m_iCurLine = false;
 
 		t_map m_mapHdr;
 		std::vector<t_str> m_vecRawHdr;
@@ -77,7 +77,7 @@ class DatFile
 				return;
 			//log_debug("Header line: ", strLine);
 
-			bool bInsert = 1;
+			bool bInsert = true;
 			std::pair<t_str, t_str> pair =
 				split_first<t_str>(strLine, t_str({m_strSeps}), 1);
 			if(pair.first.length()==0 && pair.second.length()==0)
@@ -126,7 +126,7 @@ class DatFile
 	public:
 		void Unload()
 		{
-			m_bOk = 0;
+			m_bOk = false;
 			m_iCurLine = 0;
 			m_vecRawHdr.clear();
 			m_mapHdr.clear();
@@ -135,7 +135,8 @@ class DatFile
 
 		bool Save(std::basic_ostream<t_char>& ostr)
 		{
-			if(!m_bOk) return 0;
+			if(!m_bOk)
+				return false;
 
 			for(const typename t_map::value_type& val : m_mapHdr)
 				ostr << m_chComm << " " <<
@@ -150,13 +151,14 @@ class DatFile
 					ostr << std::setw(16) << m_vecCols[iCol][iRow] << m_strDatSep[0];
 				ostr << "\n";
 			}
-			return 1;
+			return true;
 		}
 
 		bool Save(const t_str& strFile)
 		{
 			std::ofstream ofstr(strFile);
-			if(!ofstr) return 0;
+			if(!ofstr)
+				return false;
 			return Save(ofstr);
 		}
 
@@ -179,13 +181,13 @@ class DatFile
 					ReadDataLine(strLine);
 			}
 
-			m_bOk = 1;
+			m_bOk = true;
 			return m_bOk;
 		}
 
 		bool Load(const t_str& strFile)
 		{
-			m_bOk = 0;
+			m_bOk = false;
 			//log_debug("File: ", strFile);
 			std::basic_ifstream<t_char> ifstr(wstr_to_str(strFile));
 			if(!ifstr)

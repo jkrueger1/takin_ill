@@ -258,11 +258,17 @@ get_mono_vals(const length& src_w, const length& src_h,
 
 ResoResults calc_eck(const EckParams& eck)
 {
+	// if the user moved the scattering angle to the other
+	// side of the scattering sense indicated by the flag
+	t_real manually_changed_sense = t_real(1);
+	if(eck.twotheta/rads < t_real(0))
+		manually_changed_sense = t_real(-1);
+
 	angle twotheta = eck.twotheta * eck.dsample_sense;
 	angle thetaa = eck.thetaa * eck.dana_sense;
 	angle thetam = eck.thetam * eck.dmono_sense;
-	angle ki_Q = eck.angle_ki_Q * eck.dsample_sense;
-	angle kf_Q = eck.angle_kf_Q * eck.dsample_sense;
+	angle ki_Q = eck.angle_ki_Q * eck.dsample_sense * manually_changed_sense;
+	angle kf_Q = eck.angle_kf_Q * eck.dsample_sense * manually_changed_sense;
 	//kf_Q = ki_Q + twotheta;
 
 
@@ -426,7 +432,7 @@ ResoResults calc_eck(const EckParams& eck)
 	const wavenumber kipara = eck.Q * (t_real(0.5)+dE);
 	const wavenumber kfpara = eck.Q - kipara;
 	wavenumber kperp = tl::my_units_sqrt<wavenumber>(units::abs(kipara*kipara - eck.ki*eck.ki));
-	kperp *= eck.dsample_sense;
+	kperp *= eck.dsample_sense * manually_changed_sense;
 
 	const t_real ksq2E = tl::get_KSQ2E<t_real>();
 

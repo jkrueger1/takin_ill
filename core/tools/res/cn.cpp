@@ -197,13 +197,16 @@ ResoResults calc_cn(const CNParams& cn)
 	angle coll_h_pre_mono = cn.coll_h_pre_mono;
 	angle coll_v_pre_mono = cn.coll_v_pre_mono;
 
+	// if the user moved the scattering angle to the other
+	// side of the scattering sense indicated by the flag
+	t_real manually_changed_sense = t_real(1);
+	if(cn.twotheta/rads < t_real(0))
+		manually_changed_sense = t_real(-1);
+
 	angle thetaa = cn.thetaa * cn.dana_sense;
 	angle thetam = cn.thetam * cn.dmono_sense;
-	angle ki_Q = cn.angle_ki_Q;
-	angle kf_Q = cn.angle_kf_Q;
-
-	ki_Q *= cn.dsample_sense;
-	kf_Q *= cn.dsample_sense;
+	angle ki_Q = cn.angle_ki_Q * cn.dsample_sense * manually_changed_sense;
+	angle kf_Q = cn.angle_kf_Q * cn.dsample_sense * manually_changed_sense;
 
 	// transformation matrix U and its inverse V
 	t_mat U_trafo_QE = get_trafo_dkidkf_dQdE(ki_Q, kf_Q, cn.ki, cn.kf);

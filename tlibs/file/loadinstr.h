@@ -1,12 +1,12 @@
 /**
  * Loads instrument-specific data files
  * @author Tobias Weber <tobias.weber@tum.de>
- * @date feb-2015
+ * @date feb-2015 - 2023
  * @license GPLv2 or GPLv3
  *
  * ----------------------------------------------------------------------------
  * tlibs -- a physical-mathematical C++ template library
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -40,7 +40,9 @@
 
 namespace tl{
 
-// interface for instrument-specific data files
+/**
+ * interface for instrument-specific data files
+ */
 template<class _t_real = double>
 class FileInstrBase
 {
@@ -121,7 +123,9 @@ class FileInstrBase
 };
 
 
-// psi & ill files
+/**
+ * psi & ill files
+ */
 template<class _t_real = double>
 class FilePsi : public FileInstrBase<_t_real>
 {
@@ -228,7 +232,9 @@ class FilePsi : public FileInstrBase<_t_real>
 };
 
 
-// frm/nicos files
+/**
+ * frm/nicos files
+ */
 template<class _t_real = double>
 class FileFrm : public FileInstrBase<_t_real>
 {
@@ -297,7 +303,9 @@ class FileFrm : public FileInstrBase<_t_real>
 };
 
 
-// macs files
+/**
+ * macs files
+ */
 template<class _t_real = double>
 class FileMacs : public FileInstrBase<_t_real>
 {
@@ -365,7 +373,9 @@ class FileMacs : public FileInstrBase<_t_real>
 };
 
 
-// trisp files
+/**
+ * trisp files
+ */
 template<class _t_real = double>
 class FileTrisp : public FileInstrBase<_t_real>
 {
@@ -433,7 +443,77 @@ class FileTrisp : public FileInstrBase<_t_real>
 };
 
 
-// raw data files
+/**
+ * tax data files
+ */
+template<class _t_real = double>
+class FileTax : public FileInstrBase<_t_real>
+{
+	public:
+		using t_real = _t_real;
+		using t_mapParams = typename FileInstrBase<t_real>::t_mapParams;
+		using t_vecColNames = typename FileInstrBase<t_real>::t_vecColNames;
+		using t_vecVals = typename FileInstrBase<t_real>::t_vecVals;
+		using t_vecDat = typename FileInstrBase<t_real>::t_vecDat;
+
+	protected:
+		DatFile<t_real, char> m_dat;
+		t_vecColNames m_vecCols;
+
+	public:
+		FileTax() = default;
+		virtual ~FileTax() = default;
+
+	protected:
+		std::array<t_real, 3> GetScatterPlaneVector(int i) const;
+
+	public:
+		virtual bool Load(const char* pcFile) override;
+
+		virtual std::array<t_real, 3> GetSampleLattice() const override;
+		virtual std::array<t_real, 3> GetSampleAngles() const override;
+		virtual std::array<t_real, 2> GetMonoAnaD() const override;
+
+		virtual std::array<bool, 3> GetScatterSenses() const override;
+		virtual std::array<t_real, 3> GetScatterPlane0() const override;
+		virtual std::array<t_real, 3> GetScatterPlane1() const override;
+
+		virtual std::array<t_real, 4> GetPosHKLE() const override;	// zero pos.
+
+		virtual t_real GetKFix() const override;
+		virtual bool IsKiFixed() const override;
+
+		virtual std::size_t GetScanCount() const override;
+		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
+		virtual bool MergeWith(const FileInstrBase<t_real>* pDat) override;
+
+		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) const override;
+		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) override;
+
+		virtual std::string GetTitle() const override;
+		virtual std::string GetUser() const override;
+		virtual std::string GetLocalContact() const override;
+		virtual std::string GetScanNumber() const override;
+		virtual std::string GetSampleName() const override;
+		virtual std::string GetSpacegroup() const override;
+		virtual std::string GetTimestamp() const override;
+
+		virtual const t_vecDat& GetData() const override;
+		virtual t_vecDat& GetData() override;
+		virtual const t_vecColNames& GetColNames() const override;
+		virtual const t_mapParams& GetAllParams() const override;
+
+		virtual std::vector<std::string> GetScannedVars() const override;
+		virtual std::string GetCountVar() const override;
+		virtual std::string GetMonVar() const override;
+
+		virtual std::string GetScanCommand() const override;
+};
+
+
+/**
+ * raw data files
+ */
 template<class _t_real = double>
 class FileRaw : public FileInstrBase<_t_real>
 {
@@ -497,7 +577,9 @@ class FileRaw : public FileInstrBase<_t_real>
 
 
 #ifdef USE_HDF5
-// hdf5 data files
+/**
+ * hdf5 data files
+ */
 template<class _t_real = double>
 class FileH5 : public FileInstrBase<_t_real>
 {

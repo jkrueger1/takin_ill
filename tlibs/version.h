@@ -29,7 +29,7 @@
 #ifndef __TLIBS_VER_H__
 #define __TLIBS_VER_H__
 
-#define TLIBS_VERSION "1.1.1"
+#define TLIBS_VERSION "1.2.0"
 
 namespace tl {
 
