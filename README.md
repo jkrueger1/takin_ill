@@ -26,8 +26,8 @@ Version 2.5.4.
 
 
 ## Paper DOIs (please cite!)
-- *Takin 2.5*: [10.1016/j.softx.2023.101471](https://doi.org/10.1016/j.softx.2023.101471).  
-- *Takin 2.0*: [10.1016/j.softx.2021.100667](https://doi.org/10.1016/j.softx.2021.100667).  
-- *Takin 1.5*: [10.1016/j.softx.2017.06.002](https://doi.org/10.1016/j.softx.2017.06.002).  
-- *Takin 1.0*: [10.1016/j.softx.2016.06.002](https://doi.org/10.1016/j.softx.2016.06.002).  
-- *TAS-Paths*: [10.1016/j.softx.2023.101455](https://doi.org/10.1016/j.softx.2023.101455).  
+- *Takin 2.5* (2023): [10.1016/j.softx.2023.101471](https://doi.org/10.1016/j.softx.2023.101471).  
+- *Takin 2.0* (2021): [10.1016/j.softx.2021.100667](https://doi.org/10.1016/j.softx.2021.100667).  
+- *Takin 1.5* (2017): [10.1016/j.softx.2017.06.002](https://doi.org/10.1016/j.softx.2017.06.002).  
+- *Takin 1.0* (2016): [10.1016/j.softx.2016.06.002](https://doi.org/10.1016/j.softx.2016.06.002).  
+- *TAS-Paths* (2023): [10.1016/j.softx.2023.101455](https://doi.org/10.1016/j.softx.2023.101455).  
