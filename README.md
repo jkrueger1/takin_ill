@@ -18,8 +18,16 @@ Version 2.5.4.
   [https://code.ill.fr/scientific-software/takin](https://code.ill.fr/scientific-software/takin).
 
 
-## DOIs
-- DOI for *Takin 2*: [10.5281/zenodo.4117437](https://dx.doi.org/10.5281/zenodo.4117437).  
-- DOI for *Takin 1*: [10.5281/zenodo.3961491](https://dx.doi.org/10.5281/zenodo.3961491).  
-- DOI for *tlibs*: [10.5281/zenodo.5717779](https://doi.org/10.5281/zenodo.5717779).  
-- DOI for *TAS-Paths*: [10.5281/zenodo.4625649](https://doi.org/10.5281/zenodo.4625649).  
+## Software DOIs
+- *Takin 2*: [10.5281/zenodo.4117437](https://dx.doi.org/10.5281/zenodo.4117437).  
+- *Takin 1*: [10.5281/zenodo.3961491](https://dx.doi.org/10.5281/zenodo.3961491).  
+- *tlibs*: [10.5281/zenodo.5717779](https://doi.org/10.5281/zenodo.5717779).  
+- *TAS-Paths*: [10.5281/zenodo.4625649](https://doi.org/10.5281/zenodo.4625649).  
+
+
+## Paper DOIs (please cite!)
+- *Takin 2.5*: [10.1016/j.softx.2023.101471](https://doi.org/10.1016/j.softx.2023.101471).  
+- *Takin 2.0*: [10.1016/j.softx.2021.100667](https://doi.org/10.1016/j.softx.2021.100667).  
+- *Takin 1.5*: [10.1016/j.softx.2017.06.002](https://doi.org/10.1016/j.softx.2017.06.002).  
+- *Takin 1.0*: [10.1016/j.softx.2016.06.002](https://doi.org/10.1016/j.softx.2016.06.002).  
+- *TAS-Paths*: [10.1016/j.softx.2023.101455](https://doi.org/10.1016/j.softx.2023.101455).  
