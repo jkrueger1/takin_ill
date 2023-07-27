@@ -364,7 +364,8 @@ void ResoDlg::Save(std::map<std::string, std::string>& mapConf, const std::strin
 	mapConf[strXmlRoot + "meta/timestamp"] = tl::var_to_str<t_real_reso>(tl::epoch<t_real_reso>());
 	mapConf[strXmlRoot + "meta/version"] = TAKIN_VER;
 	mapConf[strXmlRoot + "meta/info"] = "Created with Takin/Reso.";
-	mapConf[strXmlRoot + "meta/url"] = "https://code.ill.fr/scientific-software/takin";
+	//mapConf[strXmlRoot + "meta/url"] = "https://code.ill.fr/scientific-software/takin";
+	mapConf[strXmlRoot + "meta/url"] = "https://github.com/ILLGrenoble/takin";
 	mapConf[strXmlRoot + "meta/doi"] = "https://dx.doi.org/10.5281/zenodo.4117437";
 	mapConf[strXmlRoot + "meta/module"] = "takin/res";
 	mapConf[strXmlRoot + "meta/user"] = pcUser;

@@ -1678,8 +1678,10 @@ void TazDlg::ShowWebsite()
 
 void TazDlg::ReportBug()
 {
+	//QDesktopServices::openUrl(QUrl(
+	//	"https://code.ill.fr/scientific-software/takin/core/-/issues"));
 	QDesktopServices::openUrl(QUrl(
-		"https://code.ill.fr/scientific-software/takin/core/-/issues"));
+		"https://github.com/ILLGrenoble/takin/issues"));
 }
 
 
@@ -1694,8 +1696,10 @@ void TazDlg::ShowLog()
 
 void TazDlg::ShowHelp()
 {
+	//QDesktopServices::openUrl(QUrl(
+	//	"https://code.ill.fr/scientific-software/takin/core/-/wikis/home"));
 	QDesktopServices::openUrl(QUrl(
-		"https://code.ill.fr/scientific-software/takin/core/-/wikis/home"));
+		"https://github.com/ILLGrenoble/takin/wiki"));
 }
 
 

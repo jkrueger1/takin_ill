@@ -1125,7 +1125,8 @@ void ScanViewerDlg::ShowRawFiles(const std::vector<std::string>& files)
 				rawFiles = "<binary data>";
 
 				rawFiles += "\n\nHere's a tool to convert NXS TAS files to the old-style text format:\n";
-				rawFiles += "https://code.ill.fr/scientific-software/takin/core/-/raw/master/tools/misc/nxsprint.py\n";
+				//rawFiles += "https://code.ill.fr/scientific-software/takin/core/-/raw/master/tools/misc/nxsprint.py\n";
+				rawFiles += "https://github.com/ILLGrenoble/takin/blob/master/core/tools/misc/nxsprint.py\n";
 			}
 			else
 			{

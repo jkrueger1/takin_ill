@@ -209,7 +209,8 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 		ostrOut << "#\n";
 		ostrOut << "# Takin/Monteconvo version " << TAKIN_VER << "\n";
 		ostrOut << "# DOI: https://dx.doi.org/10.5281/zenodo.4117437\n";
-		ostrOut << "# URL: https://code.ill.fr/scientific-software/takin\n";
+		//ostrOut << "# URL: https://code.ill.fr/scientific-software/takin\n";
+		ostrOut << "# URL: https://github.com/ILLGrenoble/takin\n";
 		ostrOut << "# Timestamp: " << tl::epoch_to_str(tl::epoch()) << "\n";
 		ostrOut << "# MC neutrons: " << iNumNeutrons << "\n";
 		ostrOut << "# MC sample steps: " << iNumSampleSteps << "\n";

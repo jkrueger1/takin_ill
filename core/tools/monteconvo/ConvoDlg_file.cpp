@@ -323,7 +323,8 @@ void ConvoDlg::Save(std::map<std::string, std::string>& mapConf, const std::stri
 	mapConf[strXmlRoot + "meta/timestamp"] = tl::var_to_str<t_real>(tl::epoch<t_real>());
 	mapConf[strXmlRoot + "meta/version"] = TAKIN_VER;
 	mapConf[strXmlRoot + "meta/info"] = "Created with Takin/Convo.";
-	mapConf[strXmlRoot + "meta/url"] = "https://code.ill.fr/scientific-software/takin";
+	//mapConf[strXmlRoot + "meta/url"] = "https://code.ill.fr/scientific-software/takin";
+	mapConf[strXmlRoot + "meta/url"] = "https://github.com/ILLGrenoble/takin";
 	mapConf[strXmlRoot + "meta/doi"] = "https://dx.doi.org/10.5281/zenodo.4117437";
 	mapConf[strXmlRoot + "meta/module"] = "takin/convo";
 	mapConf[strXmlRoot + "meta/user"] = pcUser;

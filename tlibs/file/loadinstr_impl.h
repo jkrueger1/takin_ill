@@ -1551,11 +1551,13 @@ std::array<t_real, 3> FileFrm<t_real>::GetScatterPlane1() const
 template<class t_real>
 std::array<t_real, 4> FileFrm<t_real>::GetPosHKLE() const
 {
-	typename t_mapParams::const_iterator iter = m_mapParams.find(m_strInstrIdent + "_value");
+	typename t_mapParams::const_iterator iter = m_mapParams.find(
+		m_strInstrIdent + "_value");
 	if(iter == m_mapParams.end())
 		return std::array<t_real,4>{{0, 0, 0, 0}};
 
-	std::vector<t_real> vecPos = get_py_array<std::string, std::vector<t_real>>(iter->second);
+	std::vector<t_real> vecPos = get_py_array<std::string, std::vector<t_real>>(
+		iter->second);
 	if(vecPos.size() < 4)
 		return std::array<t_real,4>{{0, 0, 0, 0}};
 
@@ -2010,8 +2012,23 @@ std::array<t_real, 3> FileMacs<t_real>::GetScatterPlane1() const
 template<class t_real>
 std::array<t_real, 4> FileMacs<t_real>::GetPosHKLE() const
 {
-	// TODO: implement
-	return std::array<t_real,4>{{0,0,0,0}};
+	t_real h = 0;
+	t_real k = 0;
+	t_real l = 0;
+	t_real E = 0;
+
+	// get the first position from the scan if available
+	const t_vecVals& vecH = GetCol("QX");
+	const t_vecVals& vecK = GetCol("QY");
+	const t_vecVals& vecL = GetCol("QZ");
+	const t_vecVals& vecE = GetCol("E");
+
+	if(vecH.size()) h = vecH[0];
+	if(vecK.size()) k = vecK[0];
+	if(vecL.size()) l = vecL[0];
+	if(vecE.size()) E = vecE[0];
+
+	return std::array<t_real, 4>{{ h, k, l, E }};
 }
 
 
@@ -2492,8 +2509,23 @@ std::array<t_real, 3> FileTrisp<t_real>::GetScatterPlane1() const
 template<class t_real>
 std::array<t_real, 4> FileTrisp<t_real>::GetPosHKLE() const
 {
-	// TODO: implement
-	return std::array<t_real,4>{{0,0,0,0}};
+	t_real h = 0;
+	t_real k = 0;
+	t_real l = 0;
+	t_real E = 0;
+
+	// get the first position from the scan if available
+	const t_vecVals& vecH = GetCol("QH");
+	const t_vecVals& vecK = GetCol("QK");
+	const t_vecVals& vecL = GetCol("QL");
+	const t_vecVals& vecE = GetCol("E");
+
+	if(vecH.size()) h = vecH[0];
+	if(vecK.size()) k = vecK[0];
+	if(vecL.size()) l = vecL[0];
+	if(vecE.size()) E = vecE[0];
+
+	return std::array<t_real, 4>{{ h, k, l, E }};
 }
 
 
@@ -2873,8 +2905,23 @@ std::array<t_real, 3> FileTax<t_real>::GetScatterPlane1() const
 template<class t_real>
 std::array<t_real, 4> FileTax<t_real>::GetPosHKLE() const
 {
-	// TODO: implement
-	return std::array<t_real, 4>{{0,0,0,0}};
+	t_real h = 0;
+	t_real k = 0;
+	t_real l = 0;
+	t_real E = 0;
+
+	// get the first position from the scan if available
+	const t_vecVals& vecH = GetCol("h");
+	const t_vecVals& vecK = GetCol("k");
+	const t_vecVals& vecL = GetCol("l");
+	const t_vecVals& vecE = GetCol("e");
+
+	if(vecH.size()) h = vecH[0];
+	if(vecK.size()) k = vecK[0];
+	if(vecL.size()) l = vecL[0];
+	if(vecE.size()) E = vecE[0];
+
+	return std::array<t_real, 4>{{ h, k, l, E }};
 }
 
 
@@ -3279,10 +3326,47 @@ std::array<t_real, 3> FileRaw<t_real>::GetScatterPlane1() const
 
 
 template<class t_real>
+std::string FileRaw<t_real>::GetColNameFromParam(
+	const std::string& paramName, const std::string& defaultVal) const
+{
+	using t_map = typename FileInstrBase<t_real>::t_mapParams;
+	const t_map& params = GetAllParams();
+
+	typename t_map::const_iterator iter = params.find(paramName);
+	if(iter != params.end())
+		return iter->second;
+
+	return defaultVal;
+}
+
+
+template<class t_real>
 std::array<t_real, 4> FileRaw<t_real>::GetPosHKLE() const
 {
-	// TODO: implement
-	return std::array<t_real,4>{{0,0,0,0}};
+	// get column names
+	std::string strColH = GetColNameFromParam("col_h", "1");
+	std::string strColK = GetColNameFromParam("col_k", "2");
+	std::string strColL = GetColNameFromParam("col_l", "3");
+	std::string strColE = GetColNameFromParam("col_E", "4");
+
+	// get the first position from the scan if available
+	const t_vecVals& vecH = GetCol(strColH);
+	const t_vecVals& vecK = GetCol(strColK);
+	const t_vecVals& vecL = GetCol(strColL);
+	const t_vecVals& vecE = GetCol(strColE);
+
+	// get values
+	t_real h = 0;
+	t_real k = 0;
+	t_real l = 0;
+	t_real E = 0;
+
+	if(vecH.size()) h = vecH[0];
+	if(vecK.size()) k = vecK[0];
+	if(vecL.size()) l = vecL[0];
+	if(vecE.size()) E = vecE[0];
+
+	return std::array<t_real, 4>{{ h, k, l, E }};
 }
 
 
@@ -3325,36 +3409,15 @@ std::size_t FileRaw<t_real>::GetScanCount() const
 template<class t_real>
 std::array<t_real, 5> FileRaw<t_real>::GetScanHKLKiKf(std::size_t i) const
 {
-	using t_map = typename FileInstrBase<t_real>::t_mapParams;
-	const t_map& params = GetAllParams();
+	// get column names
+	std::string strColH = GetColNameFromParam("col_h", "1");
+	std::string strColK = GetColNameFromParam("col_k", "2");
+	std::string strColL = GetColNameFromParam("col_l", "3");
+	std::string strColE = GetColNameFromParam("col_E", "4");
 
-	std::string strColH = "1";
-	std::string strColK = "2";
-	std::string strColL = "3";
-	std::string strColE = "4";
-
-	{
-		typename t_map::const_iterator iter = params.find("col_h");
-		if(iter != params.end())
-			strColH = iter->second;
-	}
-	{
-		typename t_map::const_iterator iter = params.find("col_k");
-		if(iter != params.end())
-			strColK = iter->second;
-	}
-	{
-		typename t_map::const_iterator iter = params.find("col_l");
-		if(iter != params.end())
-			strColL = iter->second;
-	}
-	{
-		typename t_map::const_iterator iter = params.find("col_E");
-		if(iter != params.end())
-			strColE = iter->second;
-	}
-
-	return FileInstrBase<t_real>::GetScanHKLKiKf(strColH.c_str(), strColK.c_str(), strColL.c_str(), strColE.c_str(), i);
+	return FileInstrBase<t_real>::GetScanHKLKiKf(
+		strColH.c_str(), strColK.c_str(), strColL.c_str(),
+		strColE.c_str(), i);
 }
 
 template<class t_real> std::vector<std::string> FileRaw<t_real>::GetScannedVars() const
