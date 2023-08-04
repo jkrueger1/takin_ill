@@ -586,7 +586,7 @@ std::tuple<T,T> crys_to_sph(T twophi_crys, T twotheta_crys)
 {
 	// converts the out-of-plane scattering angle '2theta' to the spherical theta
 	T theta_sph = get_pi<T>()/T(2) - twotheta_crys;
-	// converts in-plane scattering angle '2phi' to the spherical phi
+	// converts the in-plane scattering angle '2phi' to the spherical phi
 	T phi_sph = twophi_crys - get_pi<T>()/T(2);
 
 	return std::make_tuple(phi_sph, theta_sph);
@@ -596,7 +596,12 @@ std::tuple<T,T> crys_to_sph(T twophi_crys, T twotheta_crys)
 template<class T = double>
 std::tuple<T,T> sph_to_crys(T phi, T theta)
 {
-	return crys_to_sph<T>(phi, theta);
+	// converts the spherical theta to the out-of-plane scattering angle '2theta'
+	T twotheta = get_pi<T>()/T(2) - theta;
+	// converts the spherical phi to the in-plane scattering angle '2phi'
+	T twophi = phi + get_pi<T>()/T(2);
+
+	return std::make_tuple(twophi, twotheta);
 }
 
 
