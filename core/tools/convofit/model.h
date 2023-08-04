@@ -58,7 +58,7 @@ class SqwFuncModel : public tl::MinuitMultiFuncModel<t_real_mod>
 protected:
 	std::shared_ptr<SqwBase> m_pSqw;
 	std::vector<TASReso> m_vecResos;
-	//TASReso m_reso;
+	std::vector<std::string> m_vecSqwParams;
 	unsigned int m_iNumNeutrons = 1000;
 	bool m_bUseThreads = 1;
 
@@ -143,8 +143,9 @@ public:
 	void SetOtherParamNames(std::string strTemp, std::string strField);
 	void SetOtherParams(t_real_mod dTemperature, t_real_mod dField);
 
-	void SetReso(const TASReso& reso) { /*m_reso = reso;*/ m_vecResos = {reso}; }
+	void SetReso(const TASReso& reso) { m_vecResos = { reso }; }
 	void SetResos(const std::vector<TASReso>& vecResos) { m_vecResos = vecResos; }
+	void SetSqwParamOverrides(const std::vector<std::string>& params) { m_vecSqwParams = params; }
 	void SetNumNeutrons(unsigned int iNum) { m_iNumNeutrons = iNum; }
 	void SetUseThreads(bool b) { m_bUseThreads = b; }
 

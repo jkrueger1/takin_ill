@@ -1,12 +1,12 @@
 /**
- * Convolution fitting
+ * convolution fitting
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date dec-2015
  * @license GPLv2
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2022  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -200,6 +200,7 @@ bool Convofit::run_job(const std::string& _strJob)
 	std::string strTempVar = prop.Query<std::string>("input/sqw_temp_var", "T");
 	std::string strFieldVar = prop.Query<std::string>("input/sqw_field_var", "");
 	std::string strSetParams = prop.Query<std::string>("input/sqw_set_params", "");
+
 	bool bNormToMon = prop.Query<bool>("input/norm_to_monitor", 1);
 	bool bFlipCoords = prop.Query<bool>("input/flip_lhs_rhs", 0);
 	bool bUseFirstAndLastScanPt = prop.Query<bool>("input/use_first_last_pt", 0);
@@ -260,7 +261,7 @@ bool Convofit::run_job(const std::string& _strJob)
 
 
 	// --------------------------------------------------------------------
-	//primary resolution file
+	// primary resolution file
 	std::vector<std::string> vecResFiles({strResFile});
 
 	// get secondary resolution files for multi-function fitting
@@ -276,8 +277,30 @@ bool Convofit::run_job(const std::string& _strJob)
 
 	if(vecResFiles.size()!=1 && vecResFiles.size()!=vecvecScFiles.size())
 	{
-		tl::log_err("Number of resolution files has to be either one or match the number of scan files.");
-		tl::log_err("Number of scan files: ", vecvecScFiles.size(), ", number of resolution files: ", vecResFiles.size(), ".");
+		tl::log_err("Number of resolution files has to be either one or match the number of scan file groups.");
+		tl::log_err("Number of scan file groups: ", vecvecScFiles.size(), ", number of resolution files: ", vecResFiles.size(), ".");
+		return 0;
+	}
+	// --------------------------------------------------------------------
+
+
+	// --------------------------------------------------------------------
+	// optional s(q,w) parameter overrides
+	std::vector<std::string> vecSetParams;
+
+	// get secondary resolution files for multi-function fitting
+	for(std::size_t iGroup=0; iGroup<vecvecScFiles.size(); ++iGroup)
+	{
+		std::string strSecParams = "input/sqw_set_params_" + tl::var_to_str(iGroup);
+		std::string strSetParamsOverrides = prop.Query<std::string>(strSecParams, "");
+		tl::trim(strSetParamsOverrides);
+		vecSetParams.emplace_back(std::move(strSetParamsOverrides));
+	}
+
+	if(vecSetParams.size()!=vecvecScFiles.size())
+	{
+		tl::log_err("Number of S(q,w) parameter overrides has to match the number of scan file groups.");
+		tl::log_err("Number of scan file groups: ", vecvecScFiles.size(), ", number of parameter files: ", vecSetParams.size(), ".");
 		return 0;
 	}
 	// --------------------------------------------------------------------
@@ -569,6 +592,7 @@ bool Convofit::run_job(const std::string& _strJob)
 		return 0;
 	}
 	SqwFuncModel mod(pSqw, vecResos);
+	mod.SetSqwParamOverrides(vecSetParams);
 
 
 	std::vector<t_real> vecModTmpX, vecModTmpY;
@@ -583,15 +607,16 @@ bool Convofit::run_job(const std::string& _strJob)
 		if(bPlotIntermediate)
 		{
 			t_real x = 0.;
+			std::string scan_axis = "";
 			unsigned iScanAxis = vecScanAxes[scan_group];
 
 			switch(iScanAxis)
 			{
-				case 1: x = h; break;
-				case 2: x = k; break;
-				case 3: x = l; break;
-				case 4: x = E; break;
-				default: x = E; break;
+				case 1: x = h; scan_axis = "h (rlu)"; break;
+				case 2: x = k; scan_axis = "k (rlu)"; break;
+				case 3: x = l; scan_axis = "l (rlu)"; break;
+				case 4: x = E; scan_axis = "E (meV)"; break;
+				default: x = E; scan_axis = "E (meV)"; break;
 			}
 
 			vecModTmpX.push_back(x);
@@ -604,7 +629,7 @@ bool Convofit::run_job(const std::string& _strJob)
 			pltMod.odSize = 1.5;
 
 			if(scan_group < pltMeas.size())
-				m_sigPlot(this->m_pPlt, "", "Intensity", pltMeas[scan_group], pltMod, 0);
+				m_sigPlot(this->m_pPlt, scan_axis.c_str(), "Intensity", pltMeas[scan_group], pltMod, 0);
 		}
 	});
 	mod.AddParamsChangedSlot(
@@ -661,7 +686,7 @@ bool Convofit::run_job(const std::string& _strJob)
 	tl::log_info("Model field variable: \"", strFieldVar, "\", value: ", vecSc[0].dField);
 
 
-	// set given individual model parameters
+	// set the given individual global model parameters
 	if(strSetParams != "")
 	{
 		std::vector<std::string> vecSetParams;
@@ -752,7 +777,7 @@ bool Convofit::run_job(const std::string& _strJob)
 		mod.SetMinuitParams(state);
 
 		std::ostringstream ostrMini;
-		ostrMini << mini << "\n";
+		ostrMini << "Final fit results: " << mini << "\n";
 		tl::log_info(ostrMini.str(), "Fit valid: ", bValidFit);
 	}
 	else
@@ -776,6 +801,7 @@ bool Convofit::run_job(const std::string& _strJob)
 			strCurModOutFile += tl::var_to_str(iSc);
 			strCurScOutFile += tl::var_to_str(iSc);
 		}
+
 		mod.SetParamSet(iSc);
 		mod.Save(strCurModOutFile.c_str(), iPlotPoints, iPlotPointsSkipBegin, iPlotPointsSkipEnd);
 		save_file(strCurScOutFile.c_str(), sc);

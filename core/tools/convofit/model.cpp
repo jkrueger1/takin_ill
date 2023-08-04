@@ -43,7 +43,7 @@ using t_real = t_real_mod;
 
 
 SqwFuncModel::SqwFuncModel(std::shared_ptr<SqwBase> pSqw, const TASReso& reso)
-	: m_pSqw(pSqw)/*, m_reso(reso)*/, m_vecResos({reso})
+	: m_pSqw(pSqw), m_vecResos({reso})
 {}
 
 SqwFuncModel::SqwFuncModel(std::shared_ptr<SqwBase> pSqw, const std::vector<TASReso>& vecResos)
@@ -53,7 +53,6 @@ SqwFuncModel::SqwFuncModel(std::shared_ptr<SqwBase> pSqw, const std::vector<TASR
 
 TASReso* SqwFuncModel::GetTASReso()
 {
-	//TASReso reso = m_reso;
 	TASReso *pReso = nullptr;
 	// multi-fits
 	if(m_pScans && m_vecResos.size() > 1)
@@ -143,7 +142,7 @@ SqwFuncModel* SqwFuncModel::copy() const
 {
 	// cannot rebuild kd tree in phonon model with only a shallow copy
 	SqwFuncModel* pMod = new SqwFuncModel(
-		std::shared_ptr<SqwBase>(m_pSqw->shallow_copy())/*, m_reso*/, m_vecResos);
+		std::shared_ptr<SqwBase>(m_pSqw->shallow_copy()), m_vecResos);
 	pMod->m_vecScanOrigin = this->m_vecScanOrigin;
 	pMod->m_vecScanDir = this->m_vecScanDir;
 	pMod->m_dPrincipalAxisMin = this->m_dPrincipalAxisMin;
@@ -165,6 +164,7 @@ SqwFuncModel* SqwFuncModel::copy() const
 	pMod->m_pScans = this->m_pScans;
 	pMod->m_psigFuncResult = this->m_psigFuncResult;
 	pMod->m_psigParamsChanged = this->m_psigParamsChanged;
+	pMod->m_vecSqwParams = this->m_vecSqwParams;
 
 	return pMod;
 }
@@ -209,9 +209,10 @@ bool SqwFuncModel::SetParams(const std::vector<tl::t_real_min>& vecParams)
 {
 	// --------------------------------------------------------------------
 	// prints changed model parameters
-	std::vector<t_real> vecOldParams = {m_dScale, m_dSlope, m_dOffs};
+	std::vector<t_real> vecOldParams = { m_dScale, m_dSlope, m_dOffs };
 	vecOldParams.insert(vecOldParams.end(), m_vecModelParams.begin(), m_vecModelParams.end());
 	std::vector<std::string> vecParamNames = GetParamNames();
+
 	if(vecOldParams.size()==vecParams.size() && vecParamNames.size()==vecParams.size())
 	{
 		std::ostringstream ostrDebug;
@@ -237,6 +238,10 @@ bool SqwFuncModel::SetParams(const std::vector<tl::t_real_min>& vecParams)
 
 		if(m_psigParamsChanged)
 			(*m_psigParamsChanged)(ostrDebug.str());
+	}
+	else
+	{
+		tl::log_err("Parameter size mismatch.");
 	}
 	// --------------------------------------------------------------------
 
@@ -381,9 +386,11 @@ bool SqwFuncModel::Save(const char *pcFile, std::size_t iNum, std::size_t iSkipB
 		const std::vector<t_real> vecErrs = cst(GetParamErrors());
 
 		for(std::size_t iParam=0; iParam<vecNames.size(); ++iParam)
+		{
 			ofstr << "# " << vecNames[iParam] << " = "
 				<< vecVals[iParam] << " +- "
 				<< vecErrs[iParam] << "\n";
+		}
 
 		ofstr << "## Data columns: (1) scan axis, (2) intensity";
 		ofstr << ", (3) Bragg Qx (rlu), (4) Bragg Qy (rlu), (5) Bragg Qz (rlu), (6) Bragg E (meV)\n";
@@ -461,17 +468,51 @@ void SqwFuncModel::SetParamSet(std::size_t iSet)
 	{
 		m_iCurParamSet = iSet;
 
+		// set s(q,w) parameters from scan file
 		const Scan& sc = m_pScans->operator[](m_iCurParamSet);
 		if(m_vecResos.size() > 1)
 			set_tasreso_params_from_scan(m_vecResos[m_iCurParamSet], sc);
 		else
-			set_tasreso_params_from_scan(/*m_reso*/ m_vecResos[0], sc);
+			set_tasreso_params_from_scan(m_vecResos[0], sc);
 		set_model_params_from_scan(*this, sc);
+
+
+		// set s(q,w) parameters from optional override
+		std::ostringstream ostrParams;
+		if(m_vecSqwParams.size() > m_iCurParamSet)
+		{
+			std::vector<std::string> vecSetParams;
+			tl::get_tokens<std::string, std::string>(m_vecSqwParams[m_iCurParamSet], ";", vecSetParams);
+			for(const std::string& strModParam : vecSetParams)
+			{
+				std::vector<std::string> vecModParam;
+				tl::get_tokens<std::string, std::string>(strModParam, "=", vecModParam);
+				if(vecModParam.size() < 2)
+					continue;
+				tl::trim(vecModParam[0]);
+				tl::trim(vecModParam[1]);
+
+				if(m_pSqw->SetVarIfAvail(vecModParam[0], vecModParam[1]))
+				{
+					if(ostrParams.str().length())
+						ostrParams << ", ";
+					ostrParams << vecModParam[0] << " = " << vecModParam[1];
+				}
+				else
+				{
+					tl::log_err("Could not override S(q,w) model parameter named \"", vecModParam[0],
+						"\" with value \"", vecModParam[1], "\" for scan group ", m_iCurParamSet, ".");
+				}
+			}
+		}
 
 		if(m_psigParamsChanged)
 		{
 			std::ostringstream ostrDescr;
-			ostrDescr << "Scan group " << m_iCurParamSet << ".";
+			ostrDescr << "Scan group " << m_iCurParamSet;
+			if(ostrParams.str().length())
+				ostrDescr << ": " << ostrParams.str();
+			ostrDescr << ".";
 			(*m_psigParamsChanged)(ostrDescr.str());
 		}
 	}

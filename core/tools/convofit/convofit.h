@@ -37,6 +37,9 @@
 namespace sig = boost::signals2;
 
 
+/**
+ * set resolution parameters from scan file
+ */
 static inline void set_tasreso_params_from_scan(TASReso& reso, const Scan& sc)
 {
 	reso.SetLattice(sc.sample.a, sc.sample.b, sc.sample.c,
@@ -47,6 +50,10 @@ static inline void set_tasreso_params_from_scan(TASReso& reso, const Scan& sc)
 	reso.SetKFix(sc.dKFix);
 }
 
+
+/**
+ * set s(q,w) model parameters from scan file
+ */
 static inline void set_model_params_from_scan(SqwFuncModel& mod, const Scan& sc)
 {
 	mod.SetScanOrigin(sc.vecScanOrigin[0], sc.vecScanOrigin[1],
