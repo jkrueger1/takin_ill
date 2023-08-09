@@ -263,12 +263,12 @@ int main(int argc, char** argv)
 		// get program options
 		std::vector<std::string> vecTazFiles;
 		std::string connectTo;
-		bool bShowHelp = 0;
-		bool bStartScanviewer = 0;
-		bool bStartMonteconvo = 0;
-		bool bStartMonteconvoCLI = 0;
-		bool bStartConvofit = 0;
-		bool bStartTakinMain = 1, bStartGui = 1;
+		bool bShowHelp = false;
+		bool bStartScanviewer = false;
+		bool bStartMonteconvo = false;
+		bool bStartMonteconvoCLI = false;
+		bool bStartConvofit = false;
+		bool bStartTakinMain = true, bStartGui = true;
 
 		opts::options_description args("Takin options");
 		args.add(boost::shared_ptr<opts::option_description>(
@@ -316,9 +316,9 @@ int main(int argc, char** argv)
 		opts::notify(opts_map);
 
 		if(bStartMonteconvo || bStartScanviewer || bStartMonteconvoCLI || bStartConvofit)
-			bStartTakinMain = 0;
+			bStartTakinMain = false;
 		if(bStartMonteconvoCLI || bStartConvofit)
-			bStartGui = 0;
+			bStartGui = false;
 
 		if(bShowHelp)
 		{
@@ -428,9 +428,6 @@ int main(int argc, char** argv)
 				app_gui->setStyle(pStyle);
 			else
 				tl::log_err("Style \"", strStyle.toStdString(), "\" was not found.");
-		}
-		else
-		{
 		}
 
 
@@ -651,6 +648,9 @@ int main(int argc, char** argv)
 			pScanViewerDlg.reset(new ScanViewerDlg{nullptr});
 			pScanViewerDlg->setWindowFlags(Qt::Window);
 
+			// assume last argument is a path
+			if(argc > 2)
+				pScanViewerDlg->SelectDir(argv[argc-1]);
 			pScanViewerDlg->show();
 		}
 

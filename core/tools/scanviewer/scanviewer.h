@@ -48,7 +48,13 @@
 
 class ScanViewerDlg : public QDialog, Ui::ScanViewerDlg
 { Q_OBJECT
-protected:
+public:
+	ScanViewerDlg(QWidget* pParent = nullptr);
+	virtual ~ScanViewerDlg();
+
+	void SelectDir(const QString& path);
+
+private:
 	QSettings m_settings;
 
 	std::unique_ptr<QFileSystemWatcher> m_pWatcher;
@@ -56,7 +62,7 @@ protected:
 	std::string m_strSelectedKey;
 	std::vector<std::string> m_vecExts;
 
-	bool m_bDoUpdate = 0;
+	bool m_bDoUpdate = false;
 	tl::FileInstrBase<t_real_glob> *m_pInstr = nullptr;
 	std::vector<t_real_glob> m_vecX, m_vecY, m_vecYErr;
 	std::vector<t_real_glob> m_vecFitX, m_vecFitY;
@@ -64,10 +70,6 @@ protected:
 	std::string m_strX, m_strY, m_strMon, m_strCmd;
 
 	FitParamDlg *m_pFitParamDlg = nullptr;
-
-public:
-	ScanViewerDlg(QWidget* pParent = nullptr);
-	virtual ~ScanViewerDlg();
 
 private:
 	void SetAbout();

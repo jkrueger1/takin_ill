@@ -132,7 +132,7 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	QObject::connect(comboPath, &QComboBox::editTextChanged, pThis, &ScanViewerDlg::ChangedPath);
 	QObject::connect(listFiles, &QListWidget::itemSelectionChanged, pThis, &ScanViewerDlg::FileSelected);
 	QObject::connect(editSearch, &QLineEdit::textEdited, pThis, &ScanViewerDlg::SearchProps);
-	QObject::connect(btnBrowse, &QToolButton::clicked, pThis, &ScanViewerDlg::SelectDir);
+	QObject::connect(btnBrowse, &QToolButton::clicked, pThis, static_cast<void (ScanViewerDlg::*)()>(&ScanViewerDlg::SelectDir));
 	for(QLineEdit* pEdit : {editPolVec1, editPolVec2, editPolCur1, editPolCur2})
 		QObject::connect(pEdit, &QLineEdit::textEdited, pThis, &ScanViewerDlg::CalcPol);
 
@@ -347,6 +347,31 @@ int ScanViewerDlg::HasRecentPath(const QString& strPath)
 
 
 /**
+ * select a new directory to browse
+ */
+void ScanViewerDlg::SelectDir(const QString& path)
+{
+	if(!tl::dir_exists(path.toStdString().c_str()))
+		return;
+
+	int idx = HasRecentPath(path);
+	if(idx < 0)
+	{
+		fs::path dir(path.toStdString());
+		if(*tl::wstr_to_str(dir.native()).rbegin() != fs::path::preferred_separator)
+			dir /= T_STR{} + fs::path::preferred_separator;
+
+		comboPath->addItem(tl::wstr_to_str(dir.native()).c_str());
+		idx = comboPath->findText(tl::wstr_to_str(dir.native()).c_str());
+	}
+
+	comboPath->setCurrentIndex(idx);
+	//comboPath->setEditText(path);
+	ChangedPath();
+}
+
+
+/**
  * new scan directory selected
  */
 void ScanViewerDlg::SelectDir()
@@ -355,25 +380,11 @@ void ScanViewerDlg::SelectDir()
 	if(!m_settings.value("main/native_dialogs", 1).toBool())
 		fileopt = QFileDialog::DontUseNativeDialog;
 
-	QString strCurDir = (m_strCurDir==""?"~":m_strCurDir.c_str());
+	QString strCurDir = (m_strCurDir=="" ? "~" : m_strCurDir.c_str());
 	QString strDir = QFileDialog::getExistingDirectory(this, "Select directory",
 		strCurDir, QFileDialog::ShowDirsOnly | fileopt);
 	if(strDir != "")
-	{
-		int idx = HasRecentPath(strDir);
-		if(idx < 0)
-		{
-			fs::path dir(strDir.toStdString());
-			if(*tl::wstr_to_str(dir.native()).rbegin() != fs::path::preferred_separator)
-				dir /= T_STR{} + fs::path::preferred_separator;
-
-			comboPath->addItem(tl::wstr_to_str(dir.native()).c_str());
-			idx = comboPath->findText(tl::wstr_to_str(dir.native()).c_str());
-		}
-		comboPath->setCurrentIndex(idx);
-		//comboPath->setEditText(strDir);
-		ChangedPath();
-	}
+		SelectDir(strDir);
 }
 
 
@@ -1231,11 +1242,10 @@ void ScanViewerDlg::ChangedPath()
 	ClearPlot();
 	tableProps->setRowCount(0);
 
-	std::string strPath = comboPath->currentText().toStdString();
-	fs::path dir(strPath);
-	if(fs::exists(dir) && fs::is_directory(dir))
+	std::string path = comboPath->currentText().toStdString();
+	if(tl::dir_exists(path.c_str()))
 	{
-		m_strCurDir = tl::wstr_to_str(dir.native());
+		m_strCurDir = tl::wstr_to_str(fs::path(path).native());
 		tl::trim(m_strCurDir);
 		std::size_t len = m_strCurDir.length();
 		if(len > 0 && *(m_strCurDir.begin()+len-1) != fs::path::preferred_separator)

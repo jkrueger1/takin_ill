@@ -26,6 +26,15 @@
  * ----------------------------------------------------------------------------
  */
 
+// these need to be included before all other things on mingw
+#include <boost/scope_exit.hpp>
+#include <boost/asio.hpp>
+namespace asio = boost::asio;
+
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+namespace pt = boost::property_tree;
+
 #include "magdyn.h"
 
 #include <QtCore/QString>
@@ -40,14 +49,6 @@
 #include <deque>
 #include <cstdlib>
 
-#include <boost/scope_exit.hpp>
-#include <boost/asio.hpp>
-namespace asio = boost::asio;
-
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-namespace pt = boost::property_tree;
-
 #include "tlibs2/libs/log.h"
 
 #ifdef USE_HDF5
@@ -58,8 +59,11 @@ namespace pt = boost::property_tree;
 // for debugging: write individual data chunks in hdf5 file
 //#define WRITE_HDF5_CHUNKS
 
-
+// precision
 extern int g_prec;
+
+// prefix to base64-encoded strings
+static const std::string g_b64_prefix = "__base64__";
 
 
 void MagDynDlg::Clear()
@@ -77,6 +81,7 @@ void MagDynDlg::Clear()
 	DelTabItem(m_termstab, -1);
 	DelTabItem(m_varstab, -1);
 	DelTabItem(m_fieldstab, -1);
+	DelTabItem(m_coordinatestab, -1);
 
 	ClearDispersion(true);
 	m_hamiltonian->clear();
@@ -98,6 +103,8 @@ void MagDynDlg::Clear()
 	m_weight_scale->setValue(1.);
 	m_weight_min->setValue(0.);
 	m_weight_max->setValue(9999.);
+
+	m_notes->clear();
 }
 
 
@@ -165,6 +172,20 @@ bool MagDynDlg::Load(const QString& filename)
 		{
 			QMessageBox::critical(this, "Magnetic Dynamics", "Unrecognised file format.");
 			return false;
+		}
+
+		// read in comment
+		if(auto optNotes = node.get_optional<std::string>("magdyn.meta.notes"))
+		{
+			if(optNotes->starts_with(g_b64_prefix))
+			{
+				m_notes->setPlainText(QByteArray::fromBase64(optNotes->substr(g_b64_prefix.length()).data(),
+					QByteArray::Base64Encoding | QByteArray::AbortOnBase64DecodingErrors));
+			}
+			else
+			{
+				m_notes->setPlainText(optNotes->data());
+			}
 		}
 
 		const auto &magdyn = node.get_child("magdyn");
@@ -286,6 +307,7 @@ bool MagDynDlg::Load(const QString& filename)
 		DelTabItem(m_termstab, -1);
 		DelTabItem(m_varstab, -1);
 		DelTabItem(m_fieldstab, -1);
+		DelTabItem(m_coordinatestab, -1);
 
 		// variables
 		for(const auto& var : m_dyn.GetVariables())
@@ -361,6 +383,22 @@ bool MagDynDlg::Load(const QString& filename)
 				AddFieldTabItem(-1, Bh, Bk, Bl, Bmag);
 			}
 		}
+
+		// saved coordinates
+		if(auto vars = magdyn.get_child_optional("saved_coordinates"); vars)
+		{
+			for(const auto &var : *vars)
+			{
+				t_real hi = var.second.get<t_real>("h_i", 0.);
+				t_real ki = var.second.get<t_real>("k_i", 0.);
+				t_real li = var.second.get<t_real>("l_i", 0.);
+				t_real hf = var.second.get<t_real>("h_f", 0.);
+				t_real kf = var.second.get<t_real>("k_f", 0.);
+				t_real lf = var.second.get<t_real>("l_f", 0.);
+
+				AddCoordinateTabItem(-1, hi, ki, li, hf, kf, lf);
+			}
+		}
 	}
 	catch(const std::exception& ex)
 	{
@@ -421,15 +459,15 @@ bool MagDynDlg::Save(const QString& filename)
 		if(!user) user = "";
 
 		magdyn.put<std::string>("meta.info", "magdyn_tool");
-		magdyn.put<std::string>("meta.date",
-			tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()));
+		magdyn.put<std::string>("meta.date", tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()));
 		magdyn.put<std::string>("meta.user", user);
-		magdyn.put<std::string>("meta.url",
-			"https://code.ill.fr/scientific-software/takin");
-		magdyn.put<std::string>("meta.doi",
-			"https://doi.org/10.5281/zenodo.4117437");
-		magdyn.put<std::string>("meta.doi_tlibs",
-			"https://doi.org/10.5281/zenodo.5717779");
+		magdyn.put<std::string>("meta.url", "https://github.com/ILLGrenoble/takin");
+		magdyn.put<std::string>("meta.doi", "https://doi.org/10.5281/zenodo.4117437");
+		magdyn.put<std::string>("meta.doi_tlibs", "https://doi.org/10.5281/zenodo.5717779");
+
+		// save user comment as utf8 to avoid collisions with possible xml tags
+		magdyn.put<std::string>("meta.notes", g_b64_prefix + m_notes->toPlainText().toUtf8().toBase64(
+			QByteArray::Base64Encoding).constData());
 
 		// settings
 		magdyn.put<t_real>("config.h_start", m_q_start[0]->value());
@@ -531,6 +569,34 @@ bool MagDynDlg::Save(const QString& filename)
 				std::advance(termiter, 1);
 			}
 		}
+
+		// saved coordinates
+		for(int coord_row = 0; coord_row < m_coordinatestab->rowCount(); ++coord_row)
+		{
+			const auto* hi = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_coordinatestab->item(coord_row, COL_COORD_HI));
+			const auto* ki = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_coordinatestab->item(coord_row, COL_COORD_KI));
+			const auto* li = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_coordinatestab->item(coord_row, COL_COORD_LI));
+			const auto* hf = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_coordinatestab->item(coord_row, COL_COORD_HF));
+			const auto* kf = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_coordinatestab->item(coord_row, COL_COORD_KF));
+			const auto* lf = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_coordinatestab->item(coord_row, COL_COORD_LF));
+
+			boost::property_tree::ptree itemNode;
+			itemNode.put<t_real>("h_i", hi ? hi->GetValue() : 0.);
+			itemNode.put<t_real>("k_i", ki ? ki->GetValue() : 0.);
+			itemNode.put<t_real>("l_i", li ? li->GetValue() : 0.);
+			itemNode.put<t_real>("h_f", hf ? hf->GetValue() : 0.);
+			itemNode.put<t_real>("k_f", kf ? kf->GetValue() : 0.);
+			itemNode.put<t_real>("l_f", lf ? lf->GetValue() : 0.);
+
+			magdyn.add_child("saved_coordinates.coordinate", itemNode);
+		}
+
 
 		pt::ptree node;
 		node.put_child("magdyn", magdyn);
