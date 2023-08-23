@@ -207,8 +207,9 @@ License: GNU GPL version 2 (see below) or FreeType License
 
 
 --------------------------------------------------------------------------------
-Lapack & Lapacke
+Lapack, Lapacke, and included BLAS
 URL: http://www.netlib.org/lapack
+URL: https://github.com/Reference-LAPACK/lapack
 License URL: http://www.netlib.org/lapack/LICENSE.txt
 
 Copyright (c) 1992-2013 by The University of Tennessee and The University

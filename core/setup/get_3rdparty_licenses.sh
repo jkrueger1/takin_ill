@@ -155,6 +155,11 @@ if ! wget https://raw.githubusercontent.com/gcc-mirror/gcc/master/COPYING.RUNTIM
 	echo -e "Error: Cannot download gcc_runtime license.";
 fi
 
+# libquadmath
+if ! wget https://raw.githubusercontent.com/gcc-mirror/gcc/master/libquadmath/COPYING.LIB -O ${LICDIR}/libquadmath_license.txt; then
+	echo -e "Error: Cannot download libquadmath license.";
+fi
+
 # hdf5
 if ! wget https://raw.githubusercontent.com/HDFGroup/hdf5/develop/COPYING -O ${LICDIR}/hdf5_license.txt; then
 	echo -e "Error: Cannot download hdf5 license.";
@@ -163,4 +168,34 @@ fi
 # libaec / libsz2
 if ! wget https://gitlab.dkrz.de/k202009/libaec/-/raw/master/LICENSE.txt -O ${LICDIR}/libaec_license.txt; then
 	echo -e "Error: Cannot download libaec license.";
+fi
+
+# libharfbuzz
+if ! wget https://raw.githubusercontent.com/harfbuzz/harfbuzz/main/COPYING -O ${LICDIR}/harfbuzz_license.txt; then
+	echo -e "Error: Cannot download harfbuzz license.";
+fi
+
+# libbzip2
+if ! wget https://raw.githubusercontent.com/libarchive/bzip2/master/COPYING -O ${LICDIR}/bzip2_license.txt; then
+	echo -e "Error: Cannot download bzip2 license.";
+fi
+
+# zlib
+if ! wget https://raw.githubusercontent.com/libarchive/zlib/master/LICENSE -O ${LICDIR}/zlib_license.txt; then
+	echo -e "Error: Cannot download zlib license.";
+fi
+
+# libiconv
+if ! wget https://git.savannah.gnu.org/cgit/libiconv.git/plain/COPYING.LIB -O ${LICDIR}/libiconv_license.txt; then
+	echo -e "Error: Cannot download libiconv license.";
+fi
+
+# mingw64
+if ! wget https://raw.githubusercontent.com/mingw-w64/mingw-w64/master/COPYING -O ${LICDIR}/mingw64_license.txt; then
+	echo -e "Error: Cannot download mingw64 license.";
+fi
+
+# winpthreads
+if ! wget https://raw.githubusercontent.com/mingw-w64/mingw-w64/master/mingw-w64-libraries/winpthreads/COPYING -O ${LICDIR}/winpthreads_license.txt; then
+	echo -e "Error: Cannot download winpthreads license.";
 fi

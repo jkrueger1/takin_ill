@@ -26,8 +26,6 @@
  * ----------------------------------------------------------------------------
  */
 
-// g++ -std=c++20 -I../ext -I../ext/takin -I/usr/include/lapacke -Iext/lapacke/include -Lext/lapacke/lib -I/usr/local/opt/lapack/include -L/usr/local/opt/lapack/lib -shared -fPIC -o magnonmod.so magnonmod.cpp ../ext/takin/tools/monteconvo/sqwbase.cpp ../ext/tlibs/log/log.cpp -llapacke
-
 #include "magnonmod.h"
 
 #include "libs/version.h"
@@ -308,22 +306,35 @@ SqwBase* MagnonMod::shallow_copy() const
 // ----------------------------------------------------------------------------
 // SO interface
 
-#include <boost/dll/alias.hpp>
+#ifndef __MINGW32__
 
+#include <boost/dll/alias.hpp>
 
 std::tuple<std::string, std::string, std::string> sqw_info()
 {
 	return std::make_tuple(TAKIN_VER, "magnonmod", "Magnetic Dynamics");
 }
 
-
 std::shared_ptr<SqwBase> sqw_construct(const std::string& cfg_file)
 {
 	return std::make_shared<MagnonMod>(cfg_file);
 }
 
-
 // exports from so file
 BOOST_DLL_ALIAS(sqw_info, takin_sqw_info);
 BOOST_DLL_ALIAS(sqw_construct, takin_sqw);
+
+#else  // mingw exports
+
+extern "C" std::tuple<std::string, std::string, std::string> takin_sqw_info()
+{
+	return std::make_tuple(TAKIN_VER, "magnonmod", "Magnetic Dynamics");
+}
+
+extern "C" std::shared_ptr<SqwBase> takin_sqw(const std::string& cfg_file)
+{
+	return std::make_shared<MagnonMod>(cfg_file);
+}
+
+#endif
 // ----------------------------------------------------------------------------
