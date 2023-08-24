@@ -31,11 +31,6 @@ rm -fv bin/*.exe
 rm -fv plugins/*.so
 rm -fv plugins/*.dll
 
-rm -fv doc/takin.qch
-rm -fv doc/takin.qhc
-rm -rfv doc/devel/html
-rm -fv doc/devel/*.tmp
-
 if [ -f Makefile ]
 then
 	echo -e "\nCleaning stuff made by Makefile..."

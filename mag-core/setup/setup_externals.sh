@@ -38,7 +38,6 @@ QCP=https://www.qcustomplot.com/release/2.0.1/QCustomPlot-source.tar.gz
 GEMMI=https://github.com/project-gemmi/gemmi/archive/master.zip
 MAGDATA=https://stokes.byu.edu/iso/magnetic_data.txt
 PATHSLIB=https://code.ill.fr/scientific-software/takin/paths/-/archive/master/paths-master.tar.bz2
-#TLIBS=https://forge.frm2.tum.de/cgit/cgit.cgi/frm2/mira/tlibs.git/snapshot/tlibs-master.tar.bz2
 
 # local file names
 QCP_LOCAL=${QCP##*[/\\]}
@@ -157,10 +156,10 @@ echo -e "Installing external Gemmi library...\n"
 dl_gemmi
 echo -e "--------------------------------------------------------------------------------\n"
 
-echo -e "\n--------------------------------------------------------------------------------"
-echo -e "Installing external TAS-Paths library...\n"
-dl_pathslib
-echo -e "--------------------------------------------------------------------------------\n"
+#echo -e "\n--------------------------------------------------------------------------------"
+#echo -e "Installing external TAS-Paths library...\n"
+#dl_pathslib
+#echo -e "--------------------------------------------------------------------------------\n"
 
 #echo -e "\n--------------------------------------------------------------------------------"
 #echo -e "Downloading magnetic space group data...\n"

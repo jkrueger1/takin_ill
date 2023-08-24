@@ -63,7 +63,6 @@ cp -v bin/takinmod_py		${INSTDIR}/usr/local/bin
 cp -v bin/takinmod_jl		${INSTDIR}/usr/local/bin
 
 cp -rv res/*			${INSTDIR}/usr/local/share/takin/res/
-cp -rv doc/* 			${INSTDIR}/usr/local/share/takin/res/doc/
 cp -rv 3rdparty_licenses/*	${INSTDIR}/usr/local/share/takin/3rdparty_licenses/
 cp -v *.txt			${INSTDIR}/usr/local/share/takin
 cp -v setup_lin/takin.desktop		${INSTDIR}/usr/share/applications

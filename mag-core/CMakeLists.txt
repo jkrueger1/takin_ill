@@ -47,11 +47,11 @@ add_subdirectory(tools/magdyn)
 # molecular dynamics tool
 add_subdirectory(tools/moldyn)
 
-# scan browser tool
-add_subdirectory(tools/scanbrowser)
-
 
 if(NOT ONLY_BUILD_FINISHED)
+	# scan browser tool
+	add_subdirectory(tools/scanbrowser)
+
 	# setup tools
 	add_subdirectory(tools/setup)
 

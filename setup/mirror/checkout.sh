@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# checkout all of takin's repos
+# checkout all of takin's development repos
 # @author Tobias Weber <tweber@ill.fr>
 # @date jul-20
 # @license GPLv2

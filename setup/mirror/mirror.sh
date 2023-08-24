@@ -1,13 +1,13 @@
 #!/bin/bash
 #
-# creates a distro archive
-# @author Tobias Weber <tobias.weber@tum.de>
-# @date 2016 - 2023
+# automatically mirror the repositories
+# @author Tobias Weber <tweber@ill.fr>
+# @date sep-2020
 # @license GPLv2
 #
 # ----------------------------------------------------------------------------
 # Takin (inelastic neutron scattering software package)
-# Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+# Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
 #                          Grenoble, France).
 # Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
 #                          (TUM), Garching, Germany).
@@ -27,42 +27,31 @@
 # ----------------------------------------------------------------------------
 #
 
-
-# installation directory
-INSTDIR="$1"
-
-if [ "${INSTDIR}" = "" ]; then
-	INSTDIR=takin
-fi
-
-mkdir -p ${INSTDIR}
+mirror_from=org_repo
 
 
-# main programs
-cp -rv bin			${INSTDIR}/
-cp -v takin.sh			${INSTDIR}/
+declare -a repo_dirs=(
+	"ill_mirror-takin2-setup"
+	"ill_mirror-takin2-core"
+	"ill_mirror-takin2-mag-core"
+	"ill_mirror-takin2-tlibs"
+	"ill_mirror-takin2-tlibs2"
+	"ill_mirror-takin2-data"
+	"ill_mirror-takin2-paths"
+	"ill_mirror-takin2-mnsi"
+	"ill_mirror-takin2-magnons"
+)
 
 
-# info files
-cp -v *.txt			${INSTDIR}/
-cp -rv 3rdparty_licenses/	${INSTDIR}/
+for repo_dir in ${repo_dirs[@]}; do
+	echo -e "--------------------------------------------------------------------------------"
+	echo -e "Mirroring ${repo_dir}"
+	echo -e "--------------------------------------------------------------------------------"
 
+	pushd "${repo_dir}"
+	git pull -v "${mirror_from}" master
+	git push -v
+	popd
 
-# examples
-cp -rv examples 		${INSTDIR}/
-cp -rv data/samples 		${INSTDIR}/
-cp -rv data/instruments 	${INSTDIR}/
-cp -rv data/demos 		${INSTDIR}/
-
-
-# resources
-mkdir ${INSTDIR}/res
-cp -rv res/* ${INSTDIR}/res/
-gunzip -v ${INSTDIR}/res/data/*
-
-
-# remove uneeded files
-find ${INSTDIR}/ -type f -name ".dir" -exec rm -v {} \; -print
-
-# stripping
-strip -v ${INSTDIR}/bin/*
+	echo -e "--------------------------------------------------------------------------------\n"
+done

@@ -7,7 +7,7 @@
 #
 # ----------------------------------------------------------------------------
 # Takin (inelastic neutron scattering software package)
-# Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+# Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
 #                          Grenoble, France).
 # Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
 #                          (TUM), Garching, Germany).
@@ -39,6 +39,21 @@ build_package=1
 
 
 NUM_CORES=$(nproc)
+
+
+# parse command-line options
+for((arg_idx=1; arg_idx<=$#; ++arg_idx)); do
+	arg="${!arg_idx}"
+	# look for argument identifier
+	if [[ "$arg" =~ [_A-Za-z][_A-Za-z0-9]* ]]; then
+		# get the argument's parameter
+		param_idx=$((arg_idx+1))
+		param="${!param_idx}"
+
+		# set the argument to the given parameter
+		export $arg=${param}
+	fi
+done
 
 
 # get root dir of takin repos
@@ -138,22 +153,22 @@ if [ $build_takin2 -ne 0 ]; then
 fi
 
 
-#if [ $build_plugins -ne 0 ]; then
-#	echo -e "\n================================================================================"
-#	echo -e "Building Takin plugins..."
-#	echo -e "================================================================================\n"
-#
-#	pushd "${TAKIN_ROOT}/plugins/magnons"
-#		rm -rf build
-#		mkdir -p build
-#		cd build
-#		cmake -DCMAKE_BUILD_TYPE=Release ..
-#		make -j${NUM_CORES}
-#
-#		# copy plugin to Takin main dir
-#		cp -v libmagnonmod.so "${TAKIN_ROOT}"/core/plugins/
-#	popd
-#fi
+if [ $build_plugins -ne 0 ]; then
+	echo -e "\n================================================================================"
+	echo -e "Building Takin plugins..."
+	echo -e "================================================================================\n"
+
+	pushd "${TAKIN_ROOT}/magnon-plugin"
+		rm -rf build
+		mkdir -p build
+		cd build
+		cmake -DCMAKE_BUILD_TYPE=Release ..
+		make -j${NUM_CORES}
+
+		# copy plugin to Takin main dir
+		cp -v libmagnonmod.so "${TAKIN_ROOT}"/core/plugins/
+	popd
+fi
 
 
 if [ $build_package -ne 0 ]; then

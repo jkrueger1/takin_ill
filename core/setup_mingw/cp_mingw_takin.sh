@@ -57,7 +57,6 @@ cp -rv data/demos 		${INSTDIR}/
 # resources
 mkdir ${INSTDIR}/res
 cp -rv res/* ${INSTDIR}/res/
-cp -rv doc/*.html ${INSTDIR}/res/doc/
 gunzip -v ${INSTDIR}/res/data/*
 
 

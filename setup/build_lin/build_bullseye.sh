@@ -4,6 +4,7 @@
 # @author Tobias Weber <tweber@ill.fr>, Jens Krüger
 # @date 3 february 2023
 # @license GPLv2
+# @note based on the build_jammy.sh script
 #
 # ----------------------------------------------------------------------------
 # Takin (inelastic neutron scattering software package)
@@ -34,10 +35,26 @@ setup_externals2=1
 build_externals=1
 build_takin=1
 build_takin2=1
+build_plugins=0
 build_package=1
 
 
 NUM_CORES=$(nproc)
+
+
+# parse command-line options
+for((arg_idx=1; arg_idx<=$#; ++arg_idx)); do
+	arg="${!arg_idx}"
+	# look for argument identifier
+	if [[ "$arg" =~ [_A-Za-z][_A-Za-z0-9]* ]]; then
+		# get the argument's parameter
+		param_idx=$((arg_idx+1))
+		param="${!param_idx}"
+
+		# set the argument to the given parameter
+		export $arg=${param}
+	fi
+done
 
 
 # get root dir of takin repos
@@ -133,6 +150,24 @@ if [ $build_takin2 -ne 0 ]; then
 		cp -v tools/scanbrowser/takin_scanbrowser "${TAKIN_ROOT}"/core/bin/
 		cp -v tools/magsgbrowser/takin_magsgbrowser "${TAKIN_ROOT}"/core/bin/
 		cp -v tools/moldyn/takin_moldyn "${TAKIN_ROOT}"/core/bin/
+	popd
+fi
+
+
+if [ $build_plugins -ne 0 ]; then
+	echo -e "\n================================================================================"
+	echo -e "Building Takin plugins..."
+	echo -e "================================================================================\n"
+
+	pushd "${TAKIN_ROOT}/magnon-plugin"
+		rm -rf build
+		mkdir -p build
+		cd build
+		cmake -DCMAKE_BUILD_TYPE=Release ..
+		make -j${NUM_CORES}
+
+		# copy plugin to Takin main dir
+		cp -v libmagnonmod.so "${TAKIN_ROOT}"/core/plugins/
 	popd
 fi
 

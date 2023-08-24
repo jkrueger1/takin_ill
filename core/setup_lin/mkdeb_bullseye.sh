@@ -4,6 +4,7 @@
 # @author Tobias Weber <tobias.weber@tum.de>, Jens Krüger
 # @date 3 february 2023
 # @license GPLv2
+# @note based on the mkdeb_jammy.sh script
 #
 # ----------------------------------------------------------------------------
 # Takin (inelastic neutron scattering software package)
@@ -93,7 +94,6 @@ cp -v bin/takinmod_py		${INSTDIR}/usr/local/bin
 cp -v bin/takinmod_jl		${INSTDIR}/usr/local/bin
 
 cp -rv res/*			${INSTDIR}/usr/local/share/takin/res/
-cp -rv doc/* 			${INSTDIR}/usr/local/share/takin/res/doc/
 cp -v *.txt			${INSTDIR}/usr/local/share/takin
 cp -rv 3rdparty_licenses/*	${INSTDIR}/usr/local/share/takin/3rdparty_licenses/
 cp -v setup_lin/takin.desktop	${INSTDIR}/usr/share/applications
