@@ -11,11 +11,21 @@ Version 2.5.4.
 - A demonstration of the new magnon module can be found in the *Tutorials* section.
 
 
-## Repository
+## Main Repository
 - *Takin's* main source code repository can be found here:  
   [https://github.com/ILLGrenoble/takin](https://github.com/ILLGrenoble/takin).
-- *Takin's* internal development repository group for the latest unstable versions can be found here:  
+
+
+## History of Former and Internal Repositories
+- *Takin's* internal development repository group can be found here:  
   [https://code.ill.fr/scientific-software/takin](https://code.ill.fr/scientific-software/takin).
+- The old version 2 repository used for private developments can be found here:  
+  [https://github.com/t-weber/takin2](https://github.com/t-weber/takin2).
+- The old version 1 repository used for private developments can be found here:  
+  [https://github.com/t-weber/takin2](https://github.com/t-weber/takin).
+- The ancient version 1 repository can be found here:  
+  [https://forge.frm2.tum.de/cgit/cgit.cgi/frm2/mira/tastools.git](https://forge.frm2.tum.de/cgit/cgit.cgi/frm2/mira/tastools.git).
+
 
 
 ## Software DOIs
