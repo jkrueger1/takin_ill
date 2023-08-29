@@ -16,13 +16,6 @@ Version 2.5.4.
   [https://github.com/ILLGrenoble/takin](https://github.com/ILLGrenoble/takin).
 
 
-## History of Former Repositories
-- *Takin's* internal development repository group can be found [here](https://code.ill.fr/scientific-software/takin).
-- The old version 2 repository used for private developments can be found [here](https://github.com/t-weber/takin2).
-- The old version 1 repository used for private developments can be found [here](https://github.com/t-weber/takin).
-- The ancient version 1 repository can be found [here](https://forge.frm2.tum.de/cgit/cgit.cgi/frm2/mira/tastools.git).
-
-
 ## Software DOIs
 - *Takin 2.x*: [10.5281/zenodo.4117437](https://dx.doi.org/10.5281/zenodo.4117437).  
 - *Takin 1.x*: [10.5281/zenodo.3961491](https://dx.doi.org/10.5281/zenodo.3961491).  
