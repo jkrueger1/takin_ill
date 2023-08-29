@@ -14,7 +14,7 @@ Version 2.5.4.
 ## Repository
 - *Takin's* main source code repository can be found here:  
   [https://github.com/ILLGrenoble/takin](https://github.com/ILLGrenoble/takin).
-- *Takin's* development repository group for the latest unstable versions can be found here:  
+- *Takin's* internal development repository group for the latest unstable versions can be found here:  
   [https://code.ill.fr/scientific-software/takin](https://code.ill.fr/scientific-software/takin).
 
 
