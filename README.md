@@ -16,16 +16,11 @@ Version 2.5.4.
   [https://github.com/ILLGrenoble/takin](https://github.com/ILLGrenoble/takin).
 
 
-## History of Former and Internal Repositories
-- *Takin's* internal development repository group can be found here:  
-  [https://code.ill.fr/scientific-software/takin](https://code.ill.fr/scientific-software/takin).
-- The old version 2 repository used for private developments can be found here:  
-  [https://github.com/t-weber/takin2](https://github.com/t-weber/takin2).
-- The old version 1 repository used for private developments can be found here:  
-  [https://github.com/t-weber/takin2](https://github.com/t-weber/takin).
-- The ancient version 1 repository can be found here:  
-  [https://forge.frm2.tum.de/cgit/cgit.cgi/frm2/mira/tastools.git](https://forge.frm2.tum.de/cgit/cgit.cgi/frm2/mira/tastools.git).
-
+## History of Former Repositories
+- *Takin's* internal development repository group can be found [here](https://code.ill.fr/scientific-software/takin).
+- The old version 2 repository used for private developments can be found [here](https://github.com/t-weber/takin2).
+- The old version 1 repository used for private developments can be found [here](https://github.com/t-weber/takin).
+- The ancient version 1 repository can be found [here](https://forge.frm2.tum.de/cgit/cgit.cgi/frm2/mira/tastools.git).
 
 
 ## Software DOIs
