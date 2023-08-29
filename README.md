@@ -11,9 +11,10 @@ Version 2.5.4.
 - A demonstration of the new magnon module can be found in the *Tutorials* section.
 
 
-## Main Repository
+## Repository
 - *Takin's* main source code repository can be found here:  
   [https://github.com/ILLGrenoble/takin](https://github.com/ILLGrenoble/takin).
+- An overview of historic repositories can be found [here](https://github.com/ILLGrenoble/takin/wiki/History).
 
 
 ## Software DOIs
