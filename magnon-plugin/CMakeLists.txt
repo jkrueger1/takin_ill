@@ -35,7 +35,7 @@ add_compile_options(-fvisibility=hidden)
 
 list(APPEND CMAKE_MODULE_PATH
 	"${PROJECT_SOURCE_DIR}"
-	"${PROJECT_SOURCE_DIR}/ext/tlibs2/cmake"
+	"${PROJECT_SOURCE_DIR}/tlibs2/cmake"
 )
 
 
@@ -72,28 +72,24 @@ add_definitions(${Boost_CXX_FLAGS})
 find_package(Lapacke REQUIRED)
 add_definitions(-DUSE_LAPACK=1)
 include_directories("${Lapacke_INCLUDE_DIRS}")
-
 include_directories("${PROJECT_SOURCE_DIR}")
-
-include_directories(
-	SYSTEM "${Boost_INCLUDE_DIRS}" "${Boost_INCLUDE_DIRS}/.."
-	"../.." "ext" "ext/takin"
-)
+include_directories(SYSTEM "${Boost_INCLUDE_DIRS}" "${Boost_INCLUDE_DIRS}/..")
+include_directories(core)
 
 
 add_library(magnonmod SHARED
 	src/magnonmod.cpp src/magnonmod.h
-	ext/tlibs2/libs/magdyn.h
-	ext/tlibs2/libs/maths.h
+	tlibs2/libs/magdyn.h
+	tlibs2/libs/maths.h
 
-	ext/tlibs2/libs/log.cpp ext/tlibs/log/log.cpp
-	ext/takin/tools/monteconvo/sqwbase.cpp
+	tlibs2/libs/log.cpp tlibs/log/log.cpp
+	core/tools/monteconvo/sqwbase.cpp
 )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 	target_link_options(magnonmod
 		# create an __info_plist section in the binary
-		PRIVATE LINKER:-sectcreate,__TEXT,__info_plist,${PROJECT_SOURCE_DIR}/ext/takin2/setup_mac/InfoMagDyn.plist
+		PRIVATE LINKER:-sectcreate,__TEXT,__info_plist,${PROJECT_SOURCE_DIR}/mag-core/setup_mac/InfoMagDyn.plist
 	)
 endif()
 

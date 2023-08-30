@@ -28,7 +28,7 @@
 
 #include "magnonmod.h"
 
-#include "libs/version.h"
+#include "core/libs/version.h"
 #include "tlibs/string/string.h"
 #include "tlibs/math/math.h"
 #include "tlibs/phys/neutrons.h"
