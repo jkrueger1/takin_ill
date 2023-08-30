@@ -30,7 +30,6 @@
 #define __MAGNON_SQW_MOD_H__
 
 #include "core/tools/monteconvo/sqwbase.h"
-#include "tlibs/math/linalg.h"
 #include "tlibs2/libs/magdyn.h"
 
 
@@ -42,7 +41,6 @@ class MagnonMod : public SqwBase
 		using t_size = std::size_t;
 		using t_real = t_real_reso;
 		using t_cplx = std::complex<t_real>;
-		using t_vec = tl::ublas::vector<t_real>;
 
 		using t_vec_real = tl2::vec<t_real, std::vector>;
 		using t_mat_real = tl2::mat<t_real, std::vector>;

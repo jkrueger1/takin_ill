@@ -78,17 +78,7 @@ MagnonMod::~MagnonMod()
 std::tuple<std::vector<t_real>, std::vector<t_real>>
 	MagnonMod::disp(t_real h, t_real k, t_real l) const
 {
-	// calculate the reduced momentum transfer q = Q - G
-	/*const auto& G = m_dyn.GetBraggPeak();
-	if(G.size() == 3)
-	{
-		h -= G[0].real();
-		k -= G[1].real();
-		l -= G[2].real();
-	}*/
-
 	// calculate dispersion relation
-
 	auto modes = m_dyn.GetEnergies(h, k, l, false);
 
 	std::vector<t_real> energies;
@@ -127,7 +117,7 @@ t_real MagnonMod::operator()(t_real h, t_real k, t_real l, t_real E) const
 			S += tl::gauss_model(E, Es[iE], m_sigma, Ws[iE], t_real(0));
 	}
 
-	return m_S0*S /** tl::bose_cutoff(E, m_T, cutoff)*/ + incoh;
+	return m_S0*S + incoh;
 }
 
 // ----------------------------------------------------------------------------
