@@ -8,7 +8,7 @@ Version 2.5.4.
 ## Documentation
 - The software documentation is available here:  
   [https://github.com/ILLGrenoble/takin/wiki](https://github.com/ILLGrenoble/takin/wiki).
-- A demonstration of the new magnon module can be found in the *Tutorials* section.
+- A demonstration of the new magnon module can be found in the [*Tutorials* section](https://github.com/ILLGrenoble/takin/wiki/Magnon-Convolution-Tutorial).
 
 
 ## Repository
