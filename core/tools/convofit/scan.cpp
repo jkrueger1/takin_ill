@@ -133,7 +133,7 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 	{
 		if(tl::float_equal<t_real_sc>(d, 0.))
 			return t_real_sc(1);
-		return std::sqrt(d);
+		return std::sqrt(std::abs(d));
 	};
 	scan.vecCtsErr = tl::apply_fkt(scan.vecCts, funcErr);
 	scan.vecMonErr = tl::apply_fkt(scan.vecMon, funcErr);

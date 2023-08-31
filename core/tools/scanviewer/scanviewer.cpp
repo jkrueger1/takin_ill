@@ -985,7 +985,7 @@ void ScanViewerDlg::PlotScan()
 			{
 				t_real y = m_vecY[iY];
 				t_real m = vecMon[iY];
-				t_real dy = tl::float_equal(y, 0., g_dEps) ? 1. : std::sqrt(y);
+				t_real dy = tl::float_equal(y, 0., g_dEps) ? 1. : std::sqrt(std::abs(y));
 				t_real dm = std::sqrt(m);
 
 				// y_new = y/m
@@ -996,7 +996,7 @@ void ScanViewerDlg::PlotScan()
 		}
 		else
 		{
-			t_real err = tl::float_equal(m_vecY[iY], 0., g_dEps) ? 1. : std::sqrt(m_vecY[iY]);
+			t_real err = tl::float_equal(m_vecY[iY], 0., g_dEps) ? 1. : std::sqrt(std::abs(m_vecY[iY]));
 			m_vecYErr.push_back(err);
 		}
 	}
