@@ -53,7 +53,7 @@ endif()
 find_package(Boost REQUIRED COMPONENTS program_options)
 add_compile_options(${Boost_CXX_FLAGS})
 
-find_package(Qhull)
+find_package(Qhull REQUIRED)
 if(Qhull_FOUND)
 	add_definitions(-DUSE_QHULL)
 	include_directories("${Qhull_INCLUDE_DIRS}")
