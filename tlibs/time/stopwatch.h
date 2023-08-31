@@ -33,6 +33,9 @@
 #include <chrono>
 #include <ctime>
 #include <cmath>
+
+#include <boost/date_time/c_time.hpp>
+
 #include "../string/string.h"
 
 
@@ -84,7 +87,8 @@ class Stopwatch
 		static std::string to_str(const t_tp_sys& t)
 		{
 			std::time_t tStart = std::chrono::system_clock::to_time_t(t);
-			std::tm tmStart = *std::localtime(&tStart);
+			std::tm tmStart;
+			boost::date_time::c_time::localtime(&tStart, &tmStart);
 
 			char cTime[256];
 			std::strftime(cTime, sizeof cTime, "%a %Y-%b-%d %H:%M:%S %Z", &tmStart);
