@@ -103,6 +103,8 @@ class FileInstrBase
 		virtual std::vector<std::string> GetScannedVars() const = 0;
 		virtual std::string GetCountVar() const = 0;
 		virtual std::string GetMonVar() const = 0;
+		virtual std::string GetCountErr() const;
+		virtual std::string GetMonErr() const;
 
 		virtual std::string GetScanCommand() const = 0;
 
@@ -571,6 +573,8 @@ class FileRaw : public FileInstrBase<_t_real>
 		virtual std::vector<std::string> GetScannedVars() const override;
 		virtual std::string GetCountVar() const override;
 		virtual std::string GetMonVar() const override;
+		virtual std::string GetCountErr() const override;
+		virtual std::string GetMonErr() const override;
 
 		virtual std::string GetScanCommand() const override;
 

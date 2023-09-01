@@ -168,7 +168,7 @@ FileInstrBase<t_real>* FileInstrBase<t_real>::LoadInstr(const char* pcFile)
 		}
 		else if(strLine.find('#') != std::string::npos &&
 			strLine.find(strTax) != std::string::npos &&
-			strLine2.find('#') != std::string::npos && 
+			strLine2.find('#') != std::string::npos &&
 			strLine3.find('#') != std::string::npos)
 		{ // tax file
 			//log_debug(pcFile, " is a tax file.");
@@ -363,6 +363,19 @@ const std::vector<std::array<t_real, 6>>& FileInstrBase<t_real>::GetPolStates() 
 {
 	static const std::vector<std::array<t_real, 6>> vecNull;
 	return vecNull;
+}
+
+
+template<class t_real>
+std::string FileInstrBase<t_real>::GetCountErr() const
+{
+	return "";
+}
+
+template<class t_real>
+std::string FileInstrBase<t_real>::GetMonErr() const
+{
+	return "";
 }
 
 
@@ -2689,7 +2702,7 @@ bool FileTax<t_real>::Load(const char* pcFile)
 	if(m_vecCols.size() != m_dat.GetColumnCount())
 	{
 		log_warn("Mismatch between the number of data columns (",
-			m_dat.GetColumnCount(), ") and column headers (", 
+			m_dat.GetColumnCount(), ") and column headers (",
 			m_vecCols.size(), ").");
 	}
 
@@ -3475,6 +3488,37 @@ template<class t_real> std::string FileRaw<t_real>::GetMonVar() const
 	return strColCtr;
 }
 
+template<class t_real> std::string FileRaw<t_real>::GetCountErr() const
+{
+	using t_map = typename FileInstrBase<t_real>::t_mapParams;
+	const t_map& params = GetAllParams();
+
+	std::string strColCtr;
+
+	{
+		typename t_map::const_iterator iter = params.find("col_ctr_err");
+		if(iter != params.end())
+			strColCtr = iter->second;
+	}
+
+	return strColCtr;
+}
+
+template<class t_real> std::string FileRaw<t_real>::GetMonErr() const
+{
+	using t_map = typename FileInstrBase<t_real>::t_mapParams;
+	const t_map& params = GetAllParams();
+
+	std::string strColCtr;
+
+	{
+		typename t_map::const_iterator iter = params.find("col_mon_err");
+		if(iter != params.end())
+			strColCtr = iter->second;
+	}
+
+	return strColCtr;
+}
 
 template<class t_real>
 bool FileRaw<t_real>::MergeWith(const FileInstrBase<t_real>* pDat)

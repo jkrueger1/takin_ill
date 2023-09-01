@@ -880,7 +880,6 @@ void ScanViewerDlg::PlotScan()
 		return;
 
 	bool bNormalise = checkNorm->isChecked();
-	//const bool bLog = checkLog->isChecked();
 
 	m_strX = comboX->itemData(comboX->currentIndex(), Qt::UserRole).toString().toStdString();
 	m_strY = comboY->itemData(comboY->currentIndex(), Qt::UserRole).toString().toStdString();
@@ -899,6 +898,60 @@ void ScanViewerDlg::PlotScan()
 	bool bYIsACountVar = (m_strY == m_pInstr->GetCountVar() || m_strY == m_pInstr->GetMonVar());
 	m_plotwrap->GetCurve(1)->SetShowErrors(bYIsACountVar);
 
+	// see if there's a corresponding error column for the selected counter or monitor
+	bool has_ctr_err = false, has_mon_err = false;
+	std::string ctr_err_col, mon_err_col;
+
+	// get counter error if defined
+	if(m_strY == m_pInstr->GetCountVar())
+		ctr_err_col = m_pInstr->GetCountErr();
+	else if(m_strY == m_pInstr->GetMonVar())
+		ctr_err_col = m_pInstr->GetMonErr();
+
+	if(ctr_err_col != "")
+	{
+		// use given error column
+		m_vecYErr = m_pInstr->GetCol(ctr_err_col);
+		has_ctr_err = true;
+	}
+	else
+	{
+		m_vecYErr.clear();
+		m_vecYErr.reserve(m_vecY.size());
+
+		// calculate error
+		for(std::size_t iY=0; iY<m_vecY.size(); ++iY)
+		{
+			t_real err = tl::float_equal(m_vecY[iY], 0., g_dEps) ? 1. : std::sqrt(std::abs(m_vecY[iY]));
+			m_vecYErr.push_back(err);
+		}
+	}
+
+	// get monitor error if defined
+	std::vector<t_real> vecMonErr;
+	if(m_strMon == m_pInstr->GetCountVar())
+		mon_err_col = m_pInstr->GetCountErr();
+	else if(m_strMon == m_pInstr->GetMonVar())
+		mon_err_col = m_pInstr->GetMonErr();
+
+	if(mon_err_col != "")
+	{
+		// use given error column
+		vecMonErr = m_pInstr->GetCol(mon_err_col);
+		has_mon_err = true;
+	}
+	else
+	{
+		vecMonErr.reserve(m_vecY.size());
+
+		// calculate error
+		for(std::size_t iY=0; iY<vecMon.size(); ++iY)
+		{
+			t_real err = tl::float_equal(vecMon[iY], 0., g_dEps) ? 1. : std::sqrt(std::abs(vecMon[iY]));
+			vecMonErr.push_back(err);
+		}
+	}
+
 
 	// remove points from start
 	if(iStartIdx != 0)
@@ -912,11 +965,15 @@ void ScanViewerDlg::PlotScan()
 		{
 			m_vecY.clear();
 			vecMon.clear();
+			m_vecYErr.clear();
+			vecMonErr.clear();
 		}
 		else
 		{
 			m_vecY.erase(m_vecY.begin(), m_vecY.begin()+iStartIdx);
 			vecMon.erase(vecMon.begin(), vecMon.begin()+iStartIdx);
+			m_vecYErr.erase(m_vecYErr.begin(), m_vecYErr.begin()+iStartIdx);
+			vecMonErr.erase(vecMonErr.begin(), vecMonErr.begin()+iStartIdx);
 		}
 	}
 
@@ -932,24 +989,30 @@ void ScanViewerDlg::PlotScan()
 		{
 			m_vecY.clear();
 			vecMon.clear();
+			m_vecYErr.clear();
+			vecMonErr.clear();
 		}
 		else
 		{
 			m_vecY.erase(m_vecY.end()-iEndSkip, m_vecY.end());
 			vecMon.erase(vecMon.end()-iEndSkip, vecMon.end());
+			m_vecYErr.erase(m_vecYErr.end()-iEndSkip, m_vecYErr.end());
+			vecMonErr.erase(vecMonErr.end()-iEndSkip, vecMonErr.end());
 		}
 	}
 
 	// interleave rows
 	if(iSkipRows != 0)
 	{
-		decltype(m_vecX) vecXNew, vecYNew, vecMonNew;
+		decltype(m_vecX) vecXNew, vecYNew, vecMonNew, vecYErrNew, vecMonErrNew;
 
 		for(std::size_t iRow=0; iRow<std::min(m_vecX.size(), m_vecY.size()); ++iRow)
 		{
 			vecXNew.push_back(m_vecX[iRow]);
 			vecYNew.push_back(m_vecY[iRow]);
 			vecMonNew.push_back(vecMon[iRow]);
+			vecYErrNew.push_back(m_vecYErr[iRow]);
+			vecMonErrNew.push_back(vecMonErr[iRow]);
 
 			iRow += iSkipRows;
 		}
@@ -957,47 +1020,42 @@ void ScanViewerDlg::PlotScan()
 		m_vecX = std::move(vecXNew);
 		m_vecY = std::move(vecYNew);
 		vecMon = std::move(vecMonNew);
+		m_vecYErr = std::move(vecYErrNew);
+		vecMonErr = std::move(vecMonErrNew);
 	}
 
 
 	// errors
-	if(vecMon.size() < m_vecY.size())
+	if(vecMon.size() != m_vecY.size() || vecMonErr.size() != m_vecYErr.size())
 	{
 		bNormalise = 0;
-		tl::log_err("Counter and monitor data count mismatch.");
+		tl::log_err("Counter and monitor data count do not match, cannot normalise.");
 	}
 
-	m_vecYErr.clear();
-	m_vecYErr.reserve(m_vecY.size());
-	for(std::size_t iY=0; iY<m_vecY.size(); ++iY)
+	// normalise to monitor?
+	if(bNormalise)
 	{
-		// normalise to monitor?
-		if(bNormalise)
+		for(std::size_t iY=0; iY<m_vecY.size(); ++iY)
 		{
 			if(tl::float_equal(vecMon[iY], 0., g_dEps))
 			{
 				tl::log_warn("Monitor counter is zero for point ", iY+1, ".");
 
 				m_vecY[iY] = 0.;
-				m_vecYErr.push_back(1.);
+				m_vecYErr[iY] = 1.;
 			}
 			else
 			{
 				t_real y = m_vecY[iY];
 				t_real m = vecMon[iY];
-				t_real dy = tl::float_equal(y, 0., g_dEps) ? 1. : std::sqrt(std::abs(y));
-				t_real dm = std::sqrt(m);
+				t_real dy = m_vecYErr[iY];
+				t_real dm = vecMonErr[iY];
 
 				// y_new = y/m
 				// dy_new = 1/m dy - y/m^2 dm
 				m_vecY[iY] = y/m;
-				m_vecYErr.push_back(std::sqrt(std::pow(dy/m, 2.) + std::pow(dm*y/(m*m), 2.)));
+				m_vecYErr[iY] = std::sqrt(std::pow(dy/m, 2.) + std::pow(dm*y/(m*m), 2.));
 			}
-		}
-		else
-		{
-			t_real err = tl::float_equal(m_vecY[iY], 0., g_dEps) ? 1. : std::sqrt(std::abs(m_vecY[iY]));
-			m_vecYErr.push_back(err);
 		}
 	}
 
@@ -1234,7 +1292,7 @@ void ScanViewerDlg::ShowProps()
 
 
 /**
- * new directory entered
+ * entered new directory
  */
 void ScanViewerDlg::ChangedPath()
 {

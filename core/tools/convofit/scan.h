@@ -87,6 +87,8 @@ struct Scan
 
 	std::string strCntCol = "";
 	std::string strMonCol = "";
+	std::string strCntErrCol = "";
+	std::string strMonErrCol = "";
 	std::vector<ScanPoint> vecPoints;
 
 	std::vector<t_real_sc> vechklE[4];

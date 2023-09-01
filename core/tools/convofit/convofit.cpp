@@ -191,6 +191,8 @@ bool Convofit::run_job(const std::string& _strJob)
 	t_real dFieldOverride = prop.QueryAndParse<t_real>("input/field_override");
 	std::string strCntCol = prop.Query<std::string>("input/counts_col");
 	std::string strMonCol = prop.Query<std::string>("input/monitor_col");
+	std::string strCntErrCol = prop.Query<std::string>("input/counts_err_col");
+	std::string strMonErrCol = prop.Query<std::string>("input/monitor_err_col");
 	std::string strResFile = prop.Query<std::string>("input/instrument_file");
 	if(strResFile == "")	// "instrument_file_0" is synonymous to "instrument_file"
 		strResFile = prop.Query<std::string>("input/instrument_file_0");
@@ -478,6 +480,8 @@ bool Convofit::run_job(const std::string& _strJob)
 			sc.strFieldCol = strFieldCol;
 		sc.strCntCol = strCntCol;
 		sc.strMonCol = strMonCol;
+		sc.strCntErrCol = strCntErrCol;
+		sc.strMonErrCol = strMonErrCol;
 
 		if(vecvecScFiles.size() > 1)
 			tl::log_info("Loading scan group ", iSc, ".");

@@ -122,24 +122,55 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 
 	std::string strCountVar = pInstr->GetCountVar();	// defaults
 	std::string strMonVar = pInstr->GetMonVar();
+	std::string strCountErr = pInstr->GetCountErr();
+	std::string strMonErr = pInstr->GetMonErr();
+
 	if(scan.strCntCol != "") strCountVar = scan.strCntCol;	// overrides
 	if(scan.strMonCol != "") strMonVar = scan.strMonCol;
-	tl::log_info("Counts column: ", strCountVar, "\nMonitor column: ", strMonVar, ".");
+	if(scan.strCntErrCol != "") strCountErr = scan.strCntErrCol;
+	if(scan.strMonErrCol != "") strMonErr = scan.strMonErrCol;
 
 	scan.vecCts = pInstr->GetCol(strCountVar);
 	scan.vecMon = pInstr->GetCol(strMonVar);
 
+	tl::log_info("Counts column: ", strCountVar, "\nMonitor column: ", strMonVar, ".");
+
+	// error
 	std::function<t_real_sc(t_real_sc)> funcErr = [](t_real_sc d) -> t_real_sc
 	{
 		if(tl::float_equal<t_real_sc>(d, 0.))
 			return t_real_sc(1);
 		return std::sqrt(std::abs(d));
 	};
-	scan.vecCtsErr = tl::apply_fkt(scan.vecCts, funcErr);
-	scan.vecMonErr = tl::apply_fkt(scan.vecMon, funcErr);
+
+	if(strCountErr != "")
+	{
+		// use the given counter error column
+		scan.vecCtsErr = pInstr->GetCol(strCountErr);
+		tl::log_info("Counts error column: ", strCountErr, ".");
+	}
+	else
+	{
+		// calculate the error from the counter
+		scan.vecCtsErr = tl::apply_fkt(scan.vecCts, funcErr);
+	}
+
+	if(strMonErr != "")
+	{
+		// use the given monitor error column
+		scan.vecMonErr = pInstr->GetCol(strMonErr);
+		tl::log_info("Monitor error column: ", strMonErr, ".");
+	}
+	else
+	{
+		// calculate the error from the monitor
+		scan.vecMonErr = tl::apply_fkt(scan.vecMon, funcErr);
+	}
+
 
 	if(bNormToMon)
 	{
+		// normalise couter to monitor
 		for(std::size_t iPos=0; iPos<scan.vecCts.size(); ++iPos)
 		{
 			t_real_sc y = scan.vecCts[iPos];
