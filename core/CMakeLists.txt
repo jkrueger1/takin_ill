@@ -446,7 +446,9 @@ add_executable(takin
 	tools/convofit/model.cpp tools/convofit/scan.cpp
 	tools/convofit/convofit_cli.cpp
 
-	tools/scanviewer/scanviewer.cpp tools/scanviewer/FitParamDlg.cpp
+	tools/scanviewer/scanviewer.cpp tools/scanviewer/scanviewer_fit.cpp
+	tools/scanviewer/scanviewer_pol.cpp
+	tools/scanviewer/FitParamDlg.cpp
 	tools/scanpos/ScanPosDlg.cpp
 	tools/powderfit/PowderFitDlg.cpp
 
