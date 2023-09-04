@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -47,8 +47,6 @@ using t_real = t_real_glob;
  */
 static int find_sg_from_combo(QComboBox* pCombo, const std::string& str)
 {
-	//return pCombo->findText(str.c_str(), Qt::MatchContains /*Qt::MatchFixedString*/);
-
 	for(int iIdx=0; iIdx<pCombo->count(); ++iIdx)
 	{
 		xtl::SpaceGroup<t_real> *pSG = reinterpret_cast<xtl::SpaceGroup<t_real>*>
@@ -555,7 +553,6 @@ bool TazDlg::Save()
 	mapConf[strXmlRoot + "meta/timestamp"] = tl::var_to_str<t_real>(tl::epoch<t_real>());
 	mapConf[strXmlRoot + "meta/version"] = TAKIN_VER;
 	mapConf[strXmlRoot + "meta/info"] = "Created with Takin.";
-	//mapConf[strXmlRoot + "meta/url"] = "https://code.ill.fr/scientific-software/takin";
 	mapConf[strXmlRoot + "meta/url"] = "https://github.com/ILLGrenoble/takin";
 	mapConf[strXmlRoot + "meta/doi"] = "https://dx.doi.org/10.5281/zenodo.4117437";
 	mapConf[strXmlRoot + "meta/module"] = "takin";

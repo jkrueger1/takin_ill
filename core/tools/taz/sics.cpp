@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -387,7 +387,7 @@ void SicsCache::slot_receive(const std::string& str)
 	}
 	// lattice constants and angles
 	else if(tl::str_is_equal_to_either<std::string>(strKey,
-		{m_strSampleLattice[0], m_strSampleLattice[1], m_strSampleLattice[2], 
+		{m_strSampleLattice[0], m_strSampleLattice[1], m_strSampleLattice[2],
 			m_strSampleAngles[0], m_strSampleAngles[1], m_strSampleAngles[2]}, false))
 	{
 		decltype(m_mapCache)::const_iterator iterAS = m_mapCache.find(m_strSampleLattice[0]);
@@ -408,11 +408,11 @@ void SicsCache::slot_receive(const std::string& str)
 		crys.dLatticeAngles[1] = tl::str_to_var<t_real>(iterBB->second.strVal);
 		crys.dLatticeAngles[2] = tl::str_to_var<t_real>(iterCC->second.strVal);
 
-		if(!tl::float_equal(crys.dLattice[0], m_crysCache.dLattice[0], g_dEps) || 
+		if(!tl::float_equal(crys.dLattice[0], m_crysCache.dLattice[0], g_dEps) ||
 			!tl::float_equal(crys.dLattice[1], m_crysCache.dLattice[1], g_dEps) ||
-			!tl::float_equal(crys.dLattice[2], m_crysCache.dLattice[2], g_dEps) || 
-			!tl::float_equal(crys.dLatticeAngles[0], m_crysCache.dLatticeAngles[0], g_dEps) || 
-			!tl::float_equal(crys.dLatticeAngles[1], m_crysCache.dLatticeAngles[1], g_dEps) || 
+			!tl::float_equal(crys.dLattice[2], m_crysCache.dLattice[2], g_dEps) ||
+			!tl::float_equal(crys.dLatticeAngles[0], m_crysCache.dLatticeAngles[0], g_dEps) ||
+			!tl::float_equal(crys.dLatticeAngles[1], m_crysCache.dLatticeAngles[1], g_dEps) ||
 			!tl::float_equal(crys.dLatticeAngles[2], m_crysCache.dLatticeAngles[2], g_dEps))
 		{
 			crys.bChangedLattice = crys.bChangedLatticeAngles = 1;
@@ -425,7 +425,7 @@ void SicsCache::slot_receive(const std::string& str)
 	}
 	// orientation reflexes
 	else if(tl::str_is_equal_to_either<std::string>(strKey,
-		{m_strSampleOrient1[0], m_strSampleOrient1[1], m_strSampleOrient1[2], 
+		{m_strSampleOrient1[0], m_strSampleOrient1[1], m_strSampleOrient1[2],
 			m_strSampleOrient2[0], m_strSampleOrient2[1], m_strSampleOrient2[2]}, false))
 	{
 		decltype(m_mapCache)::const_iterator iterAX = m_mapCache.find(m_strSampleOrient1[0]);
@@ -446,11 +446,11 @@ void SicsCache::slot_receive(const std::string& str)
 		crys.dPlane2[1] = tl::str_to_var<t_real>(iterBY->second.strVal);
 		crys.dPlane2[2] = tl::str_to_var<t_real>(iterBZ->second.strVal);
 
-		if(!tl::float_equal(crys.dPlane1[0], m_crysCache.dPlane1[0], g_dEps) || 
+		if(!tl::float_equal(crys.dPlane1[0], m_crysCache.dPlane1[0], g_dEps) ||
 			!tl::float_equal(crys.dPlane1[1], m_crysCache.dPlane1[1], g_dEps) ||
-			!tl::float_equal(crys.dPlane1[2], m_crysCache.dPlane1[2], g_dEps) || 
-			!tl::float_equal(crys.dPlane2[0], m_crysCache.dPlane2[0], g_dEps) || 
-			!tl::float_equal(crys.dPlane2[1], m_crysCache.dPlane2[1], g_dEps) || 
+			!tl::float_equal(crys.dPlane1[2], m_crysCache.dPlane1[2], g_dEps) ||
+			!tl::float_equal(crys.dPlane2[0], m_crysCache.dPlane2[0], g_dEps) ||
+			!tl::float_equal(crys.dPlane2[1], m_crysCache.dPlane2[1], g_dEps) ||
 			!tl::float_equal(crys.dPlane2[2], m_crysCache.dPlane2[2], g_dEps))
 		{
 			crys.bChangedPlane1 = crys.bChangedPlane2 = 1;

@@ -539,13 +539,6 @@ void ConvoDlg::SetSqwParams(const std::vector<std::tuple<std::string, std::strin
 		//	m_pSqw->SetRangeIfAvail(std::get<0>(param), std::get<3>(param));
 	}
 
-	/*auto vars = m_pSqw->GetVars();
-	auto fitvars = m_pSqw->GetFitVars();
-	for(const auto& var : vars)
-		std::cout << std::get<0>(var) << " " << std::get<1>(var) << " " << std::get<2>(var) << std::endl;
-	for(const auto& var : fitvars)
-		std::cout << std::get<0>(var) << " " << std::get<1>(var) << " " << std::get<2>(var) << std::endl;*/
-
 	// read parameters back in to update paramters dialog
 	emit SqwLoaded(m_pSqw->GetVars(), &m_pSqw->GetFitVars());
 }

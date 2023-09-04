@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -177,7 +177,7 @@ void TazDlg::CalcPeaks()
 			throw tl::Err("Invalid lattice definition.");
 
 		tl::Lattice<t_real> lattice(a,b,c, alpha,beta,gamma);
-		tl::Lattice<t_real> recip_unrot = lattice.GetRecip();
+		tl::Lattice<t_real> recip = lattice.GetRecip();
 
 
 		//----------------------------------------------------------------------
@@ -193,8 +193,8 @@ void TazDlg::CalcPeaks()
 		ublas::vector<t_real> vecPlaneYRLU = tl::make_vec({dY0, dY1, dY2});
 
 		// display up vector
-		ublas::matrix<t_real> matGCov = recip_unrot.GetMetricCov();
-		ublas::vector<t_real> vecPlaneZRLU = 
+		ublas::matrix<t_real> matGCov = recip.GetMetricCov();
+		ublas::vector<t_real> vecPlaneZRLU =
 			tl::cross_prod_contra(matGCov, vecPlaneXRLU, vecPlaneYRLU, false);
 		vecPlaneZRLU /= tl::veclen(vecPlaneZRLU);
 		tl::set_eps_0(vecPlaneZRLU, g_dEpsGfx);
@@ -254,8 +254,6 @@ void TazDlg::CalcPeaks()
 		}
 
 		emitSampleParams();
-
-		const tl::Lattice<t_real>& recip = recip_unrot;		// anyway not rotated anymore
 
 
 		if(m_bUpdateRecipEdits)

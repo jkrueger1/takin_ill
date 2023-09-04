@@ -144,7 +144,6 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 		editMonoD, editAnaD
 	};
 
-	//m_vecSpinBoxesSample = { spinRotPhi, spinRotTheta, spinRotPsi };
 	m_vecCheckBoxesSenses = { checkSenseM, checkSenseS, checkSenseA };
 
 
@@ -205,7 +204,6 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 
 	if(m_settings.contains("main/real_tab"))
 		groupReal->setCurrentIndex(m_settings.value("main/real_tab").value<int>());
-
 
 
 	QObject::connect(m_pSettingsDlg, &SettingsDlg::SettingsChanged, this, &TazDlg::SettingsChanged);
@@ -269,9 +267,6 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 	for(QLineEdit* pEdit : m_vecEdits_plane)
 		QObject::connect(pEdit, &QLineEdit::textEdited, this, &TazDlg::CalcPeaks);
 
-	//for(QDoubleSpinBox* pSpin : m_vecSpinBoxesSample)
-	//	QObject::connect(pSpin, SIGNAL(valueChanged(t_real)), this, SLOT(CalcPeaks()));
-
 	for(QLineEdit* pEdit : m_vecEdits_recip)
 	{
 		QObject::connect(pEdit, &QLineEdit::textEdited, this, &TazDlg::CheckCrystalType);
@@ -288,7 +283,6 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 	QObject::connect(checkPowder, &QCheckBox::stateChanged, this, &TazDlg::CalcPeaks);
 
 	QObject::connect(btnAtoms, &QPushButton::clicked, this, &TazDlg::ShowAtomsDlg);
-
 
 
 	// --------------------------------------------------------------------------------
@@ -785,7 +779,6 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 
 	QAction *pAboutQt = new QAction("About Qt...", this);
 	pAboutQt->setMenuRole(QAction::AboutQtRole);
-	//pAboutQt->setIcon(QIcon::fromTheme("help-about"));
 	pMenuHelp->addAction(pAboutQt);
 
 	QAction *pExtLicenses = new QAction("Show 3rd Party Licenses...", this);
@@ -793,7 +786,6 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 
 	pMenuHelp->addSeparator();
 
-	//pMenuHelp->addSeparator();
 	QAction *pAbout = new QAction("About Takin...", this);
 	pAbout->setMenuRole(QAction::AboutRole);
 	pAbout->setIcon(load_icon("res/icons/dialog-information.svg"));
@@ -1678,10 +1670,7 @@ void TazDlg::ShowWebsite()
 
 void TazDlg::ReportBug()
 {
-	//QDesktopServices::openUrl(QUrl(
-	//	"https://code.ill.fr/scientific-software/takin/core/-/issues"));
-	QDesktopServices::openUrl(QUrl(
-		"https://github.com/ILLGrenoble/takin/issues"));
+	QDesktopServices::openUrl(QUrl("https://github.com/ILLGrenoble/takin/issues"));
 }
 
 
@@ -1696,10 +1685,7 @@ void TazDlg::ShowLog()
 
 void TazDlg::ShowHelp()
 {
-	//QDesktopServices::openUrl(QUrl(
-	//	"https://code.ill.fr/scientific-software/takin/core/-/wikis/home"));
-	QDesktopServices::openUrl(QUrl(
-		"https://github.com/ILLGrenoble/takin/wiki"));
+	QDesktopServices::openUrl(QUrl("https://github.com/ILLGrenoble/takin/wiki"));
 }
 
 
