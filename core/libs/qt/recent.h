@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -34,6 +34,7 @@
 #include <QStringList>
 #include <QMenu>
 #include <QAction>
+#include <QFile>
 
 #include <algorithm>
 #include <iostream>
@@ -49,6 +50,7 @@ QStringList cont_to_qstrlist(const t_cont& cont)
 	return lst;
 }
 
+
 template<class t_cont, class t_str = typename t_cont::value_type>
 t_cont qstrlist_to_cont(const QStringList& lstStr)
 {
@@ -61,12 +63,15 @@ t_cont qstrlist_to_cont(const QStringList& lstStr)
 
 class RecentFiles
 {
-	protected:
+	private:
 		QSettings *m_pSettings = nullptr;
 		std::string m_strKey;
+
 		typedef std::list<std::string> t_lstFiles;
 		t_lstFiles m_lstFiles;
+
 		std::size_t m_iMaxFiles = 16;
+		bool m_bOnlyExistingFiles = true;
 
 
 	public:
@@ -77,6 +82,12 @@ class RecentFiles
 		}
 
 		virtual ~RecentFiles() = default;
+
+
+		void SetOnlyExistingFiles(bool b)
+		{
+			m_bOnlyExistingFiles = b;
+		}
 
 
 		void LoadList()
@@ -108,8 +119,9 @@ class RecentFiles
 
 		void AddFile(const char* pcFile)
 		{
-			//if(HasFile(pcFile))
-			//	return;
+			if(m_bOnlyExistingFiles && !QFile::exists(pcFile))
+				return;
+
 			RemoveFile(pcFile);
 
 			m_lstFiles.push_front(std::string(pcFile));
@@ -121,8 +133,6 @@ class RecentFiles
 		void RemoveFile(const char* pcFile)
 		{
 			t_lstFiles::iterator iter = std::remove(m_lstFiles.begin(), m_lstFiles.end(), std::string(pcFile));
-			//if(iter != m_lstFiles.end())
-			//	m_lstFiles = t_lstFiles(m_lstFiles.begin(), iter);
 			if(iter != m_lstFiles.end())
 				m_lstFiles.resize(m_lstFiles.size()-1);
 		}
@@ -151,6 +161,9 @@ class RecentFiles
 			// setup new actions
 			for(const t_lstFiles::value_type& str : m_lstFiles)
 			{
+				if(m_bOnlyExistingFiles && !QFile::exists(str.c_str()))
+					continue;
+
 				QAction *pAction = new QAction(pMenu);
 				QObject::connect(pAction, &QAction::triggered, [str, func]()->void { func(str.c_str()); });
 
