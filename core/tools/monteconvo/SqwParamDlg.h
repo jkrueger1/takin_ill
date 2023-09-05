@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -38,13 +38,13 @@
 
 enum
 {
-	SQW_NAME = 0,
-	SQW_TYPE = 1,
-	SQW_VAL = 2,
+	SQW_NAME  = 0,
+	SQW_TYPE  = 1,
+	SQW_VAL   = 2,
 
-	SQW_ERR = 3,
+	SQW_ERR   = 3,
 	SQW_RANGE = 4,
-	SQW_FIT = 5,
+	SQW_FIT   = 5,
 };
 
 

@@ -4,12 +4,9 @@
  * @date aug-2015
  * @license GPLv2
  *
- * test:
- * g++ -DBUILD_APPLI -I. -I/usr/include/python3.7m -o tst tools/monteconvo/sqw_py.cpp tlibs/log/log.cpp tlibs/math/rand.cpp tools/monteconvo/sqwbase.cpp -lboost_system -lboost_filesystem -lboost_python37 -lpython3.7m -lrt -lpthread
- *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).

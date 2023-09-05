@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -43,8 +43,8 @@
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/containers/string.hpp>
 
-#define MSG_QUEUE_SIZE 512
-#define PARAM_MEM 1024*1024
+#define MSG_QUEUE_SIZE     512
+#define PARAM_MEM          1024*1024
 #define WAIT_END_PROCESSES 250
 
 
@@ -729,7 +729,6 @@ void SqwProc<t_sqw>::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 		ProcMsg msg;
 		msg.ty = ProcMsgTypes::SET_VARS;
 		pars_to_str(*pPars, vecVars);
-		//tl::log_debug("Message string: ", *pPars);
 		msg_send(*m_pmsgOut[iChild], msg);
 
 		ProcMsg msgRet = msg_recv(*m_pmsgIn[iChild]);

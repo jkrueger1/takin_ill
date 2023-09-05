@@ -46,8 +46,6 @@ namespace fs = boost::filesystem;
 #include "../monteconvo/sqwfactory.h"
 #include "../res/defs.h"
 
-
-//using t_real = tl::t_real_min;
 using t_real = t_real_reso;
 
 

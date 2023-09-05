@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -65,7 +65,6 @@ int main(int argc, char** argv)
 		ioSrv.stop();
 #ifdef SIGKILL
 		// TODO: use specific PIDs
-		//std::system("killall -s KILL gnuplot");
 		std::raise(SIGKILL);
 #endif
 		exit(-1);
@@ -73,7 +72,6 @@ int main(int argc, char** argv)
 	std::thread thSig([&ioSrv]() { ioSrv.run(); });
 	BOOST_SCOPE_EXIT(&ioSrv, &thSig)
 	{
-		//tl::log_debug("Exiting...");
 		ioSrv.stop();
 		thSig.join();
 	}

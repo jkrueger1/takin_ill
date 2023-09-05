@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -36,9 +36,6 @@
 #include "tlibs/math/math.h"
 #include "tlibs/phys/neutrons.h"
 #include "tlibs/file/loadinstr.h"
-
-//#include "tlibs/fit/minuit.h"	// only to get intrinsic real type
-//using t_real_sc = tl::t_real_min;
 
 #include "../res/defs.h"
 using t_real_sc = t_real_reso;

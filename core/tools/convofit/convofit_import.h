@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -34,7 +34,7 @@
 
 
 extern std::string convert_monteconvo(
-	const tl::Prop<std::string>& propMC, std::string strFile="",
-	bool bRelPaths=0);
+	const tl::Prop<std::string>& propMC, std::string strFile = "",
+	bool bRelPaths = 0);
 
 #endif
