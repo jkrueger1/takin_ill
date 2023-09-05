@@ -10,7 +10,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -70,6 +70,7 @@ Resolution calc_res(const std::vector<ublas::vector<t_real_reso>>& Q_vec,
 	const std::vector<t_real_reso> *pp_vec = nullptr,
 	const ublas::vector<t_real_reso> *qPara = nullptr,
 	const ublas::vector<t_real_reso> *qPerp = nullptr);
+
 
 Resolution calc_res(const std::vector<ublas::vector<t_real_reso>>& vecKi,
 	const std::vector<ublas::vector<t_real_reso>>& vecKf,

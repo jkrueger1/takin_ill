@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -80,12 +80,6 @@ public:
 	}
 
 	virtual ~MyQwtPlotZoomer() {}
-
-/*public slots:
-	virtual void setZoomBase(const QRectF& rect) override
-	{
-		QwtPlotZoomer::setZoomBase(rect);
-	}*/
 };
 
 
@@ -184,8 +178,6 @@ QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot,
 			MyQwtCurve* pCurve = new MyQwtCurve();
 			pCurve->setPen(penCurve);
 			pCurve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-			//QwtSymbol *pSym = new MyQwtSymbol();
-			//pCurve->setSymbol(pSym);
 
 			if(bUseSpline)
 			{
@@ -413,6 +405,7 @@ void QwtPlotWrapper::SavePlot() const
 	}
 }
 
+
 void QwtPlotWrapper::ExportGpl() const
 {
 	if(!m_bHasDataPtrs && !m_pRaster)
@@ -580,6 +573,7 @@ void QwtPlotWrapper::ExportGpl() const
 	}
 }
 
+
 void QwtPlotWrapper::setAxisTitle(int iAxis, const QString& str)
 {
 	if(!m_pPlot) return;
@@ -588,6 +582,7 @@ void QwtPlotWrapper::setAxisTitle(int iAxis, const QString& str)
 	m_pPlot->setAxisTitle(iAxis, str);
 }
 
+
 void QwtPlotWrapper::setZoomBase(const QRectF& rect)
 {
 	if(!m_pZoomer) return;
@@ -595,6 +590,7 @@ void QwtPlotWrapper::setZoomBase(const QRectF& rect)
 
 	m_pZoomer->setZoomBase(rect);
 }
+
 
 void QwtPlotWrapper::scaleColorBar()
 {
@@ -608,6 +604,7 @@ void QwtPlotWrapper::scaleColorBar()
 	pRightAxis->setColorMap(QwtInterval(dMin, dMax), (QwtColorMap*)pRightAxis->colorMap());
 	m_pPlot->setAxisScale(QwtPlot::yRight, dMin, dMax);
 }
+
 
 void QwtPlotWrapper::doUpdate()
 {
@@ -634,6 +631,7 @@ void MyQwtRasterData::SetXRange(t_real_qwt dMin, t_real_qwt dMax)
 #endif
 }
 
+
 void MyQwtRasterData::SetYRange(t_real_qwt dMin, t_real_qwt dMax)
 {
 	t_real_qwt dOffs = 0.5*(dMax-dMin)/t_real_qwt(m_iH);
@@ -645,6 +643,7 @@ void MyQwtRasterData::SetYRange(t_real_qwt dMin, t_real_qwt dMax)
 #endif
 }
 
+
 void MyQwtRasterData::SetZRange(t_real_qwt dMin, t_real_qwt dMax)
 {
 	m_dZRange[0] = dMin; m_dZRange[1] = dMax;
@@ -652,6 +651,7 @@ void MyQwtRasterData::SetZRange(t_real_qwt dMin, t_real_qwt dMax)
 	setInterval(Qt::ZAxis, QwtInterval(dMin, dMax));
 #endif
 }
+
 
 void MyQwtRasterData::SetZRange()	// automatically determined range
 {
@@ -681,14 +681,17 @@ t_real_qwt MyQwtRasterData::value(t_real_qwt dx, t_real_qwt dy) const
 	return GetPixel(iX, iY);
 }
 
+
 MyQwtRasterData::~MyQwtRasterData()
 {}
+
 
 MyQwtRasterData::MyQwtRasterData(const MyQwtRasterData& dat)
 	: QwtRasterData()
 {
 	this->operator=(dat);
 }
+
 
 /**
  * shallow copy
@@ -706,6 +709,7 @@ const MyQwtRasterData& MyQwtRasterData::operator=(const MyQwtRasterData& dat)
 	return *this;
 }
 
+
 /**
  * shallow copy
  */
@@ -713,6 +717,7 @@ QwtRasterData* MyQwtRasterData::copy() const
 {
 	return new MyQwtRasterData(*this);
 }
+
 
 /**
  * deep copy
@@ -729,10 +734,12 @@ QwtRasterData* MyQwtRasterData::clone() const
 	return pDat;
 }
 
+
 QwtInterval MyQwtRasterData::range() const
 {
 	return QwtInterval(GetZMin(), GetZMax());
 }
+
 
 #if QWT_VERSION >= 0x060200
 QwtInterval MyQwtRasterData::interval(Qt::Axis ax) const
@@ -756,6 +763,7 @@ QwtInterval MyQwtRasterData::interval(Qt::Axis ax) const
 
 MyQwtCurve::MyQwtCurve() : QwtPlotCurve()
 {}
+
 
 MyQwtCurve::~MyQwtCurve()
 {}
@@ -937,6 +945,7 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 
 	set_zoomer_base(pZoomer, vecX, vecY, bMetaCall, pPlotWrap, bUseYErrs);
 }
+
 
 /**
  * calculate zoom rectangle from x and a set of y data points

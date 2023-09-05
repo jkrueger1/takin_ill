@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -38,19 +38,17 @@
 #include <qwt_plot.h>
 #include <qwt_plot_spectrogram.h>
 #include <qwt_raster_data.h>
-//#include <qwt_matrix_raster_data.h>
 #include <qwt_plot_curve.h>
 #include <qwt_plot_grid.h>
 #include <qwt_plot_picker.h>
 #include <qwt_plot_zoomer.h>
 #include <qwt_plot_panner.h>
 #include <qwt_color_map.h>
-//#include <qwt_symbol.h>
 
 #include "tlibs/string/string.h"
 
 
-using t_real_qwt = double;		// qwt's intrinsic value type
+using t_real_qwt = double;   // qwt's intrinsic value type
 
 
 class MyQwtRasterData : public QwtRasterData

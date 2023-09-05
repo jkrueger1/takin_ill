@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -111,10 +111,7 @@ bool gen_spacegroups_clp()
 
 		prop.Add(strGroup + ".number", tl::var_to_str(iSG));
 		prop.Add(strGroup + ".name", sg.GetName());
-		//prop.Add(strGroup + ".pointgroup", get_pointgroup(sg.GetName()));
 		prop.Add(strGroup + ".lauegroup", sg.GetLaueGroup());
-		//prop.Add(strGroup + ".crystalsys", sg.GetCrystalSystem());
-		//prop.Add(strGroup + ".crystalsysname", sg.GetCrystalSystemName());
 
 
 		std::vector<t_mat> vecTrafos, vecInv, vecPrim, vecCenter;

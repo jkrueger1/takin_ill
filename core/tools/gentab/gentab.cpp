@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -114,7 +114,6 @@ bool gen_elements()
 				tl::Prop<std::string> propVal(iterVal->second, '/');
 				std::string strKey = propVal.Query<std::string>("<xmlattr>/dictRef", "");
 				std::string strVal = propVal.Query<std::string>("/", "");
-				//std::cout << strKey << " = " << strVal << std::endl;
 
 				if(strKey.find("atomicNumber") != std::string::npos)
 					iNr = tl::str_to_var<int>(strVal);
@@ -275,11 +274,6 @@ bool gen_spacegroups()
 				if(tl::is_identity_matrix(matTrafo) ||
 					tl::is_centering_matrix<t_mat>(matTrafo))
 					strAttribs += "c";
-				/*if(tl::is_identity_matrix(matTrafo) ||
-					(tl::has_translation_components<t_mat>(matTrafo) &&
-						!tl::is_centering_matrix<t_mat>(matTrafo) &&
-						!tl::is_inverting_matrix<t_mat>(tl::submatrix(matTrafo,3,3))))
-					strAttribs += "s";*/
 				if(tl::is_identity_matrix(matTrafo) ||
 					tl::has_translation_components<t_mat>(matTrafo))
 					strAttribs += "t";
@@ -372,24 +366,16 @@ bool gen_scatlens_npy()
 		if(!tl::float_equal(ff.dScatXs, ff.dCohXs + ff.dIncXs, 1.))
 		{
 			ff.bIncScatXs = 1;
-			//tl::log_warn("Mismatch in scattering cross-section for ", ff.strName, ": ",
-			//	ff.dCohXs + ff.dIncXs, " != ", ff.dScatXs, ".");
 		}
 
 		if(!tl::float_equal(ff.dCohXs, (ff.cCohb*std::conj(ff.cCohb)).real()*t_real(4)*tl::get_pi<t_real>(), 1.))
 		{
 			ff.bIncCohXs = 1;
-			//tl::log_warn("Mismatch in coherent cross-section for ", ff.strName, ": ",
-			//	(ff.cCohb*std::conj(ff.cCohb)).real()*t_real(4)*tl::get_pi<t_real>(),
-			//	" != ", ff.dCohXs, ".");
 		}
 
 		if(!tl::float_equal(ff.dIncXs, (ff.cIncb*std::conj(ff.cIncb)).real()*t_real(4)*tl::get_pi<t_real>(), 1.))
 		{
 			ff.bIncIncXs = 1;
-			//tl::log_warn("Mismatch in incoherent cross-section for ", ff.strName, ": ",
-			//	(ff.cIncb*std::conj(ff.cIncb)).real()*t_real(4)*tl::get_pi<t_real>(),
-			//	" != ", ff.dIncXs, ".");
 		}
 
 
@@ -683,9 +669,6 @@ int main()
 		if(gen_spacegroups_clp()) std::cout << "OK" << std::endl;
 #endif
 	}
-
-	//std::cout << "Generating magnetic form factor coefficient table ... ";
-	//if(gen_magformfacts()) std::cout << "OK" << std::endl;
 
 	if(bHasElems)
 	{

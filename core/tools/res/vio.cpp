@@ -9,7 +9,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -157,7 +157,6 @@ ResoResults calc_vio(const VioParams& params)
 	// --------------------------------------------------------------------
 
 
-
 	// --------------------------------------------------------------------
 	// spherical: Q formulas in appendices A.1 and p. 34 of [vio14]
 	// cylindrical: Q formulas in appendices A.3 and p. 35 of [vio14]
@@ -278,7 +277,6 @@ ResoResults calc_vio(const VioParams& params)
 
 #endif
 	// --------------------------------------------------------------------
-
 
 
 	// --------------------------------------------------------------------

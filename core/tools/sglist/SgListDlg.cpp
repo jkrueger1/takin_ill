@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -67,6 +67,7 @@ SgListDlg::SgListDlg(QWidget *pParent)
 		restoreGeometry(m_settings.value("sglist/geo").toByteArray());
 }
 
+
 SgListDlg::~SgListDlg()
 {}
 
@@ -95,6 +96,7 @@ static QListWidgetItem* create_header_item(const char *pcTitle)
 
 	return pHeaderItem;
 }
+
 
 void SgListDlg::SetupSpacegroups()
 {
@@ -137,10 +139,12 @@ void SgListDlg::SetupSpacegroups()
 	}
 }
 
+
 void SgListDlg::UpdateSG()
 {
 	SGSelected(listSGs->currentItem(), nullptr);
 }
+
 
 void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 {
@@ -269,29 +273,10 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 		}
 	}
 
-/*
-	// screw axes (rotation around and translation along axis)
-	// and glide planes (reflection at and translation parallel to plane)
-	const std::vector<unsigned int>& vecScrews = psg->GetScrewsNGlides();
-
-	if(vecScrews.size())
-	{
-		std::ostringstream ostr;
-		ostr << "Screw/Glide Symmetry Operations (" << (vecScrews.size()) << ")";
-		listSymOps->addItem(create_header_item(ostr.str().c_str()));
-		for(unsigned int iSymOp=0; iSymOp<vecScrews.size(); ++iSymOp)
-		{
-			if(bShowMatrices)
-				listSymOps->addItem(xtl::print_matrix(vecTrafos[vecScrews[iSymOp]]).c_str());
-			else
-				listSymOps->addItem(xtl::get_trafo_desc(vecTrafos[vecScrews[iSymOp]]).c_str());
-		}
-	}
-*/
-
 	RecalcBragg();
 	CalcTrafo();
 }
+
 
 void SgListDlg::RecalcBragg()
 {
@@ -337,6 +322,7 @@ void SgListDlg::RecalcBragg()
 	for(QSpinBox* pSpin : {spinH, spinK, spinL})
 		pSpin->setFont(font);
 }
+
 
 void SgListDlg::SearchSG(const QString& qstr)
 {

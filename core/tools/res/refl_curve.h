@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -64,7 +64,7 @@ class ReflCurve
 			{ // try to find file in given paths
 				std::string _strFile;
 				bool bOk = 0;
-				std::tie(bOk, _strFile) = 
+				std::tie(bOk, _strFile) =
 					tl::find_file<std::string, std::vector>(*pPaths, strFile);
 
 				if(!bOk)
@@ -83,7 +83,9 @@ class ReflCurve
 			m_bOk = 1;
 		}
 
+
 		~ReflCurve() = default;
+
 
 		t_real operator()(const tl::t_wavenumber_si<t_real>& k) const
 		{
@@ -100,15 +102,18 @@ class ReflCurve
 			return tl::clamp<t_real>(dRefl, 0, 1);
 		}
 
+
 		t_real operator()(const tl::t_length_si<t_real>& lam) const
 		{
 			return operator()(tl::lam2k(lam));
 		}
 
+
 		t_real operator()(t_real k) const
 		{
 			return operator()(k/tl::get_one_angstrom<t_real>());
 		}
+
 
 		operator bool() const { return m_bOk; }
 };

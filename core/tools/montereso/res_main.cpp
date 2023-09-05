@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -283,7 +283,7 @@ int main(int argc, char **argv)
 	std::setlocale(LC_ALL, "C");
 
 
-	ublas::vector<t_real> 
+	ublas::vector<t_real>
 		vecQPara = tl::zero_v<ublas::vector<t_real>>(3),
 		vecQPerp= tl::zero_v<ublas::vector<t_real>>(3);
 	std::string strOrient1, strOrient2;
@@ -360,7 +360,7 @@ int main(int argc, char **argv)
 	else
 	{
 		tl::log_info("Loading neutron list from \"", strFile, "\".");
-		if(!load_mc_list(strFile.c_str(), res, 
+		if(!load_mc_list(strFile.c_str(), res,
 			_vecOrient1.size() ? &vecQPara : 0, _vecOrient2.size() ? &vecQPerp : 0))
 			return -1;
 	}

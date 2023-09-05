@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -64,7 +64,7 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 
 		for(QDoubleSpinBox* pSpin : {spinXQMin, spinXQMax})
 		{
-			connect(pSpin, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), 
+			connect(pSpin, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
 				this, &FormfactorDlg::RefreshAtom);
 		}
 
@@ -94,7 +94,7 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 
 		for(QDoubleSpinBox* pSpin : {spinL, spinS, spinJ})
 		{
-			connect(pSpin, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), 
+			connect(pSpin, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
 				this, &FormfactorDlg::Calcg);
 		}
 
@@ -147,7 +147,7 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 			connect(m_plotwrapElem->GetPicker(), &QwtPlotPicker::moved, this, &FormfactorDlg::cursorMoved);
 
 		// connections
-		for(QRadioButton *pRadio : {radioElemMass, radioElemRadCov, radioElemRadVdW, 
+		for(QRadioButton *pRadio : {radioElemMass, radioElemRadCov, radioElemRadVdW,
 			radioElemIon, radioElemAffin, radioElemMelt, radioElemBoil})
 			connect(pRadio, &QRadioButton::toggled, this, &FormfactorDlg::PlotElements);
 
@@ -163,9 +163,8 @@ FormfactorDlg::FormfactorDlg(QWidget* pParent, QSettings *pSettings)
 
 	if(m_pSettings && m_pSettings->contains("formfactors/geo"))
 		restoreGeometry(m_pSettings->value("formfactors/geo").toByteArray());
-
-	//radioCoherent->setChecked(1);
 }
+
 
 FormfactorDlg::~FormfactorDlg()
 {}
@@ -326,6 +325,7 @@ void FormfactorDlg::AtomSelected(QListWidgetItem *pItem, QListWidgetItem*)
 	set_qwt_data<t_real>()(*m_plotwrap, m_vecQ, m_vecFF);
 }
 
+
 void FormfactorDlg::RefreshAtom()
 {
 	AtomSelected(listAtoms->currentItem(), nullptr);
@@ -422,6 +422,7 @@ void FormfactorDlg::Calcg()
 	labelStatus->setText(ostrMu.str().c_str());
 }
 
+
 void FormfactorDlg::CalcTermSymbol(const QString& qstr)
 {
 	bool bReset = 0;
@@ -469,6 +470,7 @@ void FormfactorDlg::SearchAtom(const QString& qstr)
 		listAtoms->setCurrentItem(lstItems[0], QItemSelectionModel::SelectCurrent);
 }
 
+
 void FormfactorDlg::SearchMagAtom(const QString& qstr)
 {
 	QList<QListWidgetItem*> lstItems = listMAtoms->findItems(qstr, Qt::MatchContains);
@@ -476,12 +478,14 @@ void FormfactorDlg::SearchMagAtom(const QString& qstr)
 		listMAtoms->setCurrentItem(lstItems[0], QItemSelectionModel::SelectCurrent);
 }
 
+
 void FormfactorDlg::SearchSLAtom(const QString& qstr)
 {
 	QList<QTableWidgetItem*> lstItems = tableSL->findItems(qstr, Qt::MatchContains);
 	if(lstItems.size())
 		tableSL->setCurrentItem(lstItems[0]);
 }
+
 
 void FormfactorDlg::SearchElement(const QString& qstr)
 {
@@ -566,14 +570,15 @@ void FormfactorDlg::PlotElements()
 // scattering lengths table
 enum
 {
-	SL_ITEM_NR = 0,
-	SL_ITEM_NAME = 1,
+	SL_ITEM_NR    = 0,
+	SL_ITEM_NAME  = 1,
 	SL_ITEM_COH_R = 2,
 	SL_ITEM_COH_I = 3,
 	SL_ITEM_INC_R = 4,
 	SL_ITEM_INC_I = 5,
 	SL_ITEM_ABUND = 6,
 };
+
 
 void FormfactorDlg::SetupScatteringLengths()
 {

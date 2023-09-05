@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -65,6 +65,7 @@ t_cplx get_number(std::string str)
 
 	return c;
 }
+
 
 bool get_abundance_or_hl(const std::string& _str, t_real& dAbOrHL)
 {
@@ -264,7 +265,6 @@ bool gen_magformfacts()
 
 		tl::find_all_and_replace<std::string>(strTable, "<P>", "");
 		tl::find_all_and_replace<std::string>(strTable, "<p>", "");
-		//std::cout << strTable << std::endl;
 
 
 		std::istringstream istrTab(strTable);

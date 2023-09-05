@@ -13,7 +13,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -74,6 +74,7 @@ enum PopPosIdx : std::size_t
 	POP_NUM_POS
 };
 
+
 enum PopCoordIdx : std::size_t
 {
 	POP_MONO_H = 0, POP_MONO_V,
@@ -81,6 +82,7 @@ enum PopCoordIdx : std::size_t
 
 	POP_NUM_COORDS
 };
+
 
 enum PopCompIdx : std::size_t
 {
@@ -91,6 +93,7 @@ enum PopCompIdx : std::size_t
 
 	POP_NUM_COMPS
 };
+
 
 enum PopKiKfIdx : std::size_t
 {
@@ -153,8 +156,6 @@ ResoResults calc_pop(const PopParams& pop)
 
 		coll_h_pre_mono = lam*(pop.guide_div_h/angs);
 		coll_v_pre_mono = lam*(pop.guide_div_v/angs);
-
-		//tl::log_info("Source-monochromator collimation from guides: h=", coll_h_pre_mono, ", v=", coll_v_pre_mono, ".");
 	}
 
 	// if no vertical mosaic is given, use the horizontal one

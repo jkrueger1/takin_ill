@@ -13,7 +13,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -99,7 +99,9 @@ struct CNParams
 	std::size_t flags = CALC_KI3 | CALC_KF3 | CALC_KFKI | CALC_MONKI;
 };
 
+
 extern ResoResults calc_cn(const CNParams& cn);
+
 
 extern std::tuple<t_real_reso, t_real_reso, t_real_reso, t_real_reso>
 get_scatter_factors(std::size_t flags,
@@ -107,6 +109,7 @@ get_scatter_factors(std::size_t flags,
 	const tl::t_wavenumber_si<t_real_reso>& ki,
 	const tl::t_angle_si<t_real_reso>& thetaa,
 	const tl::t_wavenumber_si<t_real_reso>& kf);
+
 
 extern ublas::matrix<t_real_reso> get_trafo_dkidkf_dQdE(
 	const tl::t_angle_si<t_real_reso>& ki_Q, const tl::t_angle_si<t_real_reso>& kf_Q,

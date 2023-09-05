@@ -4,12 +4,9 @@
  * @date 2015
  * @license GPLv2
  *
- * clang -O2 -o mini_scanmon mini_scanmon.cpp dialog_indirect.cpp ../../tlibs/net/tcp.cpp ../../tlibs/log/log.cpp -std=c++11 -lstdc++ -lm -lboost_system -lboost_iostreams -lpthread
- * clang -O2 -o mini_scanmon mini_scanmon.cpp dialog.cpp ../../tlibs/net/tcp.cpp ../../tlibs/log/log.cpp -std=c++11 -lstdc++ -lboost_system -lm -lpthread -ldialog
- *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -43,7 +40,7 @@ using namespace tl;
 typedef float t_real;
 
 static t_real dCtr = 0.;
-static t_real dMon = 0.;	// or time
+static t_real dMon = 0.;   // or time
 static t_real dSel = 0.;
 static bool bCountToMon = 1;
 
@@ -72,22 +69,12 @@ void refresh()
 	std::ostringstream ostr;
 	ostr.precision(2);
 
-	/*ostr << "\r"
-		<< "Counts: " << std::fixed << dCtr
-		<< ", Expected: " << std::fixed << dExpCtr
-		<< ", Scan progress: " << std::fixed << dProgress*100. << " % ("
-		<< std::fixed << dMon << " of " << dSel << " monitor counts)."
-		<< "        ";
-
-	std::cout << ostr.str();
-	std::cout.flush();*/
-
 	std::string strMon = "Monitor:  ";
 	if(!bCountToMon)
 		strMon = "Time:     ";
 	ostr << "Counts:   " << std::fixed << dCtr << " +- " << std::sqrt(dCtr) << "\n";
 	ostr << "Expected: " << std::fixed << int(std::round(dExpCtr)) << " (" << dExpCtr << ")\n";
-	ostr << strMon << std::fixed << dMon << " of " << dSel 
+	ostr << strMon << std::fixed << dMon << " of " << dSel
 		<< (bCountToMon ? " counts" : " seconds") << "\n";
 	ostr << "Progress: " << std::fixed << dProgress*t_real(100.) << " %";
 	set_progress(int(std::round(dProgress*t_real(100.))), ostr.str());
@@ -99,15 +86,15 @@ void disconnected(const std::string& strHost, const std::string& strSrv)
 	//log_info("Disconnected from ", strHost, " on port ", strSrv, ".");;
 }
 
+
 void connected(const std::string& strHost, const std::string& strSrv)
 {
 	//log_info("Connected to ", strHost, " on port ", strSrv, ".");
 }
 
+
 void received_sics(const std::string& strMsg)
 {
-	//log_info("Received: ", strMsg);
-
 	std::pair<std::string, std::string> pair = split_first<std::string>(strMsg, "=", true);
 
 	if(str_is_equal<std::string>(pair.first, "counter.Monitor 1"))
@@ -120,10 +107,9 @@ void received_sics(const std::string& strMsg)
 	refresh();
 }
 
+
 void received_nicos(const std::string& strMsg)
 {
-	//log_info("Received: ", strMsg);
-
 	std::pair<std::string, std::string> pair = split_first<std::string>(strMsg, "=", true);
 	std::string& strVal = pair.second;
 	std::size_t iBeg = strVal.find_first_of("0123456789e.+-");
@@ -140,7 +126,6 @@ void received_nicos(const std::string& strMsg)
 
 	refresh();
 }
-
 
 
 int main(int argc, char** argv)

@@ -13,7 +13,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -71,6 +71,7 @@ struct Ellipse2d
 		std::size_t iPoints=512, t_real *pLRTB=0);
 };
 
+
 template<class t_real = t_real_reso>
 struct Ellipsoid3d
 {
@@ -83,6 +84,7 @@ struct Ellipsoid3d
 
 	std::string x_lab, y_lab, z_lab;
 };
+
 
 template<class t_real = t_real_reso>
 struct Ellipsoid4d
@@ -100,11 +102,11 @@ struct Ellipsoid4d
 
 enum class EllipseCoordSys : int
 {
-	AUTO = -1,
+	AUTO       = -1,
 
-	Q_AVG = 0,		// Q|| Qperp system (1/A)
-	RLU = 1,		// absolute hkl system (rlu)
-	RLU_ORIENT = 2	// system using scattering plane (rlu)
+	Q_AVG      = 0,  // Q|| Qperp system (1/A)
+	RLU        = 1,  // absolute hkl system (rlu)
+	RLU_ORIENT = 2   // system using scattering plane (rlu)
 };
 
 
@@ -211,6 +213,7 @@ std::ostream& operator<<(std::ostream& ostr, const Ellipse2d<t_real>& ell)
 	return ostr;
 }
 
+
 template<class t_real = t_real_reso>
 std::ostream& operator<<(std::ostream& ostr, const Ellipsoid4d<t_real>& ell)
 {
@@ -231,7 +234,9 @@ std::ostream& operator<<(std::ostream& ostr, const Ellipsoid4d<t_real>& ell)
 	return ostr;
 }
 
+
 // --------------------------------------------------------------------------------
+
 
 template<class t_real>
 ublas::vector<t_real> Ellipse2d<t_real>::operator()(t_real t, bool bAddOffs/*=1*/) const
@@ -250,6 +255,7 @@ ublas::vector<t_real> Ellipse2d<t_real>::operator()(t_real t, bool bAddOffs/*=1*
 
 	return vec;
 }
+
 
 template<class t_real>
 void Ellipse2d<t_real>::GetCurvePoints(std::vector<t_real>& x, std::vector<t_real>& y,
@@ -279,7 +285,9 @@ void Ellipse2d<t_real>::GetCurvePoints(std::vector<t_real>& x, std::vector<t_rea
 	}
 }
 
+
 // --------------------------------------------------------------------------------
+
 
 template<class T = t_real_reso>
 static void quad_proj(tl::QuadEllipsoid<T>& quad, std::size_t iIdx)
@@ -297,6 +305,7 @@ static const std::string g_strLabels[] = {"Q_{para} (1/A)", "Q_{ortho} (1/A)", "
 static const std::string g_strLabelsHKLCentre[] = {"h-<h> (rlu)", "k-<k> (rlu)", "l-<l> (rlu)", "E (meV)"};
 static const std::string g_strLabelsHKL[] = {"h (rlu)", "k (rlu)", "l (rlu)", "E (meV)"};
 static const std::string g_strLabelsHKLOrient[] = {"Reflex 1 (rlu)", "Reflex 2 (rlu)", "Up (rlu)", "E (meV)"};
+
 
 static inline const std::string& ellipse_labels(int iCoord, EllipseCoordSys sys, bool bCentre=0)
 {
@@ -316,7 +325,6 @@ static inline const std::string& ellipse_labels(int iCoord, EllipseCoordSys sys,
 			return g_strLabels[iCoord];
 	}
 }
-
 
 
 /*
@@ -453,7 +461,9 @@ t_real calc_vanadium_fwhm(
 	return tl::get_SIGMA2FWHM<t_real>() / std::sqrt(std::abs(M(0,0)));
 }
 
+
 // --------------------------------------------------------------------------------
+
 
 template<class t_real = t_real_reso>
 Ellipsoid3d<t_real> calc_res_ellipsoid(
@@ -531,7 +541,9 @@ Ellipsoid3d<t_real> calc_res_ellipsoid(
 	return ell;
 }
 
+
 // --------------------------------------------------------------------------------
+
 
 template<class t_real = t_real_reso>
 Ellipsoid4d<t_real> calc_res_ellipsoid4d(

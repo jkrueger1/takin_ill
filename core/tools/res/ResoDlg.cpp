@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -1225,6 +1225,7 @@ void ResoDlg::DebugOutput()
 
 // --------------------------------------------------------------------------------
 
+
 void ResoDlg::ShowTOFCalcDlg()
 {
 	if(!m_pTOFDlg)
@@ -1232,6 +1233,7 @@ void ResoDlg::ShowTOFCalcDlg()
 
 	focus_dlg(m_pTOFDlg.get());
 }
+
 
 // --------------------------------------------------------------------------------
 
@@ -1255,11 +1257,13 @@ void ResoDlg::ButtonBoxClicked(QAbstractButton* pBtn)
 	}
 }
 
+
 void ResoDlg::hideEvent(QHideEvent *event)
 {
 	if(m_pSettings)
 		m_pSettings->setValue("reso/wnd_geo", saveGeometry());
 }
+
 
 void ResoDlg::showEvent(QShowEvent *event)
 {

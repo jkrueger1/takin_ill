@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -67,22 +67,3 @@ void set_progress(int iPerc, const std::string& strTxt)
 	g_pProgress = dlg_reallocate_gauge(g_pProgress, g_strTitle.c_str(), strTxt.c_str(), 10, 50, iPerc);
 	dlg_update_gauge(g_pProgress, iPerc);
 }
-
-
-/*
-// g++ -o dialog dialog.cpp -std=c++11 -ldialog
-
-#include <chrono>
-#include <thread>
-
-int main(int argc, char** argv)
-{
-	open_progress("Test");
-	set_progress(10, "abc\ndef\nghi");
-	std::this_thread::sleep_for(std::chrono::milliseconds(250));
-	set_progress(20, "xyz\n123\n456");
-	std::this_thread::sleep_for(std::chrono::milliseconds(250));
-
-	close_progress();
-	return 0;
-}*/

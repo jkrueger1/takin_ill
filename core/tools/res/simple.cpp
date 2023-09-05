@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -62,8 +62,6 @@ ResoResults calc_simplereso(const SimpleResoParams& params)
 	ResoResults res;
 	res.Q_avg.resize(4);
 
-	//const energy E = params.E;
-	//const wavenumber Q = params.Q;
 	const angle& tt = params.twotheta;
 	const wavenumber &ki = params.ki, &kf = params.kf;
 	const energy E = tl::get_energy_transfer(ki, kf);
@@ -130,7 +128,6 @@ ResoResults calc_simplereso(const SimpleResoParams& params)
 	t_mat matSigQE = tl::transform_inv(matSigSq, matJacobiInstr, true);
 	if(!tl::inverse(matSigQE, res.reso))
 	{
-		//tl::log_err(matSigQE);
 		res.bOk = false;
 		res.strErr = "Jacobi matrix cannot be inverted.";
 		return res;

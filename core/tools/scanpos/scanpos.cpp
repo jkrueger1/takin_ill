@@ -4,11 +4,9 @@
  * @date 2016, 30-jan-2017
  * @license GPLv2
  *
- * gcc -I../.. -I. -DNO_IOSTR -o scanpos ../../tlibs/file/loadinstr.cpp ../../tlibs/log/log.cpp ../../libs/globals.cpp scanpos.cpp -std=c++11 -lstdc++ -lm -lboost_system -lboost_filesystem -lboost_program_options
- *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).

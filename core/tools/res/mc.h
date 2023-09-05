@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -46,9 +46,10 @@ namespace ublas = boost::numeric::ublas;
 enum class McNeutronCoords
 {
 	DIRECT = 0,
-	ANGS = 1,
-	RLU = 2
+	ANGS   = 1,
+	RLU    = 2
 };
+
 
 template<class t_mat = ublas::matrix<double>>
 struct McNeutronOpts
@@ -62,7 +63,6 @@ struct McNeutronOpts
 
 	bool bCenter;
 };
-
 
 
 /**
