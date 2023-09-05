@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -39,6 +39,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+
 
 using t_real = t_real_glob;
 namespace co = boost::units::si::constants::codata;
@@ -80,7 +81,6 @@ NeutronDlg::NeutronDlg(QWidget* pParent, QSettings *pSett)
 	connect(btnSyncKf, &QPushButton::clicked, this, &NeutronDlg::SetExtKf);
 
 	CalcNeutronLam();
-
 
 
 	std::vector<QLineEdit*> editsReci = { editBraggReciN, editBraggReciLam,
@@ -137,6 +137,7 @@ NeutronDlg::NeutronDlg(QWidget* pParent, QSettings *pSett)
 	}
 }
 
+
 NeutronDlg::~NeutronDlg()
 {}
 
@@ -163,6 +164,7 @@ void NeutronDlg::CalcNeutronLam()
 	editTau->setText(tl::var_to_str<t_real>(tl::get_h<t_real>() / E_n / ps, g_iPrec).c_str());
 }
 
+
 void NeutronDlg::CalcNeutronk()
 {
 	std::string strInput = editK->text().toStdString();
@@ -180,6 +182,7 @@ void NeutronDlg::CalcNeutronk()
 	editT->setText(tl::var_to_str<t_real>((E_n / tl::get_kB<t_real>()) / kelvin, g_iPrec).c_str());
 	editTau->setText(tl::var_to_str<t_real>(tl::get_h<t_real>() / E_n / ps, g_iPrec).c_str());
 }
+
 
 void NeutronDlg::CalcNeutronv()
 {
@@ -200,6 +203,7 @@ void NeutronDlg::CalcNeutronv()
 	editTau->setText(tl::var_to_str<t_real>(tl::get_h<t_real>() / E_n / ps, g_iPrec).c_str());
 }
 
+
 void NeutronDlg::CalcNeutronE()
 {
 	std::string strInput = editE->text().toStdString();
@@ -218,6 +222,7 @@ void NeutronDlg::CalcNeutronE()
 	editT->setText(tl::var_to_str<t_real>((E_n / tl::get_kB<t_real>()) / kelvin, g_iPrec).c_str());
 	editTau->setText(tl::var_to_str<t_real>(tl::get_h<t_real>() / E_n / ps, g_iPrec).c_str());
 }
+
 
 void NeutronDlg::CalcNeutronOm()
 {
@@ -238,6 +243,7 @@ void NeutronDlg::CalcNeutronOm()
 	editTau->setText(tl::var_to_str<t_real>(tl::get_h<t_real>() / E_n / ps, g_iPrec).c_str());
 }
 
+
 void NeutronDlg::CalcNeutronF()
 {
 	std::string strInput = editF->text().toStdString();
@@ -256,6 +262,7 @@ void NeutronDlg::CalcNeutronF()
 	editT->setText(tl::var_to_str<t_real>((E_n / tl::get_kB<t_real>()) / kelvin, g_iPrec).c_str());
 	editTau->setText(tl::var_to_str<t_real>(tl::get_h<t_real>() / E_n / ps, g_iPrec).c_str());
 }
+
 
 void NeutronDlg::CalcNeutronT()
 {
@@ -276,6 +283,7 @@ void NeutronDlg::CalcNeutronT()
 	editF->setText(tl::var_to_str<t_real>(E_n / tl::get_h<t_real>() * ps, g_iPrec).c_str());
 	editTau->setText(tl::var_to_str<t_real>(tl::get_h<t_real>() / E_n / ps, g_iPrec).c_str());
 }
+
 
 void NeutronDlg::CalcNeutronTau()
 {
@@ -303,11 +311,13 @@ void NeutronDlg::paramsChanged(const RecipParams& parms)
 	m_dExtKf = parms.dkf;
 }
 
+
 void NeutronDlg::SetExtKi()
 {
 	editK->setText(tl::var_to_str<t_real>(m_dExtKi, g_iPrec).c_str());
 	CalcNeutronk();
 }
+
 
 void NeutronDlg::SetExtKf()
 {
@@ -395,7 +405,6 @@ void NeutronDlg::setupConstants()
 	}
 
 
-
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
@@ -474,7 +483,6 @@ void NeutronDlg::setupConstants()
 	}
 
 
-
 	// electron
 	{
 		std::ostringstream ostrVal;
@@ -539,10 +547,8 @@ void NeutronDlg::setupConstants()
 	}
 
 
-
 	{
 		std::ostringstream ostrVal;
-		//ostrVal << std::scientific;
 		ostrVal << t_real(-tl::get_g_e<t_real>() * tl::get_muB<t_real>() / meV * tesla) << " meV/T";
 
 		Constant constant;
@@ -589,7 +595,6 @@ void NeutronDlg::setupConstants()
 		vecConsts.push_back(std::move(constant));
 	}
 	// -------------------------------------------------------------------------
-
 
 
 	// -------------------------------------------------------------------------
@@ -670,7 +675,6 @@ void NeutronDlg::setupConstants()
 	// -------------------------------------------------------------------------
 
 
-
 	// -------------------------------------------------------------------------
 	// constants table
 	const bool bSortConst = tableConst->isSortingEnabled();
@@ -679,7 +683,6 @@ void NeutronDlg::setupConstants()
 	tableConst->setColumnCount(3);
 	tableConst->setRowCount(vecConsts.size());
 	tableConst->setColumnWidth(2, 200);
-	//tableConst->verticalHeader()->setDefaultSectionSize(tableConst->verticalHeader()->minimumSectionSize()+2);
 
 	for(unsigned int iConst=0; iConst<vecConsts.size(); ++iConst)
 	{
@@ -698,7 +701,6 @@ void NeutronDlg::setupConstants()
 		tableConst->setItem(iConst,2,pConstVal);
 
 		pConstName->setFlags(pConstName->flags() & ~Qt::ItemIsEditable);
-		//pConstVal->setFlags(pConstVal->flags() & ~Qt::ItemIsEditable);
 	}
 
 	tableConst->setSortingEnabled(bSortConst);
@@ -714,7 +716,6 @@ void NeutronDlg::setupConstants()
 	tableConv->setRowCount(vecConvs.size());
 	tableConv->setColumnWidth(0, 200);
 	tableConv->setColumnWidth(1, 200);
-	//tableConv->verticalHeader()->setDefaultSectionSize(tableConv->verticalHeader()->minimumSectionSize()+2);
 
 	for(unsigned int iConst=0; iConst<vecConvs.size(); ++iConst)
 	{
@@ -729,7 +730,6 @@ void NeutronDlg::setupConstants()
 		tableConv->setItem(iConst, 1, pConstVal);
 
 		pConstName->setFlags(pConstName->flags() & ~Qt::ItemIsEditable);
-		//pConstVal->setFlags(pConstVal->flags() & ~Qt::ItemIsEditable);
 	}
 
 	tableConv->setSortingEnabled(bSortConv);
@@ -741,7 +741,6 @@ void NeutronDlg::setupConstants()
 
 void NeutronDlg::EnableRecipEdits()
 {
-	//void (QLineEdit::*pFunc)(bool) = &QLineEdit::setDisabled;
 	void (QLineEdit::*pFunc)(bool) = &QLineEdit::setReadOnly;
 
 	(editBraggReciLam->*pFunc)(0);
@@ -782,6 +781,7 @@ void NeutronDlg::SetEditTT(QLineEdit *pEditT, QLineEdit *pEditTT)
 	pEditTT->setText(strTT.c_str());
 }
 
+
 void NeutronDlg::SetEditT(QLineEdit *pEditT, QLineEdit *pEditTT)
 {
 	std::string strTT = pEditTT->text().toStdString();
@@ -799,6 +799,7 @@ void NeutronDlg::SetEditK(QLineEdit *pEditLam, QLineEdit *pEditK)
 	std::string strK = tl::var_to_str(dK, g_iPrec);
 	pEditK->setText(strK.c_str());
 }
+
 
 void NeutronDlg::SetEditLam(QLineEdit *pEditLam, QLineEdit *pEditK)
 {
@@ -819,6 +820,7 @@ void NeutronDlg::SetEditG(QLineEdit *pEditG, QLineEdit *pEditD)
 	pEditG->setText(strG.c_str());
 }
 
+
 void NeutronDlg::SetEditD(QLineEdit *pEditG, QLineEdit *pEditD)
 {
 	std::string strG = pEditG->text().toStdString();
@@ -827,6 +829,7 @@ void NeutronDlg::SetEditD(QLineEdit *pEditG, QLineEdit *pEditD)
 	std::string strD = tl::var_to_str(dD, g_iPrec);
 	pEditD->setText(strD.c_str());
 }
+
 
 void NeutronDlg::RecipThetaEdited() { SetEditTT(editBraggReciT, editBraggReciTT); }
 void NeutronDlg::RecipTwoThetaEdited() { SetEditT(editBraggReciT, editBraggReciTT); }
@@ -838,7 +841,6 @@ void NeutronDlg::RecipGEdited() { SetEditD(editBraggReciQ, editBraggRecid); }
 void NeutronDlg::RecipDEdited() { SetEditG(editBraggReciQ, editBraggRecid); }
 
 // -----------------------------------------------------------------------------
-
 
 
 void NeutronDlg::CalcBraggRecip()

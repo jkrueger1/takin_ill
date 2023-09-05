@@ -135,8 +135,6 @@ void RecipParamDlg::paramsChanged(const RecipParams& parms)
 	this->editFpz->setText(tl::var_to_str<t_real>(-vecFm[2], g_iPrec).c_str());
 
 
-	/*if(editOriginH->text().trimmed()=="" || editOriginK->text().trimmed()=="" || editOriginL->text().trimmed()=="")
-		SetGOrigin();*/
 	OriginChanged();
 }
 

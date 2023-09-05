@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -27,8 +27,6 @@
  */
 
 #include "qthelper.h"
-//#include "globals.h"
-//#include "globals_qt.h"
 #include "tlibs/math/math.h"
 #include "tlibs/string/string.h"
 #include "tlibs/helper/misc.h"
@@ -129,7 +127,8 @@ std::vector<std::string> get_qt_std_path(QtStdPath path)
 
 void focus_dlg(QDialog* pDlg)
 {
-	if(!pDlg) return;
+	if(!pDlg)
+		return;
 
 	pDlg->show();
 	pDlg->raise();

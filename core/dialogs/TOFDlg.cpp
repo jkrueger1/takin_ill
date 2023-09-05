@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -71,7 +71,7 @@ TOFDlg::TOFDlg(QWidget* pParent, QSettings *pSett)
 		radioDivL, radioDivW, radioDivAng,
 		radioSelLam, radioSelTh, radioSelL, radioSelOm
 	};
-	m_vecEditBoxes = { editChopperL, editChopperR, editChopperOm, editChopperT, 
+	m_vecEditBoxes = { editChopperL, editChopperR, editChopperOm, editChopperT,
 		editDivL, editDivW, editDivAng,
 		editSelLam, editSelTh, editSelL, editSelOm,
 		editFocL1, editFocL2, editFocTT
@@ -94,7 +94,7 @@ TOFDlg::TOFDlg(QWidget* pParent, QSettings *pSett)
 
 	// -------------------------------------------------------------------------
 	// chopper
-	std::vector<QLineEdit*> editsChopper = { 
+	std::vector<QLineEdit*> editsChopper = {
 		editChopperL, editChopperR, editChopperOm, editChopperT };
 	std::vector<QRadioButton*> radioChopper = {
 		radioChopperL, radioChopperR, radioChopperOm, radioChopperT };

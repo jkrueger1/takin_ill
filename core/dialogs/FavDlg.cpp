@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -113,6 +113,7 @@ void FavDlg::ButtonBoxClicked(QAbstractButton* pBtn)
 	}
 }
 
+
 void FavDlg::showEvent(QShowEvent *pEvt)
 {
 	QDialog::showEvent(pEvt);
@@ -124,11 +125,13 @@ void FavDlg::showEvent(QShowEvent *pEvt)
 void FavDlg::ListItemSelected()
 {}
 
+
 void FavDlg::ApplyPos(const FavHklPos* pPos)
 {
 	if(!pPos) return;
 	emit ChangePos(*pPos);
 }
+
 
 void FavDlg::ListItemDoubleClicked(QListWidgetItem* pItem)
 {
@@ -136,6 +139,7 @@ void FavDlg::ListItemDoubleClicked(QListWidgetItem* pItem)
 	const FavHklPos* pPos = (FavHklPos*)pItem->data(Qt::UserRole).value<void*>();
 	ApplyPos(pPos);
 }
+
 
 void FavDlg::AddPosToList(const FavHklPos& pos)
 {
@@ -159,7 +163,9 @@ void FavDlg::AddPosToList(const FavHklPos& pos)
 	pItem->setData(Qt::UserRole, QVariant::fromValue<void*>(pPos));
 }
 
+
 void FavDlg::AddPosToList() { AddPosToList(m_curPos); }
+
 
 void FavDlg::RemPosFromList()
 {
@@ -189,7 +195,9 @@ void FavDlg::ClearList()
 	}
 }
 
+
 //------------------------------------------------------------------------------
+
 
 void FavDlg::Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
 {
@@ -215,6 +223,7 @@ void FavDlg::Save(std::map<std::string, std::string>& mapConf, const std::string
 		mapConf[strXmlRoot + strItemBase + "E_stop"] = tl::var_to_str(pPos->dEstop);
 	}
 }
+
 
 void FavDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 {

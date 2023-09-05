@@ -165,7 +165,7 @@ class RecentFiles
 					continue;
 
 				QAction *pAction = new QAction(pMenu);
-				QObject::connect(pAction, &QAction::triggered, [str, func]()->void { func(str.c_str()); });
+				QObject::connect(pAction, &QAction::triggered, [str, func]() -> void { func(str.c_str()); });
 
 				pAction->setText(str.c_str());
 				pMenu->addAction(pAction);

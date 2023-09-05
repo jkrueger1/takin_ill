@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -278,11 +278,6 @@ void EllipseDlg::Calc()
 			m_elliProj[iEll] = tasks_ell_proj[iEll].get();
 			m_elliSlice[iEll] = tasks_ell_slice[iEll].get();
 
-			/*m_elliProj[iEll] = ::calc_res_ellipse(res.reso, Q_avg, iParams[0][iEll][0], iParams[0][iEll][1],
-				iParams[0][iEll][2], iParams[0][iEll][3], iParams[0][iEll][4]);
-			m_elliSlice[iEll] = ::calc_res_ellipse(res.reso, Q_avg, iParams[1][iEll][0], iParams[1][iEll][1],
-				iParams[1][iEll][2], iParams[1][iEll][3], iParams[1][iEll][4]);*/
-
 			std::vector<t_real_reso>& vecXProj = m_vecXCurvePoints[iEll*2+0];
 			std::vector<t_real_reso>& vecYProj = m_vecYCurvePoints[iEll*2+0];
 			std::vector<t_real_reso>& vecXSlice = m_vecXCurvePoints[iEll*2+1];
@@ -297,8 +292,6 @@ void EllipseDlg::Calc()
 			set_qwt_data<t_real_reso>()(*m_vecplotwrap[iEll], vecXProj, vecYProj, 1, false);
 			set_qwt_data<t_real_reso>()(*m_vecplotwrap[iEll], vecXSlice, vecYSlice, 2, false);
 			set_qwt_data<t_real_reso>()(*m_vecplotwrap[iEll], vecXMC, vecYMC, 0, false);
-			//m_vecplotwrap[iEll]->SetData(vecXProj, vecYProj, 0, false);
-			//m_vecplotwrap[iEll]->SetData(vecXSlice, vecYSlice, 1, false);
 
 
 			std::ostringstream ostrSlope;
@@ -311,12 +304,8 @@ void EllipseDlg::Calc()
 			ostrSlope << "\tSlope: " << m_elliSlice[iEll].slope << "\n";
 			ostrSlope << "\tAngle: " << tl::r2d(m_elliSlice[iEll].phi) << strDeg << "\n";
 			ostrSlope << "\tArea " << m_elliSlice[iEll].area;
-			//m_vecplotwrap[iEll]->GetPlot()->setTitle(ostrSlope.str().c_str());
-			//std::cout << "Ellipse " << iEll << ": " << ostrSlope.str() << std::endl;
 			m_vecplotwrap[iEll]->GetPlot()->setToolTip(QString::fromUtf8(ostrSlope.str().c_str()));
 
-			//const std::string& strLabX = m_elliProj[iEll].x_lab;
-			//const std::string& strLabY = m_elliProj[iEll].y_lab;
 			const std::string& strLabX = ellipse_labels(iParams[0][iEll][0], coord, m_bCenterOn0);
 			const std::string& strLabY = ellipse_labels(iParams[0][iEll][1], coord, m_bCenterOn0);
 			m_vecplotwrap[iEll]->GetPlot()->setAxisTitle(QwtPlot::xBottom, strLabX.c_str());
@@ -392,10 +381,12 @@ void EllipseDlg::accept()
 	QDialog::accept();
 }
 
+
 void EllipseDlg::showEvent(QShowEvent *pEvt)
 {
 	QDialog::showEvent(pEvt);
 }
+
 
 void EllipseDlg::closeEvent(QCloseEvent *pEvt)
 {

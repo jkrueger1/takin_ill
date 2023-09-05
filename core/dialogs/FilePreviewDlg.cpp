@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -82,7 +82,9 @@ FilePreviewDlg::FilePreviewDlg(QWidget* pParent, const char* pcTitle, QSettings*
 		this, &FilePreviewDlg::FileSelected);
 }
 
+
 FilePreviewDlg::~FilePreviewDlg() {}
+
 
 void FilePreviewDlg::ClearPlot()
 {
@@ -98,6 +100,7 @@ void FilePreviewDlg::ClearPlot()
 	m_pPlot->replot();
 }
 
+
 void FilePreviewDlg::FileSelected(const QString& qstrFile)
 {
 	ClearPlot();
@@ -111,9 +114,6 @@ void FilePreviewDlg::FileSelected(const QString& qstrFile)
 	if(vecScanVars.size() == 0) return;
 	m_vecCts = _ptrInstr->GetCol(_ptrInstr->GetCountVar());
 	m_vecScn = _ptrInstr->GetCol(vecScanVars[0]);
-
-	//std::copy(m_vecScn.begin(), m_vecScn.end(), std::ostream_iterator<t_real>(std::cout, " "));
-	//std::cout << std::endl;
 
 	set_qwt_data<t_real>()(*m_plotwrap, m_vecScn, m_vecCts, 0, 0);
 	set_qwt_data<t_real>()(*m_plotwrap, m_vecScn, m_vecCts, 1, 0);

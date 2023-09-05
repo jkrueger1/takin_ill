@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -183,9 +183,7 @@ void EllipseDlg3D::Calc()
 	const int iZ[] = {3, 2};
 	const int iIntOrRem[] = {2, 3};
 
-	//Xml xmlparams;
-	//bool bXMLLoaded = xmlparams.Load("res/res.conf");
-	bool bCenterOn0 = 1; //xmlparams.Query<bool>("/res/center_around_origin", 0);
+	bool bCenterOn0 = true;
 
 	ublas::vector<t_real_reso> Q_avg = _Q_avg;
 	if(bCenterOn0)
@@ -217,12 +215,6 @@ void EllipseDlg3D::Calc()
 		vecOffsSlice[1] = m_elliSlice[i].y_offs;
 		vecOffsSlice[2] = m_elliSlice[i].z_offs;
 
-		/*if(i==1)
-		{
-			std::cout << "widths: " << vecWProj << std::endl;
-			std::cout << "offs: " << vecOffsProj << std::endl;
-			std::cout << "rot: " << m_elliProj[i].rot << std::endl;
-		}*/
 		m_pPlots[i]->PlotEllipsoid(vecWProj, vecOffsProj, m_elliProj[i].rot, 1);
 		m_pPlots[i]->PlotEllipsoid(vecWSlice, vecOffsSlice, m_elliSlice[i].rot, 0);
 
@@ -237,6 +229,7 @@ void EllipseDlg3D::Calc()
 		m_pPlots[i]->SetLabels(strX.c_str(), strY.c_str(), strZ.c_str());
 	}
 }
+
 
 void EllipseDlg3D::SetParams(const EllipseDlgParams& params)
 {

@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2022  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -498,10 +498,6 @@ bool GotoDlg::ApplyCurPos()
 
 	triag.bChangedTwoTheta = true;
 	triag.dTwoTheta = this->m_dSample2Theta;
-
-	/*tl::log_info("kivec0 = ", triag.dAngleKiVec0/M_PI*180.);
-	tl::log_info("th = ", triag.dTheta/M_PI*180.);
-	tl::log_info("2th = ", triag.dTwoTheta/M_PI*180.);*/
 
 	emit vars_changed(crys, triag);
 	return true;

@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -46,8 +46,8 @@ struct DeadAngle
 	T dAngleEnd;
 	T dAngleOffs;
 
-	int iCentreOn;		// 0=mono, 1=sample, 2=ana
-	int iRelativeTo;	// 0=crystal angle, 1=in axis, 2=out axis
+	int iCentreOn;    // 0=mono, 1=sample, 2=ana
+	int iRelativeTo;  // 0=crystal angle, 1=in axis, 2=out axis
 };
 
 

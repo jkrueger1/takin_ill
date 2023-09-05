@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -76,6 +76,7 @@ ScanMonDlg::ScanMonDlg(QWidget* pParent, QSettings *pSett)
 	progress->setRange(0, 1000);
 }
 
+
 void ScanMonDlg::accept()
 {
 	if(m_pSettings)
@@ -97,6 +98,7 @@ static t_real get_value(const std::string& strVal)
 	val = tl::str_to_var<t_real>(strVal2);
 	return val;
 }
+
 
 void ScanMonDlg::UpdateValue(const std::string& strKey, const CacheVal& val)
 {
@@ -156,6 +158,7 @@ void ScanMonDlg::UpdateValue(const std::string& strKey, const CacheVal& val)
 	}
 }
 
+
 /**
  * updates the live plot based on the xml-formatted data in strVals
  */
@@ -203,6 +206,7 @@ void ScanMonDlg::UpdatePlot(const std::string& strVals)
 		m_plotwrap->GetPlot()->replot();
 	}
 }
+
 
 void ScanMonDlg::ClearPlot()
 {

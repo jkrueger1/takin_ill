@@ -68,11 +68,6 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 	labelYears->setText("2014 - 2017 for Technische Universität München (TUM), Garching, Germany"
 		";\n2017 - 2023 for Institut Laue-Langevin (ILL), Grenoble, France.");
 
-	// old takin 1 repos:
-	//labelRepo->setText("Source repo: <a href=\"https://github.com/t-weber/takin\">https://github.com/t-weber/takin</a>.");
-	//labelRepo->setText("Source repo: <br><a href=\"https://forge.frm2.tum.de/cgit/cgit.cgi/frm2/mira/tastools.git\">https://forge.frm2.tum.de/cgit/cgit.cgi/frm2/mira/tastools.git</a>.");
-	// takin 2 repos:
-	//labelRepo->setText("Source repository: <a href=\"https://code.ill.fr/scientific-software/takin\">https://code.ill.fr/scientific-software/takin</a>.");
 	labelRepo->setText("Source repository: <a href=\"https://github.com/ILLGrenoble/takin\">https://github.com/ILLGrenoble/takin</a>.");
 
 	labelDesc->setText("Overviews of Takin can be found here:"
@@ -121,9 +116,6 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 	ostrLibs << "<dd><a href=\"http://www.boost.org\">http://www.boost.org</a><br></dd>";
 
 	ostrLibs << "<dt>Uses tlibs version " << TLIBS_VERSION << ".</dt>";
-	//ostrLibs << "<dd><a href=\"https://github.com/t-weber/tlibs\">https://github.com/t-weber/tlibs</a><br></dd>";
-	//ostrLibs << "<dd><a href=\"https://forge.frm2.tum.de/cgit/cgit.cgi/frm2/mira/tlibs.git\">https://forge.frm2.tum.de/cgit/cgit.cgi/frm2/mira/tlibs.git</a><br></dd>";
-	//ostrLibs << "<dd><a href=\"https://code.ill.fr/scientific-software/takin/tlibs\">https://code.ill.fr/scientific-software/takin/tlibs</a><br></dd>";
 	ostrLibs << "<dd><a href=\"https://github.com/ILLGrenoble/takin/tree/master/tlibs\">https://github.com/ILLGrenoble/takin/tree/master/tlibs</a><br></dd>";
 
 #ifndef NO_LAPACK

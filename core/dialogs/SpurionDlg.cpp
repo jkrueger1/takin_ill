@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -45,9 +45,9 @@ static const tl::t_energy_si<t_real> meV = tl::get_one_meV<t_real>();
 
 enum : unsigned
 {
-	ITEM_E = 0,
+	ITEM_E    = 0,
 	ITEM_MONO = 1,
-	ITEM_ANA = 2,
+	ITEM_ANA  = 2,
 };
 
 
@@ -108,6 +108,7 @@ SpurionDlg::SpurionDlg(QWidget* pParent, QSettings *pSett)
 		restoreGeometry(m_pSettings->value("spurions/geo").toByteArray());
 }
 
+
 SpurionDlg::~SpurionDlg()
 {}
 
@@ -147,6 +148,7 @@ void SpurionDlg::ChangedKiKfMode()
 		labelE->setText("E_f (meV):");
 }
 
+
 void SpurionDlg::Calc()
 {
 	const bool bFixedEi = radioFixedEi->isChecked();
@@ -160,6 +162,7 @@ void SpurionDlg::Calc()
 	CalcInel();
 	CalcBragg();
 }
+
 
 void SpurionDlg::CalcInel()
 {
@@ -221,6 +224,7 @@ void SpurionDlg::CalcInel()
 	tabInel->setSortingEnabled(bSortTable);
 }
 
+
 void SpurionDlg::CalcBragg()
 {
 	const bool bFixedEi = radioFixedEi->isChecked();
@@ -245,6 +249,7 @@ void SpurionDlg::CalcBragg()
 
 	set_qwt_data<t_real>()(*m_plotwrap, m_vecQ, m_vecE);
 }
+
 
 void SpurionDlg::cursorMoved(const QPointF& pt)
 {
@@ -279,6 +284,7 @@ void SpurionDlg::accept()
 
 	QDialog::accept();
 }
+
 
 void SpurionDlg::showEvent(QShowEvent *pEvt)
 {

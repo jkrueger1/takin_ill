@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -37,10 +37,11 @@ using t_real = t_real_glob;
 
 enum class AtInfo : int
 {
-	NAME = 0,
-	POS_X = 1,
-	POS_Y = 2,
-	POS_Z = 3,
+	NAME   = 0,
+
+	POS_X  = 1,
+	POS_Y  = 2,
+	POS_Z  = 3,
 
 	SPIN_X = 4,
 	SPIN_Y = 5,

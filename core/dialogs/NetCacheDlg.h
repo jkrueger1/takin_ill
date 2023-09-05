@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -48,6 +48,7 @@ enum class CacheValType : int
 	LIVE_PLOT,
 };
 
+
 struct CacheVal
 {
 	std::string strVal;
@@ -55,6 +56,7 @@ struct CacheVal
 
 	CacheValType ty = CacheValType::UNKNOWN;
 };
+
 
 typedef std::map<std::string, CacheVal> t_mapCacheVal;
 
@@ -85,9 +87,6 @@ public slots:
 	void ClearAll();
 	void UpdateValue(const std::string& strKey, const CacheVal& val);
 	void UpdateAll(const t_mapCacheVal& map);
-
-//signals:
-//	void UpdatedValue(const std::string& strKey, const CacheVal& val);
 };
 
 #endif
