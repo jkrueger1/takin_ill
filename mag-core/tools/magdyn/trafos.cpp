@@ -40,20 +40,45 @@ TrafoCalculator::TrafoCalculator(QWidget* pParent, QSettings *sett)
 	QLabel *labelAxis = new QLabel("Axis: ");
 	QLabel *labelAngle = new QLabel("Angle (deg.): ");
 	QLabel *labelVecToRotate = new QLabel("Vector: ");
+
 	m_spinAxis[0] = new QDoubleSpinBox(rotationPanel);
 	m_spinAxis[1] = new QDoubleSpinBox(rotationPanel);
 	m_spinAxis[2] = new QDoubleSpinBox(rotationPanel);
+	m_spinAxis[0]->setValue(0);
+	m_spinAxis[1]->setValue(0);
 	m_spinAxis[2]->setValue(1);
+
+	m_spinAngle = new QDoubleSpinBox(rotationPanel);
+	m_spinAngle->setMinimum(-360.);
+	m_spinAngle->setMaximum(360);
+	m_spinAngle->setDecimals(3);
+	m_spinAngle->setSingleStep(0.1);
+	m_spinAngle->setSuffix("°");
+
 	m_spinVecToRotate[0] = new QDoubleSpinBox(rotationPanel);
 	m_spinVecToRotate[1] = new QDoubleSpinBox(rotationPanel);
 	m_spinVecToRotate[2] = new QDoubleSpinBox(rotationPanel);
 	m_spinVecToRotate[0]->setValue(1);
-	m_spinAngle = new QDoubleSpinBox(rotationPanel);
-	m_spinAngle->setMinimum(-180);
-	m_spinAngle->setMaximum(180);
+	m_spinVecToRotate[1]->setValue(0);
+	m_spinVecToRotate[2]->setValue(0);
+
+	for(int i=0; i<3; ++i)
+	{
+		m_spinAxis[i]->setMinimum(-999.);
+		m_spinAxis[i]->setMaximum(999.);
+		m_spinAxis[i]->setDecimals(4);
+		m_spinAxis[i]->setSingleStep(0.1);
+
+		m_spinVecToRotate[i]->setMinimum(-999.);
+		m_spinVecToRotate[i]->setMaximum(999.);
+		m_spinVecToRotate[i]->setDecimals(4);
+		m_spinVecToRotate[i]->setSingleStep(0.1);
+	}
+
 	labelAxis->setSizePolicy(QSizePolicy{QSizePolicy::Fixed, QSizePolicy::Fixed});
 	labelAngle->setSizePolicy(QSizePolicy{QSizePolicy::Fixed, QSizePolicy::Fixed});
 	labelVecToRotate->setSizePolicy(QSizePolicy{QSizePolicy::Fixed, QSizePolicy::Fixed});
+
 	m_textRotation = new QTextEdit(rotationPanel);
 	m_textRotation->setReadOnly(true);
 
