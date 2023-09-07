@@ -2372,12 +2372,31 @@ template<typename t_vec, typename t_real = typename t_vec::value_type>
 void set_eps_0(t_vec& vec, t_real eps = std::numeric_limits<t_real>::epsilon())
 requires is_basic_vec<t_vec>
 {
-	using t_elem = typename t_vec::value_type;
-
 	for(std::size_t i=0; i<vec.size(); ++i)
-		set_eps_0<t_elem>(vec[i], eps);
+		set_eps_0<t_real>(vec[i], eps);
 };
 
+
+/**
+ * set values lower than epsilon to zero
+ * quaternion version
+ */
+template<typename t_quat, typename t_real = typename t_quat::value_type>
+void set_eps_0(t_quat& quat, t_real eps = std::numeric_limits<t_real>::epsilon())
+requires is_quat<t_quat>
+{
+	t_real re = quat.R_component_1();
+	t_real im1 = quat.R_component_2();
+	t_real im2 = quat.R_component_3();
+	t_real im3 = quat.R_component_4();
+
+	set_eps_0<t_real>(re, eps);
+	set_eps_0<t_real>(im1, eps);
+	set_eps_0<t_real>(im2, eps);
+	set_eps_0<t_real>(im3, eps);
+
+	quat = t_quat(re, im1, im2, im3);
+};
 
 /**
  * set values lower than epsilon to zero
@@ -2387,11 +2406,9 @@ template<typename t_mat, typename t_real = typename t_mat::value_type>
 void set_eps_0(t_mat& mat, t_real eps = std::numeric_limits<t_real>::epsilon())
 requires is_basic_mat<t_mat>
 {
-	using t_elem = typename t_mat::value_type;
-
 	for(std::size_t i=0; i<mat.size1(); ++i)
 		for(std::size_t j=0; j<mat.size2(); ++j)
-			set_eps_0<t_elem>(mat(i,j), eps);
+			set_eps_0<t_real>(mat(i,j), eps);
 };
 // -----------------------------------------------------------------------------
 

@@ -81,8 +81,6 @@ void MagDynDlg::CreateMainWindow()
 	m_maingrid = new QGridLayout(this);
 	m_maingrid->setSpacing(4);
 	m_maingrid->setContentsMargins(6, 6, 6, 6);
-	//m_maingrid->addWidget(m_tabs_in, 0,0, 1,3);
-	//m_maingrid->addWidget(m_tabs_out, 0,3, 1,3);
 	m_maingrid->addWidget(m_split_inout, 0,0, 1,7);
 	m_maingrid->addWidget(m_status, 1,0, 1,3);
 	m_maingrid->addWidget(m_progress, 1,3, 1,2);
@@ -1712,9 +1710,6 @@ void MagDynDlg::CreateInfoDlg()
 		QSizePolicy::Minimum, QSizePolicy::Expanding),
 		y++,0, 1,1);
 
-	// add info panel as a tab
-	//m_tabs_out->addTab(infopanel, "Infos");
-
 	// show info panel as a dialog
 	m_info_dlg = new QDialog(this);
 	m_info_dlg->setWindowTitle("About");
@@ -1813,7 +1808,6 @@ void MagDynDlg::CreateMenuBar()
 	m_autocalc->setChecked(false);
 	QAction *acCalc = new QAction("Start Calculation", menuCalc);
 	acCalc->setToolTip("Calculate all results.");
-	//acCalc->setIcon(QIcon::fromTheme("accessories-calculator"));
 	m_use_dmi = new QAction("Use DMI", menuCalc);
 	m_use_dmi->setToolTip("Enables the Dzyaloshinskij-Moriya interaction.");
 	m_use_dmi->setCheckable(true);
@@ -1846,6 +1840,11 @@ void MagDynDlg::CreateMenuBar()
 	m_force_incommensurate->setToolTip("Enforce incommensurate calculation even for commensurate magnetic structures..");
 	m_force_incommensurate->setCheckable(true);
 	m_force_incommensurate->setChecked(false);
+
+	// tools menu
+	auto menuTools = new QMenu("Tools", m_menu);
+	auto acTrafoCalc = new QAction("Transformation Calculator...", menuTools);
+	acTrafoCalc->setIcon(QIcon::fromTheme("accessories-calculator"));
 
 	// help menu
 	auto menuHelp = new QMenu("Help", m_menu);
@@ -1895,6 +1894,8 @@ void MagDynDlg::CreateMenuBar()
 	menuCalc->addAction(m_unite_degeneracies);
 	menuCalc->addAction(m_ignore_annihilation);
 	menuCalc->addAction(m_force_incommensurate);
+
+	menuTools->addAction(acTrafoCalc);
 
 	menuHelp->addAction(acAboutQt);
 	menuHelp->addAction(acAbout);
@@ -1970,14 +1971,27 @@ void MagDynDlg::CreateMenuBar()
 		this->CalcAll();
 	});
 
+	// show trafo dialog
+	connect(acTrafoCalc, &QAction::triggered, [this]()
+	{
+		if(!m_trafos)
+			m_trafos = new TrafoCalculator(this, m_sett);
+
+		m_trafos->show();
+		m_trafos->raise();
+		m_trafos->activateWindow();
+	});
+
 	connect(acAboutQt, &QAction::triggered, []()
 	{
 		qApp->aboutQt();
 	});
+
+	// show info dialog
 	connect(acAbout, &QAction::triggered, [this]()
 	{
 		if(!m_info_dlg)
-			return;
+			CreateInfoDlg();
 
 		m_info_dlg->show();
 		m_info_dlg->raise();
@@ -1989,6 +2003,7 @@ void MagDynDlg::CreateMenuBar()
 	m_menu->addMenu(menuStruct);
 	m_menu->addMenu(m_menuDisp);
 	m_menu->addMenu(menuCalc);
+	m_menu->addMenu(menuTools);
 	m_menu->addMenu(menuHelp);
 	m_maingrid->setMenuBar(m_menu);
 }

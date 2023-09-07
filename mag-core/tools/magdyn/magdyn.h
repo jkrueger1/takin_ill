@@ -65,6 +65,7 @@
 #include "defs.h"
 #include "graph.h"
 #include "table_import.h"
+#include "trafos.h"
 
 using namespace tl2_mag;
 
@@ -284,6 +285,9 @@ protected:
 
 	// magnon dynamics calculator
 	t_magdyn m_dyn{};
+
+	// trafo calculator
+	TrafoCalculator *m_trafos{};
 
 	// structure plotter
 	QDialog *m_structplot_dlg{};

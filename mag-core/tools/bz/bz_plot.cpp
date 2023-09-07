@@ -304,8 +304,8 @@ void BZDlg::PickerIntersection(
 		t_mat Binv = m_crystA / (t_real(2)*tl2::pi<t_real>);
 		t_vec Qrlu = Binv * QinvA;
 
-		tl2::set_eps_0<t_vec>(QinvA, t_real_gl(g_eps));
-		tl2::set_eps_0<t_vec>(Qrlu, t_real_gl(g_eps));
+		tl2::set_eps_0<t_vec>(QinvA, g_eps);
+		tl2::set_eps_0<t_vec>(Qrlu, g_eps);
 
 		ostr << "Q = (" << QinvA[0] << ", " << QinvA[1] << ", " << QinvA[2] << ") Å⁻¹";
 		ostr << " = (" << Qrlu[0] << ", " << Qrlu[1] << ", " << Qrlu[2] << ") rlu.";

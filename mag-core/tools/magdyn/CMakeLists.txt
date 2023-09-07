@@ -122,6 +122,7 @@ add_executable(takin_magdyn
 	magdyn_disp.cpp magdyn_structplot.cpp
 	defs.cpp defs.h
 	table_import.cpp table_import.h
+	trafos.cpp trafos.h
 
 	../../tlibs2/libs/magdyn.h
 	../../tlibs2/libs/qt/gl.cpp ../../tlibs2/libs/qt/gl.h
