@@ -41,6 +41,9 @@
 
 
 
+/**
+ * conversion to QStringList
+ */
 template<class t_cont, class t_str = typename t_cont::value_type>
 QStringList cont_to_qstrlist(const t_cont& cont)
 {
@@ -51,12 +54,32 @@ QStringList cont_to_qstrlist(const t_cont& cont)
 }
 
 
+/**
+ * conversion from QStringList
+ */
 template<class t_cont, class t_str = typename t_cont::value_type>
 t_cont qstrlist_to_cont(const QStringList& lstStr)
 {
 	t_cont cont;
 	for(int i=0; i<lstStr.size(); ++i)
 		cont.push_back(lstStr[i].toStdString());
+	return cont;
+}
+
+
+/**
+ * conversion from QStringList with a predicate
+ */
+template<class t_cont, class t_str = typename t_cont::value_type, class t_predicate>
+t_cont qstrlist_to_cont(const QStringList& lstStr, t_predicate func)
+{
+	t_cont cont;
+	for(int i=0; i<lstStr.size(); ++i)
+	{
+		if(!func(lstStr[i]))
+			continue;
+		cont.push_back(lstStr[i].toStdString());
+	}
 	return cont;
 }
 
@@ -95,7 +118,14 @@ class RecentFiles
 			QString strKey(m_strKey.c_str());
 			QStringList lstStr = m_pSettings->value(strKey).value<QStringList>();
 			lstStr.removeDuplicates();
-			m_lstFiles = qstrlist_to_cont<t_lstFiles>(lstStr);
+
+			m_lstFiles = qstrlist_to_cont<t_lstFiles>(lstStr,
+				[this](const QString& file) -> bool
+			{
+				if(m_bOnlyExistingFiles && !QFile::exists(file))
+					return false;
+				return true;
+			});
 
 			if(m_lstFiles.size() > m_iMaxFiles)
 				m_lstFiles.resize(m_iMaxFiles);
