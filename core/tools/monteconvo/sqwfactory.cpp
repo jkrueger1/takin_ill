@@ -278,12 +278,17 @@ void load_sqw_ext_plugins()
 					strTakVer = tl::trimmed(vecTokens[1]);
 			}
 
+			if(strTakVer == "")
+			{
+				tl::log_err("Skipping S(q,w) plugin \"", strPlugin,
+					"\" as it is not responding.");
+				continue;
+			}
 			if(strTakVer != TAKIN_VER)
 			{
 				tl::log_err("Skipping external S(q,w) plugin \"", strPlugin,
 					"\" as it was compiled for Takin version ", strTakVer,
 					", but this is version ", TAKIN_VER, ".");
-
 				continue;
 			}
 
@@ -411,17 +416,23 @@ void load_sqw_plugins()
 					// module already registered?
 					if(g_mapSqw.find(strModIdent) != g_mapSqw.end())
 					{
-						tl::log_warn("Module \"", strModLongName, "\" (id=", strModIdent, ") is already registered. Plugin: ", strPlugin, ".");
+						tl::log_warn("Module \"", strModLongName, "\" (id=", strModIdent, ") is already registered."
+							" Plugin: ", strPlugin, ".");
 						pmod->unload();
 						continue;
 					}
-
+					if(strTakVer == "")
+					{
+						tl::log_err("Skipping S(q,w) plugin \"", strPlugin,
+							"\" as it is not responding.");
+						pmod->unload();
+						continue;
+					}
 					if(strTakVer != TAKIN_VER)
 					{
 						tl::log_err("Skipping S(q,w) plugin \"", strPlugin,
 							"\" as it was compiled for Takin version ", strTakVer,
 							", but this is version ", TAKIN_VER, ".");
-
 						pmod->unload();
 						continue;
 					}
