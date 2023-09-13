@@ -25,8 +25,6 @@
  * ----------------------------------------------------------------------------
  */
 
-// g++ -o units units.cpp -std=c++14
-
 #include <iostream>
 #include "../phys/units.h"
 #include "../phys/neutrons.h"
@@ -74,9 +72,9 @@ int main()
 	std::cout << "float k2e: " << tl::k2E(fk) << std::endl;
 	std::cout << "float k2e, direct: " << tl::k2E_direct(fk) << std::endl;
 
-	std::cout << "p: " << double(tl::get_r_e<double>() * (-tl::get_mu_n<double>()/tl::get_mu_N<double>()) * 0.5 / 
+	std::cout << "p: " << double(tl::get_r_e<double>() * (-tl::get_mu_n<double>()/tl::get_mu_N<double>()) * 0.5 /
 		(tl::get_one_femtometer<double>())) << " fm" << std::endl;
-	std::cout << "p: " << tl::get_mu_N<double>()*tl::get_muB<double>()*tl::get_gamma_n<double>() *
+	std::cout << "p: " << tl::get_mu_N<double>()*tl::get_mu_B<double>()*tl::get_gamma_n<double>() *
 		2.*tl::get_m_n<double>()/(tl::get_hbar<double>()*tl::get_hbar<double>()) << std::endl;
 
 

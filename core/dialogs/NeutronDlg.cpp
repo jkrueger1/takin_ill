@@ -53,6 +53,7 @@ static const tl::t_length_si<t_real> meter = tl::get_one_meter<t_real>();
 static const tl::t_flux_si<t_real> tesla = tl::get_one_tesla<t_real>();
 static const tl::t_flux_si<t_real> millitesla = tesla*t_real(1e-3);
 static const tl::t_flux_si<t_real> kilogauss = tl::get_one_kilogauss<t_real>();
+static const tl::t_inductance_si<t_real> henry = tl::get_one_henry<t_real>();
 
 
 NeutronDlg::NeutronDlg(QWidget* pParent, QSettings *pSett)
@@ -536,7 +537,7 @@ void NeutronDlg::setupConstants()
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
-		ostrVal << t_real(tl::get_muB<t_real>() / meV * tesla) << " meV/T";
+		ostrVal << t_real(tl::get_mu_B<t_real>() / meV * tesla) << " meV/T";
 
 		Constant constant;
 		constant.strSymbol = "mu_B";
@@ -549,7 +550,7 @@ void NeutronDlg::setupConstants()
 
 	{
 		std::ostringstream ostrVal;
-		ostrVal << t_real(-tl::get_g_e<t_real>() * tl::get_muB<t_real>() / meV * tesla) << " meV/T";
+		ostrVal << t_real(-tl::get_g_e<t_real>() * tl::get_mu_B<t_real>() / meV * tesla) << " meV/T";
 
 		Constant constant;
 		constant.strSymbol = "-g_e * mu_B";
@@ -566,6 +567,18 @@ void NeutronDlg::setupConstants()
 		Constant constant;
 		constant.strSymbol = "c";
 		constant.strName = "Vacuum speed of light";
+		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
+
+		vecConsts.push_back(std::move(constant));
+	}
+	{
+		std::ostringstream ostrVal;
+		ostrVal << std::scientific;
+		ostrVal << t_real(tl::get_mu_0<t_real>() / henry * meter) << " H/m";
+
+		Constant constant;
+		constant.strSymbol = "mu_0";
+		constant.strName = "Vacuum permeability";
 		constant.strVal = tl::insert_before<std::string>(ostrVal.str(), "(", "\n");
 
 		vecConsts.push_back(std::move(constant));

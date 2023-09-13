@@ -80,6 +80,8 @@ template<class Sys, class T=double> using t_time =
 	units::quantity<units::unit<units::time_dimension, Sys>, T>;
 template<class Sys, class T=double> using t_flux =
 	units::quantity<units::unit<units::magnetic_flux_density_dimension, Sys>, T>;
+template<class Sys, class T=double> using t_inductance =
+	units::quantity<units::unit<units::inductance_dimension, Sys>, T>;
 template<class Sys, class T=double> using t_area =
 	units::quantity<units::unit<units::area_dimension, Sys>, T>;
 template<class Sys, class T=double> using t_volume =
@@ -101,6 +103,10 @@ template<class Sys, class T=double> using t_energy_per_temperature =
 template<class Sys, class T=double> using t_energy_per_field =
 	units::quantity<units::unit<typename units::derived_dimension
 	<units::current_base_dimension,1, units::length_base_dimension,2>::type, Sys>, T>;
+template<class Sys, class T=double> using t_inductance_per_length =
+	units::quantity<units::unit<typename units::derived_dimension
+	<units::current_base_dimension,-2, units::length_base_dimension,1,
+	units::time_base_dimension,-2, units::mass_base_dimension,1>::type, Sys>, T>;
 template<class Sys, class T=double> using t_inv_flux_time =
 	units::quantity<units::unit<typename units::derived_dimension
 	<units::current_base_dimension,1, units::time_base_dimension,1, units::mass_base_dimension,-1>::type, Sys>, T>;
@@ -126,6 +132,7 @@ template<class Y=double> using t_temperature_si = t_temperature<units::si::syste
 template<class Y=double> using t_mass_si = t_mass<units::si::system, Y>;
 template<class Y=double> using t_time_si = t_time<units::si::system, Y>;
 template<class Y=double> using t_flux_si = t_flux<units::si::system, Y>;
+template<class Y=double> using t_inductance_si = t_inductance<units::si::system, Y>;
 template<class Y=double> using t_area_si = t_area<units::si::system, Y>;
 template<class Y=double> using t_action_si = t_action<units::si::system, Y>;
 template<class Y=double> using t_energy_per_temperature_si = t_energy_per_temperature<units::si::system, Y>;
@@ -187,6 +194,8 @@ template<class Y=double> t_flux<units::si::system, Y> get_one_tesla()
 { return Y(1) * units::si::teslas; }
 template<class Y=double> t_flux<units::si::system, Y> get_one_kilogauss()
 { return Y(0.1) * units::si::teslas; }
+template<class Y=double> t_inductance<units::si::system, Y> get_one_henry()
+{ return Y(1) * units::si::henry; }
 
 template<class Y=double> t_mass<units::si::system, Y> get_m_n()
 { return Y(co::m_n/units::si::kilograms)*units::si::kilograms; }
@@ -202,7 +211,7 @@ template<class Y=double> t_velocity<units::si::system, Y> get_c()
 { return Y(co::c/units::si::meters*units::si::seconds)*units::si::meters/units::si::seconds; }
 template<class Y=double> t_energy_per_temperature<units::si::system, Y> get_kB()
 { return Y(co::k_B*units::si::kelvin/units::si::joules)/units::si::kelvin*units::si::joules; }
-template<class Y=double> t_energy_per_field<units::si::system, Y> get_muB()
+template<class Y=double> t_energy_per_field<units::si::system, Y> get_mu_B()
 { return Y(co::mu_B/units::si::joules*units::si::tesla)*units::si::joules/units::si::tesla; }
 template<class Y=double> t_energy_per_field<units::si::system, Y> get_mu_n()
 { return Y(co::mu_n/units::si::joules*units::si::tesla)*units::si::joules/units::si::tesla; }
@@ -210,6 +219,8 @@ template<class Y=double> t_energy_per_field<units::si::system, Y> get_mu_N()
 { return Y(co::mu_N/units::si::joules*units::si::tesla)*units::si::joules/units::si::tesla; }
 template<class Y=double> t_energy_per_field<units::si::system, Y> get_mu_e()
 { return Y(co::mu_e/units::si::joules*units::si::tesla)*units::si::joules/units::si::tesla; }
+template<class Y=double> t_inductance_per_length<units::si::system, Y> get_mu_0()
+{ return Y(co::mu_0/units::si::henry*units::si::meter)*units::si::henry/units::si::meter; }
 template<class Y=double> Y get_g_n() { return Y(co::g_n.value()); }
 template<class Y=double> Y get_g_e() { return Y(co::g_e.value()); }
 template<class Y=double> t_inv_flux_time<units::si::system, Y> get_gamma_n()

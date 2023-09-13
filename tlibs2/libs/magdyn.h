@@ -669,7 +669,7 @@ public:
 			return {};
 
 		// bohr magneton in [meV/T]
-		constexpr const t_real muB = tl2::muB<t_real>
+		constexpr const t_real muB = tl2::mu_B<t_real>
 			/ tl2::meV<t_real> * tl2::tesla<t_real>;
 
 		// build the interaction matrices J(Q) and J(-Q) of
