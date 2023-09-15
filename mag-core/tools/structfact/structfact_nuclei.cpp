@@ -313,9 +313,14 @@ void StructFactDlg::ShowTableContextMenu(const QPoint& _pt)
 	auto ptGlob = m_nuclei->mapToGlobal(pt);
 
 	if(const auto* item = m_nuclei->itemAt(pt); item)
+	{
+		m_iCursorRow = item->row();
 		m_pTabContextMenu->popup(ptGlob);
+	}
 	else
+	{
 		m_pTabContextMenuNoItem->popup(ptGlob);
+	}
 }
 
 

@@ -224,9 +224,14 @@ void BZDlg::ShowFormulaTableContextMenu(const QPoint& _pt)
 	auto ptGlob = m_formulas->mapToGlobal(pt);
 
 	if(const auto* item = m_formulas->itemAt(pt); item)
+	{
+		m_formulaCursorRow = item->row();
 		m_formulasContextMenu->popup(ptGlob);
+	}
 	else
+	{
 		m_formulasContextMenuNoItem->popup(ptGlob);
+	}
 }
 
 

@@ -304,9 +304,14 @@ void BZDlg::ShowSymOpTableContextMenu(const QPoint& _pt)
 	auto ptGlob = m_symops->mapToGlobal(pt);
 
 	if(const auto* item = m_symops->itemAt(pt); item)
+	{
+		m_symOpCursorRow = item->row();
 		m_symOpContextMenu->popup(ptGlob);
+	}
 	else
+	{
 		m_symOpContextMenuNoItem->popup(ptGlob);
+	}
 }
 
 

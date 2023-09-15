@@ -307,9 +307,14 @@ void MagStructFactDlg::ShowTableContextMenu(QTableWidget *pTab, QMenu *pMenu, QM
 	auto ptGlob = pTab->mapToGlobal(pt);
 
 	if(const auto* item = pTab->itemAt(pt); item)
+	{
+		m_iCursorRow = item->row();
 		pMenu->popup(ptGlob);
+	}
 	else
+	{
 		pMenuNoItem->popup(ptGlob);
+	}
 }
 // ----------------------------------------------------------------------------
 
