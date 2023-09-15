@@ -200,21 +200,20 @@ void StructFactDlg::TableItemChanged_FindSG([[maybe_unused]] QTableWidgetItem *i
 }
 
 
-void StructFactDlg::ShowTableContextMenu_FindSG(const QPoint& pt)
+void StructFactDlg::ShowTableContextMenu_FindSG(const QPoint& _pt)
 {
+	QPoint pt = _pt;
+	// transform the point to widget coordinates first if it has a viewport
+	if(m_nuclei_FindSG->viewport())
+		pt = m_nuclei_FindSG->viewport()->mapToParent(pt);
+
+	// transform the point to global coordinates
 	auto ptGlob = m_nuclei_FindSG->mapToGlobal(pt);
 
 	if(const auto* item = m_nuclei_FindSG->itemAt(pt); item)
-	{
-		m_iCursorRow_FindSG = item->row();
-		ptGlob.setY(ptGlob.y() + m_pTabContextMenu_FindSG->sizeHint().height()/2);
 		m_pTabContextMenu_FindSG->popup(ptGlob);
-	}
 	else
-	{
-		ptGlob.setY(ptGlob.y() + m_pTabContextMenuNoItem_FindSG->sizeHint().height()/2);
 		m_pTabContextMenuNoItem_FindSG->popup(ptGlob);
-	}
 }
 // ----------------------------------------------------------------------------
 

@@ -296,21 +296,20 @@ void MagStructFactDlg::TableItemChanged(QTableWidgetItem *item)
 }
 
 
-void MagStructFactDlg::ShowTableContextMenu(QTableWidget *pTab, QMenu *pMenu, QMenu *pMenuNoItem, const QPoint& pt)
+void MagStructFactDlg::ShowTableContextMenu(QTableWidget *pTab, QMenu *pMenu, QMenu *pMenuNoItem, const QPoint& _pt)
 {
+	QPoint pt = _pt;
+	// transform the point to widget coordinates first if it has a viewport
+	if(pTab->viewport())
+		pt = pTab->viewport()->mapToParent(pt);
+
+	// transform the point to global coordinates
 	auto ptGlob = pTab->mapToGlobal(pt);
 
 	if(const auto* item = pTab->itemAt(pt); item)
-	{
-		m_iCursorRow = item->row();
-		ptGlob.setY(ptGlob.y() + pMenu->sizeHint().height()/2);
 		pMenu->popup(ptGlob);
-	}
 	else
-	{
-		ptGlob.setY(ptGlob.y() + pMenuNoItem->sizeHint().height()/2);
 		pMenuNoItem->popup(ptGlob);
-	}
 }
 // ----------------------------------------------------------------------------
 

@@ -302,21 +302,20 @@ void StructFactDlg::TableItemChanged(QTableWidgetItem *item)
 }
 
 
-void StructFactDlg::ShowTableContextMenu(const QPoint& pt)
+void StructFactDlg::ShowTableContextMenu(const QPoint& _pt)
 {
+        QPoint pt = _pt;
+        // transform the point to widget coordinates first if it has a viewport
+        if(m_nuclei->viewport())
+                pt = m_nuclei->viewport()->mapToParent(pt);
+
+        // transform the point to global coordinates
 	auto ptGlob = m_nuclei->mapToGlobal(pt);
 
 	if(const auto* item = m_nuclei->itemAt(pt); item)
-	{
-		m_iCursorRow = item->row();
-		ptGlob.setY(ptGlob.y() + m_pTabContextMenu->sizeHint().height()/2);
 		m_pTabContextMenu->popup(ptGlob);
-	}
 	else
-	{
-		ptGlob.setY(ptGlob.y() + m_pTabContextMenuNoItem->sizeHint().height()/2);
 		m_pTabContextMenuNoItem->popup(ptGlob);
-	}
 }
 
 

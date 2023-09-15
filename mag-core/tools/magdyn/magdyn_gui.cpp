@@ -298,8 +298,7 @@ void MagDynDlg::CreateSitesPanel()
 	connect(m_sitestab, &QTableWidget::customContextMenuRequested,
 		[this, menuTableContext, menuTableContextNoItem](const QPoint& pt)
 	{
-		this->ShowTableContextMenu(
-			m_sitestab, menuTableContext, menuTableContextNoItem, pt);
+		this->ShowTableContextMenu(m_sitestab, menuTableContext, menuTableContextNoItem, pt);
 	});
 
 	m_tabs_in->addTab(m_sitespanel, "Atoms");
@@ -569,7 +568,9 @@ void MagDynDlg::CreateExchangeTermsPanel()
 		this, &MagDynDlg::TermsTableItemChanged);
 	connect(m_termstab, &QTableWidget::customContextMenuRequested,
 		[this, menuTableContext, menuTableContextNoItem](const QPoint& pt)
-		{ this->ShowTableContextMenu(m_termstab, menuTableContext, menuTableContextNoItem, pt); });
+	{
+		this->ShowTableContextMenu(m_termstab, menuTableContext, menuTableContextNoItem, pt);
+	});
 
 	auto calc_all = [this]()
 	{
@@ -725,7 +726,9 @@ void MagDynDlg::CreateVariablesPanel()
 		this, &MagDynDlg::VariablesTableItemChanged);
 	connect(m_varstab, &QTableWidget::customContextMenuRequested,
 		[this, menuTableContext, menuTableContextNoItem](const QPoint& pt)
-		{ this->ShowTableContextMenu(m_varstab, menuTableContext, menuTableContextNoItem, pt); });
+	{
+		this->ShowTableContextMenu(m_varstab, menuTableContext, menuTableContextNoItem, pt);
+	});
 
 
 	m_tabs_in->addTab(m_varspanel, "Variables");
@@ -1062,8 +1065,7 @@ void MagDynDlg::CreateSampleEnvPanel()
 	connect(m_fieldstab, &QTableWidget::customContextMenuRequested,
 		[this, menuTableContext, menuTableContextNoItem](const QPoint& pt)
 	{
-		this->ShowTableContextMenu(
-			m_fieldstab, menuTableContext, menuTableContextNoItem, pt);
+		this->ShowTableContextMenu(m_fieldstab, menuTableContext, menuTableContextNoItem, pt);
 	});
 
 	m_tabs_in->addTab(m_samplepanel, "Sample");
@@ -1484,8 +1486,7 @@ void MagDynDlg::CreateCoordinatesPanel()
 	connect(m_coordinatestab, &QTableWidget::customContextMenuRequested,
 		[this, menuTableContext, menuTableContextNoItem](const QPoint& pt)
 	{
-		this->ShowTableContextMenu(
-			m_coordinatestab, menuTableContext, menuTableContextNoItem, pt);
+		this->ShowTableContextMenu(m_coordinatestab, menuTableContext, menuTableContextNoItem, pt);
 	});
 
 	m_tabs_out->addTab(m_coordinatespanel, "Coordinates");

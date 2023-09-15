@@ -213,21 +213,20 @@ void BZDlg::FormulaTableItemChanged([[maybe_unused]] QTableWidgetItem *item)
 }
 
 
-void BZDlg::ShowFormulaTableContextMenu(const QPoint& pt)
+void BZDlg::ShowFormulaTableContextMenu(const QPoint& _pt)
 {
+        QPoint pt = _pt;
+        // transform the point to widget coordinates first if it has a viewport
+        if(m_formulas->viewport())
+                pt = m_formulas->viewport()->mapToParent(pt);
+
+        // transform the point to global coordinates
 	auto ptGlob = m_formulas->mapToGlobal(pt);
 
 	if(const auto* item = m_formulas->itemAt(pt); item)
-	{
-		m_formulaCursorRow = item->row();
-		ptGlob.setY(ptGlob.y() + m_formulasContextMenu->sizeHint().height()/2);
 		m_formulasContextMenu->popup(ptGlob);
-	}
 	else
-	{
-		ptGlob.setY(ptGlob.y() + m_formulasContextMenuNoItem->sizeHint().height()/2);
 		m_formulasContextMenuNoItem->popup(ptGlob);
-	}
 }
 
 

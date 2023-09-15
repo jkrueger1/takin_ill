@@ -293,21 +293,20 @@ void BZDlg::SymOpTableItemChanged(QTableWidgetItem *item)
 }
 
 
-void BZDlg::ShowSymOpTableContextMenu(const QPoint& pt)
+void BZDlg::ShowSymOpTableContextMenu(const QPoint& _pt)
 {
+        QPoint pt = _pt;
+        // transform the point to widget coordinates first if it has a viewport
+        if(m_symops->viewport())
+                pt = m_symops->viewport()->mapToParent(pt);
+
+        // transform the point to global coordinates
 	auto ptGlob = m_symops->mapToGlobal(pt);
 
 	if(const auto* item = m_symops->itemAt(pt); item)
-	{
-		m_symOpCursorRow = item->row();
-		ptGlob.setY(ptGlob.y() + m_symOpContextMenu->sizeHint().height()/2);
 		m_symOpContextMenu->popup(ptGlob);
-	}
 	else
-	{
-		ptGlob.setY(ptGlob.y() + m_symOpContextMenuNoItem->sizeHint().height()/2);
 		m_symOpContextMenuNoItem->popup(ptGlob);
-	}
 }
 
 
