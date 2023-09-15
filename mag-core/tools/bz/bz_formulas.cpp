@@ -223,7 +223,7 @@ void BZDlg::ShowFormulaTableContextMenu(const QPoint& _pt)
         // transform the point to global coordinates
 	auto ptGlob = m_formulas->mapToGlobal(pt);
 
-	if(const auto* item = m_formulas->itemAt(pt); item)
+	if(const auto* item = m_formulas->itemAt(_pt); item)
 	{
 		m_formulaCursorRow = item->row();
 		m_formulasContextMenu->popup(ptGlob);

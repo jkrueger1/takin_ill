@@ -306,7 +306,7 @@ void MagStructFactDlg::ShowTableContextMenu(QTableWidget *pTab, QMenu *pMenu, QM
 	// transform the point to global coordinates
 	auto ptGlob = pTab->mapToGlobal(pt);
 
-	if(const auto* item = pTab->itemAt(pt); item)
+	if(const auto* item = pTab->itemAt(_pt); item)
 	{
 		m_iCursorRow = item->row();
 		pMenu->popup(ptGlob);

@@ -303,7 +303,7 @@ void BZDlg::ShowSymOpTableContextMenu(const QPoint& _pt)
         // transform the point to global coordinates
 	auto ptGlob = m_symops->mapToGlobal(pt);
 
-	if(const auto* item = m_symops->itemAt(pt); item)
+	if(const auto* item = m_symops->itemAt(_pt); item)
 	{
 		m_symOpCursorRow = item->row();
 		m_symOpContextMenu->popup(ptGlob);

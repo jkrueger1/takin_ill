@@ -663,9 +663,9 @@ void MagDynDlg::VariablesTableItemChanged(QTableWidgetItem * /*item*/)
 
 
 void MagDynDlg::ShowTableContextMenu(
-	QTableWidget *pTab, QMenu *pMenu, QMenu *pMenuNoItem, const QPoint& _pt)
+	QTableWidget *pTab, QMenu *pMenu, QMenu *pMenuNoItem, const QPoint& ptLocal)
 {
-	QPoint pt = _pt;
+	QPoint pt = ptLocal;
 	// transform the point to widget coordinates first if it has a viewport
 	if(pTab->viewport())
 		pt = pTab->viewport()->mapToParent(pt);
@@ -673,7 +673,7 @@ void MagDynDlg::ShowTableContextMenu(
 	// transform the point to global coordinates
 	auto ptGlob = pTab->mapToGlobal(pt);
 
-	if(const auto* item = pTab->itemAt(pt); item)
+	if(const auto* item = pTab->itemAt(ptLocal); item)
 		pMenu->popup(ptGlob);
 	else
 		pMenuNoItem->popup(ptGlob);

@@ -312,7 +312,7 @@ void StructFactDlg::ShowTableContextMenu(const QPoint& _pt)
         // transform the point to global coordinates
 	auto ptGlob = m_nuclei->mapToGlobal(pt);
 
-	if(const auto* item = m_nuclei->itemAt(pt); item)
+	if(const auto* item = m_nuclei->itemAt(_pt); item)
 	{
 		m_iCursorRow = item->row();
 		m_pTabContextMenu->popup(ptGlob);

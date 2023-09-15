@@ -210,7 +210,7 @@ void StructFactDlg::ShowTableContextMenu_FindSG(const QPoint& _pt)
 	// transform the point to global coordinates
 	auto ptGlob = m_nuclei_FindSG->mapToGlobal(pt);
 
-	if(const auto* item = m_nuclei_FindSG->itemAt(pt); item)
+	if(const auto* item = m_nuclei_FindSG->itemAt(_pt); item)
 	{
 		m_iCursorRow_FindSG = item->row();
 		m_pTabContextMenu_FindSG->popup(ptGlob);
