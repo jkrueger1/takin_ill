@@ -7,6 +7,7 @@
 		<url>https://code.ill.fr/scientific-software/takin</url>
 		<doi>https://doi.org/10.5281/zenodo.4117437</doi>
 		<doi_tlibs>https://doi.org/10.5281/zenodo.5717779</doi_tlibs>
+		<notes>simple 1-d antiferromagnetic chain</notes>
 	</meta>
 	<config>
 		<h_start>0</h_start>
