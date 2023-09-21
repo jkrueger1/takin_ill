@@ -57,7 +57,7 @@
 		<scan_2d>0</scan_2d>
 		<scanfile/>
 		<sqw>magnonmod</sqw>
-		<sqw_conf>Cu2OSeO3.magdyn</sqw_conf>
+		<sqw_conf>model.magdyn</sqw_conf>
 		<sqw_params>
 			<B_align_spins>0</B_align_spins>
 			<B_dir>0 0 1 </B_dir>
