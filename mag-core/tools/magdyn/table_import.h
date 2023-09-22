@@ -96,6 +96,7 @@ private:
 	QSpinBox *m_spinCouplingName{};
 	QSpinBox *m_spinCouplingAtom1{}, *m_spinCouplingAtom2{};
 	QCheckBox *m_checkIndices1Based{};
+	QCheckBox *m_checkUniteIncompleteTokens{};
 	QSpinBox *m_spinCouplingDX{}, *m_spinCouplingDY{}, *m_spinCouplingDZ{};
 	QSpinBox *m_spinCouplingJ{};
 	QSpinBox *m_spinCouplingDMIX{}, *m_spinCouplingDMIY{}, *m_spinCouplingDMIZ{};

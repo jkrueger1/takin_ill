@@ -95,6 +95,7 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	m_spinCouplingAtom1 = new QSpinBox(this);
 	m_spinCouplingAtom2 = new QSpinBox(this);
 	m_checkIndices1Based = new QCheckBox(this);
+	m_checkUniteIncompleteTokens = new QCheckBox(this);
 	m_spinCouplingDX = new QSpinBox(this);
 	m_spinCouplingDY = new QSpinBox(this);
 	m_spinCouplingDZ = new QSpinBox(this);
@@ -114,6 +115,9 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	m_spinCouplingDMIY->setPrefix("DMIy = ");
 	m_spinCouplingDMIZ->setPrefix("DMIz = ");
 	m_checkIndices1Based->setText("1-Based");
+	m_checkIndices1Based->setToolTip("Are the indices 1-based or 0-based?");
+	m_checkUniteIncompleteTokens->setText("Unite Tokens");
+	m_checkUniteIncompleteTokens->setToolTip("Unite incomplete tokens, e.g. bracket expressions.");
 
 	m_spinCouplingName->setValue(0);
 	m_spinCouplingAtom1->setValue(1);
@@ -126,6 +130,7 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	m_spinCouplingDMIY->setValue(8);
 	m_spinCouplingDMIZ->setValue(9);
 	m_checkIndices1Based->setChecked(false);
+	m_checkUniteIncompleteTokens->setChecked(true);
 
 	for(QSpinBox* spin : {m_spinCouplingName, m_spinCouplingAtom1, m_spinCouplingAtom2,
 		m_spinCouplingDX, m_spinCouplingDY, m_spinCouplingDZ,
@@ -169,6 +174,7 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	grid->addWidget(m_spinCouplingAtom1, y, 1, 1, 1);
 	grid->addWidget(m_spinCouplingAtom2, y, 2, 1, 1);
 	grid->addWidget(m_checkIndices1Based, y++, 3, 1, 1);
+	grid->addWidget(m_checkUniteIncompleteTokens, y, 3, 1, 1);
 	grid->addWidget(m_spinCouplingDX, y, 0, 1, 1);
 	grid->addWidget(m_spinCouplingDY, y, 1, 1, 1);
 	grid->addWidget(m_spinCouplingDZ, y++, 2, 1, 1);
@@ -228,8 +234,10 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 			m_spinCouplingDMIY->setValue(m_sett->value("tableimport/idx_coupling_DMIy").toInt());
 		if(m_sett->contains("tableimport/idx_coupling_DMIz"))
 			m_spinCouplingDMIZ->setValue(m_sett->value("tableimport/idx_coupling_DMIz").toInt());
-		if(m_sett->contains("tableimport/idx_coupling_indices_1based"))
-			m_checkIndices1Based->setChecked(m_sett->value("tableimport/idx_coupling_indices_1based").toBool());
+		if(m_sett->contains("tableimport/coupling_indices_1based"))
+			m_checkIndices1Based->setChecked(m_sett->value("tableimport/coupling_indices_1based").toBool());
+		if(m_sett->contains("tableimport/unite_incomplete_tokens"))
+			m_checkUniteIncompleteTokens->setChecked(m_sett->value("tableimport/unite_incomplete_tokens").toBool());
 	}
 
 	// connections
@@ -251,6 +259,7 @@ TableImportDlg::~TableImportDlg()
  */
 void TableImportDlg::ImportAtoms()
 {
+	// get the lines of the table
 	std::string txt = m_editAtoms->toPlainText().toStdString();
 	std::vector<std::string> lines;
 	tl2::get_tokens<std::string, std::string>(txt, "\n", lines);
@@ -263,14 +272,18 @@ void TableImportDlg::ImportAtoms()
 	const int idx_S_y = m_spinAtomSY->value();
 	const int idx_S_z = m_spinAtomSZ->value();
 	const int idx_S_mag = m_spinAtomSMag->value();
+	const bool unite_incomplete = m_checkUniteIncompleteTokens->isChecked();
 
 	std::vector<TableImportAtom> atompos_vec;
 	atompos_vec.reserve(lines.size());
 
 	for(const std::string& line : lines)
 	{
+		// get the column entries of the table
 		std::vector<std::string> cols;
 		tl2::get_tokens<std::string, std::string>(line, " \t", cols);
+		if(unite_incomplete)
+			cols = tl2::unite_incomplete_tokens<std::string>(cols, "([{", ")]}");
 
 		TableImportAtom atompos;
 
@@ -307,6 +320,7 @@ void TableImportDlg::ImportAtoms()
  */
 void TableImportDlg::ImportCouplings()
 {
+	// get the lines of the table
 	std::string txt = m_editCouplings->toPlainText().toStdString();
 	std::vector<std::string> lines;
 	tl2::get_tokens<std::string, std::string>(txt, "\n", lines);
@@ -322,14 +336,18 @@ void TableImportDlg::ImportCouplings()
 	const int idx_dmiy = m_spinCouplingDMIY->value();
 	const int idx_dmiz = m_spinCouplingDMIZ->value();
 	const bool one_based = m_checkIndices1Based->isChecked();
+	const bool unite_incomplete = m_checkUniteIncompleteTokens->isChecked();
 
 	std::vector<TableImportCoupling> couplings;
 	couplings.reserve(lines.size());
 
 	for(const std::string& line : lines)
 	{
+		// get the column entries of the table
 		std::vector<std::string> cols;
 		tl2::get_tokens<std::string, std::string>(line, " \t", cols);
+		if(unite_incomplete)
+			cols = tl2::unite_incomplete_tokens<std::string>(cols);
 
 		TableImportCoupling coupling;
 
@@ -399,5 +417,7 @@ void TableImportDlg::closeEvent(QCloseEvent *)
 	m_sett->setValue("tableimport/idx_coupling_DMIx", m_spinCouplingDMIX->value());
 	m_sett->setValue("tableimport/idx_coupling_DMIy", m_spinCouplingDMIY->value());
 	m_sett->setValue("tableimport/idx_coupling_DMIz", m_spinCouplingDMIZ->value());
-	m_sett->setValue("tableimport/idx_coupling_indices_1based", m_checkIndices1Based->isChecked());
+
+	m_sett->setValue("tableimport/coupling_indices_1based", m_checkIndices1Based->isChecked());
+	m_sett->setValue("tableimport/unite_incomplete_tokens", m_checkUniteIncompleteTokens->isChecked());
 }
