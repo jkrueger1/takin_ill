@@ -66,7 +66,7 @@
 #include "dialogs/GotoDlg.h"
 #include "dialogs/PowderDlg.h"
 #include "dialogs/SettingsDlg.h"
-#include "dialogs/DWDlg.h"
+#include "dialogs/ScatteringFactorsDlg.h"
 #include "dialogs/DynPlaneDlg.h"
 #include "dialogs/AtomsDlg.h"
 #include "dialogs/DeadAnglesDlg.h"
@@ -180,7 +180,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		TOFDlg *m_pTofDlg = nullptr;
 		GotoDlg *m_pGotoDlg = nullptr;
 		PowderDlg *m_pPowderDlg = nullptr;
-		DWDlg *m_pDWDlg = nullptr;
+		ScatteringFactorsDlg *m_pScatteringFactorsDlg = nullptr;
 		DynPlaneDlg* m_pDynPlaneDlg = nullptr;
 		FormfactorDlg* m_pFormfactorDlg = nullptr;
 		AtomsDlg *m_pAtomsDlg = nullptr;
@@ -307,7 +307,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void ShowGotoDlg();
 		void ShowPowderDlg();
 		void ShowSettingsDlg();
-		void ShowDWDlg();
+		void ShowScatteringFactorsDlg();
 		void ShowDynPlaneDlg();
 
 		void Show3D();

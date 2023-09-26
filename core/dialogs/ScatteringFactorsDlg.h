@@ -1,5 +1,5 @@
 /**
- * Scattering factors dialog (e.g. Debye-Waller factor)
+ * scattering factors dialog
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date 2013, jan-2015
  * @license GPLv2
@@ -26,12 +26,12 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef __DWDLG_H__
-#define __DWDLG_H__
+#ifndef __SCATTERINGFACTORSDLG_H__
+#define __SCATTERINGFACTORSDLG_H__
 
 #include <QDialog>
 #include <QSettings>
-#include "ui/ui_dw.h"
+#include "ui/ui_scatteringfactors.h"
 
 #include <vector>
 #include <memory>
@@ -41,7 +41,7 @@
 #include <qwt_legend.h>
 
 
-class DWDlg : public QDialog, Ui::DWDlg
+class ScatteringFactorsDlg : public QDialog, Ui::ScatteringFactorsDlg
 { Q_OBJECT
 protected:
 	QSettings *m_pSettings = nullptr;
@@ -72,11 +72,12 @@ protected slots:
 	void CalcDW();
 	void CalcAna();
 	void CalcBose();
+	void CalcBoseQuery();
 	void CalcLorentz();
 
 public:
-	DWDlg(QWidget* pParent = nullptr, QSettings *pSettings = nullptr);
-	virtual ~DWDlg();
+	ScatteringFactorsDlg(QWidget* pParent = nullptr, QSettings *pSettings = nullptr);
+	virtual ~ScatteringFactorsDlg();
 };
 
 #endif

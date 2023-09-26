@@ -453,7 +453,8 @@ add_executable(takin
 	tools/powderfit/PowderFitDlg.cpp
 
 	dialogs/SettingsDlg.cpp dialogs/FilePreviewDlg.cpp
-	dialogs/GotoDlg.cpp dialogs/DWDlg.cpp dialogs/DynPlaneDlg.cpp
+	dialogs/GotoDlg.cpp
+	dialogs/ScatteringFactorsDlg.cpp dialogs/DynPlaneDlg.cpp
 	dialogs/NeutronDlg.cpp dialogs/TOFDlg.cpp
 	dialogs/SpurionDlg.cpp dialogs/PowderDlg.cpp
 	dialogs/FavDlg.cpp

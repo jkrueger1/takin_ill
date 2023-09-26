@@ -168,7 +168,7 @@
               </sizepolicy>
              </property>
              <property name="toolTip">
-              <string>Monochromator</string>
+              <string>Positive monochromator scattering sense (ccw).</string>
              </property>
              <property name="text">
               <string/>
@@ -181,7 +181,7 @@
            <item row="0" column="2">
             <widget class="QCheckBox" name="checkSenseS">
              <property name="toolTip">
-              <string>Sample</string>
+              <string>Positive sample scattering sense (ccw).</string>
              </property>
              <property name="text">
               <string/>
@@ -207,7 +207,7 @@
            <item row="0" column="3">
             <widget class="QCheckBox" name="checkSenseA">
              <property name="toolTip">
-              <string>Analyser</string>
+              <string>Positive analyser scattering sense (ccw).</string>
              </property>
              <property name="text">
               <string/>

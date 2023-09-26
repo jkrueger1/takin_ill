@@ -1,5 +1,5 @@
 /**
- * Scattering factors dialog (e.g. Debye-Waller factor)
+ * scattering factors dialog
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date 2013, jan-2015
  * @license GPLv2
@@ -31,7 +31,7 @@
 #include "tlibs/phys/neutrons.h"
 #include "tlibs/phys/atoms.h"
 
-#include "DWDlg.h"
+#include "ScatteringFactorsDlg.h"
 
 using t_real = t_real_glob;
 static const tl::t_length_si<t_real> angs = tl::get_one_angstrom<t_real>();
@@ -40,7 +40,7 @@ static const tl::t_angle_si<t_real> rads = tl::get_one_radian<t_real>();
 static const tl::t_temperature_si<t_real> kelvin = tl::get_one_kelvin<t_real>();
 
 
-DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
+ScatteringFactorsDlg::ScatteringFactorsDlg(QWidget* pParent, QSettings *pSettings)
 	: QDialog(pParent), m_pSettings(pSettings)
 {
 	this->setupUi(this);
@@ -56,7 +56,8 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 	// Bose Factor stuff
 	std::vector<QDoubleSpinBox*> vecSpinBoxesBose = {spinBoseT, spinBoseEMin, spinBoseEMax};
 	for(QDoubleSpinBox* pSpin : vecSpinBoxesBose)
-		QObject::connect(pSpin, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &DWDlg::CalcBose);
+		QObject::connect(pSpin, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ScatteringFactorsDlg::CalcBose);
+	QObject::connect(spinBoseEQuery, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ScatteringFactorsDlg::CalcBoseQuery);
 
 	m_plotwrapBose.reset(new QwtPlotWrapper(plotBose, 2));
 
@@ -75,7 +76,7 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 	m_plotwrapBose->GetCurve(1)->setPen(penCurveBoseNeg);
 
 	if(m_plotwrapBose->HasTrackerSignal())
-		connect(m_plotwrapBose->GetPicker(), &QwtPlotPicker::moved, this, &DWDlg::cursorMoved);
+		connect(m_plotwrapBose->GetPicker(), &QwtPlotPicker::moved, this, &ScatteringFactorsDlg::cursorMoved);
 
 	m_pLegendBose = new QwtLegend();
 	m_plotwrapBose->GetPlot()->insertLegend(m_pLegendBose, QwtPlot::TopLegend);
@@ -84,19 +85,20 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 	m_plotwrapBose->GetPlot()->setAxisTitle(QwtPlot::yLeft, "Bose Factor");
 
 	CalcBose();
+	CalcBoseQuery();
 
 
 	// -------------------------------------------------------------------------
 	// DW Factor stuff
 	std::vector<QDoubleSpinBox*> vecSpinBoxes = {spinAMU_deb, spinTD_deb, spinT_deb, spinMinQ_deb, spinMaxQ_deb};
 	for(QDoubleSpinBox* pSpin : vecSpinBoxes)
-		QObject::connect(pSpin, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &DWDlg::CalcDW);
+		QObject::connect(pSpin, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ScatteringFactorsDlg::CalcDW);
 
 	m_plotwrapDW.reset(new QwtPlotWrapper(plot, 1));
 	m_plotwrapDW->GetCurve(0)->setTitle("Debye-Waller Factor");
 
 	if(m_plotwrapDW->HasTrackerSignal())
-		connect(m_plotwrapDW->GetPicker(), &QwtPlotPicker::moved, this, &DWDlg::cursorMoved);
+		connect(m_plotwrapDW->GetPicker(), &QwtPlotPicker::moved, this, &ScatteringFactorsDlg::cursorMoved);
 
 	m_plotwrapDW->GetPlot()->setAxisTitle(QwtPlot::xBottom, "Q (1/A)");
 	m_plotwrapDW->GetPlot()->setAxisTitle(QwtPlot::yLeft, "DW Factor");
@@ -108,13 +110,13 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 	// Ana Factor stuff
 	std::vector<QDoubleSpinBox*> vecSpinBoxesAna = {spinAnad, spinMinkf, spinMaxkf};
 	for(QDoubleSpinBox* pSpin : vecSpinBoxesAna)
-		QObject::connect(pSpin, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &DWDlg::CalcAna);
+		QObject::connect(pSpin, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ScatteringFactorsDlg::CalcAna);
 
 	m_plotwrapAna.reset(new QwtPlotWrapper(plotAna, 1));
 	m_plotwrapAna->GetCurve(0)->setTitle("Analyser Factor");
 
 	if(m_plotwrapAna->HasTrackerSignal())
-		connect(m_plotwrapAna->GetPicker(), &QwtPlotPicker::moved, this, &DWDlg::cursorMoved);
+		connect(m_plotwrapAna->GetPicker(), &QwtPlotPicker::moved, this, &ScatteringFactorsDlg::cursorMoved);
 
 	m_plotwrapAna->GetPlot()->setAxisTitle(QwtPlot::xBottom, "kf (1/A)");
 	m_plotwrapAna->GetPlot()->setAxisTitle(QwtPlot::yLeft, "Intensity (a.u.)");
@@ -126,14 +128,14 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 	// Lorentz Factor stuff
 	std::vector<QDoubleSpinBox*> vecSpinBoxesLor = {spinMin2Th, spinMax2Th};
 	for(QDoubleSpinBox* pSpin : vecSpinBoxesLor)
-		QObject::connect(pSpin, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &DWDlg::CalcLorentz);
-	QObject::connect(checkPol, &QCheckBox::toggled, this, &DWDlg::CalcLorentz);
+		QObject::connect(pSpin, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ScatteringFactorsDlg::CalcLorentz);
+	QObject::connect(checkPol, &QCheckBox::toggled, this, &ScatteringFactorsDlg::CalcLorentz);
 
 	m_plotwrapLor.reset(new QwtPlotWrapper(plotLorentz, 1));
 	m_plotwrapLor->GetCurve(0)->setTitle("Lorentz Factor");
 
 	if(m_plotwrapLor->HasTrackerSignal())
-		connect(m_plotwrapLor->GetPicker(), &QwtPlotPicker::moved, this, &DWDlg::cursorMoved);
+		connect(m_plotwrapLor->GetPicker(), &QwtPlotPicker::moved, this, &ScatteringFactorsDlg::cursorMoved);
 
 	m_plotwrapLor->GetPlot()->setAxisTitle(QwtPlot::xBottom, "Scattering Angle (deg)");
 	m_plotwrapLor->GetPlot()->setAxisTitle(QwtPlot::yLeft, "Lorentz Factor");
@@ -146,10 +148,10 @@ DWDlg::DWDlg(QWidget* pParent, QSettings *pSettings)
 }
 
 
-DWDlg::~DWDlg()
+ScatteringFactorsDlg::~ScatteringFactorsDlg()
 {}
 
-void DWDlg::cursorMoved(const QPointF& pt)
+void ScatteringFactorsDlg::cursorMoved(const QPointF& pt)
 {
 	std::string strX = tl::var_to_str(pt.x(), g_iPrecGfx);
 	std::string strY = tl::var_to_str(pt.y(), g_iPrecGfx);
@@ -161,7 +163,7 @@ void DWDlg::cursorMoved(const QPointF& pt)
 }
 
 
-void DWDlg::CalcBose()
+void ScatteringFactorsDlg::CalcBose()
 {
 	const t_real dMinE = spinBoseEMin->value();
 	const t_real dMaxE = spinBoseEMax->value();
@@ -200,7 +202,21 @@ void DWDlg::CalcBose()
 }
 
 
-void DWDlg::CalcLorentz()
+void ScatteringFactorsDlg::CalcBoseQuery()
+{
+	const tl::t_temperature_si<t_real> T = t_real(spinBoseT->value()) * kelvin;
+	const tl::t_energy_si<t_real> E = spinBoseEQuery->value() * meV;
+
+	t_real bose = tl::bose(E, T);
+
+	std::ostringstream ostr;
+	ostr.precision(g_iPrec);
+	ostr << "Bose Factor: " << bose << ".";
+	editBoseQueryResult->setText(ostr.str().c_str());
+}
+
+
+void ScatteringFactorsDlg::CalcLorentz()
 {
 	const t_real dMin2th = tl::d2r(spinMin2Th->value());
 	const t_real dMax2th = tl::d2r(spinMax2Th->value());
@@ -228,7 +244,7 @@ void DWDlg::CalcLorentz()
 }
 
 
-void DWDlg::CalcDW()
+void ScatteringFactorsDlg::CalcDW()
 {
 	t_real dMinQ = spinMinQ_deb->value();
 	t_real dMaxQ = spinMaxQ_deb->value();
@@ -272,7 +288,7 @@ void DWDlg::CalcDW()
 }
 
 
-void DWDlg::CalcAna()
+void ScatteringFactorsDlg::CalcAna()
 {
 	try
 	{
@@ -308,13 +324,13 @@ void DWDlg::CalcAna()
 }
 
 
-void DWDlg::showEvent(QShowEvent *pEvt)
+void ScatteringFactorsDlg::showEvent(QShowEvent *pEvt)
 {
 	QDialog::showEvent(pEvt);
 }
 
 
-void DWDlg::accept()
+void ScatteringFactorsDlg::accept()
 {
 	if(m_pSettings)
 		m_pSettings->setValue("dw/geo", saveGeometry());
@@ -323,5 +339,5 @@ void DWDlg::accept()
 }
 
 
-#include "moc_DWDlg.cpp"
+#include "moc_ScatteringFactorsDlg.cpp"
 

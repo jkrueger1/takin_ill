@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DWDlg</class>
- <widget class="QDialog" name="DWDlg">
+ <class>ScatteringFactorsDlg</class>
+ <widget class="QDialog" name="ScatteringFactorsDlg">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -77,6 +77,9 @@
          <property name="value">
           <double>10.000000000000000</double>
          </property>
+         <property name="decimals">
+          <number>4</number>
+         </property>
         </widget>
        </item>
        <item row="1" column="0">
@@ -100,6 +103,9 @@
          <property name="value">
           <double>0.100000000000000</double>
          </property>
+         <property name="decimals">
+          <number>4</number>
+         </property>
         </widget>
        </item>
        <item row="1" column="2">
@@ -113,6 +119,9 @@
          <property name="value">
           <double>1.000000000000000</double>
          </property>
+         <property name="decimals">
+          <number>4</number>
+         </property>
         </widget>
        </item>
        <item row="2" column="0" colspan="3">
@@ -122,6 +131,39 @@
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_a1">
+         <property name="text">
+          <string>Query at E (meV):</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QDoubleSpinBox" name="spinBoseEQuery">
+         <property name="maximum">
+          <double>9999</double>
+         </property>
+         <property name="minimum">
+          <double>-9999</double>
+         </property>
+         <property name="singleStep">
+          <double>0.1</double>
+         </property>
+         <property name="value">
+          <double>1</double>
+         </property>
+         <property name="decimals">
+          <number>4</number>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="2">
+        <widget class="QLineEdit" name="editBoseQueryResult">
+         <property name="readOnly">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -559,7 +601,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>DWDlg</receiver>
+   <receiver>ScatteringFactorsDlg</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -575,7 +617,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>DWDlg</receiver>
+   <receiver>ScatteringFactorsDlg</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

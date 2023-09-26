@@ -568,8 +568,8 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 		pMenuCalc->addAction(pFormfactor);
 	}
 
-	QAction *pDW = new QAction("Scattering Factors...", this);
-	pMenuCalc->addAction(pDW);
+	QAction *pScatteringFactors = new QAction("Scattering Factors...", this);
+	pMenuCalc->addAction(pScatteringFactors);
 
 	pMenuCalc->addSeparator();
 
@@ -866,7 +866,7 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 	QObject::connect(m_pGoto, &QAction::triggered, this, &TazDlg::ShowGotoDlg);
 	QObject::connect(pPowder, &QAction::triggered, this, &TazDlg::ShowPowderDlg);
 	QObject::connect(pSpuri, &QAction::triggered, this, &TazDlg::ShowSpurions);
-	QObject::connect(pDW, &QAction::triggered, this, &TazDlg::ShowDWDlg);
+	QObject::connect(pScatteringFactors, &QAction::triggered, this, &TazDlg::ShowScatteringFactorsDlg);
 	QObject::connect(pDynPlane, &QAction::triggered, this, &TazDlg::ShowDynPlaneDlg);
 	QObject::connect(pDeadAngles, &QAction::triggered, this, &TazDlg::ShowDeadAnglesDlg);
 
@@ -1040,7 +1040,7 @@ void TazDlg::DeleteDialogs()
 	if(m_pSpuri) { delete m_pSpuri; m_pSpuri = nullptr; }
 	if(m_pNeutronDlg) { delete m_pNeutronDlg; m_pNeutronDlg = nullptr; }
 	if(m_pTofDlg) { delete m_pTofDlg; m_pTofDlg = nullptr; }
-	if(m_pDWDlg) { delete m_pDWDlg; m_pDWDlg = nullptr; }
+	if(m_pScatteringFactorsDlg) { delete m_pScatteringFactorsDlg; m_pScatteringFactorsDlg = nullptr; }
 	if(m_pDynPlaneDlg) { delete m_pDynPlaneDlg; m_pDynPlaneDlg = nullptr; }
 	if(m_pScanViewer) { delete m_pScanViewer; m_pScanViewer = nullptr; }
 	if(m_pScanPos) { delete m_pScanPos; m_pScanPos = nullptr; }
@@ -1231,12 +1231,12 @@ void TazDlg::ShowSettingsDlg()
 }
 
 
-void TazDlg::ShowDWDlg()
+void TazDlg::ShowScatteringFactorsDlg()
 {
-	if(!m_pDWDlg)
-		m_pDWDlg = new DWDlg(this, &m_settings);
+	if(!m_pScatteringFactorsDlg)
+		m_pScatteringFactorsDlg = new ScatteringFactorsDlg(this, &m_settings);
 
-	focus_dlg(m_pDWDlg);
+	focus_dlg(m_pScatteringFactorsDlg);
 }
 
 
