@@ -319,35 +319,3 @@ SqwBase* SqwUniformGrid::shallow_copy() const
 
 	return pMod;
 }
-
-
-
-// test
-// g++ -o tst sqw_grid_ver2.cpp sqwbase.cpp ../../tlibs/log/log.cpp -I../../ -lboost_iostreams -lboost_filesyste
-/*
-int main(int argc, char **argv)
-{
-	if(argc <= 1)
-	{
-		std::cerr << "Please specify a grid data file." << std::endl;
-		return -1;
-	}
-
-
-	SqwUniformGrid mod(argv[1]);
-
-	while(1)
-	{
-		t_real h, k, l;
-		std::cout << "Enter hkl: ";
-		std::cin >> h >> k >> l;
-
-		std::vector<t_real> vecE, vecW;
-		std::tie(vecE, vecW) = mod.disp(h, k, l);
-
-		for(std::size_t i=0; i<vecE.size(); ++i)
-			std::cout << "(" << i+1 << ") " << "E = " << vecE[i] << ", weight = " << vecW[i] << "\n";
-		std::cout << std::endl;
-	}
-}
-*/

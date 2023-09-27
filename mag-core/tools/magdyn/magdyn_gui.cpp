@@ -1596,8 +1596,26 @@ void MagDynDlg::CreateExportPanel()
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
-	auto sep2 = new QFrame(m_samplepanel); sep1->setFrameStyle(QFrame::HLine);
+	auto sep2 = new QFrame(m_samplepanel); sep2->setFrameStyle(QFrame::HLine);
 	grid->addWidget(sep2, y++, 0,1,4);
+	grid->addItem(new QSpacerItem(8, 8,
+		QSizePolicy::Minimum, QSizePolicy::Fixed),
+		y++,0, 1,1);
+
+	QLabel* labelBoseInfo = new QLabel(QString(
+		"Info: If this grid file is to be used in Takin's "
+		"resolution convolution module (\"Model Source: Uniform Grid\"), "
+		"please disable the Bose factor (\"Calculation\" -> \"Use Bose Factor\" [off]). "
+		"The Bose factor is already managed by the convolution module."),
+		m_exportpanel);
+	labelBoseInfo->setWordWrap(true);
+	grid->addWidget(labelBoseInfo, y++,0,1,4);
+
+	grid->addItem(new QSpacerItem(8, 8,
+		QSizePolicy::Minimum, QSizePolicy::Fixed),
+		y++,0, 1,1);
+	auto sep3 = new QFrame(m_samplepanel); sep3->setFrameStyle(QFrame::HLine);
+	grid->addWidget(sep3, y++, 0,1,4);
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
