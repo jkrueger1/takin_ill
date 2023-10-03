@@ -38,7 +38,7 @@ np.set_printoptions(floatmode = "fixed",  precision = 4)
 
 
 # settings
-ki = 1.4
+ki = 1.4  # 2.5
 kf = 1.4
 Q = 1.777
 

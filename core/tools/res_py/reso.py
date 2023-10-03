@@ -290,6 +290,7 @@ def plot_ellipses(ellis, verbose=True, plot_results=True, file="", dpi=600, elli
 
     subplot3d.set_xlabel(labelQpara)
     subplot3d.set_ylabel(labelQperp)
+    #subplot3d.set_ylabel(labelQup)
     subplot3d.set_zlabel("E (meV)")
 
     # xE
