@@ -40,6 +40,7 @@
 #include <ostream>
 #include <cmath>
 #include <vector>
+#include <tuple>
 #include <utility>
 
 #include "tlibs/math/quat.h"
@@ -390,13 +391,8 @@ Ellipse2d<t_real> calc_res_ellipse(
 
 	tl::QuadEllipsoid<t_real> quad(2);
 	ell.quad.GetPrincipalAxes(ell.rot, evals, &quad);
-	//tl::log_debug("old: ", ell.quad.GetR(), ", new: ", quad.GetR());
 
 	ell.phi = tl::rotation_angle(ell.rot)[0];
-
-	// test: set rotation directly
-	//ublas::matrix<t_real> matEvecs = tl::rotation_matrix_2d(ell.phi);
-	//quad.SetR(ublas::prod(matEvecs, ell.quad.GetR()));
 
 	ell.x_hwhm = tl::get_SIGMA2HWHM<t_real>() * quad.GetRadius(0);
 	ell.y_hwhm = tl::get_SIGMA2HWHM<t_real>() * quad.GetRadius(1);
@@ -443,22 +439,143 @@ Ellipse2d<t_real> calc_res_ellipse(
 }
 
 
+// --------------------------------------------------------------------------------
+
+
+/**
+ * transforms resolution ellipsoid from <Qpara Qperp Qup>
+ * to crystal hkl coordinate system
+ */
+template<class t_mat, class t_vec, class t_real = typename t_mat::value_type>
+std::tuple<t_mat, t_vec, t_vec>
+conv_lab_to_rlu(t_real dAngleQVec0,
+	const t_mat& matUB, const t_mat& matUBinv,
+	const t_mat& reso, const t_vec& reso_v, const t_vec& Q_avg)
+{
+	// hkl crystal system:
+	// Qavg system in 1/A -> rotate back to orient system in 1/A ->
+	// transform to hkl rlu system
+	t_mat matQVec0 = tl::rotation_matrix_2d(-dAngleQVec0);
+	tl::resize_unity(matQVec0, 4);
+	const t_mat matQVec0inv = ublas::trans(matQVec0);
+
+	const t_mat matUBinvQVec0 = ublas::prod(matUBinv, matQVec0);
+	const t_mat matQVec0invUB = ublas::prod(matQVec0inv, matUB);
+	t_mat resoHKL = tl::transform(reso, matQVec0invUB, 1);
+	t_vec Q_avgHKL = ublas::prod(matUBinvQVec0, Q_avg);
+
+	t_vec reso_vHKL;
+	if(reso_v.size() == 4)
+		reso_vHKL = ublas::prod(matUBinvQVec0, reso_v);
+
+	return std::make_tuple(resoHKL, reso_vHKL, Q_avgHKL);
+}
+
+
+/**
+ * transforms resolution ellipsoid from <Qpara Qperp Qup>
+ * to crystal orientation vector hkl system
+ */
+template<class t_mat, class t_vec, class t_real = typename t_mat::value_type>
+std::tuple<t_mat, t_vec, t_vec>
+conv_lab_to_rlu_orient(t_real dAngleQVec0,
+	const t_mat& matUB, const t_mat& matUBinv,
+	const t_mat& matUrlu, const t_mat& matUinvrlu,
+	const t_mat& reso, const t_vec& reso_v, const t_vec& Q_avg)
+{
+	// hkl crystal system:
+	// Qavg system in 1/A -> rotate back to orient system in 1/A ->
+	// transform to hkl rlu system
+	t_mat matQVec0 = tl::rotation_matrix_2d(-dAngleQVec0);
+	tl::resize_unity(matQVec0, 4);
+	const t_mat matQVec0inv = ublas::trans(matQVec0);
+
+	const t_mat matUBinvQVec0 = ublas::prod(matUBinv, matQVec0);
+	const t_mat matQVec0invUB = ublas::prod(matQVec0inv, matUB);
+
+	// system of scattering plane: (orient1, orient2, up)
+	// Qavg system in 1/A -> rotate back to orient system in 1/A ->
+	// transform to hkl rlu system -> rotate forward to orient system in rlu
+	const t_mat matToOrient = ublas::prod(matUrlu, matUBinvQVec0);
+	const t_mat matToOrientinv = ublas::prod(matQVec0invUB, matUinvrlu);
+
+	t_mat resoOrient = tl::transform(reso, matToOrientinv, 1);
+	t_vec Q_avgOrient = ublas::prod(matToOrient, Q_avg);
+
+	t_vec reso_vOrient;
+	if(reso_v.size() == 4)
+		reso_vOrient = ublas::prod(matToOrient, reso_v);
+
+	return std::make_tuple(resoOrient, reso_vOrient, Q_avgOrient);
+}
+
+
+/**
+ * coherent (Bragg) widths
+ */
+template<class t_mat, class t_real = typename t_mat::value_type>
+std::vector<t_real> calc_bragg_fwhms(const t_mat& reso)
+{
+	static const t_real sig2fwhm = tl::get_SIGMA2FWHM<t_real>();
+
+	std::vector<t_real> vecFwhms;
+	for(std::size_t i=0; i<reso.size1(); ++i)
+		vecFwhms.push_back(sig2fwhm/sqrt(reso(i,i)));
+
+	return vecFwhms;
+}
+
+
 /**
  * incoherent (vanadium) widths
  */
 template<class t_real = t_real_reso>
-t_real calc_vanadium_fwhm(
+std::vector<t_real> calc_vanadium_fwhm(
 	const ublas::matrix<t_real>& matReso,
 	const ublas::vector<t_real>& vecReso,
 	const t_real dScalarReso,
 	const ublas::vector<t_real>& vecQAvg)
 {
-	// project all Q axes
-	ublas::matrix<t_real> M = quadric_proj(matReso, 0);
-	M = quadric_proj(M, 0);
-	M = quadric_proj(M, 0);
+	std::vector<t_real> widths;
 
-	return tl::get_SIGMA2FWHM<t_real>() / std::sqrt(std::abs(M(0,0)));
+	// Q_parallel
+	{
+		ublas::matrix<t_real> M = quadric_proj(matReso, 3);
+		M = quadric_proj(M, 2);
+		M = quadric_proj(M, 1);
+
+		t_real w = tl::get_SIGMA2FWHM<t_real>() / std::sqrt(std::abs(M(0,0)));
+		widths.push_back(w);
+	}
+	// Q_perpendicular
+	{
+		ublas::matrix<t_real> M = quadric_proj(matReso, 3);
+		M = quadric_proj(M, 2);
+		M = quadric_proj(M, 0);
+
+		t_real w = tl::get_SIGMA2FWHM<t_real>() / std::sqrt(std::abs(M(0,0)));
+		widths.push_back(w);
+	}
+	// Q_up
+	{
+		ublas::matrix<t_real> M = quadric_proj(matReso, 3);
+		M = quadric_proj(M, 1);
+		M = quadric_proj(M, 0);
+
+		t_real w = tl::get_SIGMA2FWHM<t_real>() / std::sqrt(std::abs(M(0,0)));
+		widths.push_back(w);
+	}
+	// energy -> project all Q axes
+	{
+		ublas::matrix<t_real> M = quadric_proj(matReso, 0);
+		M = quadric_proj(M, 0);
+		M = quadric_proj(M, 0);
+
+		t_real w = tl::get_SIGMA2FWHM<t_real>() / std::sqrt(std::abs(M(0,0)));
+		widths.push_back(w);
+	}
+
+	return widths;
 }
 
 

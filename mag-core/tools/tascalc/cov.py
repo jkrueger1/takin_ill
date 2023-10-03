@@ -235,7 +235,7 @@ def proj_quad(_E, idx):
 #
 def calc_ellipses(Qres_Q):
 	# 4d ellipsoid
-	[fwhms, angles, rot] = descr_ellipse(Qres_Q)
+	[fwhms_4d, angles_4d, rot_4d] = descr_ellipse(Qres_Q)
 
 	axes_to_delete = [ [2, 1], [2, 0], [1,0], [3,2] ]
 	slice_first = [ True, True, True, False ]
@@ -256,18 +256,28 @@ def calc_ellipses(Qres_Q):
 			Qres_proj = np.delete(np.delete(Qres_proj, axes_to_delete[ellidx][1], axis=0), axes_to_delete[ellidx][1], axis=1)
 		[fwhms_proj, angles_proj, rot_proj] = descr_ellipse(Qres_proj)
 
-		results.append({ "fwhms" : fwhms, "angles" : angles, "rot" : rot,
-			"fwhms_proj" : fwhms_proj, "angles_proj" : angles_proj, "rot_proj" : rot_proj })
+		results.append({
+			"fwhms" : fwhms, "angles" : angles, "rot" : rot,
+			"fwhms_proj" : fwhms_proj, "angles_proj" : angles_proj, "rot_proj" : rot_proj,
+			"fwhms_4d" : fwhms_4d, "angles_4d" : angles_4d, "rot_4d" : rot_4d })
 
 
 	if options["verbose"]:
+		print("4d resolution ellipsoid principal axes fwhm lengths:\n%s\n" % fwhms_4d)
+
 		print("4d resolution ellipsoid diagonal elements fwhm (coherent-elastic scattering) lengths:\n%s\n" \
 			% (1./np.sqrt(np.abs(np.diag(Qres_Q))) * sig2fwhm))
 
-		print("4d resolution ellipsoid principal axes fwhm: %s" % fwhms)
-
-		Qres_proj = proj_quad(proj_quad(proj_quad(Qres_Q, 2), 1), 0)
-		print("Incoherent-elastic fwhm: %.4f meV\n" % (1./np.sqrt(np.abs(Qres_proj[0,0])) * sig2fwhm))
+		Qres_proj_Qpara = proj_quad(proj_quad(proj_quad(Qres_Q, 3), 2), 1)
+		Qres_proj_Qperp = proj_quad(proj_quad(proj_quad(Qres_Q, 3), 2), 0)
+		Qres_proj_Qup = proj_quad(proj_quad(proj_quad(Qres_Q, 3), 1), 0)
+		Qres_proj_E = proj_quad(proj_quad(proj_quad(Qres_Q, 2), 1), 0)
+		print("Projected fwhms (incoherent-elastic scattering) lengths:\n" \
+			"%.4f / A, %.4f / A, %.4f / A, %.4f meV \n" % ( \
+			1./np.sqrt(np.abs(Qres_proj_Qpara[0,0])) * sig2fwhm, \
+			1./np.sqrt(np.abs(Qres_proj_Qperp[0,0])) * sig2fwhm, \
+			1./np.sqrt(np.abs(Qres_proj_Qup[0,0])) * sig2fwhm, \
+			1./np.sqrt(np.abs(Qres_proj_E[0,0])) * sig2fwhm ))
 
 		print("Qx,E sliced ellipse fwhm and slope angle: %s, %.4f" % (results[0]["fwhms"], results[0]["angles"][0]))
 		print("Qy,E sliced ellipse fwhm and slope angle: %s, %.4f" % (results[1]["fwhms"], results[1]["angles"][0]))

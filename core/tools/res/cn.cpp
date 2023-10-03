@@ -38,7 +38,6 @@
 
 #include "cn.h"
 #include "ellipse.h"
-#include "helper.h"
 
 #include "tlibs/math/geo.h"
 #include "tlibs/math/math.h"

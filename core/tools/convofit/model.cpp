@@ -35,7 +35,7 @@
 #include "tlibs/string/string.h"
 #include "tlibs/helper/array.h"
 #include "../res/defs.h"
-#include "../res/helper.h"
+#include "../res/ellipse.h"
 #include "convofit.h"
 
 using t_real = t_real_mod;

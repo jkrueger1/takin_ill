@@ -32,7 +32,7 @@
  */
 
 #include "eck.h"
-#include "helper.h"
+#include "ellipse.h"
 
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/math.h"

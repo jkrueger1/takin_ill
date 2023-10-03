@@ -33,7 +33,6 @@
 #include "res.h"
 
 #include "../res/ellipse.h"
-#include "../res/helper.h"
 #include "tlibs/phys/neutrons.h"
 #include "tlibs/math/stat.h"
 #include "tlibs/log/log.h"
@@ -115,12 +114,6 @@ Resolution calc_res(const std::vector<vector<t_real>>& Q_vec, const std::vector<
 
 	reso.res.resize(4,4,0);
 	reso.cov.resize(4,4,0);
-
-	/*for(std::size_t iElem=0; iElem<Q_vec.size(); ++iElem)
-	{
-		std::cout << "Q = (" << Q_vec[iElem][0] << ", " << Q_vec[iElem][1] << ", " << Q_vec[iElem][0] << "), "
-			<< "p = " << (*pp_vec)[iElem] << std::endl;
-	}*/
 
 	std::tie(reso.cov, std::ignore) = tl::covariance(Q_vec, pp_vec);
 	tl::log_info("Covariance matrix (untransformed): ", reso.cov);
@@ -229,5 +222,5 @@ Resolution calc_res(
 t_real get_vanadium_fwhm(const Resolution& reso)
 {
 	ublas::vector<t_real> vec0 = ublas::zero_vector<t_real>(4);
-	return calc_vanadium_fwhm<t_real>(reso.res, vec0, t_real(0), reso.Q_avg);
+	return calc_vanadium_fwhm<t_real>(reso.res, vec0, t_real(0), reso.Q_avg)[3];
 }

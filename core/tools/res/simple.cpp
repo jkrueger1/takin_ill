@@ -28,7 +28,6 @@
 
 #include "simple.h"
 #include "ellipse.h"
-#include "helper.h"
 
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/geo.h"

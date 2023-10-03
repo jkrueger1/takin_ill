@@ -92,12 +92,28 @@ def calc_coh_fwhms(reso):
 #
 # incoherent fwhm width
 #
-def calc_incoh_fwhm(reso):
-    Qres_proj = quadric_proj(reso, 2)
-    Qres_proj = quadric_proj(Qres_proj, 1)
-    Qres_proj = quadric_proj(Qres_proj, 0)
+def calc_incoh_fwhms(reso):
+    Qres_proj_Qpara = quadric_proj(reso, 3)
+    Qres_proj_Qpara = quadric_proj(Qres_proj_Qpara, 2)
+    Qres_proj_Qpara = quadric_proj(Qres_proj_Qpara, 1)
 
-    return 1./np.sqrt(np.abs(Qres_proj[0,0])) * helpers.sig2fwhm
+    Qres_proj_Qperp = quadric_proj(reso, 3)
+    Qres_proj_Qperp = quadric_proj(Qres_proj_Qperp, 2)
+    Qres_proj_Qperp = quadric_proj(Qres_proj_Qperp, 0)
+
+    Qres_proj_Qup = quadric_proj(reso, 3)
+    Qres_proj_Qup = quadric_proj(Qres_proj_Qup, 1)
+    Qres_proj_Qup = quadric_proj(Qres_proj_Qup, 0)
+
+    Qres_proj_E = quadric_proj(reso, 2)
+    Qres_proj_E = quadric_proj(Qres_proj_E, 1)
+    Qres_proj_E = quadric_proj(Qres_proj_E, 0)
+
+    return np.array([
+        1./np.sqrt(np.abs(Qres_proj_Qpara[0,0])) * helpers.sig2fwhm,
+        1./np.sqrt(np.abs(Qres_proj_Qperp[0,0])) * helpers.sig2fwhm,
+        1./np.sqrt(np.abs(Qres_proj_Qup[0,0])) * helpers.sig2fwhm,
+        1./np.sqrt(np.abs(Qres_proj_E[0,0])) * helpers.sig2fwhm ])
 
 
 #
@@ -125,7 +141,7 @@ def calc_ellipses(Qres_Q, verbose=True):
     if verbose:
         print()
         print("Coherent-elastic fwhms: %s" % (calc_coh_fwhms(Qres_Q)))
-        print("Incoherent-elastic fwhm: %.4f meV" % (calc_incoh_fwhm(Qres_Q)))
+        print("Incoherent-elastic fwhms: %s" % (calc_incoh_fwhms(Qres_Q)))
         print("Principal axes fwhms: %s" % fwhms)
 
 
@@ -282,6 +298,9 @@ def plot_ellipses(ellis, verbose=True, plot_results=True, file="", dpi=600, elli
     # yE
     subplot3d.plot(ell_QyE[0], ell_QyE[1], zs=0., zdir="x", c="black", linestyle="dashed")
     subplot3d.plot(ell_QyE_proj[0], ell_QyE_proj[1], zs=0., zdir="x", c="black", linestyle="solid")
+    # zE
+    #subplot3d.plot(ell_QzE[0], ell_QzE[1], zs=0., zdir="x", c="black", linestyle="dashed")
+    #subplot3d.plot(ell_QzE_proj[0], ell_QzE_proj[1], zs=0., zdir="x", c="black", linestyle="solid")
     # xy
     subplot3d.plot(ell_QxQy[0], ell_QxQy[1], zs=0., zdir="z", c="black", linestyle="dashed")
     subplot3d.plot(ell_QxQy_proj[0], ell_QxQy_proj[1], zs=0., zdir="z", c="black", linestyle="solid")

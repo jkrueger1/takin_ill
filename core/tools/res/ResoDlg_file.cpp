@@ -39,7 +39,7 @@
 
 #include "libs/globals.h"
 #include "libs/version.h"
-#include "helper.h"
+#include "ellipse.h"
 
 #include <QFileDialog>
 #include <QMessageBox>

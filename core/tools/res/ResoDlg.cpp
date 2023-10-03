@@ -42,7 +42,7 @@
 
 #include "libs/globals.h"
 #include "libs/qt/qthelper.h"
-#include "helper.h"
+#include "ellipse.h"
 #include "mc.h"
 
 #include <QPainter>
@@ -539,7 +539,7 @@ void ResoDlg::Calc()
 		{
 			// --------------------------------------------------------------------------------
 			// Vanadium width
-			t_real_reso dVanadiumFWHM_E = calc_vanadium_fwhm<t_real_reso>(
+			auto dVanadiumFWHMs = calc_vanadium_fwhm<t_real_reso>(
 				res.reso, res.reso_v, res.reso_s, res.Q_avg);
 			// --------------------------------------------------------------------------------
 
@@ -614,7 +614,11 @@ void ResoDlg::Calc()
 			}
 			ostrRes << "\t<li>E: " << res.dBraggFWHMs[3] << " meV</li></ul></p>\n\n";
 
-			ostrRes << "<p><b>Incoherent (Vanadium) energy FWHM</b>: " << dVanadiumFWHM_E << " meV</p>\n\n";
+			ostrRes << "<p><b>Incoherent (Vanadium) FWHMs:</b>\n";
+			ostrRes << "\t<ul><li>Q_para: " << dVanadiumFWHMs[0] << " " << strAA_1 << "</li>\n";
+			ostrRes << "\t<li>Q_ortho: " << dVanadiumFWHMs[1] << " " << strAA_1 << "</li>\n";
+			ostrRes << "\t<li>Q_z: " << dVanadiumFWHMs[2] << " " << strAA_1 << "</li>\n";
+			ostrRes << "\t<li>E: " << dVanadiumFWHMs[3] << " meV</li></ul></p>\n\n";
 
 			ostrRes << "<p><b>Resolution Matrix (Q_para, Q_ortho, Q_z, E) in 1/A, meV and using Gaussian sigmas:</b>\n\n";
 			ostrRes << "<blockquote><table border=\"0\" width=\"75%\">\n";

@@ -30,7 +30,7 @@
 #include "tlibs/log/log.h"
 #include "tlibs/string/string.h"
 #include "dialogs/EllipseDlg.h"
-#include "../res/helper.h"
+#include "../res/ellipse.h"
 
 #include <clocale>
 #include <fstream>
