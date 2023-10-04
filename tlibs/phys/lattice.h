@@ -375,9 +375,9 @@ ublas::matrix<T> get_B(const Lattice<T>& lattice, bool bIsRealLattice = true)
 
 	t_mat matB;
 	if(bIsRealLattice)
-		matB = lattice.GetRecip()/*.GetAligned()*/.GetBaseMatrixCov();
+		matB = lattice.GetRecip().GetBaseMatrixCov();
 	else
-		matB = lattice/*.GetAligned()*/.GetBaseMatrixCov();
+		matB = lattice.GetBaseMatrixCov();
 
 	return matB;
 }
@@ -426,7 +426,7 @@ ublas::matrix<T> get_UB(const Lattice<T>& lattice_real,
 {
 	using t_mat = ublas::matrix<T>;
 
-	t_mat matB = get_B(lattice_real, 1);		// rlu to 1/A
+	t_mat matB = get_B(lattice_real, true);		// rlu to 1/A
 	t_mat matU = get_U(_vec1, _vec2, &matB);	// scattering in 1/A
 
 	t_mat matUB = prod_mm(matU, matB);
