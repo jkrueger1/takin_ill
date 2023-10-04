@@ -36,6 +36,8 @@ import numpy as np
 import numpy.linalg as la
 import helpers
 
+g_eps = 1e-8
+
 
 #
 # volume of the ellipsoid
@@ -50,16 +52,24 @@ def ellipsoid_volume(mat):
 # projects along one axis of the quadric
 # (see [eck14], equ. 57)
 #
-def quadric_proj(_E, idx):
-    E = np.delete(np.delete(_E, idx, axis=0), idx, axis=1)
-    if np.abs(_E[idx, idx]) < 1e-8:
-        return E
+def quadric_proj(quadric, idx):
+    if np.abs(quadric[idx, idx]) < g_eps:
+        return np.delete(np.delete(quadric, idx, axis=0), idx, axis=1)
 
-    v = 0.5 * (_E[idx,:] + _E[:,idx])
-    vv = np.outer(v, v) / _E[idx, idx]
-    vv = np.delete(np.delete(vv, idx, axis=0), idx, axis=1)
+    # row/column along which to perform the orthogonal projection
+    vec = 0.5 * (quadric[idx,:] + quadric[:,idx])
+    proj_op = np.outer(vec, vec) / quadric[idx, idx]
+    ortho_proj = quadric - proj_op
 
-    return E - vv
+    # comparing with simple projection
+    #rank = len(quadric)
+    #vec /= np.sqrt(np.dot(vec, vec))
+    #proj_op = np.outer(vec, vec)
+    #ortho_proj = np.dot((np.identity(rank) - proj_op), quadric)
+
+    # remove row/column that was projected out
+    #print("\nProjected row/column %d:\n%s\n->\n%s.\n" % (idx, str(quadric), str(ortho_proj)))
+    return np.delete(np.delete(ortho_proj, idx, axis=0), idx, axis=1)
 
 
 #
@@ -69,7 +79,7 @@ def quadric_proj(_E, idx):
 def quadric_proj_vec(vec, _E, idx):
     _col = _E[:,idx]
     col = np.delete(_col, idx, axis=0)
-    if np.abs(_col[idx]) < 1e-8:
+    if np.abs(_col[idx]) < g_eps:
         return col
 
     v = np.delete(vec, idx, axis=0)
