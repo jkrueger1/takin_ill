@@ -418,6 +418,7 @@ endif()
 # takin
 # -----------------------------------------------------------------------------
 add_executable(takin
+	# main
 	tools/taz/taz_main.cpp
 	tools/taz/taz.cpp tools/taz/tas_layout.cpp tools/taz/tof_layout.cpp
 	tools/taz/taz_crys.cpp
@@ -425,32 +426,6 @@ add_executable(takin
 	tools/taz/tas_layout.cpp tools/taz/scattering_triangle.cpp
 	tools/taz/real_lattice.cpp tools/taz/proj_lattice.cpp
 	tools/taz/nicos.cpp tools/taz/sics.cpp tools/taz/taz_net.cpp
-
-	tools/res/cn.cpp tools/res/pop.cpp tools/res/pop_cn.cpp
-	tools/res/eck.cpp tools/res/vio.cpp tools/res/simple.cpp
-	tools/res/ResoDlg.cpp tools/res/ResoDlg_file.cpp
-
-	tools/monteconvo/ConvoDlg.cpp tools/monteconvo/ConvoDlg_file.cpp
-	tools/monteconvo/ConvoDlg_sim.cpp tools/monteconvo/ConvoDlg_fit.cpp
-	tools/monteconvo/SqwParamDlg.cpp tools/monteconvo/TASReso.cpp
-	tools/monteconvo/modules/elast.cpp
-	tools/monteconvo/modules/kdtree.cpp
-	tools/monteconvo/modules/simple_magnon.cpp
-	tools/monteconvo/modules/simple_phonon.cpp
-	tools/monteconvo/modules/table1d.cpp
-	tools/monteconvo/modules/uniform_grid.cpp
-	tools/monteconvo/sqwbase.cpp tools/monteconvo/sqwfactory.cpp
-	tools/monteconvo/monteconvo_cli.cpp tools/monteconvo/monteconvo_common.cpp
-
-	tools/convofit/convofit.cpp tools/convofit/convofit_import.cpp
-	tools/convofit/model.cpp tools/convofit/scan.cpp
-	tools/convofit/convofit_cli.cpp
-
-	tools/scanviewer/scanviewer.cpp tools/scanviewer/scanviewer_fit.cpp
-	tools/scanviewer/scanviewer_pol.cpp
-	tools/scanviewer/FitParamDlg.cpp
-	tools/scanpos/ScanPosDlg.cpp
-	tools/powderfit/PowderFitDlg.cpp
 
 	dialogs/SettingsDlg.cpp dialogs/FilePreviewDlg.cpp
 	dialogs/GotoDlg.cpp
@@ -464,19 +439,51 @@ add_executable(takin
 	dialogs/AtomsDlg.cpp dialogs/AboutDlg.cpp
 	dialogs/DeadAnglesDlg.cpp dialogs/LogDlg.cpp
 
+	# reso
+	tools/res/cn.cpp tools/res/pop.cpp tools/res/pop_cn.cpp
+	tools/res/eck.cpp tools/res/vio.cpp tools/res/simple.cpp
+	tools/res/ResoDlg.cpp tools/res/ResoDlg_file.cpp
+	tools/res/res_cli.cpp
+
+	# monteconvo
+	tools/monteconvo/ConvoDlg.cpp tools/monteconvo/ConvoDlg_file.cpp
+	tools/monteconvo/ConvoDlg_sim.cpp tools/monteconvo/ConvoDlg_fit.cpp
+	tools/monteconvo/SqwParamDlg.cpp tools/monteconvo/TASReso.cpp
+	tools/monteconvo/modules/elast.cpp
+	tools/monteconvo/modules/kdtree.cpp
+	tools/monteconvo/modules/simple_magnon.cpp
+	tools/monteconvo/modules/simple_phonon.cpp
+	tools/monteconvo/modules/table1d.cpp
+	tools/monteconvo/modules/uniform_grid.cpp
+	tools/monteconvo/sqwbase.cpp tools/monteconvo/sqwfactory.cpp
+	tools/monteconvo/monteconvo_cli.cpp tools/monteconvo/monteconvo_common.cpp
+
+	# convofit
+	tools/convofit/convofit.cpp tools/convofit/convofit_import.cpp
+	tools/convofit/model.cpp tools/convofit/scan.cpp
+	tools/convofit/convofit_cli.cpp
+
+	# scanviewer
+	tools/scanviewer/scanviewer.cpp tools/scanviewer/scanviewer_fit.cpp
+	tools/scanviewer/scanviewer_pol.cpp
+	tools/scanviewer/FitParamDlg.cpp
+	tools/scanpos/ScanPosDlg.cpp
+	tools/powderfit/PowderFitDlg.cpp
+
+	# libs
 	libs/spacegroups/spacegroup.cpp tools/sglist/SgListDlg.cpp
 	libs/globals.cpp libs/globals_qt.cpp libs/spacegroups/crystalsys.cpp
 	libs/formfactors/formfact.cpp libs/qt/qthelper.cpp libs/qt/qwthelper.cpp
 
 	${SRCS_3D}
 
-	#tlibs/file/loadinstr.cpp
 	tlibs/file/x3d.cpp
 	tlibs/log/log.cpp tlibs/log/debug.cpp
 	tlibs/math/rand.cpp
 	tlibs/string/spec_char.cpp
 	tlibs/helper/flags.cpp  tlibs/version.cpp
 
+	# external libs
 	./3rdparty/Faddeeva.cc
 )
 
@@ -603,7 +610,6 @@ if(BUILD_EXT_TOOLS)
 		tools/convofit/convofit.cpp tools/convofit/convofit_import.cpp
 		tools/convofit/model.cpp tools/convofit/scan.cpp
 		tools/convofit/convofit_cli.cpp tools/convofit/convofit_cli_main.cpp
-
 
 		# statically link tlibs externals
 		tlibs/log/log.cpp

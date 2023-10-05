@@ -120,7 +120,7 @@ static bool load_mat(const char* pcFile, Resolution& reso, FileType ft)
 	{
 		std::vector<t_real>& dQ = reso.dQ;
 		reso.dQ = calc_bragg_fwhms(reso.res);
-		reso.dEinc = get_vanadium_fwhm(reso);
+		reso.dEinc = calc_vanadium_fwhms(reso.res)[3];
 
 		std::ostringstream ostrVals;
 		ostrVals << "Coherent / Bragg FWHM values (Qx, Qy, Qz, E): ";

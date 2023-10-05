@@ -35,6 +35,7 @@
 #include "libs/globals.h"
 #include "dialogs/NetCacheDlg.h"
 
+#include "tools/res/res_cli.h"
 #include "tools/monteconvo/ConvoDlg.h"
 #include "tools/monteconvo/monteconvo_cli.h"
 #include "tools/convofit/convofit_cli.h"
@@ -268,6 +269,7 @@ int main(int argc, char** argv)
 		bool bStartMonteconvo = false;
 		bool bStartMonteconvoCLI = false;
 		bool bStartConvofit = false;
+		bool bStartRes = false;
 		bool bStartTakinMain = true, bStartGui = true;
 
 		opts::options_description args("Takin options");
@@ -287,6 +289,10 @@ int main(int argc, char** argv)
 			new opts::option_description("scans",
 			opts::bool_switch(&bStartScanviewer),
 			"directly runs the scan viewer tool")));
+		args.add(boost::shared_ptr<opts::option_description>(
+			new opts::option_description("reso",
+			opts::bool_switch(&bStartRes),
+			"runs the resolution calculation command-line tool")));
 		args.add(boost::shared_ptr<opts::option_description>(
 			new opts::option_description("convo",
 			opts::bool_switch(&bStartMonteconvo),
@@ -315,7 +321,7 @@ int main(int argc, char** argv)
 		opts::store(parsedopts, opts_map);
 		opts::notify(opts_map);
 
-		if(bStartMonteconvo || bStartScanviewer || bStartMonteconvoCLI || bStartConvofit)
+		if(bStartMonteconvo || bStartScanviewer || bStartMonteconvoCLI || bStartConvofit || bStartRes)
 			bStartTakinMain = false;
 		if(bStartMonteconvoCLI || bStartConvofit)
 			bStartGui = false;
@@ -411,6 +417,8 @@ int main(int argc, char** argv)
 			return monteconvo_main(argc, argv);
 		else if(bStartConvofit)
 			return convofit_main(argc, argv);
+		else if(bStartRes)
+			return res_main(argc, argv);
 
 
 		// ------------------------------------------------------------

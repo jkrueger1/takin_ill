@@ -1,5 +1,5 @@
 /**
- * Minimalistic takin command line client
+ * minimalistic command line client
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date apr-2016
  * @license GPLv2
@@ -26,6 +26,7 @@
  * ----------------------------------------------------------------------------
  */
 
+#include "res_cli.h"
 #include "tlibs/log/log.h"
 #include "tlibs/string/string.h"
 #include "libs/version.h"
@@ -92,6 +93,7 @@ void show_help(const std::vector<std::string>& vecArgs)
 	ostr << strHelp << ".\n";
 }
 
+
 void load_sample(const std::vector<std::string>& vecArgs)
 {
 	if(vecArgs.size() < 2)
@@ -106,6 +108,7 @@ void load_sample(const std::vector<std::string>& vecArgs)
 		ostr << "Error: Unable to load " << vecArgs[1] << ".\n";
 }
 
+
 void load_instr(const std::vector<std::string>& vecArgs)
 {
 	if(vecArgs.size() < 2)
@@ -119,6 +122,7 @@ void load_instr(const std::vector<std::string>& vecArgs)
 	else
 		ostr << "Error: Unable to load " << vecArgs[1] << ".\n";
 }
+
 
 void fix(const std::vector<std::string>& vecArgs)
 {
@@ -143,26 +147,29 @@ void fix(const std::vector<std::string>& vecArgs)
 	ostr << "OK.\n";
 }
 
+
 std::ostream& operator<<(std::ostream& ostr, const t_mat& m)
 {
 	for(std::size_t i=0; i<m.size1(); ++i)
 	{
 		for(std::size_t j=0; j<m.size2(); ++j)
-		{
 			ostr << m(i,j) << " ";
-		}
+
 		ostr << " ";
 	}
 
 	return ostr;
 }
 
+
 std::ostream& operator<<(std::ostream& ostr, const t_vec& v)
 {
 	for(std::size_t i=0; i<v.size(); ++i)
 		ostr << v(i) << " ";
+
 	return ostr;
 }
+
 
 void calc(const std::vector<std::string>& vecArgs)
 {
@@ -179,8 +186,7 @@ void calc(const std::vector<std::string>& vecArgs)
 
 	const ResoResults& res = g_tas.GetResoResults();
 
-	g_tas.GetResoParams().flags |= CALC_R0;
-	//g_tas.GetTofResoParams().bCalcR0 = 1;
+	//g_tas.GetResoParams().flags |= CALC_R0;
 
 	if(!g_tas.SetHKLE(dH, dK, dL, dE))
 	{
@@ -216,7 +222,8 @@ void calc(const std::vector<std::string>& vecArgs)
 	ostr << "R0: " << res.dR0 << "\n";
 	ostr << "Vol: " << res.dResVol << "\n";
 	ostr << "Q_avg: " << res.Q_avg << "\n";
-	ostr << "Bragg_FWHMs: " << res.dBraggFWHMs[0] << " "
+	ostr << "Bragg_FWHMs: "
+		<< res.dBraggFWHMs[0] << " "
 		<< res.dBraggFWHMs[1] << " "
 		<< res.dBraggFWHMs[2] << " "
 		<< res.dBraggFWHMs[3] << "\n";
@@ -276,41 +283,55 @@ void calc(const std::vector<std::string>& vecArgs)
 
 
 
-
-
 // ----------------------------------------------------------------------------
-int main()
+int res_main(int argc, char** argv)
 {
-	tl::log_info("This is Takin-CLI, version " TAKIN_VER
-		" (built on " __DATE__ ").");
-	tl::log_info("Please report bugs to tobias.weber@tum.de.");
-	tl::log_info(TAKIN_LICENSE("Takin-CLI"));
-
-	std::string strLine;
-	while(std::getline(istr, strLine))
+	try
 	{
-		std::vector<std::string> vecToks;
-		tl::get_tokens<std::string, std::string, decltype(vecToks)>
-			(strLine, " \t", vecToks);
-
-		for(std::string& strTok : vecToks)
-			tl::trim(strTok);
-
-		if(!vecToks.size()) continue;
-
-		if(vecToks[0] == "exit")
-			break;
-
-		t_funcmap::const_iterator iter = g_funcmap.find(vecToks[0]);
-		if(iter == g_funcmap.end())
+		std::size_t cmd_idx = 0;
+		auto write_prompt = [&cmd_idx]()
 		{
-			ostr << "Error: No such function: "
-				<< vecToks[0] << ".\n" << std::endl;
-			continue;
-		}
+			++cmd_idx;
+			ostr << "\n" << cmd_idx << "> ";
+		};
 
-		(*iter->second)(vecToks);
+		tl::log_info("This is Takin/Reso, version " TAKIN_VER " (built on " __DATE__ ").");
+		ostr << TAKIN_LICENSE("Takin/Reso") << std::endl;
+
 		ostr << "\n";
+		show_help({});
+		write_prompt();
+
+		std::string strLine;
+		while(std::getline(istr, strLine))
+		{
+			std::vector<std::string> vecToks;
+			tl::get_tokens<std::string, std::string, decltype(vecToks)>
+				(strLine, " \t", vecToks);
+
+			for(std::string& strTok : vecToks)
+				tl::trim(strTok);
+
+			if(!vecToks.size()) continue;
+
+			if(vecToks[0] == "exit")
+				break;
+
+			t_funcmap::const_iterator iter = g_funcmap.find(vecToks[0]);
+			if(iter == g_funcmap.end())
+			{
+				ostr << "Error: No such function: " << vecToks[0] << ".\n" << std::endl;
+				write_prompt();
+				continue;
+			}
+
+			(*iter->second)(vecToks);
+			write_prompt();
+		}
+	}
+	catch(const std::exception& ex)
+	{
+		tl::log_crit(ex.what());
 	}
 
 	return 0;
