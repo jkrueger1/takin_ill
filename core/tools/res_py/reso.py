@@ -44,7 +44,6 @@ g_eps = 1e-8
 #
 def ellipsoid_volume(mat):
     det = np.abs(la.det(mat))
-
     return 4./3. * np.pi * np.sqrt(1./det)
 
 
@@ -57,9 +56,10 @@ def quadric_proj(quadric, idx):
         return np.delete(np.delete(quadric, idx, axis=0), idx, axis=1)
 
     # row/column along which to perform the orthogonal projection
-    vec = 0.5 * (quadric[idx,:] + quadric[:,idx])
-    proj_op = np.outer(vec, vec) / quadric[idx, idx]
-    ortho_proj = quadric - proj_op
+    vec = 0.5 * (quadric[idx,:] + quadric[:,idx])   # symmetrise if not symmetric
+    vec /= np.sqrt(quadric[idx, idx])               # normalise to indexed component
+    proj_op = np.outer(vec, vec)                    # projection operator
+    ortho_proj = quadric - proj_op                  # projected quadric
 
     # comparing with simple projection
     #rank = len(quadric)
@@ -76,8 +76,8 @@ def quadric_proj(quadric, idx):
 # projects linear part of the quadric
 # (see [eck14], equ. 57)
 #
-def quadric_proj_vec(vec, _E, idx):
-    _col = _E[:,idx]
+def quadric_proj_vec(vec, quadric, idx):
+    _col = quadric[:,idx]
     col = np.delete(_col, idx, axis=0)
     if np.abs(_col[idx]) < g_eps:
         return col
