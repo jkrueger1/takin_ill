@@ -61,7 +61,6 @@ struct Resolution
 	std::vector<ublas::vector<t_real_reso>> vecQ;
 };
 
-t_real_reso get_vanadium_fwhm(const Resolution& reso);
 
 void normalise_P(std::vector<t_real_reso>*);
 

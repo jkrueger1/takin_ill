@@ -537,12 +537,6 @@ void ResoDlg::Calc()
 
 		if(res.bOk)
 		{
-			// --------------------------------------------------------------------------------
-			// Vanadium width
-			auto dVanadiumFWHMs = calc_vanadium_fwhm<t_real_reso>(
-				res.reso, res.reso_v, res.reso_s, res.Q_avg);
-			// --------------------------------------------------------------------------------
-
 			const std::string& strAA_1 = tl::get_spec_char_utf8("AA")
 				+ tl::get_spec_char_utf8("sup-")
 				+ tl::get_spec_char_utf8("sup1");
@@ -597,13 +591,17 @@ void ResoDlg::Calc()
 			ostrRes << "\t<ul><li>Resolution Volume: " << res.dResVol << " meV " << strAA_3 << "</li>\n";
 			ostrRes << "\t<li>R0: " << res.dR0 << "</li></ul></p>\n\n";
 
+			// --------------------------------------------------------------------------------
+			// Bragg widths
 			ostrRes << "<p><b>Coherent (Bragg) FWHMs:</b>\n";
 			ostrRes << "\t<ul><li>Q_para: " << res.dBraggFWHMs[0] << " " << strAA_1 << "</li>\n";
 			ostrRes << "\t<li>Q_ortho: " << res.dBraggFWHMs[1] << " " << strAA_1 << "</li>\n";
 			ostrRes << "\t<li>Q_z: " << res.dBraggFWHMs[2] << " " << strAA_1 << "</li>\n";
+			ostrRes << "\t<li>E: " << res.dBraggFWHMs[3] << " meV</li>\n";
+
+			static const char* pcHkl[] = { "h", "k", "l" };
 			if(m_bHasUB)
 			{
-				static const char* pcHkl[] = { "h", "k", "l" };
 				const std::vector<t_real_reso> vecFwhms = calc_bragg_fwhms(m_resoHKL);
 
 				for(unsigned iHkl=0; iHkl<3; ++iHkl)
@@ -612,13 +610,32 @@ void ResoDlg::Calc()
 						<< vecFwhms[iHkl] << " rlu</li>\n";
 				}
 			}
-			ostrRes << "\t<li>E: " << res.dBraggFWHMs[3] << " meV</li></ul></p>\n\n";
 
+			ostrRes << "</ul></p>\n";
+			// --------------------------------------------------------------------------------
+
+			// --------------------------------------------------------------------------------
+			// Vanadium widths
+			auto dVanadiumFWHMs = calc_vanadium_fwhms(res.reso);
 			ostrRes << "<p><b>Incoherent (Vanadium) FWHMs:</b>\n";
 			ostrRes << "\t<ul><li>Q_para: " << dVanadiumFWHMs[0] << " " << strAA_1 << "</li>\n";
 			ostrRes << "\t<li>Q_ortho: " << dVanadiumFWHMs[1] << " " << strAA_1 << "</li>\n";
 			ostrRes << "\t<li>Q_z: " << dVanadiumFWHMs[2] << " " << strAA_1 << "</li>\n";
-			ostrRes << "\t<li>E: " << dVanadiumFWHMs[3] << " meV</li></ul></p>\n\n";
+			ostrRes << "\t<li>E: " << dVanadiumFWHMs[3] << " meV</li>\n";
+
+			if(m_bHasUB)
+			{
+				const std::vector<t_real_reso> vecFwhms = calc_vanadium_fwhms(m_resoHKL);
+
+				for(unsigned iHkl=0; iHkl<3; ++iHkl)
+				{
+					ostrRes << "\t<li>" << pcHkl[iHkl] << ": "
+						<< vecFwhms[iHkl] << " rlu</li>\n";
+				}
+			}
+
+			ostrRes << "</ul></p>\n";
+			// --------------------------------------------------------------------------------
 
 			ostrRes << "<p><b>Resolution Matrix (Q_para, Q_ortho, Q_z, E) in 1/A, meV and using Gaussian sigmas:</b>\n\n";
 			ostrRes << "<blockquote><table border=\"0\" width=\"75%\">\n";

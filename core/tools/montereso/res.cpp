@@ -127,7 +127,7 @@ Resolution calc_res(const std::vector<vector<t_real>>& Q_vec, const std::vector<
 	if(reso.bHasRes)
 	{
 		reso.dQ = calc_bragg_fwhms(reso.res);
-		reso.dEinc = get_vanadium_fwhm(reso);
+		reso.dEinc = calc_vanadium_fwhms(reso.res)[3];
 
 		tl::log_info("Resolution matrix: ", reso.res);
 
@@ -213,14 +213,4 @@ Resolution calc_res(
 	tl::log_info("Average Q vector: ", Q_avg);
 
 	return calc_res(Q_vec, &p_vec, qPara, qPerp);
-}
-
-
-/**
- * vanadium widths
- */
-t_real get_vanadium_fwhm(const Resolution& reso)
-{
-	ublas::vector<t_real> vec0 = ublas::zero_vector<t_real>(4);
-	return calc_vanadium_fwhm<t_real>(reso.res, vec0, t_real(0), reso.Q_avg)[3];
 }

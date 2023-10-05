@@ -529,18 +529,14 @@ std::vector<t_real> calc_bragg_fwhms(const t_mat& reso)
 /**
  * incoherent (vanadium) widths
  */
-template<class t_real = t_real_reso>
-std::vector<t_real> calc_vanadium_fwhm(
-	const ublas::matrix<t_real>& matReso,
-	const ublas::vector<t_real>& vecReso,
-	const t_real dScalarReso,
-	const ublas::vector<t_real>& vecQAvg)
+template<class t_mat, class t_real = typename t_mat::value_type>
+std::vector<t_real> calc_vanadium_fwhms(const t_mat& reso)
 {
 	std::vector<t_real> widths;
 
 	// Q_parallel
 	{
-		ublas::matrix<t_real> M = quadric_proj(matReso, 3);
+		ublas::matrix<t_real> M = quadric_proj(reso, 3);
 		M = quadric_proj(M, 2);
 		M = quadric_proj(M, 1);
 
@@ -549,7 +545,7 @@ std::vector<t_real> calc_vanadium_fwhm(
 	}
 	// Q_perpendicular
 	{
-		ublas::matrix<t_real> M = quadric_proj(matReso, 3);
+		ublas::matrix<t_real> M = quadric_proj(reso, 3);
 		M = quadric_proj(M, 2);
 		M = quadric_proj(M, 0);
 
@@ -558,7 +554,7 @@ std::vector<t_real> calc_vanadium_fwhm(
 	}
 	// Q_up
 	{
-		ublas::matrix<t_real> M = quadric_proj(matReso, 3);
+		ublas::matrix<t_real> M = quadric_proj(reso, 3);
 		M = quadric_proj(M, 1);
 		M = quadric_proj(M, 0);
 
@@ -567,7 +563,7 @@ std::vector<t_real> calc_vanadium_fwhm(
 	}
 	// energy -> project all Q axes
 	{
-		ublas::matrix<t_real> M = quadric_proj(matReso, 0);
+		ublas::matrix<t_real> M = quadric_proj(reso, 0);
 		M = quadric_proj(M, 0);
 		M = quadric_proj(M, 0);
 
