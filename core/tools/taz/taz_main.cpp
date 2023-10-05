@@ -290,13 +290,13 @@ int main(int argc, char** argv)
 			opts::bool_switch(&bStartScanviewer),
 			"directly runs the scan viewer tool")));
 		args.add(boost::shared_ptr<opts::option_description>(
-			new opts::option_description("reso",
-			opts::bool_switch(&bStartRes),
-			"runs the resolution calculation command-line tool")));
-		args.add(boost::shared_ptr<opts::option_description>(
 			new opts::option_description("convo",
 			opts::bool_switch(&bStartMonteconvo),
 			"directly runs the convolution simulator/fitter")));
+		args.add(boost::shared_ptr<opts::option_description>(
+			new opts::option_description("reso",
+			opts::bool_switch(&bStartRes),
+			"runs the resolution calculation command-line tool")));
 		args.add(boost::shared_ptr<opts::option_description>(
 			new opts::option_description("convosim",
 			opts::bool_switch(&bStartMonteconvoCLI),
