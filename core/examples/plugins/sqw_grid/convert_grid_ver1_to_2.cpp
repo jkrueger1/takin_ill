@@ -30,13 +30,19 @@
  *         8 bytes (std::size_t): offset into data block
  */
 
+#define HAS_POLARISATION_DATA 0
+
+
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <unordered_map>
 
+
 using t_float_src = double;
 using t_float_dst = double;
+using t_idx = std::size_t;         // file offsets
+using t_branchidx = unsigned int;  // dispersion branch indices
 
 
 int main()
@@ -69,13 +75,13 @@ int main()
 	std::ifstream ifDat(filenameDat);
 	std::ofstream ofDat(filenameNewDat);
 
-	std::unordered_map<std::size_t, std::size_t> mapIndices;
+	std::unordered_map<t_idx, t_idx> mapIndices;
 
 	std::size_t removedBranches = 0;
 
 
 	// write a dummy index file offset at the beginning (to be filled in later)
-	std::size_t idx_offs = 0;
+	t_idx idx_offs = 0;
 	ofDat.write((char*)&idx_offs, sizeof(idx_offs));
 
 
@@ -97,12 +103,12 @@ int main()
 	ofDat << "takin_grid_data_ver2|title:TEST|author:tweber@ill.fr|date:5/feb/2020";
 
 
-	while(1)
+	while(true)
 	{
-		std::size_t idx = ifDat.tellg();
-		std::size_t idxnew = ofDat.tellp();
+		t_idx idx = ifDat.tellg();
+		t_idx idxnew = ofDat.tellp();
 
-		unsigned int numBranches = 0;
+		t_branchidx numBranches = 0;
 		ifDat.read((char*)&numBranches, sizeof(numBranches));
 		if(ifDat.gcount() != sizeof(numBranches) || ifDat.eof())
 			break;
@@ -112,24 +118,28 @@ int main()
 
 
 		// write placeholder
-		unsigned int numNewBranches = 0;
+		t_branchidx numNewBranches = 0;
 		ofDat.write((char*)&numNewBranches, sizeof(numNewBranches));
 
 
-		for(unsigned int branch=0; branch<numBranches; ++branch)
+		for(t_branchidx branch=0; branch<numBranches; ++branch)
 		{
-			// in case more than one weigh factor is stored in original grid:
-			//t_float_src vals[4] = {0, 0, 0, 0};
-
+#if HAS_POLARISATION_DATA != 0
+			t_float_src vals[4] = { 0, 0, 0, 0 };
+#else
 			t_float_src vals[2] = { 0, 0 };
+#endif
 			ifDat.read((char*)vals, sizeof(vals));
 
 			t_float_dst E = vals[0];
 			if(std::abs(E) < eps)
 				E = t_float_dst(0);
 
-			//t_float_dst w = std::abs(vals[1])+std::abs(vals[2])+std::abs(vals[3]);
+#if HAS_POLARISATION_DATA != 0
+			t_float_dst w = std::abs(vals[1]) + std::abs(vals[2]) + std::abs(vals[3]);
+#else
 			t_float_dst w = std::abs(vals[1]);
+#endif
 
 			if(w >= eps)
 			{
@@ -146,7 +156,7 @@ int main()
 
 
 		// seek back and write real number of branches
-		std::size_t lastIdx = ofDat.tellp();
+		t_idx lastIdx = ofDat.tellp();
 		ofDat.seekp(idxnew, std::ios_base::beg);
 		ofDat.write((char*)&numNewBranches, sizeof(numNewBranches));
 		ofDat.seekp(lastIdx, std::ios_base::beg);
@@ -161,7 +171,7 @@ int main()
 	ofDat.seekp(idx_offs, std::ios_base::beg);
 
 
-	std::cout << removedBranches << " branches removed (w < eps)." << std::endl;
+	std::cout << removedBranches << " branches removed (weight < eps)." << std::endl;
 
 
 	std::cout << "\nConverting index file ..." << std::endl;
@@ -171,9 +181,9 @@ int main()
 	std::ofstream &ofIdx = ofDat;
 
 
-	while(1)
+	while(true)
 	{
-		std::size_t idx = 0;
+		t_idx idx = 0;
 
 		ifIdx.read((char*)&idx, sizeof(idx));
 		if(ifIdx.gcount() != sizeof(idx) || ifIdx.eof())
@@ -186,7 +196,7 @@ int main()
 			continue;
 		}
 
-		std::size_t newidx = iter->second;
+		t_idx newidx = iter->second;
 		ofIdx.write((char*)&newidx, sizeof(newidx));
 	}
 
