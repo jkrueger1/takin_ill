@@ -36,8 +36,16 @@
 
 using t_real = t_real_reso;
 
+
 static const char* pcModIdent = "py";
 static const char* pcModName = "Python Scripting";
+static const char* pcModHelp = R"RAWSTR(Python Scripting Module.
+
+This module allows for the inclusion of user-provided S(Q, E) Python scripts
+for use with the convolution simulator / fitter.
+
+Please refer to the Takin help for more information and tutorials.)RAWSTR";
+
 
 #define MAX_PARAM_VAL_SIZE 128
 
@@ -424,10 +432,10 @@ SqwBase* SqwPy::shallow_copy() const
 #include "libs/version.h"
 
 
-std::tuple<std::string, std::string, std::string> sqw_info()
+std::tuple<std::string, std::string, std::string, std::string> sqw_info()
 {
 	//tl::log_info("In ", __func__, ".");
-	return std::make_tuple(TAKIN_VER, pcModIdent, pcModName);
+	return std::make_tuple(TAKIN_VER, pcModIdent, pcModName, pcModHelp);
 }
 
 
@@ -484,6 +492,7 @@ int main(int argc, char** argv)
 		std::cout << "module_name: " << pcModName << "\n";
 		std::cout << "module_type: sqw\n";
 		std::cout << "required_takin_version: " << TAKIN_VER << "\n";
+		std::cout << "module_help:begin\n" << pcModHelp << "\nmodule_help:end\n";
 		std::cout.flush();
 		return 0;
 	}

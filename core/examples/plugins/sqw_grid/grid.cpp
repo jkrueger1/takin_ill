@@ -5,8 +5,8 @@
  * @license GPLv2
  */
 
-// Module: g++ -std=c++11 -shared -fPIC -o plugins/sqwgrid.so -I. -I/usr/include/QtCore -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtCore examples/sqw_grid/grid.cpp tools/monteconvo/sqwbase.cpp tlibs/log/log.cpp tlibs/string/eval.cpp
-// Test: g++ -std=c++11 -DDO_TEST -fPIC -o sqwgrid-tst -I. -I/usr/include/QtCore -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtCore examples/sqw_grid/grid.cpp tools/monteconvo/sqwbase.cpp tlibs/string/eval.cpp tlibs/log/log.cpp -lboost_iostreams -lQt5Core
+// Module: g++ -std=c++11 -shared -fPIC -o plugins/sqwgrid.so -I. -I/usr/include/QtCore -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtCore examples/plugins/sqw_grid/grid.cpp tools/monteconvo/sqwbase.cpp tlibs/log/log.cpp tlibs/string/eval.cpp
+// Test: g++ -std=c++11 -DDO_TEST -fPIC -o sqwgrid-tst -I. -I/usr/include/QtCore -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtCore examples/plugins/sqw_grid/grid.cpp tools/monteconvo/sqwbase.cpp tlibs/string/eval.cpp tlibs/log/log.cpp -lboost_iostreams -lQt5Core
 
 #include "grid.h"
 
@@ -329,12 +329,13 @@ int main(int argc, char **argv)
 
 static const char* pcModIdent = "gridmod";
 static const char* pcModName = "Grid";
+static const char* pcModHelp = R"RAWSTR(Grid Module Version 1.)RAWSTR";
 
 
-std::tuple<std::string, std::string, std::string> sqw_info()
+std::tuple<std::string, std::string, std::string, std::string> sqw_info()
 {
 	//tl::log_info("In ", __func__, ".");
-	return std::make_tuple(TAKIN_VER, pcModIdent, pcModName);
+	return std::make_tuple(TAKIN_VER, pcModIdent, pcModName, pcModHelp);
 }
 
 

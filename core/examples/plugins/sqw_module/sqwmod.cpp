@@ -5,7 +5,7 @@
  * @license GPLv2
  */
 
-// g++ -std=c++11 -I. -shared -fPIC -o plugins/sqwmod.so examples/sqw_module/sqwmod.cpp tools/monteconvo/sqwbase.cpp tlibs/log/log.cpp
+// g++ -std=c++11 -I. -shared -fPIC -o plugins/sqwmod.so examples/plugins/sqw_module/sqwmod.cpp tools/monteconvo/sqwbase.cpp tlibs/log/log.cpp
 
 #include "sqwmod.h"
 
@@ -164,14 +164,17 @@ SqwBase* SqwMod::shallow_copy() const
 #include <boost/dll/alias.hpp>
 
 
-static const char* pcModIdent = "tstmod";
-static const char* pcModName = "Test Module";
+static const char* pcModIdent = "tstmod";      // module identifier
+static const char* pcModName = "Test Module";  // module long name
+static const char* pcModHelp = R"RAWSTR(Test Module.
+Write a description or help text for this module here.
+)RAWSTR";
 
-std::tuple<std::string, std::string, std::string> sqw_info()
+std::tuple<std::string, std::string, std::string, std::string> sqw_info()
 {
 	tl::log_info("In ", __func__, ".");
 
-	return std::make_tuple(TAKIN_VER, pcModIdent, pcModName);
+	return std::make_tuple(TAKIN_VER, pcModIdent, pcModName, pcModHelp);
 }
 
 std::shared_ptr<SqwBase> sqw_construct(const std::string& strCfgFile)

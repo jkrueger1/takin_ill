@@ -300,9 +300,16 @@ SqwBase* MagnonMod::shallow_copy() const
 
 #include <boost/dll/alias.hpp>
 
-std::tuple<std::string, std::string, std::string> sqw_info()
+static const char* g_help = R"RAWSTR(Magnon Dynamics Module.
+
+This module serves as an interface between the magnon dynamics calculator
+and the resolution-convolution simulator / fitter.
+
+Please refer to the Takin help for more information and tutorials.)RAWSTR";
+
+std::tuple<std::string, std::string, std::string, std::string> sqw_info()
 {
-	return std::make_tuple(TAKIN_VER, "magnonmod", "Magnetic Dynamics");
+	return std::make_tuple(TAKIN_VER, "magnonmod", "Magnetic Dynamics", g_help);
 }
 
 std::shared_ptr<SqwBase> sqw_construct(const std::string& cfg_file)
@@ -316,9 +323,9 @@ BOOST_DLL_ALIAS(sqw_construct, takin_sqw);
 
 #else  // mingw exports
 
-extern "C" std::tuple<std::string, std::string, std::string> takin_sqw_info()
+extern "C" std::tuple<std::string, std::string, std::string, std::string> takin_sqw_info()
 {
-	return std::make_tuple(TAKIN_VER, "magnonmod", "Magnetic Dynamics");
+	return std::make_tuple(TAKIN_VER, "magnonmod", "Magnetic Dynamics", g_help);
 }
 
 extern "C" std::shared_ptr<SqwBase> takin_sqw(const std::string& cfg_file)

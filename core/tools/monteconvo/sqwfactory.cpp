@@ -54,7 +54,7 @@
 
 // sqw info function: "takin_sqw_info"
 // returns: [takin ver, ident, long name]
-using t_pfkt_info = std::tuple<std::string, std::string, std::string>(*)();
+using t_pfkt_info = std::tuple<std::string, std::string, std::string, std::string>(*)();
 using t_fkt_info = typename std::remove_pointer<t_pfkt_info>::type;
 
 // sqw module creation function: "takin_sqw"
@@ -70,46 +70,74 @@ using t_pfkt_raw_del = void(*)(SqwBase*);
 using t_fkt_raw_del = typename std::remove_pointer<t_pfkt_raw_del>::type;
 
 
-// key: identifier, value: [func, long name]
-using t_mapSqw = std::unordered_map<std::string, std::tuple<t_pfkt, std::string>>;
-using t_mapSqwRaw = std::unordered_map<std::string, std::tuple<t_pfkt_raw_new, t_pfkt_raw_del, std::string>>;
+// key: identifier, value: [func, long name, help text]
+using t_mapSqw = std::unordered_map<std::string, std::tuple<t_pfkt, std::string, std::string>>;
+using t_mapSqwRaw = std::unordered_map<std::string, std::tuple<t_pfkt_raw_new, t_pfkt_raw_del, std::string, std::string>>;
 
-// key: identifier, value: [long name, binary file name]
-using t_mapSqwExt = std::unordered_map<std::string, std::tuple<std::string, std::string>>;
+// key: identifier, value: [long name, binary file name, help text]
+using t_mapSqwExt = std::unordered_map<std::string, std::tuple<std::string, std::string, std::string>>;
 
 
 
 // shared_ptr constructors
 static t_mapSqw g_mapSqw =
 {
-	{ "kd", t_mapSqw::mapped_type {
-		[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
-		{ return std::make_shared<SqwKdTree>(strCfgFile.c_str()); },
-		"4D Nearest-Point Raster of the Form (h, k, l, E, S)" } },
-	{ "uniform_grid", t_mapSqw::mapped_type {
-		[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
-		{ return std::make_shared<SqwUniformGrid>(strCfgFile.c_str()); },
-		"Uniform Grid" } },
-	{ "table_1d", t_mapSqw::mapped_type {
-		[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
-		{ return std::make_shared<SqwTable1d>(strCfgFile.c_str()); },
-		"1D Nearest-Point Raster of the Form (q, E, S)" } },
-	{ "phonon", t_mapSqw::mapped_type {
-		[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
-		{ return std::make_shared<SqwPhonon>(strCfgFile.c_str()); },
-		"Simple Phonon Model" } },
-	{ "phonon_single", t_mapSqw::mapped_type {
-		[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
-		{ return std::make_shared<SqwPhononSingleBranch>(strCfgFile.c_str()); },
-		"Simple Single-Branch Phonon Model" } },
-	{ "magnon", t_mapSqw::mapped_type {
-		[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
-		{ return std::make_shared<SqwMagnon>(strCfgFile.c_str()); },
-		"Simple Magnon Model" } },
-	{ "elastic", t_mapSqw::mapped_type {
-		[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
-		{ return std::make_shared<SqwElast>(strCfgFile.c_str()); },
-		"Elastic Model" } },
+	{ "kd", t_mapSqw::mapped_type
+		{
+			[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
+			{ return std::make_shared<SqwKdTree>(strCfgFile.c_str()); },
+			"4D Nearest-Point Raster",
+			"This modules uses a 4-d nearest-point raster of the Form (h, k, l, E, S)."
+		}
+	},
+	{ "uniform_grid", t_mapSqw::mapped_type
+		{
+			[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
+			{ return std::make_shared<SqwUniformGrid>(strCfgFile.c_str()); },
+			"Uniform Grid",
+			"A uniformely-spaced grid. See the Takin help for more information.",
+		}
+	},
+	{ "table_1d", t_mapSqw::mapped_type
+		{
+			[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
+			{ return std::make_shared<SqwTable1d>(strCfgFile.c_str()); },
+			"1D Nearest-Point Raster",
+			"This module uses a 1-d nearest-point raster of the Form (q, E, S)."
+		}
+	},
+	{ "phonon", t_mapSqw::mapped_type
+		{
+			[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
+			{ return std::make_shared<SqwPhonon>(strCfgFile.c_str()); },
+			"Simple Phonon Model",
+			""
+		}
+	},
+	{ "phonon_single", t_mapSqw::mapped_type
+		{
+			[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
+			{ return std::make_shared<SqwPhononSingleBranch>(strCfgFile.c_str()); },
+			"Simple Single-Branch Phonon Model",
+			"This module creates a simple sine-shaped dispersion for acoustic phonons."
+		}
+	},
+	{ "magnon", t_mapSqw::mapped_type
+		{
+			[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
+			{ return std::make_shared<SqwMagnon>(strCfgFile.c_str()); },
+			"Simple Magnon Model",
+			""
+		}
+	},
+	{ "elastic", t_mapSqw::mapped_type
+		{
+			[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
+			{ return std::make_shared<SqwElast>(strCfgFile.c_str()); },
+			"Elastic Model",
+			""
+		}
+	},
 };
 
 
@@ -120,6 +148,9 @@ static t_mapSqwRaw g_mapSqwRaw;
 static t_mapSqwExt g_mapSqwExt;
 
 
+/**
+ * gets the short and long names of the installed plugin modules
+ */
 std::vector<std::tuple<std::string, std::string>> get_sqw_names()
 {
 	using t_tup = std::tuple<std::string, std::string>;
@@ -258,12 +289,31 @@ void load_sqw_ext_plugins()
 				continue;
 			}
 
-			std::string strModIdent, strModName, strTakVer;
+			std::string strModIdent, strModName, strTakVer, strModHelp;
+			bool in_help_text = false;
 			// get module descriptor strings
 			while(!proc.GetIstr().eof())
 			{
 				std::string line;
 				std::getline(proc.GetIstr(), line);
+
+				if(in_help_text)
+				{
+					if(line == "module_help:end")
+					{
+						// end of help text
+						in_help_text = false;
+					}
+					else
+					{
+						// add line of help text
+						if(!strModHelp.empty())
+							strModHelp += "\n";
+						strModHelp += line;
+					}
+
+					continue;
+				}
 
 				std::vector<std::string> vecTokens;
 				tl::get_tokens<std::string, std::string>(line, std::string(":"), vecTokens);
@@ -276,6 +326,10 @@ void load_sqw_ext_plugins()
 					strModName = tl::trimmed(vecTokens[1]);
 				else if(vecTokens[0] == "required_takin_version")
 					strTakVer = tl::trimmed(vecTokens[1]);
+				else if(vecTokens[0] == "module_help" && vecTokens[1] == "begin")
+					in_help_text = true;
+				else if(vecTokens[0] == "module_help" && vecTokens[1] == "end")
+					in_help_text = false;
 			}
 
 			if(strTakVer == "")
@@ -293,7 +347,7 @@ void load_sqw_ext_plugins()
 			}
 
 			g_vecExtMods.push_back(strModIdent);
-			g_mapSqwExt.insert(std::make_pair(strModIdent, std::make_tuple(strModName, strPlugin)));
+			g_mapSqwExt.insert(std::make_pair(strModIdent, std::make_tuple(strModName, strPlugin, strModHelp)));
 			tl::log_info("Loaded plugin: ", strPlugin, " -> ", strModIdent, " (\"", strModName, "\").");
 		}
 
@@ -412,6 +466,7 @@ void load_sqw_plugins()
 					const std::string& strTakVer = std::get<0>(tupInfo);
 					const std::string& strModIdent = std::get<1>(tupInfo);
 					const std::string& strModLongName = std::get<2>(tupInfo);
+					const std::string& strModHelp = std::get<3>(tupInfo);
 
 					// module already registered?
 					if(g_mapSqw.find(strModIdent) != g_mapSqw.end())
@@ -458,7 +513,8 @@ void load_sqw_plugins()
 						g_mapSqwRaw.insert( t_mapSqwRaw::value_type
 						{
 							strModIdent,
-							t_mapSqwRaw::mapped_type { pFktNew, pFktDel, strModLongName }
+							t_mapSqwRaw::mapped_type
+								{ pFktNew, pFktDel, strModLongName, strModHelp }
 						});
 					}
 					else if(pmod->has("takin_sqw"))
@@ -478,7 +534,8 @@ void load_sqw_plugins()
 						g_mapSqw.insert( t_mapSqw::value_type
 						{
 							strModIdent,
-							t_mapSqw::mapped_type { pFkt, strModLongName }
+							t_mapSqw::mapped_type
+								{ pFkt, strModLongName, strModHelp }
 						});
 					}
 					else
