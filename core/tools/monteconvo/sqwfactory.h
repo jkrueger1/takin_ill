@@ -41,8 +41,8 @@
 extern std::shared_ptr<SqwBase> construct_sqw(const std::string& strName,
 	const std::string& strConfigFile);
 
-// [identifier, long name]
-extern std::vector<std::tuple<std::string, std::string>> get_sqw_names();
+// [identifier, long name, help text]
+extern std::vector<std::tuple<std::string, std::string, std::string>> get_sqw_names();
 
 
 extern void unload_sqw_plugins();

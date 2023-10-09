@@ -201,10 +201,15 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	auto vecSqwNames = get_sqw_names();
 	for(const auto& tupSqw : vecSqwNames)
 	{
-		QString strIdent = std::get<0>(tupSqw).c_str();
-		QString strName = std::get<1>(tupSqw).c_str();
+		const std::string& strIdent = std::get<0>(tupSqw);
+		const std::string& strName = std::get<1>(tupSqw);
+		const std::string& strHelp = std::get<2>(tupSqw);
 
-		comboSqw->addItem(strName, strIdent);
+		// add module item to combo box
+		comboSqw->addItem(strName.c_str(), strIdent.c_str());
+
+		// add module help text
+		m_help_texts.insert(std::make_pair(strIdent, strHelp));
 	}
 	// --------------------------------------------------------------------
 
@@ -369,6 +374,7 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	connect(btnBrowseAutosave, &QAbstractButton::clicked, this, &ConvoDlg::browseAutosaveFile);
 	connect(btnFav, &QAbstractButton::clicked, this, &ConvoDlg::ShowFavourites);
 	connect(btnSqwParams, &QAbstractButton::clicked, this, &ConvoDlg::showSqwParamDlg);
+	connect(btnSqwHelp, &QAbstractButton::clicked, this, &ConvoDlg::showSqwHelpDlg);
 	connect(btnSaveResults, &QAbstractButton::clicked,
 	[this]()
 	{
@@ -415,7 +421,7 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 		&& find_resource_dirs("Frameworks/Python.framework", false).size()==0)
 	{
 		QMessageBox::information(this, "Python Module",
-			"The <i>Python</i> S(q,w) plugin module requires having the "
+			"The <i>Python</i> S(Q,E) plugin module requires having the "
 			"<a href=\"https://www.python.org/downloads/mac-osx/\">Python framework</a> installed.<br><br>"
 			"Please also install the <i>numpy</i> and <i>scipy</i> packages using the following command:<br><br>"
 			"<code>/Library/Frameworks/Python.framework/Versions/Current/bin/pip3 install numpy scipy</code>");
@@ -462,6 +468,7 @@ void ConvoDlg::createSqwModel(const QString& qstrFile)
 		emit SqwLoaded(std::vector<SqwBase::t_var>{}, nullptr);
 	}
 
+	// identifier of the currently selected module
 	std::string strSqwIdent = comboSqw->itemData(comboSqw->currentIndex()).toString().toStdString();
 	if(strSqwIdent == "")
 		return;
@@ -472,7 +479,7 @@ void ConvoDlg::createSqwModel(const QString& qstrFile)
 
 	if(strSqwFile == "")
 	{
-		tl::log_warn("No S(q,w) config file given.");
+		tl::log_warn("No S(Q,E) config file given.");
 		//return;
 	}
 
@@ -480,7 +487,7 @@ void ConvoDlg::createSqwModel(const QString& qstrFile)
 	m_pSqw = construct_sqw(strSqwIdent, strSqwFile);
 	if(!m_pSqw)
 	{
-		QMessageBox::critical(this, "Error", "Unknown S(q,w) model selected.");
+		QMessageBox::critical(this, "Error", "Unknown S(Q,E) model selected.");
 		return;
 	}
 
@@ -490,8 +497,8 @@ void ConvoDlg::createSqwModel(const QString& qstrFile)
 	}
 	else
 	{
-		//QMessageBox::critical(this, "Error", "Could not create S(q,w).");
-		tl::log_err("Could not create S(q,w).");
+		//QMessageBox::critical(this, "Error", "Could not create S(Q,E).");
+		tl::log_err("Could not create S(Q,E).");
 		return;
 	}
 }
@@ -785,6 +792,35 @@ void ConvoDlg::scaleChanged()
 void ConvoDlg::showSqwParamDlg()
 {
 	focus_dlg(m_pSqwParamDlg);
+}
+
+
+void ConvoDlg::showSqwHelpDlg()
+{
+	// identifier of the currently selected S(Q,E) module
+	std::string strSqwIdent = comboSqw->itemData(comboSqw->currentIndex()).toString().toStdString();
+	if(strSqwIdent == "")
+		return;
+
+	// S(Q,E) module name
+	QString strSqwLongName = comboSqw->itemText(comboSqw->currentIndex());
+
+	auto iter =  m_help_texts.find(strSqwIdent);
+	if(iter == m_help_texts.end())
+	{
+		QMessageBox::warning(this, strSqwLongName, "No help text was found.");
+		return;
+	}
+
+	// no help text
+	if(iter->second == "")
+	{
+		QMessageBox::warning(this, strSqwLongName, "No help text was defined.");
+		return;
+	}
+
+	// display help
+	QMessageBox::information(this, strSqwLongName, iter->second.c_str());
 }
 
 

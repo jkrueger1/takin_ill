@@ -37,6 +37,8 @@
 #include <thread>
 #include <atomic>
 #include <memory>
+#include <map>
+#include <unordered_map>
 
 #include "ui/ui_monteconvo.h"
 
@@ -82,7 +84,10 @@ protected:
 	static const std::string s_strTitle;
 	std::string m_strLastFile;
 
-	t_real_reso m_chi2;
+	t_real_reso m_chi2 = 0.;
+
+	// maps module identifiers to the corresponding module help texts
+	std::unordered_map<std::string, std::string> m_help_texts;
 
 
 protected:
@@ -136,6 +141,7 @@ public:
 
 protected slots:
 	void showSqwParamDlg();
+	void showSqwHelpDlg();
 
 	void browseCrysFiles();
 	void browseResoFiles();

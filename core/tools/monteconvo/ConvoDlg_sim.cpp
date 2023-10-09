@@ -197,7 +197,7 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 
 		if(m_pSqw == nullptr || !m_pSqw->IsOk())
 		{
-			//QMessageBox::critical(this, "Error", "No valid S(q,w) model loaded.");
+			//QMessageBox::critical(this, "Error", "No valid S(Q,E) model loaded.");
 			fktEnableButtons();
 			return;
 		}
@@ -283,7 +283,7 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 				t_real dhklE_mean[4] = {0., 0., 0., 0.};
 
 				if(iNumNeutrons == 0)
-				{	// if no neutrons are given, just plot the unconvoluted S(q,w)
+				{	// if no neutrons are given, just plot the unconvoluted S(Q,E)
 					// TODO: add an option to let the user choose if S(Q,E) is
 					// really the dynamical structure factor, or its absolute square
 					dS += (*m_pSqw)(dCurH, dCurK, dCurL, dCurE);
@@ -365,7 +365,7 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 			if(tl::is_nan_or_inf(dS))
 			{
 				dS = t_real(0);
-				tl::log_warn("S(q,w) is invalid.");
+				tl::log_warn("S(Q,E) is invalid.");
 			}
 
 			ostrOut << std::left << std::setw(g_iPrec*2) << vecH[iStep] << " "
@@ -471,7 +471,7 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 				ublas::vector<t_real> vecScanHKLE = tl::make_vec({ pt.h, pt.k, pt.l, E });
 
 
-				// find point on S(q,w) curve closest to scan point
+				// find point on S(Q,E) curve closest to scan point
 				std::size_t iMinIdx = 0;
 				t_real dMinDist = std::numeric_limits<t_real>::max();
 				for(std::size_t iStep=0; iStep<iNumSteps; ++iStep)
@@ -718,7 +718,7 @@ void ConvoDlg::Start2D()
 
 		if(m_pSqw == nullptr || !m_pSqw->IsOk())
 		{
-			//QMessageBox::critical(this, "Error", "No valid S(q,w) model loaded.");
+			//QMessageBox::critical(this, "Error", "No valid S(Q,E) model loaded.");
 			fktEnableButtons();
 			return;
 		}
@@ -796,7 +796,7 @@ void ConvoDlg::Start2D()
 				t_real dhklE_mean[4] = {0., 0., 0., 0.};
 
 				if(iNumNeutrons == 0)
-				{	// if no neutrons are given, just plot the unconvoluted S(q,w)
+				{	// if no neutrons are given, just plot the unconvoluted S(Q,E)
 					// TODO: add an option to let the user choose if S(Q,E) is
 					// really the dynamical structure factor, or its absolute square
 					dS += (*m_pSqw)(dCurH, dCurK, dCurL, dCurE);
@@ -872,7 +872,7 @@ void ConvoDlg::Start2D()
 			if(tl::is_nan_or_inf(dS))
 			{
 				dS = t_real(0);
-				tl::log_warn("S(q,w) is invalid.");
+				tl::log_warn("S(Q,E) is invalid.");
 			}
 
 			ostrOut << std::left << std::setw(g_iPrec*2) << vecH[iStep] << " "
@@ -1028,7 +1028,7 @@ void ConvoDlg::StartDisp()
 
 		if(m_pSqw == nullptr || !m_pSqw->IsOk())
 		{
-			//QMessageBox::critical(this, "Error", "No valid S(q,w) model loaded.");
+			//QMessageBox::critical(this, "Error", "No valid S(Q,E) model loaded.");
 			fktEnableButtons();
 			return;
 		}

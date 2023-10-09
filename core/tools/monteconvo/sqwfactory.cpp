@@ -150,10 +150,11 @@ static t_mapSqwExt g_mapSqwExt;
 
 /**
  * gets the short and long names of the installed plugin modules
+ * as well as the help texts
  */
-std::vector<std::tuple<std::string, std::string>> get_sqw_names()
+std::vector<std::tuple<std::string, std::string, std::string>> get_sqw_names()
 {
-	using t_tup = std::tuple<std::string, std::string>;
+	using t_tup = std::tuple<std::string, std::string, std::string>;
 	std::vector<t_tup> vec;
 	vec.reserve(g_mapSqw.size());
 
@@ -162,6 +163,7 @@ std::vector<std::tuple<std::string, std::string>> get_sqw_names()
 		t_tup tup;
 		std::get<0>(tup) = val.first;
 		std::get<1>(tup) = std::get<1>(val.second);
+		std::get<2>(tup) = std::get<2>(val.second);
 
 		vec.emplace_back(std::move(tup));
 	}
@@ -171,6 +173,7 @@ std::vector<std::tuple<std::string, std::string>> get_sqw_names()
 		t_tup tup;
 		std::get<0>(tup) = val.first;
 		std::get<1>(tup) = std::get<2>(val.second);
+		std::get<2>(tup) = std::get<3>(val.second);
 
 		vec.emplace_back(std::move(tup));
 	}
@@ -180,6 +183,7 @@ std::vector<std::tuple<std::string, std::string>> get_sqw_names()
 		t_tup tup;
 		std::get<0>(tup) = val.first;
 		std::get<1>(tup) = std::get<0>(val.second);
+		std::get<2>(tup) = std::get<2>(val.second);
 
 		vec.emplace_back(std::move(tup));
 	}
