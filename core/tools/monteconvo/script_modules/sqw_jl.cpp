@@ -39,12 +39,9 @@ static const char* pcModIdent = "jl";
 static const char* pcModName = "Julia Scripting";
 static const char* pcModHelp = R"RAWSTR(Julia Scripting Module.
 
-This module allows for the inclusion of user-provided
-S(Q, E) Julia scripts for use with the convolution
-simulator or fitter.
+This module allows for the inclusion of user-provided S(Q, E) Julia scripts for use with the convolution simulator or fitter.
 
-Please refer to the Takin help for more information
-and tutorials.)RAWSTR";
+Please refer to the Takin help for more information and tutorials.)RAWSTR";
 
 
 #define MAX_PARAM_VAL_SIZE 128
