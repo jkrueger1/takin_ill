@@ -87,15 +87,9 @@ static t_mapSqw g_mapSqw =
 			[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
 			{ return std::make_shared<SqwKdTree>(strCfgFile.c_str()); },
 			"4D Nearest-Point Raster",
-			"This modules uses a 4-d nearest-point raster of the Form (h, k, l, E, S)."
-		}
-	},
-	{ "uniform_grid", t_mapSqw::mapped_type
-		{
-			[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
-			{ return std::make_shared<SqwUniformGrid>(strCfgFile.c_str()); },
-			"Uniform Grid",
-			"A uniformely-spaced grid. See the Takin help for more information.",
+			"This modules uses a 4-d nearest-point raster of the Form (h, k, l, E, S). "
+			"\n\nIt is based on querying a k-d tree for the nearest point, "
+			"so please make sure to include zeros around the dispersion branches."
 		}
 	},
 	{ "table_1d", t_mapSqw::mapped_type
@@ -103,7 +97,18 @@ static t_mapSqw g_mapSqw =
 			[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
 			{ return std::make_shared<SqwTable1d>(strCfgFile.c_str()); },
 			"1D Nearest-Point Raster",
-			"This module uses a 1-d nearest-point raster of the Form (q, E, S)."
+			"This module uses a 1-d nearest-point raster of the Form (q, E, S). "
+			"\n\nIt is based on querying a k-d tree for the nearest point, "
+			"so please make sure to include zeros around the dispersion branches."
+		}
+	},
+	{ "uniform_grid", t_mapSqw::mapped_type
+		{
+			[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
+			{ return std::make_shared<SqwUniformGrid>(strCfgFile.c_str()); },
+			"Uniform Grid",
+			"A uniformly-spaced grid in Q saving the individual dispersion branches per Q. "
+			"\n\nSee the Takin help for more information.",
 		}
 	},
 	{ "phonon", t_mapSqw::mapped_type
@@ -111,7 +116,7 @@ static t_mapSqw g_mapSqw =
 			[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
 			{ return std::make_shared<SqwPhonon>(strCfgFile.c_str()); },
 			"Simple Phonon Model",
-			""
+			"A simple model for longitudinal and transversal acoustic phonons."
 		}
 	},
 	{ "phonon_single", t_mapSqw::mapped_type
@@ -127,7 +132,8 @@ static t_mapSqw g_mapSqw =
 			[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
 			{ return std::make_shared<SqwMagnon>(strCfgFile.c_str()); },
 			"Simple Magnon Model",
-			""
+			"This module creates simple ferromagnetic and antiferromagnetic dispersions. "
+			"\n\nPlease consider using the \"Magnetic Dynamics\" module instead for more advanced cases."
 		}
 	},
 	{ "elastic", t_mapSqw::mapped_type
@@ -135,7 +141,7 @@ static t_mapSqw g_mapSqw =
 			[](const std::string& strCfgFile) -> std::shared_ptr<SqwBase>
 			{ return std::make_shared<SqwElast>(strCfgFile.c_str()); },
 			"Elastic Model",
-			""
+			"This model creates a collection of Bragg peaks."
 		}
 	},
 };
