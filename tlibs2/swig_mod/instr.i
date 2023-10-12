@@ -25,9 +25,8 @@
  * ----------------------------------------------------------------------------
  */
 
-%module tl2
+%module tl2_instr
 %{
-	//#include "magdyn.h"
 	#include "instr.h"
 %}
 
@@ -38,6 +37,9 @@
 %include "std_pair.i"
 //%include "std_tuple.i"
 %include "std_string.i"
+%include "std_shared_ptr.i"
+
+%shared_ptr(tl2::FileInstrBase<double>);
 
 %template(VecStr) std::vector<std::string>;
 %template(VecD) std::vector<double>;
@@ -46,7 +48,6 @@
 %template(ArrB3) std::array<bool,3>;
 %template(MapStrStr) std::unordered_map<std::string, std::string>;
 
-//%include "magdyn.h"
 %include "instr.h"
 
 %template(FileInstrBaseD) tl2::FileInstrBase<double>;

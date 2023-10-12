@@ -53,6 +53,9 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
+#ifndef USE_LAPACK
+	#define USE_LAPACK 1
+#endif
 #include "maths.h"
 #include "units.h"
 #include "phys.h"
@@ -70,7 +73,7 @@ namespace tl2_mag {
  * rotate spin vector for incommensurate structures, i.e. helices
  */
 template<class t_mat, class t_vec, class t_real = typename t_mat::value_type>
-requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
+//requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
 void rotate_spin_incommensurate(t_vec& spin_vec,
 	const t_vec& sc_vec, const t_vec& ordering, const t_vec& rotaxis,
 	t_real eps = std::numeric_limits<t_real>::epsilon())
@@ -91,7 +94,7 @@ void rotate_spin_incommensurate(t_vec& spin_vec,
  * @see https://doi.org/10.1088/1361-6463/aa7573
  */
 template<class t_mat, class t_cplx = typename t_mat::value_type>
-requires tl2::is_mat<t_mat>
+//requires tl2::is_mat<t_mat>
 t_mat get_polarisation(int channel = 0, bool in_chiral_base = true)
 {
 	if(in_chiral_base)
@@ -133,6 +136,114 @@ t_mat get_polarisation(int channel = 0, bool in_chiral_base = true)
 
 
 
+// ----------------------------------------------------------------------------
+// input- and output struct templates
+// ----------------------------------------------------------------------------
+/**
+ * magnetic atom sites
+ */
+template<class t_vec_real, class t_mat, class t_real, class t_size>
+struct t_AtomSite
+{
+	std::string name{};      // identifier
+	t_size index{};          // index
+
+	t_vec_real pos{};        // atom position
+
+	std::string spin_dir[3]; // expression for spin direction
+	t_real spin_mag{};       // spin magnitude
+	t_mat g{};               // g factor
+};
+
+
+/**
+ * temporary per-site calculation results
+ */
+template<class t_vec>
+struct t_AtomSiteCalc
+{
+	t_vec spin_dir{};        // spin direction
+
+	t_vec u{};
+	t_vec u_conj{};
+	t_vec v{};
+};
+
+
+/**
+ * couplings between magnetic atoms
+ */
+template<class t_vec_real, class t_size>
+struct t_ExchangeTerm
+{
+	std::string name{};      // identifier
+	t_size index{};          // index
+
+	t_size atom1{};          // atom 1 index
+	t_size atom2{};          // atom 2 index
+	t_vec_real dist{};       // distance between unit cells
+
+	std::string J{};         // parsable expression for Heisenberg interaction
+	std::string dmi[3];      // parsable expression for Dzyaloshinskij-Moriya interaction
+};
+
+
+/**
+ * temporary per-term calculation results
+ */
+template<class t_vec, class t_cplx>
+struct t_ExchangeTermCalc
+{
+	t_cplx J{};              // Heisenberg interaction
+	t_vec dmi{};             // Dzyaloshinskij-Moriya interaction
+};
+
+
+/**
+ * terms related to an external magnetic field
+ */
+template<class t_vec_real, class t_real>
+struct t_ExternalField
+{
+	bool align_spins{};      // align spins along external field
+	t_vec_real dir{};        // field direction
+	t_real mag{};            // field magnitude
+};
+
+
+/**
+ * eigenenergies and spin-spin correlation matrix
+ */
+template<class t_mat, class t_real>
+struct t_EnergyAndWeight
+{
+	t_real E{};
+
+	// full dynamical structure factor
+	t_mat S{};
+	t_real weight_full{};
+	t_real weight_channel_full[3] = {0., 0., 0.};
+
+	// projected dynamical structure factor for neutron scattering
+	t_mat S_perp{};
+	t_real weight{};
+	t_real weight_channel[3] = {0., 0., 0.};
+};
+
+
+/**
+ * variables for the expression parser
+ */
+template<class t_cplx>
+struct t_Variable
+{
+	std::string name{};
+	t_cplx value{};
+};
+// ----------------------------------------------------------------------------
+
+
+
 /**
  * calculates magnon dynamics,
  * implementing the formalism given in (Toth 2015)
@@ -143,108 +254,22 @@ template<
 	class t_cplx = typename t_mat::value_type,
 	class t_real = typename t_mat_real::value_type,
 	class t_size = std::size_t>
-requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> &&
-	tl2::is_mat<t_mat_real> && tl2::is_vec<t_vec_real>
+//requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> &&
+//	tl2::is_mat<t_mat_real> && tl2::is_vec<t_vec_real>
 class MagDyn
 {
 public:
-	// ----------------------------------------------------------------------------
-	// input- and output structs
-	// ----------------------------------------------------------------------------
-	/**
-	 * magnetic atom sites
-	 */
-	struct AtomSite
-	{
-		std::string name{};      // identifier
-		t_size index{};          // index
-
-		t_vec_real pos{};        // atom position
-
-		std::string spin_dir[3]; // expression for spin direction
-		t_real spin_mag{};       // spin magnitude
-		t_mat g{};               // g factor
-	};
-
-
-	/**
-	 * temporary per-site calculation results
-	 */
-	struct AtomSiteCalc
-	{
-		t_vec spin_dir{};        // spin direction
-
-		t_vec u{}, u_conj{};
-		t_vec v{};
-	};
-
-
-	/**
-	 * couplings between magnetic atoms
-	 */
-	struct ExchangeTerm
-	{
-		std::string name{};      // identifier
-		t_size index{};          // index
-
-		t_size atom1{};          // atom 1 index
-		t_size atom2{};          // atom 2 index
-		t_vec_real dist{};       // distance between unit cells
-
-		std::string J{};         // parsable expression for Heisenberg interaction
-		std::string dmi[3];      // parsable expression for Dzyaloshinskij-Moriya interaction
-	};
-
-
-	/**
-	 * temporary per-term calculation results
-	 */
-	struct ExchangeTermCalc
-	{
-		t_cplx J{};              // Heisenberg interaction
-		t_vec dmi{};             // Dzyaloshinskij-Moriya interaction
-	};
-
-
-	/**
-	 * terms related to an external magnetic field
-	 */
-	struct ExternalField
-	{
-		bool align_spins{};      // align spins along external field
-		t_vec_real dir{};        // field direction
-		t_real mag{};            // field magnitude
-	};
-
-
-	/**
-	 * eigenenergies and spin-spin correlation matrix
-	 */
-	struct EnergyAndWeight
-	{
-		t_real E{};
-
-		// full dynamical structure factor
-		t_mat S{};
-		t_real weight_full{};
-		t_real weight_channel_full[3] = {0., 0., 0.};
-
-		// projected dynamical structure factor for neutron scattering
-		t_mat S_perp{};
-		t_real weight{};
-		t_real weight_channel[3] = {0., 0., 0.};
-	};
-
-
-	/**
-	 * variables for the expression parser
-	 */
-	struct Variable
-	{
-		std::string name{};
-		t_cplx value{};
-	};
-	// ----------------------------------------------------------------------------
+	// --------------------------------------------------------------------
+	// structs
+	// --------------------------------------------------------------------
+	using AtomSite = t_AtomSite<t_vec_real, t_mat, t_real, t_size>;
+	using AtomSiteCalc = t_AtomSiteCalc<t_vec>;
+	using ExchangeTerm = t_ExchangeTerm<t_vec_real, t_size>;
+	using ExchangeTermCalc = t_ExchangeTermCalc<t_vec, t_cplx>;
+	using ExternalField = t_ExternalField<t_vec_real, t_real>;
+	using EnergyAndWeight = t_EnergyAndWeight<t_mat, t_real>;
+	using Variable = t_Variable<t_cplx>;
+	// --------------------------------------------------------------------
 
 
 public:
