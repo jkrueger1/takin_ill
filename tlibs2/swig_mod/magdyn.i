@@ -1,12 +1,12 @@
 /**
- * tlibs2 -- swig interface
+ * tlibs2 -- swig interface for magdyn
  * @author Tobias Weber <tweber@ill.fr>
- * @date 4-jun-2020
+ * @date 12-oct-2023
  * @license see 'LICENSE' file
  *
  * ----------------------------------------------------------------------------
  * tlibs
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -30,20 +30,69 @@
 	#include "magdyn.h"
 %}
 
+
 %include "std_vector.i"
 %include "std_array.i"
-%include "std_map.i"
-%include "std_unordered_map.i"
-%include "std_pair.i"
-//%include "std_tuple.i"
 %include "std_string.i"
 %include "std_shared_ptr.i"
+%include "std_complex.i"
 
-%template(VecStr) std::vector<std::string>;
+
+%template(CplxD) std::complex<double>;
+
 %template(VecD) std::vector<double>;
-%template(ArrD3) std::array<double,3>;
-%template(ArrD5) std::array<double,5>;
-%template(ArrB3) std::array<bool,3>;
-%template(MapStrStr) std::unordered_map<std::string, std::string>;
+%template(VecCplx) std::vector<std::complex<double>>;
+
+%template(ArrD3) std::array<double, 3>;
+%template(ArrD4) std::array<double, 4>;
+%template(ArrCplx3) std::array<std::complex<double>, 3>;
+%template(ArrCplx4) std::array<std::complex<double>, 4>;
+
 
 %include "magdyn.h"
+
+
+// ----------------------------------------------------------------------------
+// input- and output structs
+// ----------------------------------------------------------------------------
+%template(AtomSiteD) tl2_mag::t_AtomSite<
+	tl2::vec<double>,
+	tl2::mat<std::complex<double>>,
+	double,
+	std::size_t>;
+
+%template(AtomSiteCalcD) tl2_mag::t_AtomSiteCalc<
+	tl2::vec<double>>;
+
+%template(ExchangeTermD) tl2_mag::t_ExchangeTerm<
+	tl2::vec<double>,
+	std::size_t>;
+
+%template(ExchangeTermCalcD) tl2_mag::t_ExchangeTermCalc<
+	tl2::vec<double>,
+	std::complex<double>>;
+
+%template(ExternalFieldD) tl2_mag::t_ExternalField<
+	tl2::vec<double>,
+	double>;
+
+%template(EnergyAndWeightD) tl2_mag::t_EnergyAndWeight<
+	tl2::mat<std::complex<double>>,
+	double>;
+
+%template(VariableD) tl2_mag::t_Variable<
+	std::complex<double>>;
+// ----------------------------------------------------------------------------
+
+
+/**
+ * main magdyn class
+ */
+%template(MagDynD) tl2_mag::MagDyn<
+	tl2::mat<std::complex<double>>,
+	tl2::vec<std::complex<double>>,
+	tl2::mat<double>,
+	tl2::vec<double>,
+	std::complex<double>,
+	double,
+	std::size_t>;

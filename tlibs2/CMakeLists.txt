@@ -91,7 +91,7 @@ swig_add_library(tl2_instr_py LANGUAGE python SOURCES swig_mod/instr.i libs/log.
 swig_add_library(tl2_magdyn_py LANGUAGE python SOURCES swig_mod/magdyn.i libs/log.cpp)
 
 target_link_libraries(tl2_instr_py Python3::Python)
-target_link_libraries(tl2_magdyn_py Python3::Python)
+target_link_libraries(tl2_magdyn_py Python3::Python -llapacke)
 
 # installation
 install(TARGETS tl2_instr_py LIBRARY DESTINATION "${Python3_SITEARCH}")
