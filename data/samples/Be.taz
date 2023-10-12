@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <taz>
-	<deadangles>
-		<num>0</num>
-	</deadangles>
 	<goto_pos>
 		<cki>1</cki>
 		<h>1</h>

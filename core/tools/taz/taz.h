@@ -69,7 +69,7 @@
 #include "dialogs/ScatteringFactorsDlg.h"
 #include "dialogs/DynPlaneDlg.h"
 #include "dialogs/AtomsDlg.h"
-#include "dialogs/DeadAnglesDlg.h"
+#include "dialogs/DarkAnglesDlg.h"
 #include "dialogs/LogDlg.h"
 #include "dialogs/AboutDlg.h"
 #include "dialogs/ctrl_sys.h"
@@ -165,7 +165,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		std::vector<xtl::AtomPos<t_real_glob>> m_vecAtoms;
 		xtl::CrystalSystem m_crystalsys = xtl::CRYS_NOT_SET;
 
-		std::vector<DeadAngle<t_real_glob>> m_vecDeadAngles;
+		std::vector<DarkAngle<t_real_glob>> m_vecDarkAngles;
 
 		// dialogs
 		RecipParamDlg m_dlgRecipParam;
@@ -184,7 +184,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		DynPlaneDlg* m_pDynPlaneDlg = nullptr;
 		FormfactorDlg* m_pFormfactorDlg = nullptr;
 		AtomsDlg *m_pAtomsDlg = nullptr;
-		DeadAnglesDlg *m_pDeadAnglesDlg = nullptr;
+		DarkAnglesDlg *m_pDarkAnglesDlg = nullptr;
 		LogDlg *m_pLogDlg = nullptr;
 		AboutDlg *m_pAboutDlg = nullptr;
 
@@ -210,7 +210,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 	protected:
 		void InitReso();
-		void InitDeadAngles();
+		void InitDarkAngles();
 		void InitGoto();
 		void InitResoConv();
 
@@ -321,8 +321,8 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void ShowAtomsDlg(bool bOnlyCreate=0);
 		void ApplyAtoms(const std::vector<xtl::AtomPos<t_real_glob>>& vecAtoms);
 
-		void ShowDeadAnglesDlg();
-		void ApplyDeadAngles(const std::vector<DeadAngle<t_real_glob>>& vecAngles);
+		void ShowDarkAnglesDlg();
+		void ApplyDarkAngles(const std::vector<DarkAngle<t_real_glob>>& vecAngles);
 
 		void ShowSpurions();
 		void spurionInfo(const tl::ElasticSpurion& spuris,

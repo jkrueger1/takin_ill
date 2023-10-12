@@ -91,9 +91,9 @@ void TazDlg::New()
 	triag.bChangedMonoTwoTheta = triag.bChangedAnaTwoTheta = true;
 
 	m_vecAtoms.clear();
-	m_vecDeadAngles.clear();
+	m_vecDarkAngles.clear();
 	if(m_sceneReal.GetTasLayout())
-		m_sceneReal.GetTasLayout()->SetDeadAngles(&m_vecDeadAngles);
+		m_sceneReal.GetTasLayout()->SetDarkAngles(&m_vecDarkAngles);
 
 	m_strCurFile = "";
 	setWindowTitle(s_strTitle.c_str());
@@ -354,15 +354,15 @@ bool TazDlg::Load(const char* pcFile)
 	}
 
 
-	// dead angles
-	m_vecDeadAngles.clear();
-	if(xml.Exists(strXmlRoot + "deadangles"))
+	// dark angles
+	m_vecDarkAngles.clear();
+	if(xml.Exists(strXmlRoot + "darkangles"))
 	{
-		InitDeadAngles();
-		m_pDeadAnglesDlg->Load(xml, strXmlRoot);
-		m_vecDeadAngles = m_pDeadAnglesDlg->GetDeadAngles();
+		InitDarkAngles();
+		m_pDarkAnglesDlg->Load(xml, strXmlRoot);
+		m_vecDarkAngles = m_pDarkAnglesDlg->GetDarkAngles();
 		if(m_sceneReal.GetTasLayout())
-			m_sceneReal.GetTasLayout()->SetDeadAngles(&m_vecDeadAngles);
+			m_sceneReal.GetTasLayout()->SetDarkAngles(&m_vecDarkAngles);
 	}
 
 
@@ -563,7 +563,7 @@ bool TazDlg::Save()
 	if(m_pReso) m_pReso->Save(mapConf, strXmlRoot);
 	if(m_pConvoDlg) m_pConvoDlg->Save(mapConf, strXmlRoot);
 	if(m_pGotoDlg) m_pGotoDlg->Save(mapConf, strXmlRoot);
-	if(m_pDeadAnglesDlg) m_pDeadAnglesDlg->Save(mapConf, strXmlRoot);
+	if(m_pDarkAnglesDlg) m_pDarkAnglesDlg->Save(mapConf, strXmlRoot);
 	//if(m_pPowderDlg) m_pPowderDlg->Save(mapConf, strXmlRoot);
 
 

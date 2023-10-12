@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <taz>
-	<deadangles>
+	<darkangles>
 		<0>
 			<centreon>1</centreon>
 			<end>10</end>
@@ -81,7 +81,7 @@
 				<start>-3</start>
 			</1>
 		</stored_3>
-	</deadangles>
+	</darkangles>
 	<goto_pos>
 		<cki>0</cki>
 		<h>1</h>

@@ -425,10 +425,10 @@ void TasLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidg
 
 
 	// ------------------------------------------------------------------------
-	// dead angles
+	// dark angles
 	bool bBeamObstructed = false;
 
-	struct DeadAngleArc
+	struct DarkAngleArc
 	{
 		t_real dCentre[2];
 		t_real dAngleStart, dAngleRange;
@@ -461,7 +461,7 @@ void TasLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidg
 	};
 
 
-	if(m_pvecDeadAngles)
+	if(m_pvecDarkAngles)
 	{
 		QPen pen(QColor(0x90,0x50,0x20));
 		pen.setWidthF(3.*g_dFontSize*0.1);
@@ -469,14 +469,14 @@ void TasLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidg
 
 		const t_real dArcSize = (lineKi.length() + lineKf.length()) / 2. / 2.;
 
-		for(const DeadAngle<t_real>& angle : *m_pvecDeadAngles)
+		for(const DarkAngle<t_real>& angle : *m_pvecDarkAngles)
 		{
-			DeadAngleArc deadarc;
+			DarkAngleArc darkarc;
 
 			// default case: around sample
 			QPointF *pCentre = &ptSample;
-			deadarc.pLineIn = &lineKi;
-			deadarc.pLineOut = &lineKf;
+			darkarc.pLineIn = &lineKi;
+			darkarc.pLineOut = &lineKf;
 			t_real dCrystalTheta = tl::r2d(m_dTheta);
 
 			switch(angle.iCentreOn)
@@ -484,16 +484,16 @@ void TasLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidg
 				case 0:	// around mono
 				{
 					pCentre = &ptMono;
-					deadarc.pLineIn = &lineSrcMono;
-					deadarc.pLineOut = &lineKi;
+					darkarc.pLineIn = &lineSrcMono;
+					darkarc.pLineOut = &lineKi;
 					dCrystalTheta = tl::r2d(m_dMonoTwoTheta/t_real(2.));
 					break;
 				}
 				case 2:	// around ana
 				{
 					pCentre = &ptAna;
-					deadarc.pLineIn = &lineKf;
-					deadarc.pLineOut = &lineAnaDet;
+					darkarc.pLineIn = &lineKf;
+					darkarc.pLineOut = &lineAnaDet;
 					dCrystalTheta = tl::r2d(m_dAnaTwoTheta/t_real(2.));
 					break;
 				}
@@ -504,28 +504,28 @@ void TasLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidg
 			{
 				case 0:	// relative to crystal angle theta
 				{
-					dAbsOffs = deadarc.pLineIn->angle() + dCrystalTheta;
+					dAbsOffs = darkarc.pLineIn->angle() + dCrystalTheta;
 					break;
 				}
 				case 1:	// relative to incoming axis
 				{
-					dAbsOffs = deadarc.pLineIn->angle();
+					dAbsOffs = darkarc.pLineIn->angle();
 					break;
 				}
 				case 2:	// relative to outgoing axis
 				{
-					dAbsOffs = deadarc.pLineOut->angle();
+					dAbsOffs = darkarc.pLineOut->angle();
 					break;
 				}
 			}
 
-			deadarc.dAngleStart = angle.dAngleStart + angle.dAngleOffs + dAbsOffs;
-			deadarc.dAngleRange = angle.dAngleEnd - angle.dAngleStart;
+			darkarc.dAngleStart = angle.dAngleStart + angle.dAngleOffs + dAbsOffs;
+			darkarc.dAngleRange = angle.dAngleEnd - angle.dAngleStart;
 
 			pPainter->drawArc(QRectF(pCentre->x()-dArcSize/2., pCentre->y()-dArcSize/2.,
-				dArcSize, dArcSize), deadarc.dAngleStart*16., deadarc.dAngleRange*16.);
+				dArcSize, dArcSize), darkarc.dAngleStart*16., darkarc.dAngleRange*16.);
 
-			if(!bBeamObstructed && deadarc.intersects())
+			if(!bBeamObstructed && darkarc.intersects())
 				bBeamObstructed = true;
 		}
 	}
@@ -751,9 +751,9 @@ std::vector<std::string> TasLayout::GetNodeNames() const
 }
 
 
-void TasLayout::SetDeadAngles(const std::vector<DeadAngle<t_real_glob>> *pvecDeadAngles)
+void TasLayout::SetDarkAngles(const std::vector<DarkAngle<t_real_glob>> *pvecDarkAngles)
 {
-	m_pvecDeadAngles = pvecDeadAngles;
+	m_pvecDarkAngles = pvecDarkAngles;
 	update();
 }
 

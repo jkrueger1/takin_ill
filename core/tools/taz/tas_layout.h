@@ -46,7 +46,7 @@
 #include "tasoptions.h"
 #include "dialogs/RealParamDlg.h"	// for RealParams struct
 #include "dialogs/RecipParamDlg.h"	// for RecipParams struct
-#include "dialogs/DeadAnglesDlg.h"	// for DeadAngle struct
+#include "dialogs/DarkAnglesDlg.h"	// for DarkAngle struct
 
 
 class TasLayout;
@@ -93,7 +93,7 @@ class TasLayout : public QGraphicsItem
 		bool m_bRealQVisible = 1;
 		bool m_bAllowChanges = 1;
 
-		const std::vector<DeadAngle<t_real_glob>> *m_pvecDeadAngles = nullptr;
+		const std::vector<DarkAngle<t_real_glob>> *m_pvecDarkAngles = nullptr;
 
 
 	public:
@@ -143,7 +143,7 @@ class TasLayout : public QGraphicsItem
 		void SetRealQVisible(bool bVisible);
 		bool GetRealQVisible() const { return m_bRealQVisible; }
 
-		void SetDeadAngles(const std::vector<DeadAngle<t_real_glob>> *pvecDeadAngles);
+		void SetDarkAngles(const std::vector<DarkAngle<t_real_glob>> *pvecDarkAngles);
 };
 
 

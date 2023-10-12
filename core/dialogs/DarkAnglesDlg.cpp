@@ -1,5 +1,5 @@
 /**
- * Dead Angles Dialog
+ * dark angles dialog
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date jun-2017, 28-jul-2022
  * @license GPLv2
@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------------
  */
 
-#include "DeadAnglesDlg.h"
+#include "DarkAnglesDlg.h"
 #include "tlibs/math/linalg.h"
 #include "tlibs/string/string.h"
 
@@ -48,7 +48,7 @@ enum class AngleInfo : int
 };
 
 
-DeadAnglesDlg::DeadAnglesDlg(QWidget* pParent, QSettings *pSettings)
+DarkAnglesDlg::DarkAnglesDlg(QWidget* pParent, QSettings *pSettings)
 	: QDialog(pParent), m_pSettings(pSettings)
 {
 	setupUi(this);
@@ -74,41 +74,41 @@ DeadAnglesDlg::DeadAnglesDlg(QWidget* pParent, QSettings *pSettings)
 	btnLoad->setIcon(load_icon("res/icons/document-open.svg"));
 
 	QObject::connect(btnAddAngle, &QAbstractButton::clicked,
-		this, &DeadAnglesDlg::AddAngle);
+		this, &DarkAnglesDlg::AddAngle);
 	QObject::connect(btnDelAngle, &QAbstractButton::clicked,
-		this, &DeadAnglesDlg::RemoveAngle);
+		this, &DarkAnglesDlg::RemoveAngle);
 	QObject::connect(buttonBox, &QDialogButtonBox::clicked,
-		this, &DeadAnglesDlg::ButtonBoxClicked);
+		this, &DarkAnglesDlg::ButtonBoxClicked);
 
 	// list
 	QObject::connect(btnAdd, &QAbstractButton::clicked,
-		this, static_cast<void(DeadAnglesDlg::*)()>(&DeadAnglesDlg::AddAnglesToList));
+		this, static_cast<void(DarkAnglesDlg::*)()>(&DarkAnglesDlg::AddAnglesToList));
 	QObject::connect(btnDel, &QAbstractButton::clicked,
-		this, &DeadAnglesDlg::RemAnglesFromList);
+		this, &DarkAnglesDlg::RemAnglesFromList);
 	QObject::connect(btnLoad, &QAbstractButton::clicked,
-		this, &DeadAnglesDlg::LoadList);
+		this, &DarkAnglesDlg::LoadList);
 	QObject::connect(btnSave, &QAbstractButton::clicked,
-		this, &DeadAnglesDlg::SaveList);
+		this, &DarkAnglesDlg::SaveList);
 	QObject::connect(listSeq, &QListWidget::itemSelectionChanged,
-		this, &DeadAnglesDlg::ListItemSelected);
+		this, &DarkAnglesDlg::ListItemSelected);
 	QObject::connect(listSeq, &QListWidget::itemDoubleClicked,
-		this, &DeadAnglesDlg::ListItemDoubleClicked);
+		this, &DarkAnglesDlg::ListItemDoubleClicked);
 
-	if(m_pSettings && m_pSettings->contains("deadangles/geo"))
-		restoreGeometry(m_pSettings->value("deadangles/geo").toByteArray());
+	if(m_pSettings && m_pSettings->contains("darkangles/geo"))
+		restoreGeometry(m_pSettings->value("darkangles/geo").toByteArray());
 }
 
 
-DeadAnglesDlg::~DeadAnglesDlg()
+DarkAnglesDlg::~DarkAnglesDlg()
 {
 	ClearList();
 }
 
 
 /**
- * removes the currently selected items from the dead angles list
+ * removes the currently selected items from the dark angles list
  */
-void DeadAnglesDlg::RemoveAngle()
+void DarkAnglesDlg::RemoveAngle()
 {
 	const bool bSort = tableAngles->isSortingEnabled();
 	tableAngles->setSortingEnabled(0);
@@ -135,9 +135,9 @@ void DeadAnglesDlg::RemoveAngle()
 
 
 /**
- * adds a single new item to the dead angles list
+ * adds a single new item to the dark angles list
  */
-void DeadAnglesDlg::AddAngle()
+void DarkAnglesDlg::AddAngle()
 {
 	const bool bSort = tableAngles->isSortingEnabled();
 	tableAngles->setSortingEnabled(0);
@@ -170,9 +170,9 @@ void DeadAnglesDlg::AddAngle()
 
 
 /**
- * loads the items in the dead angles list from 'vecAngles'
+ * loads the items in the dark angles list from 'vecAngles'
  */
-void DeadAnglesDlg::SetDeadAngles(const std::vector<DeadAngle<t_real>>& vecAngles)
+void DarkAnglesDlg::SetDarkAngles(const std::vector<DarkAngle<t_real>>& vecAngles)
 {
 	const bool bSort = tableAngles->isSortingEnabled();
 	tableAngles->setSortingEnabled(0);
@@ -188,7 +188,7 @@ void DeadAnglesDlg::SetDeadAngles(const std::vector<DeadAngle<t_real>>& vecAngle
 
 	for(std::size_t iRow=0; iRow<vecAngles.size(); ++iRow)
 	{
-		const DeadAngle<t_real>& angle = vecAngles[iRow];
+		const DarkAngle<t_real>& angle = vecAngles[iRow];
 
 		tableAngles->item(iRow, static_cast<int>(AngleInfo::START_ANGLE))->
 			setText(tl::var_to_str(angle.dAngleStart).c_str());
@@ -211,16 +211,16 @@ void DeadAnglesDlg::SetDeadAngles(const std::vector<DeadAngle<t_real>>& vecAngle
 
 
 /**
- * gets the dead angles from the list
+ * gets the dark angles from the list
  */
-std::vector<DeadAngle<t_real>> DeadAnglesDlg::DeadAnglesDlg::GetDeadAngles() const
+std::vector<DarkAngle<t_real>> DarkAnglesDlg::DarkAnglesDlg::GetDarkAngles() const
 {
-	std::vector<DeadAngle<t_real>> vecAngles;
+	std::vector<DarkAngle<t_real>> vecAngles;
 	vecAngles.reserve(tableAngles->rowCount());
 
 	for(int iRow=0; iRow<tableAngles->rowCount(); ++iRow)
 	{
-		DeadAngle<t_real> angle;
+		DarkAngle<t_real> angle;
 		angle.dAngleStart =
 			tl::str_to_var_parse<t_real>(tableAngles->item(
 				iRow, static_cast<int>(AngleInfo::START_ANGLE))->text().toStdString());
@@ -247,16 +247,16 @@ std::vector<DeadAngle<t_real>> DeadAnglesDlg::DeadAnglesDlg::GetDeadAngles() con
 
 
 /**
- * emits the current list of dead angles
+ * emits the current list of dark angles
  */
-void DeadAnglesDlg::SendApplyDeadAngles()
+void DarkAnglesDlg::SendApplyDarkAngles()
 {
-	std::vector<DeadAngle<t_real>> angles = GetDeadAngles();
-	emit ApplyDeadAngles(angles);
+	std::vector<DarkAngle<t_real>> angles = GetDarkAngles();
+	emit ApplyDarkAngles(angles);
 }
 
 
-void DeadAnglesDlg::AddAnglesToList(const std::vector<DeadAngle<t_real>>& _angles)
+void DarkAnglesDlg::AddAnglesToList(const std::vector<DarkAngle<t_real>>& _angles)
 {
 	std::wostringstream ostrCaption;
 	ostrCaption.precision(g_iPrecGfx);
@@ -278,25 +278,25 @@ void DeadAnglesDlg::AddAnglesToList(const std::vector<DeadAngle<t_real>>& _angle
 
 	QString qstr = QString::fromWCharArray(ostrCaption.str().c_str());
 	QListWidgetItem* item = new QListWidgetItem(qstr, listSeq);
-	std::vector<DeadAngle<t_real>>* angles = new std::vector<DeadAngle<t_real>>{_angles};
+	std::vector<DarkAngle<t_real>>* angles = new std::vector<DarkAngle<t_real>>{_angles};
 	item->setData(Qt::UserRole, QVariant::fromValue<void*>(angles));
 }
 
 
-void DeadAnglesDlg::AddAnglesToList()
+void DarkAnglesDlg::AddAnglesToList()
 {
-	std::vector<DeadAngle<t_real>> angles = GetDeadAngles();
+	std::vector<DarkAngle<t_real>> angles = GetDarkAngles();
 	AddAnglesToList(angles);
 }
 
 
-void DeadAnglesDlg::RemAnglesFromList()
+void DarkAnglesDlg::RemAnglesFromList()
 {
 	QListWidgetItem *item = listSeq->currentItem();
 	if(item)
 	{
-		std::vector<DeadAngle<t_real>>* angles =
-			(std::vector<DeadAngle<t_real>>*)item->data(
+		std::vector<DarkAngle<t_real>>* angles =
+			(std::vector<DarkAngle<t_real>>*)item->data(
 				Qt::UserRole).value<void*>();
 		if(angles) delete angles;
 		delete item;
@@ -304,15 +304,15 @@ void DeadAnglesDlg::RemAnglesFromList()
 }
 
 
-void DeadAnglesDlg::ClearList()
+void DarkAnglesDlg::ClearList()
 {
 	while(listSeq->count())
 	{
 		QListWidgetItem *item = listSeq->item(0);
 		if(!item) break;
 
-		std::vector<DeadAngle<t_real>>* angles =
-			(std::vector<DeadAngle<t_real>>*)item->data(
+		std::vector<DarkAngle<t_real>>* angles =
+			(std::vector<DarkAngle<t_real>>*)item->data(
 				Qt::UserRole).value<void*>();
 		if(angles) delete angles;
 		delete item;
@@ -320,7 +320,7 @@ void DeadAnglesDlg::ClearList()
 }
 
 
-void DeadAnglesDlg::LoadList()
+void DarkAnglesDlg::LoadList()
 {
 	const std::string strXmlRoot("taz/");
 
@@ -330,7 +330,7 @@ void DeadAnglesDlg::LoadList()
 
 	QString strDirLast = "~";
 	if(m_pSettings)
-		strDirLast = m_pSettings->value("deadangles/last_dir", "~").toString();
+		strDirLast = m_pSettings->value("darkangles/last_dir", "~").toString();
 	QString qstrFile = QFileDialog::getOpenFileName(this,
 		"Load Positions", strDirLast,
 		"TAZ files (*.taz *.TAZ)", nullptr,
@@ -351,11 +351,11 @@ void DeadAnglesDlg::LoadList()
 
 	Load(xml, strXmlRoot);
 	if(m_pSettings)
-		m_pSettings->setValue("deadangles/last_dir", QString(strDir.c_str()));
+		m_pSettings->setValue("darkangles/last_dir", QString(strDir.c_str()));
 }
 
 
-void DeadAnglesDlg::SaveList()
+void DarkAnglesDlg::SaveList()
 {
 	const std::string strXmlRoot("taz/");
 
@@ -365,9 +365,9 @@ void DeadAnglesDlg::SaveList()
 
 	QString strDirLast = "~";
 	if(m_pSettings)
-		m_pSettings->value("deadangles/last_dir", "~").toString();
+		m_pSettings->value("darkangles/last_dir", "~").toString();
 	QString qstrFile = QFileDialog::getSaveFileName(this,
-		"Save Dead Angles", strDirLast,
+		"Save Dark Angles", strDirLast,
 		"TAZ files (*.taz *.TAZ)", nullptr,
 		fileopt);
 
@@ -386,120 +386,120 @@ void DeadAnglesDlg::SaveList()
 	xml.Add(mapConf);
 	if(!xml.Save(strFile.c_str(), tl::PropType::XML))
 	{
-		QMessageBox::critical(this, "Error", "Could not save dead angles.");
+		QMessageBox::critical(this, "Error", "Could not save dark angles.");
 		return;
 	}
 
 	if(m_pSettings)
-		m_pSettings->setValue("deadangles/last_dir", QString(strDir.c_str()));
+		m_pSettings->setValue("darkangles/last_dir", QString(strDir.c_str()));
 }
 
 
-void DeadAnglesDlg::Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
+void DarkAnglesDlg::Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
 {
 	// save current configuration
-	std::vector<DeadAngle<t_real>> angles = GetDeadAngles();
+	std::vector<DarkAngle<t_real>> angles = GetDarkAngles();
 
-	mapConf[strXmlRoot + "deadangles/num"] = tl::var_to_str(angles.size());
+	mapConf[strXmlRoot + "darkangles/num"] = tl::var_to_str(angles.size());
 	for(std::size_t angle_idx=0; angle_idx<angles.size(); ++angle_idx)
 	{
-		const DeadAngle<t_real>& angle = angles[angle_idx];
+		const DarkAngle<t_real>& angle = angles[angle_idx];
 
 		std::string strCfgNr = tl::var_to_str(angle_idx);
-		mapConf[strXmlRoot + "deadangles/" + strCfgNr + "/start"] =
+		mapConf[strXmlRoot + "darkangles/" + strCfgNr + "/start"] =
 			tl::var_to_str(angle.dAngleStart);
-		mapConf[strXmlRoot + "deadangles/" + strCfgNr + "/end"] =
+		mapConf[strXmlRoot + "darkangles/" + strCfgNr + "/end"] =
 			tl::var_to_str(angle.dAngleEnd);
-		mapConf[strXmlRoot + "deadangles/" + strCfgNr + "/offs"] =
+		mapConf[strXmlRoot + "darkangles/" + strCfgNr + "/offs"] =
 			tl::var_to_str(angle.dAngleOffs);
-		mapConf[strXmlRoot + "deadangles/" + strCfgNr + "/centreon"] =
+		mapConf[strXmlRoot + "darkangles/" + strCfgNr + "/centreon"] =
 			tl::var_to_str(angle.iCentreOn);
-		mapConf[strXmlRoot + "deadangles/" + strCfgNr + "/relativeto"] =
+		mapConf[strXmlRoot + "darkangles/" + strCfgNr + "/relativeto"] =
 			tl::var_to_str(angle.iRelativeTo);
         }
 
 
 	// save stored configurations
 	int num_stored = listSeq->count();
-	mapConf[strXmlRoot + "deadangles/num_stored"] = tl::var_to_str(num_stored);
+	mapConf[strXmlRoot + "darkangles/num_stored"] = tl::var_to_str(num_stored);
 	for(int stored=0; stored<num_stored; ++stored)
 	{
-		std::vector<DeadAngle<t_real>>* stored_angles =
-			(std::vector<DeadAngle<t_real>>*)listSeq->item(stored)->data(
+		std::vector<DarkAngle<t_real>>* stored_angles =
+			(std::vector<DarkAngle<t_real>>*)listSeq->item(stored)->data(
 				Qt::UserRole).value<void*>();
 
 		std::string strStoredNr = "stored_" + tl::var_to_str(stored) + "/";
 
 		for(std::size_t angle_idx=0; angle_idx<stored_angles->size(); ++angle_idx)
 		{
-			const DeadAngle<t_real>& angle = (*stored_angles)[angle_idx];
+			const DarkAngle<t_real>& angle = (*stored_angles)[angle_idx];
 
 			std::string strCfgNr = tl::var_to_str(angle_idx);
-			mapConf[strXmlRoot + "deadangles/" + strStoredNr + strCfgNr + "/start"] =
+			mapConf[strXmlRoot + "darkangles/" + strStoredNr + strCfgNr + "/start"] =
 				tl::var_to_str(angle.dAngleStart);
-			mapConf[strXmlRoot + "deadangles/" + strStoredNr + strCfgNr + "/end"] =
+			mapConf[strXmlRoot + "darkangles/" + strStoredNr + strCfgNr + "/end"] =
 				tl::var_to_str(angle.dAngleEnd);
-			mapConf[strXmlRoot + "deadangles/" + strStoredNr + strCfgNr + "/offs"] =
+			mapConf[strXmlRoot + "darkangles/" + strStoredNr + strCfgNr + "/offs"] =
 				tl::var_to_str(angle.dAngleOffs);
-			mapConf[strXmlRoot + "deadangles/" + strStoredNr + strCfgNr + "/centreon"] =
+			mapConf[strXmlRoot + "darkangles/" + strStoredNr + strCfgNr + "/centreon"] =
 				tl::var_to_str(angle.iCentreOn);
-			mapConf[strXmlRoot + "deadangles/" + strStoredNr + strCfgNr + "/relativeto"] =
+			mapConf[strXmlRoot + "darkangles/" + strStoredNr + strCfgNr + "/relativeto"] =
 				tl::var_to_str(angle.iRelativeTo);
 		}
 	}
 }
 
 
-void DeadAnglesDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
+void DarkAnglesDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 {
 	// load current configuration
 	bool ok;
-	unsigned int num_angles = xml.Query<unsigned int>(strXmlRoot + "deadangles/num", 0, &ok);
+	unsigned int num_angles = xml.Query<unsigned int>(strXmlRoot + "darkangles/num", 0, &ok);
 	if(ok)
 	{
-		std::vector<DeadAngle<t_real>> angles;
+		std::vector<DarkAngle<t_real>> angles;
 		angles.reserve(num_angles);
 
 		for(unsigned int angle_idx=0; angle_idx<num_angles; ++angle_idx)
 		{
-			DeadAngle<t_real> angle;
+			DarkAngle<t_real> angle;
 
 			std::string strNr = tl::var_to_str(angle_idx);
-			angle.dAngleStart = xml.Query<t_real>(strXmlRoot + "deadangles/" + strNr + "/start", 0.);
-			angle.dAngleEnd = xml.Query<t_real>(strXmlRoot + "deadangles/" + strNr + "/end", 0.);
-			angle.dAngleOffs = xml.Query<t_real>(strXmlRoot + "deadangles/" + strNr + "/offs", 0.);
-			angle.iCentreOn = xml.Query<int>(strXmlRoot + "deadangles/" + strNr + "/centreon", 1);
-			angle.iRelativeTo = xml.Query<int>(strXmlRoot + "deadangles/" + strNr + "/relativeto", 0);
+			angle.dAngleStart = xml.Query<t_real>(strXmlRoot + "darkangles/" + strNr + "/start", 0.);
+			angle.dAngleEnd = xml.Query<t_real>(strXmlRoot + "darkangles/" + strNr + "/end", 0.);
+			angle.dAngleOffs = xml.Query<t_real>(strXmlRoot + "darkangles/" + strNr + "/offs", 0.);
+			angle.iCentreOn = xml.Query<int>(strXmlRoot + "darkangles/" + strNr + "/centreon", 1);
+			angle.iRelativeTo = xml.Query<int>(strXmlRoot + "darkangles/" + strNr + "/relativeto", 0);
 
 			angles.emplace_back(std::move(angle));
 		}
 
-		SetDeadAngles(angles);
+		SetDarkAngles(angles);
 	}
 
 
 	// load stored configurations
 	ClearList();
-	unsigned int num_stored = xml.Query<unsigned int>(strXmlRoot + "deadangles/num_stored", 0, &ok);
+	unsigned int num_stored = xml.Query<unsigned int>(strXmlRoot + "darkangles/num_stored", 0, &ok);
 	if(ok)
 	{
 		for(unsigned int stored_idx=0; stored_idx<num_stored; ++stored_idx)
 		{
 			std::string strStoredNr = "stored_" + tl::var_to_str(stored_idx) + "/";
 
-			std::vector<DeadAngle<t_real>> angles;
+			std::vector<DarkAngle<t_real>> angles;
 			angles.reserve(num_angles);
 
 			for(unsigned int angle_idx=0; angle_idx<num_angles; ++angle_idx)
 			{
-				DeadAngle<t_real> angle;
+				DarkAngle<t_real> angle;
 
 				std::string strNr = tl::var_to_str(angle_idx);
-				angle.dAngleStart = xml.Query<t_real>(strXmlRoot + "deadangles/" +  strStoredNr + strNr + "/start", 0.);
-				angle.dAngleEnd = xml.Query<t_real>(strXmlRoot + "deadangles/" + strStoredNr + strNr + "/end", 0.);
-				angle.dAngleOffs = xml.Query<t_real>(strXmlRoot + "deadangles/" + strStoredNr + strNr + "/offs", 0.);
-				angle.iCentreOn = xml.Query<int>(strXmlRoot + "deadangles/" + strStoredNr + strNr + "/centreon", 1);
-				angle.iRelativeTo = xml.Query<int>(strXmlRoot + "deadangles/" + strStoredNr + strNr + "/relativeto", 0);
+				angle.dAngleStart = xml.Query<t_real>(strXmlRoot + "darkangles/" +  strStoredNr + strNr + "/start", 0.);
+				angle.dAngleEnd = xml.Query<t_real>(strXmlRoot + "darkangles/" + strStoredNr + strNr + "/end", 0.);
+				angle.dAngleOffs = xml.Query<t_real>(strXmlRoot + "darkangles/" + strStoredNr + strNr + "/offs", 0.);
+				angle.iCentreOn = xml.Query<int>(strXmlRoot + "darkangles/" + strStoredNr + strNr + "/centreon", 1);
+				angle.iRelativeTo = xml.Query<int>(strXmlRoot + "darkangles/" + strStoredNr + strNr + "/relativeto", 0);
 
 				angles.emplace_back(std::move(angle));
 			}
@@ -510,37 +510,37 @@ void DeadAnglesDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRo
 }
 
 
-void DeadAnglesDlg::SetAnglesFromList(QListWidgetItem* item)
+void DarkAnglesDlg::SetAnglesFromList(QListWidgetItem* item)
 {
 	if(!item) return;
-	std::vector<DeadAngle<t_real>>* angles =
-		(std::vector<DeadAngle<t_real>>*)item->data(
+	std::vector<DarkAngle<t_real>>* angles =
+		(std::vector<DarkAngle<t_real>>*)item->data(
 			Qt::UserRole).value<void*>();
 	if(angles)
-		SetDeadAngles(*angles);
+		SetDarkAngles(*angles);
 }
 
 
-void DeadAnglesDlg::ListItemSelected()
+void DarkAnglesDlg::ListItemSelected()
 {
 	QListWidgetItem *item = listSeq->currentItem();
 	SetAnglesFromList(item);
 }
 
 
-void DeadAnglesDlg::ListItemDoubleClicked(QListWidgetItem* item)
+void DarkAnglesDlg::ListItemDoubleClicked(QListWidgetItem* item)
 {
 	SetAnglesFromList(item);
-	SendApplyDeadAngles();
+	SendApplyDarkAngles();
 }
 
 
-void DeadAnglesDlg::ButtonBoxClicked(QAbstractButton* pBtn)
+void DarkAnglesDlg::ButtonBoxClicked(QAbstractButton* pBtn)
 {
 	if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::ApplyRole ||
 		buttonBox->buttonRole(pBtn) == QDialogButtonBox::AcceptRole)
 	{
-		SendApplyDeadAngles();
+		SendApplyDarkAngles();
 	}
 	else if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::RejectRole)
 	{
@@ -550,16 +550,16 @@ void DeadAnglesDlg::ButtonBoxClicked(QAbstractButton* pBtn)
 	if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::AcceptRole)
 	{
 		if(m_pSettings)
-			m_pSettings->setValue("deadangles/geo", saveGeometry());
+			m_pSettings->setValue("darkangles/geo", saveGeometry());
 
 		QDialog::accept();
 	}
 }
 
-void DeadAnglesDlg::closeEvent(QCloseEvent* pEvt)
+void DarkAnglesDlg::closeEvent(QCloseEvent* pEvt)
 {
 	QDialog::closeEvent(pEvt);
 }
 
 
-#include "moc_DeadAnglesDlg.cpp"
+#include "moc_DarkAnglesDlg.cpp"

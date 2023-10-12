@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DeadAnglesDlg</class>
- <widget class="QDialog" name="DeadAnglesDlg">
+ <class>DarkAnglesDlg</class>
+ <widget class="QDialog" name="DarkAnglesDlg">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dead Angles</string>
+   <string>Dark Angles</string>
   </property>
   <property name="sizeGripEnabled">
    <bool>true</bool>
@@ -200,7 +200,7 @@
           <item row="0" column="1">
            <widget class="QToolButton" name="btnAddAngle">
             <property name="toolTip">
-             <string>Add Dead Angle</string>
+             <string>Add Dark Angle</string>
             </property>
             <property name="text">
              <string/>
@@ -210,7 +210,7 @@
           <item row="0" column="2">
            <widget class="QToolButton" name="btnDelAngle">
             <property name="toolTip">
-             <string>Remove Dead Angle</string>
+             <string>Remove Dark Angle</string>
             </property>
             <property name="text">
              <string/>
@@ -271,7 +271,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>DeadAnglesDlg</receiver>
+   <receiver>DarkAnglesDlg</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -287,7 +287,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>DeadAnglesDlg</receiver>
+   <receiver>DarkAnglesDlg</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

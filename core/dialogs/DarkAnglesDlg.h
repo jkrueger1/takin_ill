@@ -1,5 +1,5 @@
 /**
- * Dead Angles Dialog
+ * dark angles dialog
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date jun-2017, 28-jul-2022
  * @license GPLv2
@@ -26,8 +26,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef __DEAD_ANGLES_H__
-#define __DEAD_ANGLES_H__
+#ifndef __DARK_ANGLES_H__
+#define __DARK_ANGLES_H__
 
 #include <QDialog>
 #include <QSettings>
@@ -36,11 +36,11 @@
 #include "libs/globals_qt.h"
 #include "tlibs/file/prop.h"
 
-#include "ui/ui_deadangles.h"
+#include "ui/ui_darkangles.h"
 
 
 template<class T = double>
-struct DeadAngle
+struct DarkAngle
 {
 	T dAngleStart;
 	T dAngleEnd;
@@ -51,18 +51,18 @@ struct DeadAngle
 };
 
 
-class DeadAnglesDlg : public QDialog, Ui::DeadAnglesDlg
+class DarkAnglesDlg : public QDialog, Ui::DarkAnglesDlg
 { Q_OBJECT
 protected:
 	QSettings *m_pSettings = nullptr;
 
 protected:
 	virtual void closeEvent(QCloseEvent*) override;
-	void SendApplyDeadAngles();
+	void SendApplyDarkAngles();
 
 	// list
 	void ClearList();
-	void AddAnglesToList(const std::vector<DeadAngle<t_real_glob>>& angles);
+	void AddAnglesToList(const std::vector<DarkAngle<t_real_glob>>& angles);
 	void SetAnglesFromList(QListWidgetItem* item);
 
 protected slots:
@@ -79,17 +79,17 @@ protected slots:
 	void ListItemDoubleClicked(QListWidgetItem*);
 
 public:
-	DeadAnglesDlg(QWidget* pParent = nullptr, QSettings *pSettings = nullptr);
-	virtual ~DeadAnglesDlg();
+	DarkAnglesDlg(QWidget* pParent = nullptr, QSettings *pSettings = nullptr);
+	virtual ~DarkAnglesDlg();
 
-	void SetDeadAngles(const std::vector<DeadAngle<t_real_glob>>& vecAngle);
-	std::vector<DeadAngle<t_real_glob>> GetDeadAngles() const;
+	void SetDarkAngles(const std::vector<DarkAngle<t_real_glob>>& vecAngle);
+	std::vector<DarkAngle<t_real_glob>> GetDarkAngles() const;
 
 	void Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot);
 	void Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot);
 
 signals:
-	void ApplyDeadAngles(const std::vector<DeadAngle<t_real_glob>>& vecAngle);
+	void ApplyDarkAngles(const std::vector<DarkAngle<t_real_glob>>& vecAngle);
 };
 
 #endif

@@ -437,7 +437,7 @@ add_executable(takin
 	dialogs/SrvDlg.cpp dialogs/NetCacheDlg.cpp dialogs/ScanMonDlg.cpp
 	dialogs/EllipseDlg.cpp tools/ffact/FormfactorDlg.cpp
 	dialogs/AtomsDlg.cpp dialogs/AboutDlg.cpp
-	dialogs/DeadAnglesDlg.cpp dialogs/LogDlg.cpp
+	dialogs/DarkAnglesDlg.cpp dialogs/LogDlg.cpp
 
 	# reso
 	tools/res/cn.cpp tools/res/pop.cpp tools/res/pop_cn.cpp

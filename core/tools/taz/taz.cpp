@@ -491,8 +491,8 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 
 	m_pMenuViewReal->addSeparator();
 
-	QAction *pDeadAngles = new QAction("Dead Angles...", this);
-	m_pMenuViewReal->addAction(pDeadAngles);
+	QAction *pDarkAngles = new QAction("Dark Angles...", this);
+	m_pMenuViewReal->addAction(pDarkAngles);
 
 	m_pMenuViewReal->addSeparator();
 
@@ -868,7 +868,7 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 	QObject::connect(pSpuri, &QAction::triggered, this, &TazDlg::ShowSpurions);
 	QObject::connect(pScatteringFactors, &QAction::triggered, this, &TazDlg::ShowScatteringFactorsDlg);
 	QObject::connect(pDynPlane, &QAction::triggered, this, &TazDlg::ShowDynPlaneDlg);
-	QObject::connect(pDeadAngles, &QAction::triggered, this, &TazDlg::ShowDeadAnglesDlg);
+	QObject::connect(pDarkAngles, &QAction::triggered, this, &TazDlg::ShowDarkAnglesDlg);
 
 #if !defined NO_NET
 	QObject::connect(pConn, &QAction::triggered, this, &TazDlg::ShowConnectDlg);
@@ -1046,7 +1046,7 @@ void TazDlg::DeleteDialogs()
 	if(m_pScanPos) { delete m_pScanPos; m_pScanPos = nullptr; }
 	if(m_pPowderFit) { delete m_pPowderFit; m_pPowderFit = nullptr; }
 	if(m_pAtomsDlg) { delete m_pAtomsDlg; m_pAtomsDlg = nullptr; }
-	if(m_pDeadAnglesDlg) { delete m_pDeadAnglesDlg; m_pDeadAnglesDlg = nullptr; }
+	if(m_pDarkAnglesDlg) { delete m_pDarkAnglesDlg; m_pDarkAnglesDlg = nullptr; }
 	if(m_pPowderDlg) { delete m_pPowderDlg; m_pPowderDlg = nullptr; }
 
 #if !defined NO_3D
@@ -1608,30 +1608,30 @@ void TazDlg::RealContextMenu(const QPoint& _pt)
 //--------------------------------------------------------------------------------
 // obstacles
 
-void TazDlg::InitDeadAngles()
+void TazDlg::InitDarkAngles()
 {
-	if(!m_pDeadAnglesDlg)
+	if(!m_pDarkAnglesDlg)
 	{
-		m_pDeadAnglesDlg = new DeadAnglesDlg(this, &m_settings);
-		QObject::connect(m_pDeadAnglesDlg, &DeadAnglesDlg::ApplyDeadAngles,
-			this, &TazDlg::ApplyDeadAngles);
+		m_pDarkAnglesDlg = new DarkAnglesDlg(this, &m_settings);
+		QObject::connect(m_pDarkAnglesDlg, &DarkAnglesDlg::ApplyDarkAngles,
+			this, &TazDlg::ApplyDarkAngles);
 	}
 }
 
 
-void TazDlg::ShowDeadAnglesDlg()
+void TazDlg::ShowDarkAnglesDlg()
 {
-	InitDeadAngles();
-	m_pDeadAnglesDlg->SetDeadAngles(m_vecDeadAngles);
-	focus_dlg(m_pDeadAnglesDlg);
+	InitDarkAngles();
+	m_pDarkAnglesDlg->SetDarkAngles(m_vecDarkAngles);
+	focus_dlg(m_pDarkAnglesDlg);
 }
 
 
-void TazDlg::ApplyDeadAngles(const std::vector<DeadAngle<t_real>>& vecAngles)
+void TazDlg::ApplyDarkAngles(const std::vector<DarkAngle<t_real>>& vecAngles)
 {
-	m_vecDeadAngles = vecAngles;
+	m_vecDarkAngles = vecAngles;
 	if(m_sceneReal.GetTasLayout())
-		m_sceneReal.GetTasLayout()->SetDeadAngles(&m_vecDeadAngles);
+		m_sceneReal.GetTasLayout()->SetDarkAngles(&m_vecDarkAngles);
 }
 
 
