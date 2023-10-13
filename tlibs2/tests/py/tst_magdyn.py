@@ -25,13 +25,29 @@
 # ----------------------------------------------------------------------------
 #
 
-import numpy
-import tl2_magdyn
+# options
+save_dispersion = False
+print_dispersion = False
+plot_dispersion = True
 
+# weight scaling and clamp factors
+S_scale = 64.
+S_min = 1.
+S_max = 500.
+
+# ignore magnon annihilation?
+only_positive_energies = True
+
+# number of Qs to calculate on a dispersion direction
+num_Q_points = 256
 
 # files
 modelfile = "../../../data/demos/magnon_Cu2OSeO3/model.magdyn"
 dispfile = "disp.dat"
+
+
+import numpy
+import tl2_magdyn
 
 
 # create the magdyn object
@@ -47,17 +63,59 @@ else:
 	exit(-1)
 
 
-# directly calculate a dispersion and write it to a file
-#print("Goldstone Energy: {:.4f} meV".format(mag.GetGoldstoneEnergy()))
-print("\nSaving dispersion to {}...".format(dispfile))
-mag.SaveDispersion(dispfile,  0, 0, 0.5,  1, 1, 0.5,  128)
+if save_dispersion:
+	# directly calculate a dispersion and write it to a file
+	#print("Goldstone Energy: {:.4f} meV".format(mag.GetGoldstoneEnergy()))
+	print("\nSaving dispersion to {}...".format(dispfile))
+	mag.SaveDispersion(dispfile,  0, 0, 0.5,  1, 1, 0.5,  num_Q_points)
 
 
-# manually calculate the same dispersion and output it to the console
-print("\nManual calculation of a dispersion...")
-print("{:>15} {:>15} {:>15} {:>15} {:>15}".format("h", "k", "l", "E", "S(Q,E)"))
-for h in numpy.linspace(0, 1, 128):
+# manually calculate the same dispersion
+print("\nManually calculating dispersion...")
+if print_dispersion:
+	print("{:>15} {:>15} {:>15} {:>15} {:>15}".format("h", "k", "l", "E", "S(Q,E)"))
+
+data_h = []
+data_k = []
+data_l = []
+data_E = []
+data_S = []
+
+for h in numpy.linspace(0, 1, num_Q_points):
 	k = h
 	l = 0.5
 	for S in mag.GetEnergies(h, k, l, False):
-		print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(h, k, l, S.E, S.weight))
+		if only_positive_energies and S.E < 0.:
+			continue
+
+		weight = S.weight * S_scale
+		if weight < S_min:
+			weight = S_min
+		elif weight > S_max:
+			weight = S_max
+
+		data_h.append(h)
+		data_k.append(k)
+		data_l.append(l)
+		data_E.append(S.E)
+		data_S.append(weight)
+
+		if print_dispersion:
+			print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(h, k, l, S.E, S.weight))
+
+
+# plot the results
+if plot_dispersion:
+	print("Plotting dispersion...")
+
+	import matplotlib.pyplot as plot
+
+	fig = plot.figure()
+
+	plt = fig.add_subplot(1, 1, 1)
+	plt.set_xlabel("h (rlu)")
+	plt.set_ylabel("E (meV)")
+	plt.scatter(data_h, data_E, marker='.', s=data_S)
+
+	plot.tight_layout()
+	plot.show()
