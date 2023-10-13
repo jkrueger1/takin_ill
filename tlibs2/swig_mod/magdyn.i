@@ -79,6 +79,9 @@
 %template(EnergyAndWeightD) tl2_mag::t_EnergyAndWeight<
 	tl2::mat<std::complex<double>>,
 	double>;
+%template(VecEnergyAndWeight) std::vector<tl2_mag::t_EnergyAndWeight<
+	tl2::mat<std::complex<double>>,
+	double>>;
 
 %template(VariableD) tl2_mag::t_Variable<
 	std::complex<double>>;

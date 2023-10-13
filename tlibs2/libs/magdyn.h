@@ -1261,7 +1261,7 @@ public:
 			energies_and_correlations.begin(), energies_and_correlations.end(),
 			[](const auto& E_and_S_1, const auto& E_and_S_2) -> bool
 			{
-				return E_and_S_1.E < E_and_S_2.E;
+				return std::abs(E_and_S_1.E) < std::abs(E_and_S_2.E);
 			});
 
 		if(min_iter != energies_and_correlations.end())

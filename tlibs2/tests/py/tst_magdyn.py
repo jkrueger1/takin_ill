@@ -26,6 +26,39 @@
 #
 
 import math
+import numpy
 import tl2_magdyn
 
+
+# files
+modelfile = "../../../data/demos/magnon_Cu2OSeO3/model.magdyn"
+dispfile = "disp.dat"
+
+
+# create the magdyn object
 mag = tl2_magdyn.MagDynD()
+
+
+# load the model file
+print("Loading {}...".format(modelfile))
+if mag.Load(modelfile):
+	print("Loaded {}.".format(modelfile))
+else:
+	print("Failed loading {}.".format(modelfile))
+	exit(-1)
+
+
+# directly calculate a dispersion and write it to a file
+#print("Goldstone Energy: {:.4f} meV".format(mag.GetGoldstoneEnergy()))
+print("\nSaving dispersion to {}...".format(dispfile))
+mag.SaveDispersion(dispfile,  0, 0, 0.5,  1, 1, 0.5,  128)
+
+
+# manually calculate the same dispersion and output it to the console
+print("\nManual calculation of a dispersion...")
+print("{:>15} {:>15} {:>15} {:>15} {:>15}".format("h", "k", "l", "E", "S(Q,E)"))
+for h in numpy.linspace(0, 1, 128):
+	k = h
+	l = 0.5
+	for S in mag.GetEnergies(h, k, l, False):
+		print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(h, k, l, S.E, S.weight))
