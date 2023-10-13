@@ -713,15 +713,11 @@ public:
 			num_terms != m_exchange_terms_calc.size())
 			return {};
 
-		// bohr magneton in [meV/T]
-		constexpr const t_real muB = tl2::mu_B<t_real>
-			/ tl2::meV<t_real> * tl2::tesla<t_real>;
-
 		// build the interaction matrices J(Q) and J(-Q) of
 		// equations (12) and (14) from (Toth 2015)
-		t_mat J_Q = tl2::zero<t_mat>(num_sites*3, num_sites*3);
-		t_mat J_mQ = tl2::zero<t_mat>(num_sites*3, num_sites*3);
-		t_mat J_Q0 = tl2::zero<t_mat>(num_sites*3, num_sites*3);
+		using t_indices = std::pair<std::size_t, std::size_t>;
+		using t_Jmap = std::map<t_indices, t_mat>;
+		t_Jmap J_Q, J_mQ, J_Q0;
 
 		// iterate couplings
 		for(t_size term_idx=0; term_idx<num_terms; ++term_idx)
@@ -765,20 +761,31 @@ public:
 			t_cplx phase_Q = std::exp(phase_sign * s_imag * s_twopi *
 				tl2::inner<t_vec_real>(term.dist, Qvec));
 			t_cplx phase_mQ = std::exp(phase_sign * s_imag * s_twopi *
-				tl2::inner<t_vec_real>(-term.dist, Qvec));
+				tl2::inner<t_vec_real>(term.dist, -Qvec));
+
+			auto insert_or_add = [](t_Jmap& J, const t_indices& indices, const t_mat& J33)
+			{
+				if(auto iter = J.find(indices); iter != J.end())
+					iter->second += J33;
+				else
+					J.emplace(std::move(std::make_pair(indices, J33)));
+			};
 
 			t_mat J_T = tl2::trans(J);
 			t_real factor = /*0.5*/ 1.;
 
+			const t_indices indices = std::make_pair(term.atom1, term.atom2);
+			const t_indices indices_t = std::make_pair(term.atom2, term.atom1);
+
 			// include these two terms to fulfill equation (11) from (Toth 2015)
-			tl2::add_submat<t_mat>(J_Q, factor * J * phase_Q, term.atom1*3, term.atom2*3);
-			tl2::add_submat<t_mat>(J_Q, factor * J_T * phase_mQ, term.atom2*3, term.atom1*3);
+			insert_or_add(J_Q, indices, factor * J * phase_Q);
+			insert_or_add(J_Q, indices_t, factor * J_T * phase_mQ);
 
-			tl2::add_submat<t_mat>(J_mQ, factor * J * phase_mQ, term.atom1*3, term.atom2*3);
-			tl2::add_submat<t_mat>(J_mQ, factor * J_T * phase_Q, term.atom2*3, term.atom1*3);
+			insert_or_add(J_mQ, indices, factor * J * phase_mQ);
+			insert_or_add(J_mQ, indices_t, factor * J_T * phase_Q);
 
-			tl2::add_submat<t_mat>(J_Q0, factor * J, term.atom1*3, term.atom2*3);
-			tl2::add_submat<t_mat>(J_Q0, factor * J_T, term.atom2*3, term.atom1*3);
+			insert_or_add(J_Q0, indices, factor * J);
+			insert_or_add(J_Q0, indices_t, factor * J_T);
 		}
 
 
@@ -795,36 +802,52 @@ public:
 		for(t_size i=0; i<num_sites; ++i)
 		for(t_size j=0; j<num_sites; ++j)
 		{
-			t_mat J_sub_Q = tl2::submat<t_mat>(J_Q, i*3, j*3, 3, 3);
-			t_mat J_sub_mQ = tl2::submat<t_mat>(J_mQ, i*3, j*3, 3, 3);
-
-			t_real S_i = m_sites[i].spin_mag;
-			t_real S_j = m_sites[j].spin_mag;
-
 			// get the precalculated u and v vectors for the commensurate case
 			const t_vec& u_i = m_sites_calc[i].u;
 			const t_vec& u_j = m_sites_calc[j].u;
 			const t_vec& u_conj_j = m_sites_calc[j].u_conj;
 			const t_vec& v_i = m_sites_calc[i].v;
 
-			// equation (26) from (Toth 2015)
-			t_real SiSj = 0.5 * std::sqrt(S_i*S_j);
-			A(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, J_sub_Q * u_conj_j);
-			A_mQ(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, J_sub_mQ * u_conj_j);
-			B(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, J_sub_Q * u_j);
+			const t_indices indices_ij = std::make_pair(i, j);
+
+			const t_mat* J_Q33 = nullptr;
+			const t_mat* J_mQ33 = nullptr;
+
+			if(auto iter = J_Q.find(indices_ij); iter != J_Q.end())
+				J_Q33 = &iter->second;
+			if(auto iter = J_mQ.find(indices_ij); iter != J_mQ.end())
+				J_mQ33 = &iter->second;
+
+			if(J_Q33 && J_mQ33)
+			{
+				t_real S_i = m_sites[i].spin_mag;
+				t_real S_j = m_sites[j].spin_mag;
+
+				// equation (26) from (Toth 2015)
+				t_real SiSj = 0.5 * std::sqrt(S_i*S_j);
+				A(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, (*J_Q33) * u_conj_j);
+				A_mQ(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, (*J_mQ33) * u_conj_j);
+				B(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, (*J_Q33) * u_j);
+			}
 
 			if(i == j)
 			{
 				for(t_size k=0; k<num_sites; ++k)
 				{
+					const t_indices indices_ik = std::make_pair(i, k);
+					const t_mat* J_Q033 = nullptr;
+					if(auto iter = J_Q0.find(indices_ik); iter != J_Q0.end())
+						J_Q033 = &iter->second;
+					if(!J_Q033)
+						continue;
+
 					t_real S_k = m_sites[k].spin_mag;
 
 					// get the precalculated v_k vectors for the commensurate case
 					const t_vec& v_k = m_sites_calc[k].v;
 
 					// equation (26) from (Toth 2015)
-					t_mat J_sub_Q0 = tl2::submat<t_mat>(J_Q0, i*3, k*3, 3, 3);
-					C(i, j) += S_k * tl2::inner_noconj<t_vec>(v_i, J_sub_Q0 * v_k);
+					C(i, j) += S_k * tl2::inner_noconj<t_vec>(v_i, (*J_Q033) * v_k);
 				}
 
 				// include external field, equation (28) from (Toth 2015)
@@ -834,6 +857,10 @@ public:
 
 					t_vec gv = m_sites[i].g * v_i;
 					t_cplx Bgv = tl2::inner_noconj<t_vec>(B, gv);
+
+					// bohr magneton in [meV/T]
+					constexpr const t_real muB = tl2::mu_B<t_real>
+						/ tl2::meV<t_real> * tl2::tesla<t_real>;
 
 					A(i, j) -= 0.5 * muB * Bgv;
 					A_mQ(i, j) -= 0.5 * muB * Bgv;
