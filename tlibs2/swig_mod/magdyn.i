@@ -49,28 +49,67 @@
 %template(ArrCplx4) std::array<std::complex<double>, 4>;
 
 
+// ----------------------------------------------------------------------------
+// matrix and vector containers
+// ----------------------------------------------------------------------------
+//%include "maths.h"
+
+//%template(VectorD) tl2::vec<double>;
+//%template(VectorCplx) tl2::vec<std::complex<double>>;
+//%template(MatrixD) tl2::mat<double>;
+//%template(MatrixCplx) tl2::mat<std::complex<double>>;
+// ----------------------------------------------------------------------------
+
+
 %include "magdyn.h"
 
-
 // ----------------------------------------------------------------------------
-// input- and output structs
+// input- and output structs (and vectors of them)
 // ----------------------------------------------------------------------------
 %template(AtomSiteD) tl2_mag::t_AtomSite<
 	tl2::vec<double>,
 	tl2::mat<std::complex<double>>,
 	double,
 	std::size_t>;
+%template(VecAtomSite) std::vector<
+	tl2_mag::t_AtomSite<
+		tl2::vec<double>,
+		tl2::mat<std::complex<double>>,
+		double,
+		std::size_t>
+	>;
+%template(VecAtomSitePtr) std::vector<
+	const tl2_mag::t_AtomSite<
+		tl2::vec<double>,
+		tl2::mat<std::complex<double>>,
+		double,
+		std::size_t>*
+	>;
 
 %template(AtomSiteCalcD) tl2_mag::t_AtomSiteCalc<
 	tl2::vec<double>>;
+%template(VecAtomSiteCalc) std::vector<
+	tl2_mag::t_AtomSiteCalc<
+		tl2::vec<double>>
+	>;
 
 %template(ExchangeTermD) tl2_mag::t_ExchangeTerm<
 	tl2::vec<double>,
 	std::size_t>;
+%template(VecExchangeTerm) std::vector<
+	tl2_mag::t_ExchangeTerm<
+		tl2::vec<double>,
+		std::size_t>
+	>;
 
 %template(ExchangeTermCalcD) tl2_mag::t_ExchangeTermCalc<
 	tl2::vec<double>,
 	std::complex<double>>;
+%template(VecExchangeTermCalc) std::vector<
+	tl2_mag::t_ExchangeTermCalc<
+		tl2::vec<double>,
+		std::complex<double>>
+	>;
 
 %template(ExternalFieldD) tl2_mag::t_ExternalField<
 	tl2::vec<double>,
@@ -79,12 +118,18 @@
 %template(EnergyAndWeightD) tl2_mag::t_EnergyAndWeight<
 	tl2::mat<std::complex<double>>,
 	double>;
-%template(VecEnergyAndWeight) std::vector<tl2_mag::t_EnergyAndWeight<
-	tl2::mat<std::complex<double>>,
-	double>>;
+%template(VecEnergyAndWeight) std::vector<
+	tl2_mag::t_EnergyAndWeight<
+		tl2::mat<std::complex<double>>,
+		double>
+	>;
 
 %template(VariableD) tl2_mag::t_Variable<
 	std::complex<double>>;
+%template(VecVariable) std::vector<
+	tl2_mag::t_Variable<
+		std::complex<double>>
+	>;
 // ----------------------------------------------------------------------------
 
 

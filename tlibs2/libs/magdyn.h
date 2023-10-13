@@ -73,7 +73,9 @@ namespace tl2_mag {
  * rotate spin vector for incommensurate structures, i.e. helices
  */
 template<class t_mat, class t_vec, class t_real = typename t_mat::value_type>
-//requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
+#ifndef SWIG
+requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
+#endif
 void rotate_spin_incommensurate(t_vec& spin_vec,
 	const t_vec& sc_vec, const t_vec& ordering, const t_vec& rotaxis,
 	t_real eps = std::numeric_limits<t_real>::epsilon())
@@ -94,7 +96,9 @@ void rotate_spin_incommensurate(t_vec& spin_vec,
  * @see https://doi.org/10.1088/1361-6463/aa7573
  */
 template<class t_mat, class t_cplx = typename t_mat::value_type>
-//requires tl2::is_mat<t_mat>
+#ifndef SWIG
+requires tl2::is_mat<t_mat>
+#endif
 t_mat get_polarisation(int channel = 0, bool in_chiral_base = true)
 {
 	if(in_chiral_base)
@@ -254,8 +258,10 @@ template<
 	class t_cplx = typename t_mat::value_type,
 	class t_real = typename t_mat_real::value_type,
 	class t_size = std::size_t>
-//requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> &&
-//	tl2::is_mat<t_mat_real> && tl2::is_vec<t_vec_real>
+#ifndef SWIG
+requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> &&
+	tl2::is_mat<t_mat_real> && tl2::is_vec<t_vec_real>
+#endif
 class MagDyn
 {
 public:
@@ -391,7 +397,7 @@ public:
 	void SetEpsilon(t_real eps) { m_eps = eps; }
 	void SetPrecision(int prec) { m_prec = prec; }
 
-		void SetTemperature(t_real T) { m_temperature = T; }
+	void SetTemperature(t_real T) { m_temperature = T; }
 	void SetBoseCutoffEnergy(t_real E) { m_bose_cutoff = E; }
 	void SetUniteDegenerateEnergies(bool b) { m_unite_degenerate_energies = b; }
 	void SetForceIncommensurate(bool b) { m_force_incommensurate = b; }
@@ -403,6 +409,20 @@ public:
 		t_real len = tl2::norm<t_vec_real>(m_field.dir);
 		if(!tl2::equals_0<t_real>(len, m_eps))
 			m_field.dir /= len;
+	}
+
+
+	void RotateExternalField(const t_vec_real& axis, t_real angle)
+	{
+		t_mat_real rot = tl2::rotation<t_mat_real, t_vec_real>(
+			axis, angle, false);
+		m_field.dir = rot * m_field.dir;
+	}
+
+
+	void RotateExternalField(t_real x, t_real y, t_real z, t_real angle)
+	{
+		RotateExternalField(tl2::create<t_vec_real>({x, y, z}), angle);
 	}
 
 
@@ -1068,7 +1088,7 @@ public:
 				} // end of iteration over sites
 
 
-				auto calc_S = [this, num_sites, x_idx, y_idx, &trafo, &trafo_herm, &energies_and_correlations]
+				auto calc_S = [num_sites, x_idx, y_idx, &trafo, &trafo_herm, &energies_and_correlations]
 					(t_mat EnergyAndWeight::*S, const t_mat& Y, const t_mat& V, const t_mat& Z, const t_mat& W)
 				{
 					// equation (47) from (Toth 2015)

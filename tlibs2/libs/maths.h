@@ -4662,7 +4662,7 @@ requires tl2::is_mat<t_mat>
  */
 template<class t_mat, class t_vec>
 t_mat rotation(const t_vec& axis, const typename t_vec::value_type angle,
-	bool is_normalised = 1)
+	bool is_normalised = true)
 requires is_vec<t_vec> && is_mat<t_mat>
 {
 	using t_real = typename t_vec::value_type;
