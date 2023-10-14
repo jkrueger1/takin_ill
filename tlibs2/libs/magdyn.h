@@ -41,6 +41,7 @@
 
 #include <vector>
 #include <tuple>
+#include <unordered_map>
 #include <string>
 
 #include <algorithm>
@@ -50,6 +51,7 @@
 #include <fstream>
 #include <iomanip>
 
+#include <boost/container_hash/hash.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
@@ -73,7 +75,7 @@ namespace tl2_mag {
  * rotate spin vector for incommensurate structures, i.e. helices
  */
 template<class t_mat, class t_vec, class t_real = typename t_mat::value_type>
-#ifndef SWIG
+#ifndef SWIG  // TODO: remove this as soon as swig understands concepts
 requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
 #endif
 void rotate_spin_incommensurate(t_vec& spin_vec,
@@ -96,7 +98,7 @@ void rotate_spin_incommensurate(t_vec& spin_vec,
  * @see https://doi.org/10.1088/1361-6463/aa7573
  */
 template<class t_mat, class t_cplx = typename t_mat::value_type>
-#ifndef SWIG
+#ifndef SWIG  // TODO: remove this as soon as swig understands concepts
 requires tl2::is_mat<t_mat>
 #endif
 t_mat get_polarisation(int channel = 0, bool in_chiral_base = true)
@@ -189,17 +191,19 @@ struct t_ExchangeTerm
 
 	std::string J{};         // parsable expression for Heisenberg interaction
 	std::string dmi[3];      // parsable expression for Dzyaloshinskij-Moriya interaction
+	std::string Jgen[3][3];  // parsable expression for a general interaction
 };
 
 
 /**
  * temporary per-term calculation results
  */
-template<class t_vec, class t_cplx>
+template<class t_mat, class t_vec, class t_cplx>
 struct t_ExchangeTermCalc
 {
 	t_cplx J{};              // Heisenberg interaction
 	t_vec dmi{};             // Dzyaloshinskij-Moriya interaction
+	t_mat Jgen{};            // general interaction
 };
 
 
@@ -258,7 +262,7 @@ template<
 	class t_cplx = typename t_mat::value_type,
 	class t_real = typename t_mat_real::value_type,
 	class t_size = std::size_t>
-#ifndef SWIG
+#ifndef SWIG  // TODO: remove this as soon as swig understands concepts
 requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> &&
 	tl2::is_mat<t_mat_real> && tl2::is_vec<t_vec_real>
 #endif
@@ -271,7 +275,7 @@ public:
 	using AtomSite = t_AtomSite<t_vec_real, t_mat, t_real, t_size>;
 	using AtomSiteCalc = t_AtomSiteCalc<t_vec>;
 	using ExchangeTerm = t_ExchangeTerm<t_vec_real, t_size>;
-	using ExchangeTermCalc = t_ExchangeTermCalc<t_vec, t_cplx>;
+	using ExchangeTermCalc = t_ExchangeTermCalc<t_mat, t_vec, t_cplx>;
 	using ExternalField = t_ExternalField<t_vec_real, t_real>;
 	using EnergyAndWeight = t_EnergyAndWeight<t_mat, t_real>;
 	using Variable = t_Variable<t_cplx>;
@@ -635,7 +639,8 @@ public:
 
 			try
 			{
-				if(bool J_ok = parser.parse(term.J); J_ok)
+				// symmetric interaction
+				if(parser.parse(term.J))
 				{
 					t_cplx J = parser.eval();
 					calc.J = J;
@@ -647,6 +652,8 @@ public:
 						<< std::endl;
 				}
 
+
+				// dmi interaction
 				calc.dmi = tl2::zero<t_vec>(3);
 
 				for(t_size dmi_idx=0; dmi_idx<3; ++dmi_idx)
@@ -655,7 +662,7 @@ public:
 					if(!term.dmi[dmi_idx].size())
 						continue;
 
-					if(bool dmi_ok = parser.parse(term.dmi[dmi_idx]); dmi_ok)
+					if(parser.parse(term.dmi[dmi_idx]))
 					{
 						calc.dmi[dmi_idx] = parser.eval();
 					}
@@ -663,7 +670,32 @@ public:
 					{
 						std::cerr << "Error parsing DMI term \""
 							<< term.dmi[dmi_idx]
-							<< "\"." << std::endl;
+							<< "\" (index " << dmi_idx << ")"
+							<< "." << std::endl;
+					}
+				}
+
+
+				// general interaction
+				calc.Jgen = tl2::zero<t_mat>(3, 3);
+
+				for(t_size i=0; i<calc.Jgen.size1(); ++i)
+				for(t_size j=0; j<calc.Jgen.size2(); ++j)
+				{
+					// empty string?
+					if(!term.Jgen[i][j].size())
+						continue;
+
+					if(parser.parse(term.Jgen[i][j]))
+					{
+						calc.Jgen(i, j) = parser.eval();
+					}
+					else
+					{
+						std::cerr << "Error parsing general term \""
+							<< term.Jgen[i][j]
+							<< "\" (indices " << i << ", " << j << ")"
+							<< "." << std::endl;
 					}
 				}
 			}
@@ -715,11 +747,11 @@ public:
 
 		// build the interaction matrices J(Q) and J(-Q) of
 		// equations (12) and (14) from (Toth 2015)
-		using t_indices = std::pair<std::size_t, std::size_t>;
-		using t_Jmap = std::map<t_indices, t_mat>;
+		using t_indices = std::pair<t_size, t_size>;
+		using t_Jmap = std::unordered_map<t_indices, t_mat, boost::hash<t_indices>>;
 		t_Jmap J_Q, J_mQ, J_Q0;
 
-		// iterate couplings
+		// iterate couplings to precalculate corresponding J matrices
 		for(t_size term_idx=0; term_idx<num_terms; ++term_idx)
 		{
 			const ExchangeTerm& term = m_exchange_terms[term_idx];
@@ -732,15 +764,18 @@ public:
 				continue;
 			}
 
-			// exchange interaction matrix with dmi as anti-symmetric part, see (Toth 2015) p. 2
+			// symmetric part of the exchange interaction matrix, see (Toth 2015) p. 2
 			t_mat J = tl2::diag<t_mat>(
 				tl2::create<t_vec>({term_calc.J, term_calc.J, term_calc.J}));
 
+			// dmi as anti-symmetric part of interaction matrix
+			// using a cross product matrix, see (Toth 2015) p. 2
 			if(term_calc.dmi.size() == 3)
-			{
-				// cross product matrix
 				J += tl2::skewsymmetric<t_mat, t_vec>(-term_calc.dmi);
-			}
+
+			// general J matrix
+			if(term_calc.Jgen.size1() == 3 && term_calc.Jgen.size2() == 3)
+				J += term_calc.Jgen;
 
 			// incommensurate case: rotation wrt magnetic unit cell
 			// equations (21), (6), (2) as well as section 10 from (Toth 2015)
@@ -777,7 +812,7 @@ public:
 			const t_indices indices = std::make_pair(term.atom1, term.atom2);
 			const t_indices indices_t = std::make_pair(term.atom2, term.atom1);
 
-			// include these two terms to fulfill equation (11) from (Toth 2015)
+			// equation (12) and (11) from (Toth 2015)
 			insert_or_add(J_Q, indices, factor * J * phase_Q);
 			insert_or_add(J_Q, indices_t, factor * J_T * phase_mQ);
 
@@ -786,7 +821,7 @@ public:
 
 			insert_or_add(J_Q0, indices, factor * J);
 			insert_or_add(J_Q0, indices_t, factor * J_T);
-		}
+		}  // end of iteration over couplings
 
 
 		// create the hamiltonian of equation (25) and (26) from (Toth 2015)
@@ -808,11 +843,10 @@ public:
 			const t_vec& u_conj_j = m_sites_calc[j].u_conj;
 			const t_vec& v_i = m_sites_calc[i].v;
 
+			// get the pre-calculated J matrices for the (i, j) coupling
 			const t_indices indices_ij = std::make_pair(i, j);
-
 			const t_mat* J_Q33 = nullptr;
 			const t_mat* J_mQ33 = nullptr;
-
 			if(auto iter = J_Q.find(indices_ij); iter != J_Q.end())
 				J_Q33 = &iter->second;
 			if(auto iter = J_mQ.find(indices_ij); iter != J_mQ.end())
@@ -822,18 +856,19 @@ public:
 			{
 				t_real S_i = m_sites[i].spin_mag;
 				t_real S_j = m_sites[j].spin_mag;
+				t_real SiSj = 0.5 * std::sqrt(S_i*S_j);
 
 				// equation (26) from (Toth 2015)
-				t_real SiSj = 0.5 * std::sqrt(S_i*S_j);
 				A(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, (*J_Q33) * u_conj_j);
 				A_mQ(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, (*J_mQ33) * u_conj_j);
 				B(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, (*J_Q33) * u_j);
 			}
 
-			if(i == j)
+			if(i == j)  // diagonal elements
 			{
 				for(t_size k=0; k<num_sites; ++k)
 				{
+					// get the pre-calculated J matrix for the (i, k) coupling
 					const t_indices indices_ik = std::make_pair(i, k);
 					const t_mat* J_Q033 = nullptr;
 					if(auto iter = J_Q0.find(indices_ik); iter != J_Q0.end())
@@ -865,8 +900,8 @@ public:
 					A(i, j) -= 0.5 * muB * Bgv;
 					A_mQ(i, j) -= 0.5 * muB * Bgv;
 				}
-			}
-		}
+			}  // end of diagonal elements
+		}  // end of iteration over sites
 
 		// equation (25) from (Toth 2015)
 		t_mat H = tl2::zero<t_mat>(num_sites*2, num_sites*2);
@@ -989,7 +1024,7 @@ public:
 			evecs = tl2::reorder(evecs, sorting);
 			evals = tl2::reorder(evals, sorting);
 
-			/*for(std::size_t idx=0; idx<evecs.size(); ++idx)
+			/*for(t_size idx=0; idx<evecs.size(); ++idx)
 			{
 				std::cout << "eval = " << evals[idx] << std::endl;
 				tl2::niceprint(std::cout, evecs[idx], 1e-4, 4);
@@ -1526,6 +1561,16 @@ public:
 				exchange_term.dmi[1] = term.second.get<std::string>("dmi_y", "0");
 				exchange_term.dmi[2] = term.second.get<std::string>("dmi_z", "0");
 
+				exchange_term.Jgen[0][0] = term.second.get<std::string>("gen_xx", "0");
+				exchange_term.Jgen[0][1] = term.second.get<std::string>("gen_xy", "0");
+				exchange_term.Jgen[0][2] = term.second.get<std::string>("gen_xz", "0");
+				exchange_term.Jgen[1][0] = term.second.get<std::string>("gen_yx", "0");
+				exchange_term.Jgen[1][1] = term.second.get<std::string>("gen_yy", "0");
+				exchange_term.Jgen[1][2] = term.second.get<std::string>("gen_yz", "0");
+				exchange_term.Jgen[2][0] = term.second.get<std::string>("gen_zx", "0");
+				exchange_term.Jgen[2][1] = term.second.get<std::string>("gen_zy", "0");
+				exchange_term.Jgen[2][2] = term.second.get<std::string>("gen_zz", "0");
+
 				AddExchangeTerm(std::move(exchange_term), false);
 			}
 		}
@@ -1651,15 +1696,29 @@ public:
 		{
 			boost::property_tree::ptree itemNode;
 			itemNode.put<std::string>("name", term.name);
+
 			itemNode.put<t_size>("atom_1_index", term.atom1);
 			itemNode.put<t_size>("atom_2_index", term.atom2);
+
 			itemNode.put<t_real>("distance_x", term.dist[0]);
 			itemNode.put<t_real>("distance_y", term.dist[1]);
 			itemNode.put<t_real>("distance_z", term.dist[2]);
+
 			itemNode.put<std::string>("interaction", term.J);
+
 			itemNode.put<std::string>("dmi_x", term.dmi[0]);
 			itemNode.put<std::string>("dmi_y", term.dmi[1]);
 			itemNode.put<std::string>("dmi_z", term.dmi[2]);
+
+			itemNode.put<std::string>("gen_xx", term.Jgen[0][0]);
+			itemNode.put<std::string>("gen_xy", term.Jgen[0][1]);
+			itemNode.put<std::string>("gen_xz", term.Jgen[0][2]);
+			itemNode.put<std::string>("gen_yx", term.Jgen[1][0]);
+			itemNode.put<std::string>("gen_yy", term.Jgen[1][1]);
+			itemNode.put<std::string>("gen_yz", term.Jgen[1][2]);
+			itemNode.put<std::string>("gen_zx", term.Jgen[2][0]);
+			itemNode.put<std::string>("gen_zy", term.Jgen[2][1]);
+			itemNode.put<std::string>("gen_zz", term.Jgen[2][2]);
 
 			// also save the site atom names
 			const auto& sites = GetAtomSites();

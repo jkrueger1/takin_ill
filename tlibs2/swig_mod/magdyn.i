@@ -87,10 +87,10 @@
 	>;
 
 %template(AtomSiteCalcD) tl2_mag::t_AtomSiteCalc<
-	tl2::vec<double>>;
+	tl2::vec<std::complex<double>>>;
 %template(VecAtomSiteCalc) std::vector<
 	tl2_mag::t_AtomSiteCalc<
-		tl2::vec<double>>
+		tl2::vec<std::complex<double>>>
 	>;
 
 %template(ExchangeTermD) tl2_mag::t_ExchangeTerm<
@@ -103,11 +103,13 @@
 	>;
 
 %template(ExchangeTermCalcD) tl2_mag::t_ExchangeTermCalc<
-	tl2::vec<double>,
+	tl2::mat<std::complex<double>>,
+	tl2::vec<std::complex<double>>,
 	std::complex<double>>;
 %template(VecExchangeTermCalc) std::vector<
 	tl2_mag::t_ExchangeTermCalc<
-		tl2::vec<double>,
+		tl2::mat<std::complex<double>>,
+		tl2::vec<std::complex<double>>,
 		std::complex<double>>
 	>;
 
