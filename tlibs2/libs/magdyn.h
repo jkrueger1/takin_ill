@@ -40,6 +40,7 @@
 #define __TLIBS2_MAGDYN_H__
 
 #include <vector>
+#include <array>
 #include <tuple>
 #include <unordered_map>
 #include <string>
@@ -1557,19 +1558,18 @@ public:
 
 				exchange_term.J = term.second.get<std::string>("interaction", "0");
 
-				exchange_term.dmi[0] = term.second.get<std::string>("dmi_x", "0");
-				exchange_term.dmi[1] = term.second.get<std::string>("dmi_y", "0");
-				exchange_term.dmi[2] = term.second.get<std::string>("dmi_z", "0");
+				static const std::array<std::string, 3> comps{{"x", "y", "z"}};
+				for(t_size i=0; i<3; ++i)
+				{
+					exchange_term.dmi[i] = term.second.get<std::string>(
+						std::string("dmi_") + comps[i], "0");
 
-				exchange_term.Jgen[0][0] = term.second.get<std::string>("gen_xx", "0");
-				exchange_term.Jgen[0][1] = term.second.get<std::string>("gen_xy", "0");
-				exchange_term.Jgen[0][2] = term.second.get<std::string>("gen_xz", "0");
-				exchange_term.Jgen[1][0] = term.second.get<std::string>("gen_yx", "0");
-				exchange_term.Jgen[1][1] = term.second.get<std::string>("gen_yy", "0");
-				exchange_term.Jgen[1][2] = term.second.get<std::string>("gen_yz", "0");
-				exchange_term.Jgen[2][0] = term.second.get<std::string>("gen_zx", "0");
-				exchange_term.Jgen[2][1] = term.second.get<std::string>("gen_zy", "0");
-				exchange_term.Jgen[2][2] = term.second.get<std::string>("gen_zz", "0");
+					for(t_size j=0; j<3; ++j)
+					{
+						exchange_term.Jgen[i][j] = term.second.get<std::string>(
+							std::string("gen_") + comps[i] + comps[j], "0");
+					}
+				}
 
 				AddExchangeTerm(std::move(exchange_term), false);
 			}
@@ -1706,19 +1706,18 @@ public:
 
 			itemNode.put<std::string>("interaction", term.J);
 
-			itemNode.put<std::string>("dmi_x", term.dmi[0]);
-			itemNode.put<std::string>("dmi_y", term.dmi[1]);
-			itemNode.put<std::string>("dmi_z", term.dmi[2]);
+			static const std::array<std::string, 3> comps{{"x", "y", "z"}};
+			for(t_size i=0; i<3; ++i)
+			{
+				itemNode.put<std::string>(std::string("dmi_") +
+					comps[i], term.dmi[i]);
 
-			itemNode.put<std::string>("gen_xx", term.Jgen[0][0]);
-			itemNode.put<std::string>("gen_xy", term.Jgen[0][1]);
-			itemNode.put<std::string>("gen_xz", term.Jgen[0][2]);
-			itemNode.put<std::string>("gen_yx", term.Jgen[1][0]);
-			itemNode.put<std::string>("gen_yy", term.Jgen[1][1]);
-			itemNode.put<std::string>("gen_yz", term.Jgen[1][2]);
-			itemNode.put<std::string>("gen_zx", term.Jgen[2][0]);
-			itemNode.put<std::string>("gen_zy", term.Jgen[2][1]);
-			itemNode.put<std::string>("gen_zz", term.Jgen[2][2]);
+				for(t_size j=0; j<3; ++j)
+				{
+					itemNode.put<std::string>(std::string("gen_") +
+						comps[i] + comps[j], term.Jgen[i][j]);
+				}
+			}
 
 			// also save the site atom names
 			const auto& sites = GetAtomSites();
