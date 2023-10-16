@@ -394,6 +394,7 @@ protected:
 	void RotateField(bool ccw = true);
 	void GenerateSitesFromSG();
 	void GenerateCouplingsFromSG();
+	void GeneratePossibleCouplings(t_real maxdist);
 
 	std::optional<t_size> GetTermAtomIndex(int row, int num) const;
 	void SyncSitesAndTerms();

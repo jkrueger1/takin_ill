@@ -33,6 +33,7 @@
 #include <boost/scope_exit.hpp>
 
 
+
 /**
  * flip the coordinates of the atom positions
  * (e.g. to get the negative phase factor for weights)
@@ -69,6 +70,7 @@ void MagDynDlg::MirrorAtoms()
 		pos_z->SetValue(-pos_z->GetValue());
 	}
 }
+
 
 
 /**
@@ -111,6 +113,7 @@ void MagDynDlg::RotateField(bool ccw)
 };
 
 
+
 /**
  * set selected field as current
  */
@@ -146,6 +149,7 @@ void MagDynDlg::SetCurrentField()
 }
 
 
+
 /**
  * generate atom sites form the space group symmetries
  */
@@ -163,7 +167,7 @@ void MagDynDlg::GenerateSitesFromSG()
 	{
 		// symops of current space group
 		auto sgidx = m_comboSG->itemData(m_comboSG->currentIndex()).toInt();
-		if(sgidx < 0 || std::size_t(sgidx) >= m_SGops.size())
+		if(sgidx < 0 || t_size(sgidx) >= m_SGops.size())
 		{
 			QMessageBox::critical(this, "Magnetic Dynamics",
 				"Invalid space group selected.");
@@ -232,7 +236,7 @@ void MagDynDlg::GenerateSitesFromSG()
 
 			std::string rgb = m_sitestab->item(row, COL_SITE_RGB)->text().toStdString();
 
-			for(std::size_t newsite_idx=0; newsite_idx<newsitepos.size(); ++newsite_idx)
+			for(t_size newsite_idx=0; newsite_idx<newsitepos.size(); ++newsite_idx)
 			{
 				const auto& newsite = newsitepos[newsite_idx];
 
@@ -280,10 +284,9 @@ void MagDynDlg::GenerateCouplingsFromSG()
 	{
 		// symops of current space group
 		auto sgidx = m_comboSG2->itemData(m_comboSG2->currentIndex()).toInt();
-		if(sgidx < 0 || std::size_t(sgidx) >= m_SGops.size())
+		if(sgidx < 0 || t_size(sgidx) >= m_SGops.size())
 		{
-			QMessageBox::critical(this, "Magnetic Dynamics",
-				"Invalid space group selected.");
+			QMessageBox::critical(this, "Magnetic Dynamics", "Invalid space group selected.");
 			return;
 		}
 
@@ -321,11 +324,11 @@ void MagDynDlg::GenerateCouplingsFromSG()
 		const auto& sites = m_dyn.GetAtomSites();
 		const auto& ops = m_SGops[sgidx];
 
-		// get all site positions
-		std::vector<t_vec_real> allsites;
-		allsites.reserve(sites.size());
-		for(const auto& site: sites)
-			allsites.push_back(tl2::create<t_vec_real>({
+		// get all site positions in unit cell in homogeneous coordinates
+		std::vector<t_vec_real> sites_uc;
+		sites_uc.reserve(sites.size());
+		for(const auto& site : sites)
+			sites_uc.push_back(tl2::create<t_vec_real>({
 				site.pos[0], site.pos[1], site.pos[2], 1. }));
 
 		// if no previous coupling terms are available, add default ones
@@ -380,37 +383,38 @@ void MagDynDlg::GenerateCouplingsFromSG()
 			}
 
 			// atom positions in unit cell
-			if(*atom_1_idx >= allsites.size() || *atom_2_idx >= allsites.size())
+			if(*atom_1_idx >= sites_uc.size() || *atom_2_idx >= sites_uc.size())
 			{
 				std::cerr << "Site indices for term " << row << " (\""
 					<< ident << "\") are out of bounds, skipping." << std::endl;
 				continue;
 			}
-			const t_vec_real& site1 = allsites[*atom_1_idx];
-			t_vec_real site2 = allsites[*atom_2_idx];
+			const t_vec_real& site1 = sites_uc[*atom_1_idx];
+			t_vec_real site2 = sites_uc[*atom_2_idx];
 
 			// position in super cell
 			site2 += tl2::create<t_vec_real>({ sc_x, sc_y, sc_z, 0. });
 
-			// generate sites
-			auto newsites1 = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
-				site1, ops, g_eps, false, true, true);
-			auto newsites2 = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
-				site2, ops, g_eps, false, true, true);
+			// generate new (possibly supercell) sites with symop
+			auto sites1_sc = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
+				site1, ops, g_eps, false /*keep in uc*/, true /*ignore occupied*/, true);
+			auto sites2_sc = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
+				site2, ops, g_eps, false /*keep in uc*/, true /*ignore occupied*/, true);
 
 			// generate dmi vectors
 			t_vec_real dmi = tl2::create<t_vec_real>({dmi_x, dmi_y, dmi_z, 0});
 			auto newdmis = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
 				dmi, ops, g_eps, false, true);
 
-			for(std::size_t op_idx=0; op_idx<newsites1.size(); ++op_idx)
+			for(t_size op_idx=0; op_idx<sites1_sc.size(); ++op_idx)
 			{
-				const t_vec_real& newsite1 = newsites1[op_idx];
-				const t_vec_real& newsite2 = newsites2[op_idx];
+				const t_vec_real& site1_sc = sites1_sc[op_idx];
+				const t_vec_real& site2_sc = sites2_sc[op_idx];
 				const t_vec_real& newdmi = newdmis[op_idx];
 
-				auto [sc1_ok, newsite1_idx, sc1] = tl2::get_supercell(newsite1, allsites, 3, g_eps);
-				auto [sc2_ok, newsite2_idx, sc2] = tl2::get_supercell(newsite2, allsites, 3, g_eps);
+				// get position of the site in the supercell
+				auto [sc1_ok, site1_sc_idx, sc1] = tl2::get_supercell(site1_sc, sites_uc, 3, g_eps);
+				auto [sc2_ok, site2_sc_idx, sc2] = tl2::get_supercell(site2_sc, sites_uc, 3, g_eps);
 				t_vec_real sc_dist = sc2 - sc1;
 
 				if(!sc1_ok || !sc2_ok)
@@ -420,7 +424,7 @@ void MagDynDlg::GenerateCouplingsFromSG()
 				}
 
 				generatedcouplings.emplace_back(std::make_tuple(
-					ident + "_" + tl2::var_to_str(op_idx), newsite1_idx, newsite2_idx,
+					ident + "_" + tl2::var_to_str(op_idx), site1_sc_idx, site2_sc_idx,
 					sc_dist[0], sc_dist[1], sc_dist[2], oldJ,
 					tl2::var_to_str(newdmi[0]), tl2::var_to_str(newdmi[1]), tl2::var_to_str(newdmi[2]),
 					rgb));
@@ -443,6 +447,51 @@ void MagDynDlg::GenerateCouplingsFromSG()
 		{
 			std::apply(&MagDynDlg::AddTermTabItem,
 				std::tuple_cat(std::make_tuple(this, -1), coupling));
+		}
+	}
+	catch(const std::exception& ex)
+	{
+		QMessageBox::critical(this, "Magnetic Dynamics", ex.what());
+	}
+}
+
+
+
+/**
+ * generate possible couplings up to a certain distance
+ */
+void MagDynDlg::GeneratePossibleCouplings(t_real maxdist)
+{
+	try
+	{
+		const auto& sites = m_dyn.GetAtomSites();
+
+		// get all site position vectors in unit cell
+		std::vector<t_vec_real> sites_uc;
+		sites_uc.reserve(sites.size());
+		for(const auto& site : sites)
+			sites_uc.push_back(tl2::create<t_vec_real>({
+				site.pos[0], site.pos[1], site.pos[2], }));
+
+		// TODO: generate a list of supercell vectors
+
+		//for(const t_vec_real& sc_vec : sc_vecs)
+		{
+			for(t_size idx1=0; idx1<sites.size(); ++idx1)
+			{
+				for(t_size idx2=0; idx2<sites.size(); ++idx2)
+				{
+					// TODO: transform to lab units for distance
+					const t_vec_real& pos1 = sites_uc[idx1];
+					const t_vec_real& pos2 = sites_uc[idx2];
+
+					t_real dist = tl2::norm<t_vec_real>(pos2 - pos1);
+					if(dist > maxdist)
+						continue;
+
+					// TODO
+				}
+			}
 		}
 	}
 	catch(const std::exception& ex)
@@ -754,6 +803,7 @@ void MagDynDlg::ImportAtoms(const std::vector<TableImportAtom>& atompos_vec)
 			spin_x, spin_y, spin_z, spin_mag);
 	}
 }
+
 
 
 /**
