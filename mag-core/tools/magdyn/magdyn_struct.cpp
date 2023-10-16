@@ -374,7 +374,7 @@ void MagDynDlg::GenerateCouplingsFromSG()
 
 			if(!atom_1_idx || !atom_2_idx)
 			{
-				std::cerr << "Atom indices for term " << row << " (\""
+				std::cerr << "Site indices for term " << row << " (\""
 					<< ident << "\") are invalid, skipping." << std::endl;
 				continue;
 			}
@@ -382,7 +382,7 @@ void MagDynDlg::GenerateCouplingsFromSG()
 			// atom positions in unit cell
 			if(*atom_1_idx >= allsites.size() || *atom_2_idx >= allsites.size())
 			{
-				std::cerr << "Atom indices for term " << row << " (\""
+				std::cerr << "Site indices for term " << row << " (\""
 					<< ident << "\") are out of bounds, skipping." << std::endl;
 				continue;
 			}
@@ -661,7 +661,7 @@ void MagDynDlg::SyncSitesAndTerms()
 			!dist_x || !dist_y || !dist_z ||
 			!interaction || !dmi_x || !dmi_y || !dmi_z)
 		{
-			std::cerr << "Invalid entry in terms table row "
+			std::cerr << "Invalid entry in couplings table row "
 				<< row << "." << std::endl;
 			continue;
 		}

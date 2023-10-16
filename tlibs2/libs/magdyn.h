@@ -1476,7 +1476,7 @@ public:
 			}
 		}
 
-		// exchange terms
+		// exchange terms / couplings
 		if(auto terms = node.get_child_optional("exchange_terms"); terms)
 		{
 			for(const auto &term : *terms)
@@ -1497,8 +1497,8 @@ public:
 					if(exchange_term.atom1 != atom1_old)
 					{
 						std::cerr
-							<< "Error in exchange term " << exchange_term.index
-							<< ": Index of atom 1 (" << atom1_old
+							<< "Error in coupling " << exchange_term.index
+							<< ": Index of site 1 (" << atom1_old
 							<< ") does not correspond to the selected name (" << *name1
 							<< ")." << std::endl;
 						exchange_term.atom1 = atom1_old;
@@ -1512,8 +1512,8 @@ public:
 					if(exchange_term.atom2 != atom2_old)
 					{
 						std::cerr
-							<< "Error in exchange term " << exchange_term.index
-							<< ": Index of atom 2 (" << atom2_old
+							<< "Error in coupling " << exchange_term.index
+							<< ": Index of site 2 (" << atom2_old
 							<< ") does not correspond to the selected name (" << *name2
 							<< ")." << std::endl;
 						exchange_term.atom2 = atom2_old;

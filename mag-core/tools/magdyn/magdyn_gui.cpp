@@ -157,17 +157,22 @@ void MagDynDlg::CreateSitesPanel()
 		QIcon::fromTheme("go-down"),
 		"Down", m_sitespanel);
 
+	btnAdd->setToolTip("Add a site.");
+	btnDel->setToolTip("Delete selected site(s).");
+	btnUp->setToolTip("Move selected site(s) up.");
+	btnDown->setToolTip("Move selected site(s) down.");
+
 	QPushButton *btnMirrorAtoms = new QPushButton("Mirror", m_sitespanel);
 	QPushButton *btnShowStruct = new QPushButton("View...", m_sitespanel);
 
-	btnMirrorAtoms->setToolTip("Flip the coordinates of the atom positions.");
-	btnShowStruct->setToolTip("Show a 3D view of the atom positions and couplings.");
+	btnMirrorAtoms->setToolTip("Flip the coordinates of the sites.");
+	btnShowStruct->setToolTip("Show a 3D view of the sites and couplings.");
 
 	m_comboSG = new QComboBox(m_sitespanel);
 	QPushButton *btnSG = new QPushButton(
 		QIcon::fromTheme("insert-object"),
 		"Generate", m_sitespanel);
-	btnSG->setToolTip("Create atom site positions from space group symmetry operators.");
+	btnSG->setToolTip("Create site positions from space group symmetry operators.");
 
 	btnAdd->setFocusPolicy(Qt::StrongFocus);
 	btnDel->setFocusPolicy(Qt::StrongFocus);
@@ -220,7 +225,7 @@ void MagDynDlg::CreateSitesPanel()
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
 
-	grid->addWidget(new QLabel("Generate Atom Sites From Space Group:"), y++,0,1,4);
+	grid->addWidget(new QLabel("Generate Sites From Space Group:"), y++,0,1,4);
 	grid->addWidget(m_comboSG, y,0,1,3);
 	grid->addWidget(btnSG, y,3,1,1);
 
@@ -229,19 +234,19 @@ void MagDynDlg::CreateSitesPanel()
 	QMenu *menuTableContext = new QMenu(m_sitestab);
 	menuTableContext->addAction(
 		QIcon::fromTheme("list-add"),
-		"Add Atom Before", this,
+		"Add Site Before", this,
 		[this]() { this->AddSiteTabItem(-2); });
 	menuTableContext->addAction(
 		QIcon::fromTheme("list-add"),
-		"Add Atom After", this,
+		"Add Site After", this,
 		[this]() { this->AddSiteTabItem(-3); });
 	menuTableContext->addAction(
 		QIcon::fromTheme("edit-copy"),
-		"Clone Atom", this,
+		"Clone Site", this,
 		[this]() { this->AddSiteTabItem(-4); });
 	menuTableContext->addAction(
 		QIcon::fromTheme("list-remove"),
-		"Delete Atom",this,
+		"Delete Site",this,
 		[this]() { this->DelTabItem(m_sitestab); });
 
 
@@ -249,11 +254,11 @@ void MagDynDlg::CreateSitesPanel()
 	QMenu *menuTableContextNoItem = new QMenu(m_sitestab);
 	menuTableContextNoItem->addAction(
 		QIcon::fromTheme("list-add"),
-		"Add Atom", this,
+		"Add Site", this,
 		[this]() { this->AddSiteTabItem(); });
 	menuTableContextNoItem->addAction(
 		QIcon::fromTheme("list-remove"),
-		"Delete Atom", this,
+		"Delete Site", this,
 		[this]() { this->DelTabItem(m_sitestab); });
 
 
@@ -301,7 +306,7 @@ void MagDynDlg::CreateSitesPanel()
 		this->ShowTableContextMenu(m_sitestab, menuTableContext, menuTableContextNoItem, pt);
 	});
 
-	m_tabs_in->addTab(m_sitespanel, "Atoms");
+	m_tabs_in->addTab(m_sitespanel, "Sites");
 }
 
 
@@ -329,9 +334,9 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	m_termstab->setHorizontalHeaderItem(
 		COL_XCH_NAME, new QTableWidgetItem{"Name"});
 	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_ATOM1_IDX, new QTableWidgetItem{"Atom 1"});
+		COL_XCH_ATOM1_IDX, new QTableWidgetItem{"Site 1"});
 	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_ATOM2_IDX, new QTableWidgetItem{"Atom 2"});
+		COL_XCH_ATOM2_IDX, new QTableWidgetItem{"Site 2"});
 	m_termstab->setHorizontalHeaderItem(
 		COL_XCH_DIST_X, new QTableWidgetItem{"Cell Δx"});
 	m_termstab->setHorizontalHeaderItem(
@@ -376,13 +381,13 @@ void MagDynDlg::CreateExchangeTermsPanel()
 		QIcon::fromTheme("go-down"),
 		"Down", m_termspanel);
 
-	btnAdd->setToolTip("Add an exchange term.");
-	btnDel->setToolTip("Delete selected exchange term(s).");
-	btnUp->setToolTip("Move selected exchange term(s) up.");
-	btnDown->setToolTip("Move selected exchange term(s) down.");
+	btnAdd->setToolTip("Add a coupling between two sites.");
+	btnDel->setToolTip("Delete selected coupling(s).");
+	btnUp->setToolTip("Move selected coupling(s) up.");
+	btnDown->setToolTip("Move selected coupling(s) down.");
 
 	QPushButton *btnShowStruct = new QPushButton("View...", m_termspanel);
-	btnShowStruct->setToolTip("Show a 3D view of the atom positions and couplings.");
+	btnShowStruct->setToolTip("Show a 3D view of the sites and couplings.");
 
 	btnAdd->setFocusPolicy(Qt::StrongFocus);
 	btnDel->setFocusPolicy(Qt::StrongFocus);

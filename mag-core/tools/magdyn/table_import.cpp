@@ -46,7 +46,7 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 
 	// gui elements
 	// --------------------------------------------------------------------------------
-	QLabel *labelAtomIdx = new QLabel("Column Indices in Atom Positions Table:", this);
+	QLabel *labelAtomIdx = new QLabel("Column Indices in Magnetic Sites Table:", this);
 	m_spinAtomName = new QSpinBox(this);
 	m_spinAtomX = new QSpinBox(this);
 	m_spinAtomY = new QSpinBox(this);
@@ -81,7 +81,7 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 		spin->setMinimum(-1);
 	}
 
-	QLabel *labelAtoms = new QLabel("Atom Positions Table:", this);
+	QLabel *labelAtoms = new QLabel("Magnetic Sites Table:", this);
 	m_editAtoms = new QTextEdit(this);
 	m_editAtoms->setLineWrapMode(QTextEdit::NoWrap);
 
@@ -105,8 +105,8 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	m_spinCouplingDMIZ = new QSpinBox(this);
 
 	m_spinCouplingName->setPrefix("name = ");
-	m_spinCouplingAtom1->setPrefix("atom1 = ");
-	m_spinCouplingAtom2->setPrefix("atom2 = ");
+	m_spinCouplingAtom1->setPrefix("site1 = ");
+	m_spinCouplingAtom2->setPrefix("site2 = ");
 	m_spinCouplingDX->setPrefix("Δx = ");
 	m_spinCouplingDY->setPrefix("Δy = ");
 	m_spinCouplingDZ->setPrefix("Δz = ");
@@ -148,7 +148,7 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	QFrame *sep2 = new QFrame(this);
 	sep2->setFrameStyle(QFrame::HLine);
 
-	QPushButton *btnImportAtoms = new QPushButton("Import Atoms", this);
+	QPushButton *btnImportAtoms = new QPushButton("Import Sites", this);
 	QPushButton *btnImportCouplings = new QPushButton("Import Couplings", this);
 	QPushButton *btnOk = new QPushButton("Close", this);
 
