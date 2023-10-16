@@ -593,9 +593,6 @@ public:
 					}
 				}
 
-				//tl2::niceprint(std::cout, site_calc.spin_dir, 1e-4, 4);
-				//std::cout << std::endl;
-
 				// spin rotation of equation (9) from (Toth 2015)
 				if(m_field.align_spins)
 				{
@@ -813,7 +810,7 @@ public:
 			const t_indices indices = std::make_pair(term.atom1, term.atom2);
 			const t_indices indices_t = std::make_pair(term.atom2, term.atom1);
 
-			// equation (12) and (11) from (Toth 2015)
+			// equations (12) and (11) from (Toth 2015)
 			insert_or_add(J_Q, indices, factor * J * phase_Q);
 			insert_or_add(J_Q, indices_t, factor * J_T * phase_mQ);
 
@@ -836,73 +833,60 @@ public:
 
 		// iterate sites
 		for(t_size i=0; i<num_sites; ++i)
-		for(t_size j=0; j<num_sites; ++j)
 		{
 			// get the precalculated u and v vectors for the commensurate case
 			const t_vec& u_i = m_sites_calc[i].u;
-			const t_vec& u_j = m_sites_calc[j].u;
-			const t_vec& u_conj_j = m_sites_calc[j].u_conj;
 			const t_vec& v_i = m_sites_calc[i].v;
+			t_real S_i = m_sites[i].spin_mag;
 
-			// get the pre-calculated J matrices for the (i, j) coupling
-			const t_indices indices_ij = std::make_pair(i, j);
-			const t_mat* J_Q33 = nullptr;
-			const t_mat* J_mQ33 = nullptr;
-			if(auto iter = J_Q.find(indices_ij); iter != J_Q.end())
-				J_Q33 = &iter->second;
-			if(auto iter = J_mQ.find(indices_ij); iter != J_mQ.end())
-				J_mQ33 = &iter->second;
-
-			if(J_Q33 && J_mQ33)
+			for(t_size j=0; j<num_sites; ++j)
 			{
-				t_real S_i = m_sites[i].spin_mag;
+				// get the precalculated u and v vectors for the commensurate case
+				const t_vec& u_j = m_sites_calc[j].u;
+				const t_vec& u_conj_j = m_sites_calc[j].u_conj;
+				const t_vec& v_j = m_sites_calc[j].v;
 				t_real S_j = m_sites[j].spin_mag;
-				t_real SiSj = 0.5 * std::sqrt(S_i*S_j);
 
-				// equation (26) from (Toth 2015)
-				A(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, (*J_Q33) * u_conj_j);
-				A_mQ(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, (*J_mQ33) * u_conj_j);
-				B(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, (*J_Q33) * u_j);
-			}
+				// get the pre-calculated J matrices for the (i, j) coupling
+				const t_indices indices_ij = std::make_pair(i, j);
+				const t_mat* J_Q33 = nullptr;
+				const t_mat* J_mQ33 = nullptr;
+				const t_mat* J_Q033 = nullptr;
+				if(auto iter = J_Q.find(indices_ij); iter != J_Q.end())
+					J_Q33 = &iter->second;
+				if(auto iter = J_mQ.find(indices_ij); iter != J_mQ.end())
+					J_mQ33 = &iter->second;
+				if(auto iter = J_Q0.find(indices_ij); iter != J_Q0.end())
+					J_Q033 = &iter->second;
 
-			if(i == j)  // diagonal elements
-			{
-				for(t_size k=0; k<num_sites; ++k)
+				if(J_Q33 && J_mQ33 && J_Q033)
 				{
-					// get the pre-calculated J matrix for the (i, k) coupling
-					const t_indices indices_ik = std::make_pair(i, k);
-					const t_mat* J_Q033 = nullptr;
-					if(auto iter = J_Q0.find(indices_ik); iter != J_Q0.end())
-						J_Q033 = &iter->second;
-					if(!J_Q033)
-						continue;
-
-					t_real S_k = m_sites[k].spin_mag;
-
-					// get the precalculated v_k vectors for the commensurate case
-					const t_vec& v_k = m_sites_calc[k].v;
+					t_real SiSj = 0.5 * std::sqrt(S_i*S_j);
 
 					// equation (26) from (Toth 2015)
-					C(i, j) += S_k * tl2::inner_noconj<t_vec>(v_i, (*J_Q033) * v_k);
+					A(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, (*J_Q33) * u_conj_j);
+					A_mQ(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, (*J_mQ33) * u_conj_j);
+					B(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, (*J_Q33) * u_j);
+					C(i, i) += S_j * tl2::inner_noconj<t_vec>(v_i, (*J_Q033) * v_j);
 				}
+			}  // end of iteration over j sites
 
-				// include external field, equation (28) from (Toth 2015)
-				if(use_field)
-				{
-					t_vec B = tl2::convert<t_vec>(-m_field.dir) * m_field.mag;
+			// include external field, equation (28) from (Toth 2015)
+			if(use_field)
+			{
+				t_vec B = tl2::convert<t_vec>(-m_field.dir) * m_field.mag;
 
-					t_vec gv = m_sites[i].g * v_i;
-					t_cplx Bgv = tl2::inner_noconj<t_vec>(B, gv);
+				t_vec gv = m_sites[i].g * v_i;
+				t_cplx Bgv = tl2::inner_noconj<t_vec>(B, gv);
 
-					// bohr magneton in [meV/T]
-					constexpr const t_real muB = tl2::mu_B<t_real>
-						/ tl2::meV<t_real> * tl2::tesla<t_real>;
+				// bohr magneton in [meV/T]
+				constexpr const t_real muB = tl2::mu_B<t_real>
+				/ tl2::meV<t_real> * tl2::tesla<t_real>;
 
-					A(i, j) -= 0.5 * muB * Bgv;
-					A_mQ(i, j) -= 0.5 * muB * Bgv;
-				}
-			}  // end of diagonal elements
-		}  // end of iteration over sites
+				A(i, i) -= 0.5 * muB * Bgv;
+				A_mQ(i, i) -= 0.5 * muB * Bgv;
+			}
+		}  // end of iteration over i sites
 
 		// equation (25) from (Toth 2015)
 		t_mat H = tl2::zero<t_mat>(num_sites*2, num_sites*2);
@@ -974,8 +958,6 @@ public:
 
 		// see p. 5 in (Toth 2015)
 		t_mat H_mat = C_mat * g_sign * C_herm;
-		//tl2::niceprint(std::cout, H, 1e-4, 4);
-		//std::cout << std::endl;
 
 		bool is_herm = tl2::is_symm_or_herm<t_mat, t_real>(H_mat, m_eps);
 		if(!is_herm)
@@ -1025,25 +1007,14 @@ public:
 			evecs = tl2::reorder(evecs, sorting);
 			evals = tl2::reorder(evals, sorting);
 
-			/*for(t_size idx=0; idx<evecs.size(); ++idx)
-			{
-				std::cout << "eval = " << evals[idx] << std::endl;
-				tl2::niceprint(std::cout, evecs[idx], 1e-4, 4);
-				std::cout << std::endl;
-			}*/
-
 			t_mat evec_mat = tl2::create<t_mat>(evecs);
 			t_mat evec_mat_herm = tl2::herm(evec_mat);
-			//tl2::niceprint(std::cout, evec_mag, 1e-4, 4);
-			//std::cout << std::endl;
 
 			// equation (32) from (Toth 2015)
 			t_mat L_mat = evec_mat_herm * H_mat * evec_mat; // energies
 			t_mat E_sqrt = g_sign * L_mat;                  // abs. energies
 			for(t_size i=0; i<E_sqrt.size1(); ++i)
 				E_sqrt(i, i) = std::sqrt(E_sqrt/*L_mat*/(i, i)); // sqrt. of abs. energies
-			//tl2::niceprint(std::cout, L, 1e-4, 4);
-			//std::cout << std::endl;
 
 			// re-create energies, to be consistent with the weights
 			energies_and_correlations.clear();
