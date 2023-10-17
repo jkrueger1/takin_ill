@@ -265,6 +265,18 @@ bool MagDynDlg::Load(const QString& filename)
 			m_exportNumPoints[1]->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<t_size>("config.export_num_points_3"))
 			m_exportNumPoints[2]->setValue(*optVal);
+		if(auto optVal = magdyn.get_optional<t_real>("xtal.a"))
+			m_xtallattice[0]->setValue(*optVal);
+		if(auto optVal = magdyn.get_optional<t_real>("xtal.b"))
+			m_xtallattice[1]->setValue(*optVal);
+		if(auto optVal = magdyn.get_optional<t_real>("xtal.c"))
+			m_xtallattice[2]->setValue(*optVal);
+		if(auto optVal = magdyn.get_optional<t_real>("xtal.alpha"))
+			m_xtalangles[0]->setValue(*optVal);
+		if(auto optVal = magdyn.get_optional<t_real>("xtal.beta"))
+			m_xtalangles[1]->setValue(*optVal);
+		if(auto optVal = magdyn.get_optional<t_real>("xtal.gamma"))
+			m_xtalangles[2]->setValue(*optVal);
 
 		m_dyn.Load(magdyn);
 
@@ -507,6 +519,12 @@ bool MagDynDlg::Save(const QString& filename)
 		magdyn.put<t_size>("config.export_num_points_1", m_exportNumPoints[0]->value());
 		magdyn.put<t_size>("config.export_num_points_2", m_exportNumPoints[1]->value());
 		magdyn.put<t_size>("config.export_num_points_3", m_exportNumPoints[2]->value());
+		magdyn.put<t_real>("xtal.a", m_xtallattice[0]->value());
+		magdyn.put<t_real>("xtal.b", m_xtallattice[1]->value());
+		magdyn.put<t_real>("xtal.c", m_xtallattice[2]->value());
+		magdyn.put<t_real>("xtal.alpha", m_xtalangles[0]->value());
+		magdyn.put<t_real>("xtal.beta", m_xtalangles[1]->value());
+		magdyn.put<t_real>("xtal.gamma", m_xtalangles[2]->value());
 
 		// save magnon calculator configuration
 		m_dyn.Save(magdyn);

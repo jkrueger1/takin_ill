@@ -201,12 +201,42 @@ void MagDynDlg::CreateSitesPanel()
 		m_SGops.emplace_back(std::move(ops));
 	}
 
+	// crystal lattice and angles
+	const char* latticestr[] = {"a = ", "b = ", "c = "};
+	for(int i=0; i<3; ++i)
+	{
+		m_xtallattice[i] = new QDoubleSpinBox(m_sitespanel);
+		m_xtallattice[i]->setDecimals(3);
+		m_xtallattice[i]->setMinimum(0.001);
+		m_xtallattice[i]->setMaximum(99.999);
+		m_xtallattice[i]->setSingleStep(0.1);
+		m_xtallattice[i]->setValue(5);
+		m_xtallattice[i]->setPrefix(latticestr[i]);
+		m_xtallattice[i]->setSizePolicy(QSizePolicy{
+			QSizePolicy::Expanding, QSizePolicy::Fixed});
+	}
+
+	const char* anlesstr[] = {"α = ", "β = ", "γ = "};
+	for(int i=0; i<3; ++i)
+	{
+		m_xtalangles[i] = new QDoubleSpinBox(m_sitespanel);
+		m_xtalangles[i]->setDecimals(2);
+		m_xtalangles[i]->setMinimum(0.01);
+		m_xtalangles[i]->setMaximum(180.);
+		m_xtalangles[i]->setSingleStep(0.1);
+		m_xtalangles[i]->setValue(90);
+		m_xtalangles[i]->setPrefix(anlesstr[i]);
+		m_xtalangles[i]->setSuffix("°");
+		m_xtalangles[i]->setSizePolicy(QSizePolicy{
+			QSizePolicy::Expanding, QSizePolicy::Fixed});
+	}
 
 	auto grid = new QGridLayout(m_sitespanel);
 	grid->setSpacing(4);
 	grid->setContentsMargins(6, 6, 6, 6);
 
-	auto sep = new QFrame(m_samplepanel); sep->setFrameStyle(QFrame::HLine);
+	auto sep1 = new QFrame(m_sampleenviropanel); sep1->setFrameStyle(QFrame::HLine);
+	auto sep2 = new QFrame(m_sampleenviropanel); sep2->setFrameStyle(QFrame::HLine);
 
 	int y = 0;
 	grid->addWidget(m_sitestab, y,0,1,4);
@@ -220,7 +250,7 @@ void MagDynDlg::CreateSitesPanel()
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
-	grid->addWidget(sep, y++,0, 1,4);
+	grid->addWidget(sep1, y++,0, 1,4);
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
@@ -229,6 +259,23 @@ void MagDynDlg::CreateSitesPanel()
 	grid->addWidget(m_comboSG, y,0,1,3);
 	grid->addWidget(btnSG, y,3,1,1);
 
+	grid->addItem(new QSpacerItem(8, 8,
+		QSizePolicy::Minimum, QSizePolicy::Fixed),
+		y++,0, 1,1);
+	grid->addWidget(sep2, y++,0, 1,4);
+	grid->addItem(new QSpacerItem(8, 8,
+		QSizePolicy::Minimum, QSizePolicy::Fixed),
+		y++,0, 1,1);
+
+	grid->addWidget(new QLabel("Crystal Definition"), y++,0,1,4);
+	grid->addWidget(new QLabel("Lattice (rlu):"), y,0,1,1);
+	grid->addWidget(m_xtallattice[0], y,1,1,1);
+	grid->addWidget(m_xtallattice[1], y,2,1,1);
+	grid->addWidget(m_xtallattice[2], y++,3,1,1);
+	grid->addWidget(new QLabel("Angles:"), y,0,1,1);
+	grid->addWidget(m_xtalangles[0], y,1,1,1);
+	grid->addWidget(m_xtalangles[1], y,2,1,1);
+	grid->addWidget(m_xtalangles[2], y++,3,1,1);
 
 	// table CustomContextMenu
 	QMenu *menuTableContext = new QMenu(m_sitestab);
@@ -455,8 +502,8 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	m_normaxis[1]->setPrefix("Nk = ");
 	m_normaxis[2]->setPrefix("Nl = ");
 
-	auto sep1 = new QFrame(m_samplepanel); sep1->setFrameStyle(QFrame::HLine);
-	auto sep2 = new QFrame(m_samplepanel); sep2->setFrameStyle(QFrame::HLine);
+	auto sep1 = new QFrame(m_sampleenviropanel); sep1->setFrameStyle(QFrame::HLine);
+	auto sep2 = new QFrame(m_sampleenviropanel); sep2->setFrameStyle(QFrame::HLine);
 
 	// grid
 	auto grid = new QGridLayout(m_termspanel);
@@ -746,10 +793,10 @@ void MagDynDlg::CreateVariablesPanel()
  */
 void MagDynDlg::CreateSampleEnvPanel()
 {
-	m_samplepanel = new QWidget(this);
+	m_sampleenviropanel = new QWidget(this);
 
 	// field magnitude
-	m_field_mag = new QDoubleSpinBox(m_samplepanel);
+	m_field_mag = new QDoubleSpinBox(m_sampleenviropanel);
 	m_field_mag->setDecimals(3);
 	m_field_mag->setMinimum(0);
 	m_field_mag->setMaximum(+99.999);
@@ -761,23 +808,23 @@ void MagDynDlg::CreateSampleEnvPanel()
 		QSizePolicy::Expanding, QSizePolicy::Fixed});
 
 	// field direction
-	m_field_dir[0] = new QDoubleSpinBox(m_samplepanel);
-	m_field_dir[1] = new QDoubleSpinBox(m_samplepanel);
-	m_field_dir[2] = new QDoubleSpinBox(m_samplepanel);
+	m_field_dir[0] = new QDoubleSpinBox(m_sampleenviropanel);
+	m_field_dir[1] = new QDoubleSpinBox(m_sampleenviropanel);
+	m_field_dir[2] = new QDoubleSpinBox(m_sampleenviropanel);
 
 	// align spins along field (field-polarised state)
 	m_align_spins = new QCheckBox(
-		"Align Spins Along Field Direction", m_samplepanel);
+		"Align Spins Along Field Direction", m_sampleenviropanel);
 	m_align_spins->setChecked(false);
 	m_align_spins->setFocusPolicy(Qt::StrongFocus);
 
 	// rotation axis
-	m_rot_axis[0] = new QDoubleSpinBox(m_samplepanel);
-	m_rot_axis[1] = new QDoubleSpinBox(m_samplepanel);
-	m_rot_axis[2] = new QDoubleSpinBox(m_samplepanel);
+	m_rot_axis[0] = new QDoubleSpinBox(m_sampleenviropanel);
+	m_rot_axis[1] = new QDoubleSpinBox(m_sampleenviropanel);
+	m_rot_axis[2] = new QDoubleSpinBox(m_sampleenviropanel);
 
 	// rotation angle
-	m_rot_angle = new QDoubleSpinBox(m_samplepanel);
+	m_rot_angle = new QDoubleSpinBox(m_sampleenviropanel);
 	m_rot_angle->setDecimals(3);
 	m_rot_angle->setMinimum(-360);
 	m_rot_angle->setMaximum(+360);
@@ -789,10 +836,10 @@ void MagDynDlg::CreateSampleEnvPanel()
 
 	QPushButton *btn_rotate_ccw = new QPushButton(
 		QIcon::fromTheme("object-rotate-left"),
-		"Rotate CCW", m_samplepanel);
+		"Rotate CCW", m_sampleenviropanel);
 	QPushButton *btn_rotate_cw = new QPushButton(
 		QIcon::fromTheme("object-rotate-right"),
-		"Rotate CW", m_samplepanel);
+		"Rotate CW", m_sampleenviropanel);
 	btn_rotate_ccw->setToolTip("Rotate the magnetic field in the counter-clockwise direction.");
 	btn_rotate_cw->setToolTip("Rotate the magnetic field in the clockwise direction.");
 	btn_rotate_ccw->setFocusPolicy(Qt::StrongFocus);
@@ -800,7 +847,7 @@ void MagDynDlg::CreateSampleEnvPanel()
 
 
 	// table with saved fields
-	m_fieldstab = new QTableWidget(m_samplepanel);
+	m_fieldstab = new QTableWidget(m_sampleenviropanel);
 	m_fieldstab->setShowGrid(true);
 	m_fieldstab->setSortingEnabled(true);
 	m_fieldstab->setMouseTracking(true);
@@ -830,23 +877,23 @@ void MagDynDlg::CreateSampleEnvPanel()
 
 	QPushButton *btnAddField = new QPushButton(
 		QIcon::fromTheme("list-add"),
-		"Add", m_samplepanel);
+		"Add", m_sampleenviropanel);
 	QPushButton *btnDelField = new QPushButton(
 		QIcon::fromTheme("list-remove"),
-		"Delete", m_samplepanel);
+		"Delete", m_sampleenviropanel);
 	QPushButton *btnFieldUp = new QPushButton(
 		QIcon::fromTheme("go-up"),
-		"Up", m_samplepanel);
+		"Up", m_sampleenviropanel);
 	QPushButton *btnFieldDown = new QPushButton(
 		QIcon::fromTheme("go-down"),
-		"Down", m_samplepanel);
+		"Down", m_sampleenviropanel);
 
 	btnAddField->setToolTip("Add a magnetic field.");
 	btnDelField->setToolTip("Delete selected magnetic field(s).");
 	btnFieldUp->setToolTip("Move selected magnetic field(s) up.");
 	btnFieldDown->setToolTip("Move selected magnetic field(s) down.");
 
-	QPushButton *btnSetField = new QPushButton("Set Field", m_samplepanel);
+	QPushButton *btnSetField = new QPushButton("Set Field", m_sampleenviropanel);
 	btnSetField->setToolTip("Set the selected field as the currently active one.");
 
 	btnAddField->setFocusPolicy(Qt::StrongFocus);
@@ -906,7 +953,7 @@ void MagDynDlg::CreateSampleEnvPanel()
 
 
 	// temperature
-	m_temperature = new QDoubleSpinBox(m_samplepanel);
+	m_temperature = new QDoubleSpinBox(m_sampleenviropanel);
 	m_temperature->setDecimals(2);
 	m_temperature->setMinimum(0);
 	m_temperature->setMaximum(+999.99);
@@ -940,26 +987,26 @@ void MagDynDlg::CreateSampleEnvPanel()
 	m_field_dir[1]->setPrefix("Bk = ");
 	m_field_dir[2]->setPrefix("Bl = ");
 
-	auto grid = new QGridLayout(m_samplepanel);
+	auto grid = new QGridLayout(m_sampleenviropanel);
 	grid->setSpacing(4);
 	grid->setContentsMargins(6, 6, 6, 6);
 
 	int y = 0;
 	grid->addWidget(new QLabel(QString("Magnetic Field:"),
-		m_samplepanel), y++,0,1,2);
+		m_sampleenviropanel), y++,0,1,2);
 	grid->addWidget(new QLabel(QString("Magnitude:"),
-		m_samplepanel), y,0,1,1);
+		m_sampleenviropanel), y,0,1,1);
 	grid->addWidget(m_field_mag, y++,1,1,1);
 	grid->addWidget(new QLabel(QString("Direction:"),
-		m_samplepanel), y,0,1,1);
+		m_sampleenviropanel), y,0,1,1);
 	grid->addWidget(m_field_dir[0], y,1,1,1);
 	grid->addWidget(m_field_dir[1], y,2,1,1);
 	grid->addWidget(m_field_dir[2], y++,3,1,1);
 	grid->addWidget(m_align_spins, y++,0,1,4);
 
-	auto sep1 = new QFrame(m_samplepanel); sep1->setFrameStyle(QFrame::HLine);
-	auto sep2 = new QFrame(m_samplepanel); sep2->setFrameStyle(QFrame::HLine);
-	auto sep3 = new QFrame(m_samplepanel); sep3->setFrameStyle(QFrame::HLine);
+	auto sep1 = new QFrame(m_sampleenviropanel); sep1->setFrameStyle(QFrame::HLine);
+	auto sep2 = new QFrame(m_sampleenviropanel); sep2->setFrameStyle(QFrame::HLine);
+	auto sep3 = new QFrame(m_sampleenviropanel); sep3->setFrameStyle(QFrame::HLine);
 
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
@@ -970,14 +1017,14 @@ void MagDynDlg::CreateSampleEnvPanel()
 		y++,0, 1,1);
 
 	grid->addWidget(new QLabel(QString("Rotate Magnetic Field:"),
-		m_samplepanel), y++,0,1,2);
+		m_sampleenviropanel), y++,0,1,2);
 	grid->addWidget(new QLabel(QString("Axis:"),
-		m_samplepanel), y,0,1,1);
+		m_sampleenviropanel), y,0,1,1);
 	grid->addWidget(m_rot_axis[0], y,1,1,1);
 	grid->addWidget(m_rot_axis[1], y,2,1,1);
 	grid->addWidget(m_rot_axis[2], y++,3,1,1);
 	grid->addWidget(new QLabel(QString("Angle:"),
-		m_samplepanel), y,0,1,1);
+		m_sampleenviropanel), y,0,1,1);
 	grid->addWidget(m_rot_angle, y,1,1,1);
 	grid->addWidget(btn_rotate_ccw, y,2,1,1);
 	grid->addWidget(btn_rotate_cw, y++,3,1,1);
@@ -991,7 +1038,7 @@ void MagDynDlg::CreateSampleEnvPanel()
 		y++,0, 1,1);
 
 	grid->addWidget(new QLabel(QString("Saved Fields:"),
-		m_samplepanel), y++,0,1,4);
+		m_sampleenviropanel), y++,0,1,4);
 	grid->addWidget(m_fieldstab, y,0,1,4);
 	grid->addWidget(btnAddField, ++y,0,1,1);
 	grid->addWidget(btnDelField, y,1,1,1);
@@ -1008,7 +1055,7 @@ void MagDynDlg::CreateSampleEnvPanel()
 		y++,0, 1,1);
 
 	grid->addWidget(new QLabel(QString("Temperature:"),
-		m_samplepanel), y,0,1,1);
+		m_sampleenviropanel), y,0,1,1);
 	grid->addWidget(m_temperature, y++,1,1,1);
 
 	auto calc_all = [this]()
@@ -1073,7 +1120,7 @@ void MagDynDlg::CreateSampleEnvPanel()
 		this->ShowTableContextMenu(m_fieldstab, menuTableContext, menuTableContextNoItem, pt);
 	});
 
-	m_tabs_in->addTab(m_samplepanel, "Sample");
+	m_tabs_in->addTab(m_sampleenviropanel, "Environment");
 }
 
 
@@ -1584,7 +1631,7 @@ void MagDynDlg::CreateExportPanel()
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
-	auto sep1 = new QFrame(m_samplepanel); sep1->setFrameStyle(QFrame::HLine);
+	auto sep1 = new QFrame(m_sampleenviropanel); sep1->setFrameStyle(QFrame::HLine);
 	grid->addWidget(sep1, y++, 0,1,4);
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
@@ -1601,7 +1648,7 @@ void MagDynDlg::CreateExportPanel()
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
-	auto sep2 = new QFrame(m_samplepanel); sep2->setFrameStyle(QFrame::HLine);
+	auto sep2 = new QFrame(m_sampleenviropanel); sep2->setFrameStyle(QFrame::HLine);
 	grid->addWidget(sep2, y++, 0,1,4);
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
@@ -1619,7 +1666,7 @@ void MagDynDlg::CreateExportPanel()
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
-	auto sep3 = new QFrame(m_samplepanel); sep3->setFrameStyle(QFrame::HLine);
+	auto sep3 = new QFrame(m_sampleenviropanel); sep3->setFrameStyle(QFrame::HLine);
 	grid->addWidget(sep3, y++, 0,1,4);
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),

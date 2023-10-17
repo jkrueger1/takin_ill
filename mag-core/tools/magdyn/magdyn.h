@@ -225,7 +225,7 @@ protected:
 	// panels
 	QWidget *m_sitespanel{};
 	QWidget *m_termspanel{};
-	QWidget *m_samplepanel{};
+	QWidget *m_sampleenviropanel{};
 	QWidget *m_varspanel{};
 	QWidget *m_notespanel{};
 	QWidget *m_disppanel{};
@@ -237,6 +237,8 @@ protected:
 	QTableWidget *m_sitestab{};
 	QComboBox *m_comboSG{};
 	std::vector<std::vector<t_mat_real>> m_SGops{};
+	QDoubleSpinBox *m_xtallattice[3]{nullptr, nullptr, nullptr};
+	QDoubleSpinBox *m_xtalangles[3]{nullptr, nullptr, nullptr};
 
 	// terms, ordering vector, and rotation axis
 	QTableWidget *m_termstab{};
