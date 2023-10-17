@@ -265,6 +265,12 @@ bool MagDynDlg::Load(const QString& filename)
 			m_exportNumPoints[1]->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<t_size>("config.export_num_points_3"))
 			m_exportNumPoints[2]->setValue(*optVal);
+		if(auto optVal = magdyn.get_optional<t_real>("config.couplings_max_dist"))
+			m_maxdist->setValue(*optVal);
+		if(auto optVal = magdyn.get_optional<int>("config.couplings_max_supercell"))
+			m_maxSC->setValue(*optVal);
+		if(auto optVal = magdyn.get_optional<int>("config.couplings_max_count"))
+			m_maxcouplings->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<t_real>("xtal.a"))
 			m_xtallattice[0]->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<t_real>("xtal.b"))
@@ -519,6 +525,9 @@ bool MagDynDlg::Save(const QString& filename)
 		magdyn.put<t_size>("config.export_num_points_1", m_exportNumPoints[0]->value());
 		magdyn.put<t_size>("config.export_num_points_2", m_exportNumPoints[1]->value());
 		magdyn.put<t_size>("config.export_num_points_3", m_exportNumPoints[2]->value());
+		magdyn.put<t_real>("config.couplings_max_dist", m_maxdist->value());
+		magdyn.put<int>("config.couplings_max_supercell", m_maxSC->value());
+		magdyn.put<int>("config.couplings_max_count", m_maxcouplings->value());
 		magdyn.put<t_real>("xtal.a", m_xtallattice[0]->value());
 		magdyn.put<t_real>("xtal.b", m_xtallattice[1]->value());
 		magdyn.put<t_real>("xtal.c", m_xtallattice[2]->value());

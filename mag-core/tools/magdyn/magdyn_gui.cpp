@@ -70,6 +70,10 @@ void MagDynDlg::CreateMainWindow()
 	btnStop->setToolTip("Request stop to ongoing calculation.");
 	btnStop->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
+	// show structure
+	QPushButton *btnShowStruct = new QPushButton("View Structure...", this);
+	btnShowStruct->setToolTip("Show a 3D view of the magnetic sites and couplings.");
+
 	// splitter for input and output tabs
 	m_split_inout = new QSplitter(this);
 	m_split_inout->setOrientation(Qt::Horizontal);
@@ -81,15 +85,17 @@ void MagDynDlg::CreateMainWindow()
 	m_maingrid = new QGridLayout(this);
 	m_maingrid->setSpacing(4);
 	m_maingrid->setContentsMargins(6, 6, 6, 6);
-	m_maingrid->addWidget(m_split_inout, 0,0, 1,7);
+	m_maingrid->addWidget(m_split_inout, 0,0, 1,8);
 	m_maingrid->addWidget(m_status, 1,0, 1,3);
 	m_maingrid->addWidget(m_progress, 1,3, 1,2);
 	m_maingrid->addWidget(m_btnStart, 1,5, 1,1);
 	m_maingrid->addWidget(btnStop, 1,6, 1,1);
+	m_maingrid->addWidget(btnShowStruct, 1,7, 1,1);
 
 	// signals
 	connect(m_btnStart, &QAbstractButton::clicked, [this]() { this->CalcAll(); });
 	connect(btnStop, &QAbstractButton::clicked, [this]() { m_stopRequested = true; });
+	connect(btnShowStruct, &QAbstractButton::clicked, this, &MagDynDlg::ShowStructurePlot);
 }
 
 
@@ -166,20 +172,20 @@ void MagDynDlg::CreateSitesPanel()
 	QPushButton *btnShowStruct = new QPushButton("View...", m_sitespanel);
 
 	btnMirrorAtoms->setToolTip("Flip the coordinates of the sites.");
-	btnShowStruct->setToolTip("Show a 3D view of the sites and couplings.");
+	btnShowStruct->setToolTip("Show a 3D view of the magnetic sites and couplings.");
 
 	m_comboSG = new QComboBox(m_sitespanel);
-	QPushButton *btnSG = new QPushButton(
+	QPushButton *btnGenBySG = new QPushButton(
 		QIcon::fromTheme("insert-object"),
 		"Generate", m_sitespanel);
-	btnSG->setToolTip("Create site positions from space group symmetry operators.");
+	btnGenBySG->setToolTip("Create site positions from space group symmetry operators.");
 
 	btnAdd->setFocusPolicy(Qt::StrongFocus);
 	btnDel->setFocusPolicy(Qt::StrongFocus);
 	btnUp->setFocusPolicy(Qt::StrongFocus);
 	btnDown->setFocusPolicy(Qt::StrongFocus);
 	m_comboSG->setFocusPolicy(Qt::StrongFocus);
-	btnSG->setFocusPolicy(Qt::StrongFocus);
+	btnGenBySG->setFocusPolicy(Qt::StrongFocus);
 
 	btnAdd->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Fixed});
@@ -189,7 +195,7 @@ void MagDynDlg::CreateSitesPanel()
 		QSizePolicy::Expanding, QSizePolicy::Fixed});
 	btnDown->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Fixed});
-	btnSG->setSizePolicy(QSizePolicy{
+	btnGenBySG->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Fixed});
 
 	// get space groups and symops
@@ -257,7 +263,7 @@ void MagDynDlg::CreateSitesPanel()
 
 	grid->addWidget(new QLabel("Generate Sites From Space Group:"), y++,0,1,4);
 	grid->addWidget(m_comboSG, y,0,1,3);
-	grid->addWidget(btnSG, y,3,1,1);
+	grid->addWidget(btnGenBySG, y++,3,1,1);
 
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
@@ -318,7 +324,7 @@ void MagDynDlg::CreateSitesPanel()
 		[this]() { this->MoveTabItemUp(m_sitestab); });
 	connect(btnDown, &QAbstractButton::clicked,
 		[this]() { this->MoveTabItemDown(m_sitestab); });
-	connect(btnSG, &QAbstractButton::clicked,
+	connect(btnGenBySG, &QAbstractButton::clicked,
 		this, &MagDynDlg::GenerateSitesFromSG);
 
 	connect(btnMirrorAtoms, &QAbstractButton::clicked, this, &MagDynDlg::MirrorAtoms);
@@ -433,9 +439,6 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	btnUp->setToolTip("Move selected coupling(s) up.");
 	btnDown->setToolTip("Move selected coupling(s) down.");
 
-	QPushButton *btnShowStruct = new QPushButton("View...", m_termspanel);
-	btnShowStruct->setToolTip("Show a 3D view of the sites and couplings.");
-
 	btnAdd->setFocusPolicy(Qt::StrongFocus);
 	btnDel->setFocusPolicy(Qt::StrongFocus);
 	btnUp->setFocusPolicy(Qt::StrongFocus);
@@ -450,20 +453,62 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	btnDown->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Fixed});
 
-	m_comboSG2 = new QComboBox(m_termspanel);
-	QPushButton *btnSG = new QPushButton(
+
+	// couplings from distances
+	m_maxdist = new QDoubleSpinBox(m_termspanel);
+	m_maxdist->setDecimals(3);
+	m_maxdist->setMinimum(0.001);
+	m_maxdist->setMaximum(99.999);
+	m_maxdist->setSingleStep(0.1);
+	m_maxdist->setValue(5);
+	m_maxdist->setPrefix("d = ");
+	m_maxdist->setToolTip("Maximum distance between sites.");
+	m_maxdist->setSizePolicy(QSizePolicy{
+		QSizePolicy::Expanding, QSizePolicy::Fixed});
+
+	m_maxSC = new QSpinBox(m_termspanel);
+	m_maxSC->setMinimum(1);
+	m_maxSC->setMaximum(99);
+	m_maxSC->setValue(4);
+	m_maxSC->setPrefix("order = ");
+	m_maxSC->setToolTip("Maximum order of supercell to consider.");
+	m_maxSC->setSizePolicy(QSizePolicy{
+		QSizePolicy::Expanding, QSizePolicy::Fixed});
+
+	m_maxcouplings = new QSpinBox(m_termspanel);
+	m_maxcouplings->setMinimum(-1);
+	m_maxcouplings->setMaximum(999);
+	m_maxcouplings->setValue(100);
+	m_maxcouplings->setPrefix("n = ");
+	m_maxcouplings->setToolTip("Maximum number of couplings to generate (-1: no limit).");
+	m_maxcouplings->setSizePolicy(QSizePolicy{
+		QSizePolicy::Expanding, QSizePolicy::Fixed});
+
+	QPushButton *btnGenByDist = new QPushButton(
 		QIcon::fromTheme("insert-object"),
-		"Generate", m_sitespanel);
-	btnSG->setToolTip("Create couplings from space group symmetry operators.");
+		"Generate", m_termspanel);
+	btnGenByDist->setToolTip("Create possible couplings by distances between sites.");
+	btnGenByDist->setFocusPolicy(Qt::StrongFocus);
+	btnGenByDist->setSizePolicy(QSizePolicy{
+		QSizePolicy::Expanding, QSizePolicy::Fixed});
+
+
+	// couplings from space group
+	m_comboSG2 = new QComboBox(m_termspanel);
+	QPushButton *btnGenBySG = new QPushButton(
+		QIcon::fromTheme("insert-object"),
+		"Generate", m_termspanel);
+	btnGenBySG->setToolTip("Create couplings from space group symmetry operators.");
 
 	m_comboSG2->setFocusPolicy(Qt::StrongFocus);
-	btnSG->setFocusPolicy(Qt::StrongFocus);
-	btnSG->setSizePolicy(QSizePolicy{
+	btnGenBySG->setFocusPolicy(Qt::StrongFocus);
+	btnGenBySG->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Fixed});
 
 	// copy space groups from other combobox
 	for(int item_idx=0; item_idx<m_comboSG->count(); ++item_idx)
 		m_comboSG2->addItem(m_comboSG->itemText(item_idx), m_comboSG2->count());
+
 
 	// ordering vector
 	m_ordering[0] = new QDoubleSpinBox(m_termspanel);
@@ -502,6 +547,7 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	m_normaxis[1]->setPrefix("Nk = ");
 	m_normaxis[2]->setPrefix("Nl = ");
 
+
 	auto sep1 = new QFrame(m_sampleenviropanel); sep1->setFrameStyle(QFrame::HLine);
 	auto sep2 = new QFrame(m_sampleenviropanel); sep2->setFrameStyle(QFrame::HLine);
 
@@ -516,7 +562,6 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	grid->addWidget(btnDel, y,1,1,1);
 	grid->addWidget(btnUp, y,2,1,1);
 	grid->addWidget(btnDown, y++,3,1,1);
-	grid->addWidget(btnShowStruct, y++,3,1,1);
 
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
@@ -526,9 +571,15 @@ void MagDynDlg::CreateExchangeTermsPanel()
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
 
+	grid->addWidget(new QLabel("Generate Possible Coupling Terms By Distance:"), y++,0,1,4);
+	grid->addWidget(m_maxdist, y,0,1,1);
+	grid->addWidget(m_maxSC, y,1,1,1);
+	grid->addWidget(m_maxcouplings, y,2,1,1);
+	grid->addWidget(btnGenByDist, y++,3,1,1);
+
 	grid->addWidget(new QLabel("Generate Coupling Terms From Space Group:"), y++,0,1,4);
 	grid->addWidget(m_comboSG2, y,0,1,3);
-	grid->addWidget(btnSG, y++,3,1,1);
+	grid->addWidget(btnGenBySG, y++,3,1,1);
 
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
@@ -590,10 +641,10 @@ void MagDynDlg::CreateExchangeTermsPanel()
 		[this]() { this->MoveTabItemUp(m_termstab); });
 	connect(btnDown, &QAbstractButton::clicked,
 		[this]() { this->MoveTabItemDown(m_termstab); });
-	connect(btnSG, &QAbstractButton::clicked,
+	connect(btnGenByDist, &QAbstractButton::clicked,
+		this, &MagDynDlg::GeneratePossibleCouplings);
+	connect(btnGenBySG, &QAbstractButton::clicked,
 		this, &MagDynDlg::GenerateCouplingsFromSG);
-
-	connect(btnShowStruct, &QAbstractButton::clicked, this, &MagDynDlg::ShowStructurePlot);
 
 	connect(m_comboSG2, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
 		[this](int idx)

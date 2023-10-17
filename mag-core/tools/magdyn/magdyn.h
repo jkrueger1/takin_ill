@@ -242,6 +242,9 @@ protected:
 
 	// terms, ordering vector, and rotation axis
 	QTableWidget *m_termstab{};
+	QDoubleSpinBox *m_maxdist{};
+	QSpinBox *m_maxSC{};
+	QSpinBox *m_maxcouplings{};
 	QComboBox *m_comboSG2{};  // copy of m_comboSG
 	QDoubleSpinBox *m_ordering[3]{nullptr, nullptr, nullptr};
 	QDoubleSpinBox *m_normaxis[3]{nullptr, nullptr, nullptr};

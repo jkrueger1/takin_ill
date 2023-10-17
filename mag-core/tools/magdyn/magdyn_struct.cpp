@@ -470,6 +470,10 @@ struct PossibleCoupling
 	t_vec_real sc_vec{};
 	t_vec_real pos2_sc{};
 
+	// coordinates in orthogonal lab units
+	t_vec_real pos1_uc_lab{};
+	t_vec_real pos2_sc_lab{};
+
 	// corresponding unit cell index
 	t_size idx1_uc{};
 	t_size idx2_uc{};
@@ -485,15 +489,21 @@ struct PossibleCoupling
  */
 void MagDynDlg::GeneratePossibleCouplings()
 {
-	// TODO
-	t_real maxdist = 1.;
-	t_real sc_max = 4;
-	t_size max_couplings = 64;
-
-	std::vector<PossibleCoupling> couplings;
-
 	try
 	{
+		t_real maxdist = m_maxdist->value();
+		t_real sc_max = t_real(m_maxSC->value());
+		t_size max_couplings = m_maxcouplings->value();
+
+		t_real a = m_xtallattice[0]->value();
+		t_real b = m_xtallattice[1]->value();
+		t_real c = m_xtallattice[2]->value();
+		t_real alpha = m_xtalangles[0]->value() / 180. * tl2::pi<t_real>;
+		t_real beta = m_xtalangles[1]->value()/ 180. * tl2::pi<t_real>;
+		t_real gamma = m_xtalangles[2]->value()/ 180. * tl2::pi<t_real>;
+		t_mat_real A = tl2::A_matrix<t_mat_real>(a, b, c, alpha, beta, gamma);
+
+		std::vector<PossibleCoupling> couplings;
 		const auto& sites = m_dyn.GetAtomSites();
 
 		// get all site position vectors in unit cell
@@ -512,8 +522,8 @@ void MagDynDlg::GeneratePossibleCouplings()
 			{
 				for(t_real sc_l = -sc_max; sc_l<=sc_max; sc_l += 1.)
 				{
-					sc_vecs.emplace_back(std::move(
-						tl2::create<t_vec_real>({ sc_h, sc_k, sc_l })));
+					sc_vecs.emplace_back(
+						tl2::create<t_vec_real>({ sc_h, sc_k, sc_l }));
 				}
 			}
 		}
@@ -529,14 +539,18 @@ void MagDynDlg::GeneratePossibleCouplings()
 					coupling.idx1_uc = idx1;
 					coupling.idx2_uc = idx2;
 
-					// TODO: transform to lab units for correct distance
 					coupling.pos1_uc = sites_uc[idx1];
 					coupling.pos2_uc = sites_uc[idx2];
 
 					coupling.sc_vec = sc_vec;
 					coupling.pos2_sc = coupling.pos2_uc + sc_vec;
 
-					coupling.dist = tl2::norm<t_vec_real>(coupling.pos2_sc - coupling.pos1_uc);
+					// transform to lab units for correct distance
+					coupling.pos1_uc_lab = A * coupling.pos1_uc;
+					coupling.pos2_sc_lab = A * coupling.pos2_sc;
+
+					coupling.dist = tl2::norm<t_vec_real>(
+						coupling.pos2_sc_lab - coupling.pos1_uc_lab);
 					if(coupling.dist <= maxdist)
 						couplings.emplace_back(std::move(coupling));
 				}
