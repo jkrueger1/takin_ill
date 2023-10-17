@@ -458,10 +458,40 @@ void MagDynDlg::GenerateCouplingsFromSG()
 
 
 /**
+ * helper struct for finding possible couplings
+ */
+struct PossibleCoupling
+{
+	// corresponding unit cell position
+	t_vec_real pos1_uc{};
+	t_vec_real pos2_uc{};
+
+	// atom position in supercell
+	t_vec_real sc_vec{};
+	t_vec_real pos2_sc{};
+
+	// corresponding unit cell index
+	t_size idx1_uc{};
+	t_size idx2_uc{};
+
+	// distance between the two atoms
+	t_real dist{};
+};
+
+
+
+/**
  * generate possible couplings up to a certain distance
  */
-void MagDynDlg::GeneratePossibleCouplings(t_real maxdist)
+void MagDynDlg::GeneratePossibleCouplings()
 {
+	// TODO
+	t_real maxdist = 1.;
+	t_real sc_max = 4;
+	t_size max_couplings = 64;
+
+	std::vector<PossibleCoupling> couplings;
+
 	try
 	{
 		const auto& sites = m_dyn.GetAtomSites();
@@ -473,25 +503,74 @@ void MagDynDlg::GeneratePossibleCouplings(t_real maxdist)
 			sites_uc.push_back(tl2::create<t_vec_real>({
 				site.pos[0], site.pos[1], site.pos[2], }));
 
-		// TODO: generate a list of supercell vectors
-
-		//for(const t_vec_real& sc_vec : sc_vecs)
+		// generate a list of supercell vectors
+		std::vector<t_vec_real> sc_vecs;
+		sc_vecs.reserve(sc_max * sc_max * sc_max * 2*2*2);
+		for(t_real sc_h = -sc_max; sc_h<=sc_max; sc_h += 1.)
 		{
-			for(t_size idx1=0; idx1<sites.size(); ++idx1)
+			for(t_real sc_k = -sc_max; sc_k<=sc_max; sc_k += 1.)
 			{
-				for(t_size idx2=0; idx2<sites.size(); ++idx2)
+				for(t_real sc_l = -sc_max; sc_l<=sc_max; sc_l += 1.)
 				{
-					// TODO: transform to lab units for distance
-					const t_vec_real& pos1 = sites_uc[idx1];
-					const t_vec_real& pos2 = sites_uc[idx2];
-
-					t_real dist = tl2::norm<t_vec_real>(pos2 - pos1);
-					if(dist > maxdist)
-						continue;
-
-					// TODO
+					sc_vecs.emplace_back(std::move(
+						tl2::create<t_vec_real>({ sc_h, sc_k, sc_l })));
 				}
 			}
+		}
+
+		for(const t_vec_real& sc_vec : sc_vecs)
+		{
+			for(t_size idx1=0; idx1<sites.size()-1; ++idx1)
+			{
+				for(t_size idx2=idx1+1; idx2<sites.size(); ++idx2)
+				{
+					PossibleCoupling coupling;
+
+					coupling.idx1_uc = idx1;
+					coupling.idx2_uc = idx2;
+
+					// TODO: transform to lab units for correct distance
+					coupling.pos1_uc = sites_uc[idx1];
+					coupling.pos2_uc = sites_uc[idx2];
+
+					coupling.sc_vec = sc_vec;
+					coupling.pos2_sc = coupling.pos2_uc + sc_vec;
+
+					coupling.dist = tl2::norm<t_vec_real>(coupling.pos2_sc - coupling.pos1_uc);
+					if(coupling.dist <= maxdist)
+						couplings.emplace_back(std::move(coupling));
+				}
+			}
+		}
+
+		// sort couplings by distance
+		std::stable_sort(couplings.begin(), couplings.end(),
+			[](const PossibleCoupling& coupling1, const PossibleCoupling& coupling2) -> bool
+		{
+			return coupling1.dist < coupling2.dist;
+		});
+
+		// add couplings to list
+		t_size coupling_idx = 0;
+		for(const PossibleCoupling& coupling : couplings)
+		{
+			if(coupling_idx >= max_couplings)
+				break;
+
+			std::ostringstream ident;
+			ident << "coupling_" << (coupling_idx + 1);
+			auto generatedcoupling = std::make_tuple(
+				ident.str(),
+				coupling.idx1_uc, coupling.idx2_uc,
+				coupling.sc_vec[0], coupling.sc_vec[1], coupling.sc_vec[2],
+				"0",                                   // exchange term
+				"0", "0", "0",                         // dmi vector
+				"auto");                               // colour
+
+			++coupling_idx;
+
+			std::apply(&MagDynDlg::AddTermTabItem,
+				std::tuple_cat(std::make_tuple(this, -1), generatedcoupling));
 		}
 	}
 	catch(const std::exception& ex)
