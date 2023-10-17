@@ -489,6 +489,14 @@ struct PossibleCoupling
  */
 void MagDynDlg::GeneratePossibleCouplings()
 {
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_ignoreCalc = false;
+		if(this_->m_autocalc->isChecked())
+			this_->CalcAll();
+	} BOOST_SCOPE_EXIT_END
+	m_ignoreCalc = true;
+
 	try
 	{
 		t_real maxdist = m_maxdist->value();
