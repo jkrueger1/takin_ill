@@ -105,6 +105,8 @@ void MagDynDlg::Clear()
 	m_weight_max->setValue(9999.);
 
 	m_notes->clear();
+
+	m_curSiteCtr = m_curCouplingCtr = 0;
 }
 
 

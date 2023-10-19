@@ -885,11 +885,11 @@ void MagDynDlg::ImportAtoms(const std::vector<TableImportAtom>& atompos_vec)
 
 	for(const TableImportAtom& atompos : atompos_vec)
 	{
-		std::string name = "n/a";
 		t_real pos_x = 0, pos_y = 0, pos_z = 0;
 		std::string spin_x = "0", spin_y = "0", spin_z = "1";
 		t_real spin_mag = 1;
 
+		std::string name = "";
 		if(atompos.name) name = *atompos.name;
 		if(atompos.x) pos_x = *atompos.x;
 		if(atompos.y) pos_y = *atompos.y;
@@ -898,6 +898,14 @@ void MagDynDlg::ImportAtoms(const std::vector<TableImportAtom>& atompos_vec)
 		if(atompos.Sy) spin_y = tl2::var_to_str(*atompos.Sy);
 		if(atompos.Sz) spin_z = tl2::var_to_str(*atompos.Sz);
 		if(atompos.Smag) spin_mag = *atompos.Smag;
+
+		if(name == "")
+		{
+			// default site name
+			std::ostringstream ostrName;
+			ostrName << "site_" << (++m_curSiteCtr);
+			name = ostrName.str();
+		}
 
 		AddSiteTabItem(-1, name,
 			pos_x, pos_y, pos_z,
@@ -924,12 +932,12 @@ void MagDynDlg::ImportCouplings(const std::vector<TableImportCoupling>& coupling
 
 	for(const TableImportCoupling& coupling : couplings)
 	{
-		std::string name = "n/a";
 		t_size atom_1 = 0, atom_2 = 0;
 		t_real dist_x = 0, dist_y = 0, dist_z = 0;
 		std::string J = "0";
 		std::string dmi_x = "0", dmi_y = "0", dmi_z = "0";
 
+		std::string name = "";
 		if(coupling.name) name = *coupling.name;
 		if(coupling.atomidx1) atom_1 = *coupling.atomidx1;
 		if(coupling.atomidx2) atom_2 = *coupling.atomidx2;
@@ -940,6 +948,14 @@ void MagDynDlg::ImportCouplings(const std::vector<TableImportCoupling>& coupling
 		if(coupling.dmix) dmi_x = tl2::var_to_str(*coupling.dmix);
 		if(coupling.dmiy) dmi_y = tl2::var_to_str(*coupling.dmiy);
 		if(coupling.dmiz) dmi_z = tl2::var_to_str(*coupling.dmiz);
+
+		if(name == "")
+		{
+			// default coupling name
+			std::ostringstream ostrName;
+			ostrName << "coupling_" << (++m_curCouplingCtr);
+			name = ostrName.str();
+		}
 
 		AddTermTabItem(-1, name, atom_1, atom_2,
 			dist_x, dist_y, dist_z,

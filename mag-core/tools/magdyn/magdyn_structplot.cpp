@@ -139,7 +139,7 @@ void MagDynDlg::StructPlotPickerIntersection(
 		m_structplot_cur_atom = iter_atoms->second.site->index;
 
 		const std::string& ident = iter_atoms->second.site->name;
-		m_structplot_status->setText(ident.c_str());
+		m_structplot_status->setText(("Site " + ident).c_str());
 
 		return;
 	}
@@ -151,7 +151,7 @@ void MagDynDlg::StructPlotPickerIntersection(
 		m_structplot_cur_term = iter_terms->second.term->index;
 
 		const std::string& ident = iter_terms->second.term->name;
-		m_structplot_status->setText(ident.c_str());
+		m_structplot_status->setText(("Coupling " + ident).c_str());
 
 		return;
 	}

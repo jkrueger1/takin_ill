@@ -132,7 +132,7 @@ MagDynDlg::~MagDynDlg()
  * add an atom site
  */
 void MagDynDlg::AddSiteTabItem(int row,
-	const std::string& name,
+	const std::string& _name,
 	t_real x, t_real y, t_real z,
 	const std::string& sx,
 	const std::string& sy,
@@ -148,6 +148,15 @@ void MagDynDlg::AddSiteTabItem(int row,
 		if(this_->m_autocalc->isChecked())
 			this_->CalcAll();
 	} BOOST_SCOPE_EXIT_END
+
+	std::string name = _name;
+	if(name == "")
+	{
+		// default site name
+		std::ostringstream ostrName;
+		ostrName << "site_" << (++m_curSiteCtr);
+		name = ostrName.str();
+	}
 
 	if(row == -1)	// append to end of table
 		row = m_sitestab->rowCount();
@@ -205,7 +214,7 @@ void MagDynDlg::AddSiteTabItem(int row,
  * add an exchange term
  */
 void MagDynDlg::AddTermTabItem(int row,
-	const std::string& name,
+	const std::string& _name,
 	t_size atom_1, t_size atom_2,
 	t_real dist_x, t_real dist_y, t_real dist_z,
 	const std::string& J,
@@ -220,6 +229,15 @@ void MagDynDlg::AddTermTabItem(int row,
 		if(this_->m_autocalc->isChecked())
 			this_->CalcAll();
 	} BOOST_SCOPE_EXIT_END
+
+	std::string name = _name;
+        if(name == "")
+        {
+		// default coupling name
+                std::ostringstream ostrName;
+                ostrName << "coupling_" << (++m_curCouplingCtr);
+                name = ostrName.str();
+        }
 
 	if(row == -1)	// append to end of table
 		row = m_termstab->rowCount();

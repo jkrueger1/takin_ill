@@ -340,7 +340,7 @@ protected:
 		QTableWidget *pTab, bool sort_reversed = false) const;
 
 	void AddSiteTabItem(int row = -1,
-		const std::string& name = "n/a",
+		const std::string& name = "",
 		t_real x = 0., t_real y = 0., t_real z = 0.,
 		const std::string& sx = "0",
 		const std::string& sy = "0",
@@ -349,7 +349,7 @@ protected:
 		const std::string& rgb = "auto");
 
 	void AddTermTabItem(int row = -1,
-		const std::string& name = "n/a",
+		const std::string& name = "",
 		t_size atom_1 = 0, t_size atom_2 = 0,
 		t_real dist_x = 0., t_real dist_y = 0., t_real dist_z = 0.,
 		const std::string& J = "0",
@@ -450,6 +450,10 @@ private:
 	int m_variables_cursor_row = -1;
 	int m_fields_cursor_row = -1;
 	int m_coordinates_cursor_row = -1;
+
+	// site/coupling counter for newly inserted items
+	std::size_t m_curSiteCtr = 0;
+	std::size_t m_curCouplingCtr = 0;
 
 	bool m_ignoreTableChanges = true;
 	bool m_ignoreCalc = false;
