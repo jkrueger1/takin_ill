@@ -603,6 +603,9 @@ public:
 				{
 					std::tie(site_calc.u, site_calc.v) =
 						spin_to_uv(site_calc.spin_dir);
+
+					/*std::cout << "Site " << site_idx << " u = " << site_calc.u[0] << " " << site_calc.u[1] << " " << site_calc.u[2] << std::endl;
+					std::cout << "Site " << site_idx << " v = " << site_calc.v[0] << " " << site_calc.v[1] << " " << site_calc.v[2] << std::endl;*/
 				}
 
 				site_calc.u_conj = tl2::conj(site_calc.u);
@@ -747,7 +750,7 @@ public:
 		// equations (12) and (14) from (Toth 2015)
 		using t_indices = std::pair<t_size, t_size>;
 		using t_Jmap = std::unordered_map<t_indices, t_mat, boost::hash<t_indices>>;
-		t_Jmap J_Q, J_mQ, J_Q0;
+		t_Jmap J_Q, J_Q0;
 
 		// iterate couplings to precalculate corresponding J matrices
 		for(t_size term_idx=0; term_idx<num_terms; ++term_idx)
@@ -786,6 +789,9 @@ public:
 						 tl2::rotation<t_mat_real, t_vec_real>(
 							m_rotaxis, rot_UC_angle));
 					J = J * rot_UC;
+
+					//std::cout << "Coupling rot_UC = " << term_idx << ":\n";
+					//tl2::niceprint(std::cout, rot_UC, 1e-4, 4);
 				}
 			}
 
@@ -814,17 +820,13 @@ public:
 			insert_or_add(J_Q, indices, factor * J * phase_Q);
 			insert_or_add(J_Q, indices_t, factor * J_T * phase_mQ);
 
-			insert_or_add(J_mQ, indices, factor * J * phase_mQ);
-			insert_or_add(J_mQ, indices_t, factor * J_T * phase_Q);
-
 			insert_or_add(J_Q0, indices, factor * J);
 			insert_or_add(J_Q0, indices_t, factor * J_T);
 		}  // end of iteration over couplings
 
-
 		// create the hamiltonian of equation (25) and (26) from (Toth 2015)
 		t_mat A = tl2::create<t_mat>(num_sites, num_sites);
-		t_mat A_mQ = tl2::create<t_mat>(num_sites, num_sites);
+		t_mat A_conj_mQ = tl2::create<t_mat>(num_sites, num_sites);
 		t_mat B = tl2::create<t_mat>(num_sites, num_sites);
 		t_mat C = tl2::zero<t_mat>(num_sites, num_sites);
 
@@ -836,6 +838,7 @@ public:
 		{
 			// get the precalculated u and v vectors for the commensurate case
 			const t_vec& u_i = m_sites_calc[i].u;
+			const t_vec& u_conj_i = m_sites_calc[i].u_conj;
 			const t_vec& v_i = m_sites_calc[i].v;
 			t_real S_i = m_sites[i].spin_mag;
 
@@ -850,22 +853,19 @@ public:
 				// get the pre-calculated J matrices for the (i, j) coupling
 				const t_indices indices_ij = std::make_pair(i, j);
 				const t_mat* J_Q33 = nullptr;
-				const t_mat* J_mQ33 = nullptr;
 				const t_mat* J_Q033 = nullptr;
 				if(auto iter = J_Q.find(indices_ij); iter != J_Q.end())
 					J_Q33 = &iter->second;
-				if(auto iter = J_mQ.find(indices_ij); iter != J_mQ.end())
-					J_mQ33 = &iter->second;
 				if(auto iter = J_Q0.find(indices_ij); iter != J_Q0.end())
 					J_Q033 = &iter->second;
 
-				if(J_Q33 && J_mQ33 && J_Q033)
+				if(J_Q33 && J_Q033)
 				{
 					t_real SiSj = 0.5 * std::sqrt(S_i*S_j);
 
 					// equation (26) from (Toth 2015)
 					A(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, (*J_Q33) * u_conj_j);
-					A_mQ(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, (*J_mQ33) * u_conj_j);
+					A_conj_mQ(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_conj_i, (*J_Q33) * u_j);
 					B(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, (*J_Q33) * u_j);
 					C(i, i) += S_j * tl2::inner_noconj<t_vec>(v_i, (*J_Q033) * v_j);
 				}
@@ -881,10 +881,10 @@ public:
 
 				// bohr magneton in [meV/T]
 				constexpr const t_real muB = tl2::mu_B<t_real>
-				/ tl2::meV<t_real> * tl2::tesla<t_real>;
+					/ tl2::meV<t_real> * tl2::tesla<t_real>;
 
 				A(i, i) -= 0.5 * muB * Bgv;
-				A_mQ(i, i) -= 0.5 * muB * Bgv;
+				A_conj_mQ(i, i) -= 0.5 * muB * Bgv;
 			}
 		}  // end of iteration over i sites
 
@@ -893,7 +893,7 @@ public:
 		tl2::set_submat(H, A - C, 0, 0);
 		tl2::set_submat(H, B, 0, num_sites);
 		tl2::set_submat(H, tl2::herm(B), num_sites, 0);
-		tl2::set_submat(H, tl2::conj(A_mQ) - C, num_sites, num_sites);
+		tl2::set_submat(H, A_conj_mQ - C, num_sites, num_sites);
 
 		return H;
 	}
@@ -954,10 +954,8 @@ public:
 				<< Qvec << "." << std::endl;
 		}
 
-		t_mat C_herm = tl2::herm<t_mat>(C_mat);
-
 		// see p. 5 in (Toth 2015)
-		t_mat H_mat = C_mat * g_sign * C_herm;
+		t_mat H_mat = C_mat * g_sign * tl2::herm<t_mat>(C_mat);
 
 		bool is_herm = tl2::is_symm_or_herm<t_mat, t_real>(H_mat, m_eps);
 		if(!is_herm)
@@ -1091,13 +1089,13 @@ public:
 
 						// TODO: check these
 						t_real SiSj = 4. * std::sqrt(S_i*S_j);
-						t_real phase_sign = 1.;
+						t_real phase_sign = +1.;
 
 						t_cplx phase = std::exp(phase_sign * s_imag * s_twopi *
 							tl2::inner<t_vec_real>(pos_j - pos_i, Qvec));
 						phase *= SiSj;
 
-						// matrix elements of equ. (44) from (Toth 2015)
+						// matrix elements of equation (44) from (Toth 2015)
 						Y(i, j) = phase * u_i[x_idx] * u_conj_j[y_idx];
 						V(i, j) = phase * u_conj_i[x_idx] * u_conj_j[y_idx];
 						Z(i, j) = phase * u_i[x_idx] * u_j[y_idx];
@@ -1163,7 +1161,7 @@ public:
 				E_and_S.S *= tl2::bose_cutoff(E_and_S.E, m_temperature, m_bose_cutoff);
 
 			// apply orthogonal projector for magnetic neutron scattering,
-			// see (Shirane 2002), p. 37, eq. (2.64)
+			// see (Shirane 2002), p. 37, equation (2.64)
 			//t_vec bragg_rot = use_field ? m_rot_field * m_bragg : m_bragg;
 			//proj_neutron = tl2::ortho_projector<t_mat, t_vec>(bragg_rot, false);
 			t_mat proj_neutron = tl2::ortho_projector<t_mat, t_vec>(Qvec, false);
