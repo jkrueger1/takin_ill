@@ -552,8 +552,8 @@ public:
 			// rotate field to [001] direction
 			m_rot_field = tl2::convert<t_mat>(
 				tl2::trans<t_mat_real>(
-				tl2::rotation<t_mat_real, t_vec_real>(
-				-m_field.dir, m_zdir, &m_rotaxis, m_eps)));
+					tl2::rotation<t_mat_real, t_vec_real>(
+						-m_field.dir, m_zdir, &m_rotaxis, m_eps)));
 
 			/*std::cout << "Field rotation from:\n";
 			tl2::niceprint(std::cout, -m_field.dir, 1e-4, 4);
@@ -742,8 +742,7 @@ public:
 
 		if(num_sites == 0 || num_terms == 0)
 			return {};
-		if(num_sites != m_sites_calc.size() ||
-			num_terms != m_exchange_terms_calc.size())
+		if(num_sites != m_sites_calc.size() || num_terms != m_exchange_terms_calc.size())
 			return {};
 
 		// build the interaction matrices J(Q) and J(-Q) of
@@ -786,21 +785,14 @@ public:
 				if(!tl2::equals_0<t_real>(rot_UC_angle, m_eps))
 				{
 					t_mat rot_UC = tl2::convert<t_mat>(
-						 tl2::rotation<t_mat_real, t_vec_real>(
+						tl2::rotation<t_mat_real, t_vec_real>(
 							m_rotaxis, rot_UC_angle));
 					J = J * rot_UC;
 
-					//std::cout << "Coupling rot_UC = " << term_idx << ":\n";
-					//tl2::niceprint(std::cout, rot_UC, 1e-4, 4);
+					/*td::cout << "Coupling rot_UC = " << term_idx << ":\n";
+					tl2::niceprint(std::cout, rot_UC, 1e-4, 4);*/
 				}
 			}
-
-			// equation (14) from (Toth 2015)
-			t_real phase_sign = -1.;
-			t_cplx phase_Q = std::exp(phase_sign * s_imag * s_twopi *
-				tl2::inner<t_vec_real>(term.dist, Qvec));
-			t_cplx phase_mQ = std::exp(phase_sign * s_imag * s_twopi *
-				tl2::inner<t_vec_real>(term.dist, -Qvec));
 
 			auto insert_or_add = [](t_Jmap& J, const t_indices& indices, const t_mat& J33)
 			{
@@ -810,15 +802,20 @@ public:
 					J.emplace(std::move(std::make_pair(indices, J33)));
 			};
 
-			t_mat J_T = tl2::trans(J);
-			t_real factor = /*0.5*/ 1.;
-
 			const t_indices indices = std::make_pair(term.atom1, term.atom2);
 			const t_indices indices_t = std::make_pair(term.atom2, term.atom1);
 
-			// equations (12) and (11) from (Toth 2015)
-			insert_or_add(J_Q, indices, factor * J * phase_Q);
-			insert_or_add(J_Q, indices_t, factor * J_T * phase_mQ);
+			t_mat J_T = tl2::trans(J);
+			t_real factor = /*0.5*/ 1.;
+
+			// equations (14), (12), and (11) from (Toth 2015)
+			t_real phase_sign = -1.;
+			insert_or_add(J_Q, indices, factor * J *
+				std::exp(phase_sign * s_imag * s_twopi *
+					tl2::inner<t_vec_real>(term.dist, Qvec)));
+			insert_or_add(J_Q, indices_t, factor * J_T *
+				std::exp(phase_sign * s_imag * s_twopi *
+					tl2::inner<t_vec_real>(term.dist, -Qvec)));
 
 			insert_or_add(J_Q0, indices, factor * J);
 			insert_or_add(J_Q0, indices_t, factor * J_T);
@@ -996,10 +993,10 @@ public:
 			std::vector<t_size> sorting = tl2::get_perm(
 				energies_and_correlations.size(),
 				[&energies_and_correlations](t_size idx1, t_size idx2) -> bool
-				{
-					return energies_and_correlations[idx1].E >=
-						energies_and_correlations[idx2].E;
-				});
+			{
+				return energies_and_correlations[idx1].E >=
+					energies_and_correlations[idx2].E;
+			});
 
 			//energies_and_correlations = tl2::reorder(energies_and_correlations, sorting);
 			evecs = tl2::reorder(evecs, sorting);
@@ -1040,11 +1037,11 @@ public:
 			t_mat trafo = C_inv * evec_mat * E_sqrt;
 			t_mat trafo_herm = tl2::herm(trafo);
 
-			//t_mat D = trafo_herm * _H * trafo;
-			//tl2::niceprint(std::cout, D, 1e-4, 4);
-			//tl2::niceprint(std::cout, E, 1e-4, 4);
-			//tl2::niceprint(std::cout, L, 1e-4, 4);
-			//std::cout << std::endl;
+			/*t_mat D = trafo_herm * _H * trafo;
+			tl2::niceprint(std::cout, D, 1e-4, 4);
+			tl2::niceprint(std::cout, E, 1e-4, 4);
+			tl2::niceprint(std::cout, L, 1e-4, 4);
+			std::cout << std::endl;*/
 
 			/*std::cout << "Y = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
 			std::cout << "V = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
@@ -1071,9 +1068,9 @@ public:
 				for(t_size i=0; i<num_sites; ++i)
 				for(t_size j=0; j<num_sites; ++j)
 				{
-					auto calc_mat_elems = [this, i, j, x_idx, y_idx]
-						(const t_vec_real& Qvec,
-						 t_mat& Y, t_mat& V, t_mat& Z, t_mat& W)
+					auto calc_mat_elems = [this, i, j, x_idx, y_idx](
+						const t_vec_real& Qvec,
+						t_mat& Y, t_mat& V, t_mat& Z, t_mat& W)
 					{
 						const t_vec_real& pos_i = m_sites[i].pos;
 						const t_vec_real& pos_j = m_sites[j].pos;
@@ -1199,12 +1196,12 @@ public:
 
 			auto iter = std::find_if(
 				new_energies_and_correlations.begin(),
-					new_energies_and_correlations.end(),
-					[curE, this](const auto& E_and_S) -> bool
-					{
-						t_real E = E_and_S.E;
-						return tl2::equals<t_real>(E, curE, m_eps);
-					});
+				new_energies_and_correlations.end(),
+				[curE, this](const auto& E_and_S) -> bool
+			{
+				t_real E = E_and_S.E;
+				return tl2::equals<t_real>(E, curE, m_eps);
+			});
 
 			if(iter == new_energies_and_correlations.end())
 			{
@@ -1263,7 +1260,7 @@ public:
 			std::vector<EnergyAndWeight> EandWs_p = GetEnergiesFromHamiltonian(
 				H_p, Qvec + m_ordering, only_energies);
 			std::vector<EnergyAndWeight> EandWs_m = GetEnergiesFromHamiltonian(
-				H_p, Qvec - m_ordering, only_energies);
+				H_m, Qvec - m_ordering, only_energies);
 
 			if(!only_energies)
 			{
@@ -1312,9 +1309,9 @@ public:
 		auto min_iter = std::min_element(
 			energies_and_correlations.begin(), energies_and_correlations.end(),
 			[](const auto& E_and_S_1, const auto& E_and_S_2) -> bool
-			{
-				return std::abs(E_and_S_1.E) < std::abs(E_and_S_2.E);
-			});
+		{
+			return std::abs(E_and_S_1.E) < std::abs(E_and_S_2.E);
+		});
 
 		if(min_iter != energies_and_correlations.end())
 			return min_iter->E;
@@ -1463,9 +1460,9 @@ public:
 					site.second.get<t_real>("position_z", 0.),
 				});
 
-				atom_site.spin_dir[0] = site.second.get<std::string>("spin_x", "0"),
-				atom_site.spin_dir[1] = site.second.get<std::string>("spin_y", "0"),
-				atom_site.spin_dir[2] = site.second.get<std::string>("spin_z", "1"),
+				atom_site.spin_dir[0] = site.second.get<std::string>("spin_x", "0");
+				atom_site.spin_dir[1] = site.second.get<std::string>("spin_y", "0");
+				atom_site.spin_dir[2] = site.second.get<std::string>("spin_z", "1");
 
 				atom_site.spin_mag = site.second.get<t_real>("spin_magnitude", 1.);
 				atom_site.g = -2. * tl2::unit<t_mat>(3);
