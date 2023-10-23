@@ -239,6 +239,7 @@ void MagDynDlg::CalcDispersion()
 	m_Q_end = Q_end[m_Q_idx];
 
 	// options
+	const bool is_comm = !m_dyn.IsIncommensurate();
 	const bool use_goldstone = false;
 	const bool unite_degeneracies = m_unite_degeneracies->isChecked();
 	const bool ignore_annihilation = m_ignore_annihilation->isChecked();
@@ -250,7 +251,7 @@ void MagDynDlg::CalcDispersion()
 	m_dyn.SetUniteDegenerateEnergies(unite_degeneracies);
 	m_dyn.SetForceIncommensurate(force_incommensurate);
 	m_dyn.SetCalcHamiltonian(
-		m_hamiltonian_comp[0]->isChecked(),
+		m_hamiltonian_comp[0]->isChecked() || is_comm,  // always calculate commensurate case
 		m_hamiltonian_comp[1]->isChecked(),
 		m_hamiltonian_comp[2]->isChecked());
 
@@ -432,13 +433,10 @@ void MagDynDlg::CalcHamiltonian()
 	std::ostringstream ostr;
 	ostr.precision(g_prec_gui);
 
-	// get hamiltonian
-	t_mat H = m_dyn.CalcHamiltonian(Q);
-
 	// print hamiltonian
-	auto print_H = [&ostr](const t_mat& H, const t_vec_real& Qvec)
+	auto print_H = [&ostr](const t_mat& H, const t_vec_real& Qvec, const std::string& Qstr = "Q")
 	{
-		ostr << "<p><h3>Hamiltonian at Q = ("
+		ostr << "<p><h3>Hamiltonian at " << Qstr <<  " = ("
 			<< Qvec[0] << ", " << Qvec[1] << ", " << Qvec[2] << ")</h3>";
 		ostr << "<table style=\"border:0px\">";
 
@@ -457,10 +455,14 @@ void MagDynDlg::CalcHamiltonian()
 		ostr << "</table></p>";
 	};
 
-	print_H(H, Q);
+	// get hamiltonian at Q
+	t_mat H = m_dyn.CalcHamiltonian(Q);
+	const bool is_comm = !m_dyn.IsIncommensurate();
+	if(m_hamiltonian_comp[0]->isChecked() || is_comm)  // always calculate commensurate case
+		print_H(H, Q, "Q");
 
 	// print shifted hamiltonians for incommensurate case
-	if(m_dyn.IsIncommensurate())
+	if(!is_comm)
 	{
 		const t_vec_real O = tl2::create<t_vec_real>(
 		{
@@ -471,11 +473,19 @@ void MagDynDlg::CalcHamiltonian()
 
 		if(!tl2::equals_0<t_vec_real>(O, g_eps))
 		{
-			t_mat H_p = m_dyn.CalcHamiltonian(Q + O);
-			t_mat H_m = m_dyn.CalcHamiltonian(Q - O);
+			if(m_hamiltonian_comp[1]->isChecked())
+			{
+				// get hamiltonian at Q + ordering vector
+				t_mat H_p = m_dyn.CalcHamiltonian(Q + O);
+				print_H(H_p, Q + O, "Q + O");
+			}
 
-			print_H(H_p, Q + O);
-			print_H(H_m, Q - O);
+			if(m_hamiltonian_comp[2]->isChecked())
+			{
+				// get hamiltonian at Q - ordering vector
+				t_mat H_m = m_dyn.CalcHamiltonian(Q - O);
+				print_H(H_m, Q - O, "Q - O");
+			}
 		}
 	}
 
@@ -483,17 +493,19 @@ void MagDynDlg::CalcHamiltonian()
 	using t_E_and_S = typename decltype(m_dyn)::EnergyAndWeight;
 	std::vector<t_E_and_S> energies_and_correlations;
 
-	if(m_dyn.IsIncommensurate())
+	if(is_comm)
 	{
-		energies_and_correlations = m_dyn.CalcEnergies(Q, only_energies);
-	}
-	else
-	{
+		// commensurate case
 		energies_and_correlations = m_dyn.CalcEnergiesFromHamiltonian(H, Q, only_energies);
 		if(!only_energies)
 			m_dyn.GetIntensities(Q, energies_and_correlations);
 		if(unite_degeneracies)
 			energies_and_correlations = m_dyn.UniteEnergies(energies_and_correlations);
+	}
+	else
+	{
+		// incommensurate case
+		energies_and_correlations = m_dyn.CalcEnergies(Q, only_energies);
 	}
 
 	if(only_energies)
