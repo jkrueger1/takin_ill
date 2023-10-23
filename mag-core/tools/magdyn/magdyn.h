@@ -74,7 +74,7 @@ using t_magdyn = MagDyn<t_mat, t_vec, t_mat_real, t_vec_real, t_cplx, t_real, t_
 
 
 // let the user explicitly specify the orthogonal spin
-#define MAGDYN_ALLOW_SPIN_ORTHO_SETTABLE
+//#define MAGDYN_ALLOW_SPIN_ORTHO_SETTABLE
 
 
 
