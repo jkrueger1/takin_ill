@@ -857,12 +857,11 @@ public:
 			t_real factor = /*0.5*/ 1.;
 
 			// equations (14), (12), and (11) from (Toth 2015)
-			t_real phase_sign = -1.;
 			insert_or_add(J_Q, indices, factor * J *
-				std::exp(phase_sign * s_imag * s_twopi *
+				std::exp(m_phase_sign * s_imag * s_twopi *
 					tl2::inner<t_vec_real>(term.dist, Qvec)));
 			insert_or_add(J_Q, indices_t, factor * J_T *
-				std::exp(phase_sign * s_imag * s_twopi *
+				std::exp(m_phase_sign * s_imag * s_twopi *
 					tl2::inner<t_vec_real>(term.dist, -Qvec)));
 
 			insert_or_add(J_Q0, indices, factor * J);
@@ -1134,9 +1133,7 @@ public:
 
 						// TODO: check these
 						t_real SiSj = 4. * std::sqrt(S_i*S_j);
-						t_real phase_sign = +1.;
-
-						t_cplx phase = std::exp(phase_sign * s_imag * s_twopi *
+						t_cplx phase = std::exp(-m_phase_sign * s_imag * s_twopi *
 							tl2::inner<t_vec_real>(pos_j - pos_i, Qvec));
 						phase *= SiSj;
 
@@ -1300,7 +1297,7 @@ public:
 					m_rotaxis, true));
 
 			t_mat rot_incomm = tl2::unit<t_mat>(3);
-			rot_incomm -= s_imag * tl2::skewsymmetric<t_mat, t_vec>(m_rotaxis);
+			rot_incomm -= s_imag * m_phase_sign * tl2::skewsymmetric<t_mat, t_vec>(m_rotaxis);
 			rot_incomm -= proj_norm;
 			rot_incomm *= 0.5;
 
@@ -1328,9 +1325,9 @@ public:
 				for(EnergyAndWeight& EandW : EandWs)
 					EandW.S = EandW.S * proj_norm;
 				for(EnergyAndWeight& EandW : EandWs_p)
-					EandW.S = EandW.S * rot_incomm_conj;      // order depends...
-				for(EnergyAndWeight& EandW : EandWs_m)            // ...on the two...
-					EandW.S = EandW.S * rot_incomm/*_conj*/;  // ...phase_signs
+					EandW.S = EandW.S * rot_incomm;
+				for(EnergyAndWeight& EandW : EandWs_m)
+					EandW.S = EandW.S * rot_incomm_conj;
 			}
 
 			// unite energies and weights
@@ -1855,6 +1852,9 @@ private:
 	// precisions
 	t_real m_eps{1e-6};
 	int m_prec{6};
+
+	// conventions
+	t_real m_phase_sign{-1.};
 
 	// constants
 	static constexpr const t_cplx s_imag {t_real(0), t_real(1)};
