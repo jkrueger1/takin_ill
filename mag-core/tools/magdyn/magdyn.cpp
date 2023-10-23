@@ -134,10 +134,11 @@ MagDynDlg::~MagDynDlg()
 void MagDynDlg::AddSiteTabItem(int row,
 	const std::string& _name,
 	t_real x, t_real y, t_real z,
-	const std::string& sx,
-	const std::string& sy,
-	const std::string& sz,
+	const std::string& sx, const std::string& sy, const std::string& sz,
 	t_real S,
+	[[__maybe_unused__]] const std::string& sox,
+	[[__maybe_unused__]] const std::string& soy,
+	[[__maybe_unused__]] const std::string& soz,
 	const std::string& rgb)
 {
 	bool bclone = false;
@@ -200,6 +201,14 @@ void MagDynDlg::AddSiteTabItem(int row,
 		m_sitestab->setItem(row, COL_SITE_SPIN_MAG,
 			new tl2::NumericTableWidgetItem<t_real>(S));
 		m_sitestab->setItem(row, COL_SITE_RGB, new QTableWidgetItem(rgb.c_str()));
+#ifdef MAGDYN_ALLOW_SPIN_ORTHO_SETTABLE
+		m_sitestab->setItem(row, COL_SITE_SPIN_ORTHO_X,
+			new tl2::NumericTableWidgetItem<t_real>(sox));
+		m_sitestab->setItem(row, COL_SITE_SPIN_ORTHO_Y,
+			new tl2::NumericTableWidgetItem<t_real>(soy));
+		m_sitestab->setItem(row, COL_SITE_SPIN_ORTHO_Z,
+			new tl2::NumericTableWidgetItem<t_real>(soz));
+#endif
 	}
 
 	m_sitestab->scrollToItem(m_sitestab->item(row, 0));

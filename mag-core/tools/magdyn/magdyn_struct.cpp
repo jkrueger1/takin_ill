@@ -176,11 +176,12 @@ void MagDynDlg::GenerateSitesFromSG()
 
 		const auto& ops = m_SGops[sgidx];
 		std::vector<std::tuple<
-			std::string,
-			t_real, t_real, t_real,                // position
-			std::string, std::string, std::string, // spin direction
-			t_real,                                // spin magnitude
-			std::string                            // colour
+			std::string,                           // 0: name
+			t_real, t_real, t_real,                // 1-3: position
+			std::string, std::string, std::string, // 4-6: spin direction
+			t_real,                                // 7: spin magnitude
+			std::string, std::string, std::string, // 8-10: spin orthogonal plane
+			std::string                            // 11: colour
 			>> generatedsites;
 
 		// avoids multiple occupation of the same site
@@ -227,6 +228,16 @@ void MagDynDlg::GenerateSitesFromSG()
 			std::string sy = m_sitestab->item(row, COL_SITE_SPIN_Y)->text().toStdString();
 			std::string sz = m_sitestab->item(row, COL_SITE_SPIN_Z)->text().toStdString();
 
+#ifdef MAGDYN_ALLOW_SPIN_ORTHO_SETTABLE
+			std::string sox = m_sitestab->item(row, COL_SITE_SPIN_ORTHO_X)->text().toStdString();
+			std::string soy = m_sitestab->item(row, COL_SITE_SPIN_ORTHO_Y)->text().toStdString();
+			std::string soz = m_sitestab->item(row, COL_SITE_SPIN_ORTHO_Z)->text().toStdString();
+#else
+			std::string sox = "auto";
+			std::string soy = "auto";
+			std::string soz = "auto";
+#endif
+
 			t_real S = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
 				m_sitestab->item(row, COL_SITE_SPIN_MAG))->GetValue();
 
@@ -243,7 +254,7 @@ void MagDynDlg::GenerateSitesFromSG()
 				generatedsites.emplace_back(std::make_tuple(
 					ident + "_" + tl2::var_to_str(newsite_idx),
 					newsite[0], newsite[1], newsite[2],
-					sx, sy, sz, S, rgb));
+					sx, sy, sz, S, sox, soy, soz, rgb));
 			}
 
 			remove_duplicate_sites();
@@ -755,6 +766,14 @@ void MagDynDlg::SyncSitesAndTerms()
 			m_sitestab->item(row, COL_SITE_SPIN_Z));
 		auto *spin_mag = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
 			m_sitestab->item(row, COL_SITE_SPIN_MAG));
+#ifdef MAGDYN_ALLOW_SPIN_ORTHO_SETTABLE
+		auto *spin_ortho_x = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_sitestab->item(row, COL_SITE_SPIN_ORTHO_X));
+		auto *spin_ortho_y = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_sitestab->item(row, COL_SITE_SPIN_ORTHO_Y));
+		auto *spin_ortho_z = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_sitestab->item(row, COL_SITE_SPIN_ORTHO_Z));
+#endif
 
 		if(!name || !pos_x || !pos_y || !pos_z ||
 			!spin_x || !spin_y || !spin_z || !spin_mag)
@@ -779,6 +798,18 @@ void MagDynDlg::SyncSitesAndTerms()
 		site.spin_dir[0] = spin_x->text().toStdString();
 		site.spin_dir[1] = spin_y->text().toStdString();
 		site.spin_dir[2] = spin_z->text().toStdString();
+		site.spin_ortho[0] = "";
+		site.spin_ortho[1] = "";
+		site.spin_ortho[2] = "";
+
+#ifdef MAGDYN_ALLOW_SPIN_ORTHO_SETTABLE
+		if(spin_ortho_x && spin_ortho_x->text() != "" && spin_ortho_x->text() != "auto")
+			site.spin_ortho[0] = spin_ortho_x->text().toStdString();
+		if(spin_ortho_y && spin_ortho_y->text() != "" && spin_ortho_y->text() != "auto")
+			site.spin_ortho[1] = spin_ortho_y->text().toStdString();
+		if(spin_ortho_z && spin_ortho_z->text() != "" && spin_ortho_z->text() != "auto")
+			site.spin_ortho[2] = spin_ortho_z->text().toStdString();
+#endif
 
 		m_dyn.AddAtomSite(std::move(site));
 	}

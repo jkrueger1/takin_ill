@@ -137,6 +137,14 @@ void MagDynDlg::CreateSitesPanel()
 		new QTableWidgetItem{"Spin |S|"});
 	m_sitestab->setHorizontalHeaderItem(COL_SITE_RGB,
 		new QTableWidgetItem{"Colour"});
+#ifdef MAGDYN_ALLOW_SPIN_ORTHO_SETTABLE
+	m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_ORTHO_X,
+		new QTableWidgetItem{"Spin u x"});
+	m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_ORTHO_Y,
+		new QTableWidgetItem{"Spin u y"});
+	m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_ORTHO_Z,
+		new QTableWidgetItem{"Spin u z"});
+#endif
 
 	m_sitestab->setColumnWidth(COL_SITE_NAME, 90);
 	m_sitestab->setColumnWidth(COL_SITE_POS_X, 80);
@@ -147,6 +155,12 @@ void MagDynDlg::CreateSitesPanel()
 	m_sitestab->setColumnWidth(COL_SITE_SPIN_Z, 80);
 	m_sitestab->setColumnWidth(COL_SITE_SPIN_MAG, 80);
 	m_sitestab->setColumnWidth(COL_SITE_RGB, 80);
+#ifdef MAGDYN_ALLOW_SPIN_ORTHO_SETTABLE
+	m_sitestab->setColumnWidth(COL_SITE_SPIN_ORTHO_X, 80);
+	m_sitestab->setColumnWidth(COL_SITE_SPIN_ORTHO_Y, 80);
+	m_sitestab->setColumnWidth(COL_SITE_SPIN_ORTHO_Z, 80);
+#endif
+
 	m_sitestab->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Expanding});
 
@@ -1963,6 +1977,20 @@ void MagDynDlg::CreateMenuBar()
 	m_force_incommensurate->setCheckable(true);
 	m_force_incommensurate->setChecked(false);
 
+	// H components sub-menu
+	m_menuHamiltonians = new QMenu("Selected Hamiltonians", menuCalc);
+	m_hamiltonian_comp[0] = new QAction("H(Q)", m_menuHamiltonians);
+	m_hamiltonian_comp[1] = new QAction("H(Q + O)", m_menuHamiltonians);
+	m_hamiltonian_comp[2] = new QAction("H(Q - O)", m_menuHamiltonians);
+	for(int i=0; i<3; ++i)
+	{
+		m_hamiltonian_comp[i]->setCheckable(true);
+		m_hamiltonian_comp[i]->setChecked(true);
+	}
+	m_menuHamiltonians->addAction(m_hamiltonian_comp[0]);
+	m_menuHamiltonians->addAction(m_hamiltonian_comp[1]);
+	m_menuHamiltonians->addAction(m_hamiltonian_comp[2]);
+
 	// tools menu
 	auto menuTools = new QMenu("Tools", m_menu);
 	auto acTrafoCalc = new QAction("Transformation Calculator...", menuTools);
@@ -2016,6 +2044,7 @@ void MagDynDlg::CreateMenuBar()
 	menuCalc->addAction(m_unite_degeneracies);
 	menuCalc->addAction(m_ignore_annihilation);
 	menuCalc->addAction(m_force_incommensurate);
+	menuCalc->addMenu(m_menuHamiltonians);
 
 	menuTools->addAction(acTrafoCalc);
 
@@ -2082,6 +2111,8 @@ void MagDynDlg::CreateMenuBar()
 
 	for(int i=0; i<3; ++i)
 	{
+		connect(m_hamiltonian_comp[i], &QAction::toggled, calc_all_dyn);
+
 		connect(m_plot_channel[i], &QAction::toggled, [this](bool)
 		{
 			this->PlotDispersion();

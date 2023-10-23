@@ -79,7 +79,7 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 	MagnonMod::disp(t_real h, t_real k, t_real l) const
 {
 	// calculate dispersion relation
-	auto modes = m_dyn.GetEnergies(h, k, l, false);
+	auto modes = m_dyn.CalcEnergies(h, k, l, false);
 
 	std::vector<t_real> energies;
 	std::vector<t_real> weights;

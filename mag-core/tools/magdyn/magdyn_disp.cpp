@@ -249,6 +249,10 @@ void MagDynDlg::CalcDispersion()
 	t_real E0 = use_goldstone ? m_dyn.GetGoldstoneEnergy() : 0.;
 	m_dyn.SetUniteDegenerateEnergies(unite_degeneracies);
 	m_dyn.SetForceIncommensurate(force_incommensurate);
+	m_dyn.SetCalcHamiltonian(
+		m_hamiltonian_comp[0]->isChecked(),
+		m_hamiltonian_comp[1]->isChecked(),
+		m_hamiltonian_comp[2]->isChecked());
 
 	// tread pool
 	unsigned int num_threads = std::max<unsigned int>(
@@ -290,7 +294,7 @@ void MagDynDlg::CalcDispersion()
 				std::lerp(Q_start[2], Q_end[2], t_real(i)/t_real(num_pts-1)),
 			});
 
-			auto energies_and_correlations = m_dyn.GetEnergies(Q, !use_weights);
+			auto energies_and_correlations = m_dyn.CalcEnergies(Q, !use_weights);
 
 			for(const auto& E_and_S : energies_and_correlations)
 			{
@@ -429,7 +433,7 @@ void MagDynDlg::CalcHamiltonian()
 	ostr.precision(g_prec_gui);
 
 	// get hamiltonian
-	t_mat H = m_dyn.GetHamiltonian(Q);
+	t_mat H = m_dyn.CalcHamiltonian(Q);
 
 	// print hamiltonian
 	auto print_H = [&ostr](const t_mat& H, const t_vec_real& Qvec)
@@ -467,8 +471,8 @@ void MagDynDlg::CalcHamiltonian()
 
 		if(!tl2::equals_0<t_vec_real>(O, g_eps))
 		{
-			t_mat H_p = m_dyn.GetHamiltonian(Q + O);
-			t_mat H_m = m_dyn.GetHamiltonian(Q - O);
+			t_mat H_p = m_dyn.CalcHamiltonian(Q + O);
+			t_mat H_m = m_dyn.CalcHamiltonian(Q - O);
 
 			print_H(H_p, Q + O);
 			print_H(H_m, Q - O);
@@ -481,11 +485,11 @@ void MagDynDlg::CalcHamiltonian()
 
 	if(m_dyn.IsIncommensurate())
 	{
-		energies_and_correlations = m_dyn.GetEnergies(Q, only_energies);
+		energies_and_correlations = m_dyn.CalcEnergies(Q, only_energies);
 	}
 	else
 	{
-		energies_and_correlations = m_dyn.GetEnergiesFromHamiltonian(H, Q, only_energies);
+		energies_and_correlations = m_dyn.CalcEnergiesFromHamiltonian(H, Q, only_energies);
 		if(!only_energies)
 			m_dyn.GetIntensities(Q, energies_and_correlations);
 		if(unite_degeneracies)

@@ -84,7 +84,7 @@ data_S = []
 for h in numpy.linspace(0, 1, num_Q_points):
 	k = h
 	l = 0.5
-	for S in mag.GetEnergies(h, k, l, False):
+	for S in mag.CalcEnergies(h, k, l, False):
 		if only_positive_energies and S.E < 0.:
 			continue
 

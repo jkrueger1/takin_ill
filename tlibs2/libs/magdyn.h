@@ -152,14 +152,16 @@ t_mat get_polarisation(int channel = 0, bool in_chiral_base = true)
 template<class t_vec_real, class t_mat, class t_real, class t_size>
 struct t_AtomSite
 {
-	std::string name{};      // identifier
-	t_size index{};          // index
+	std::string name{};          // identifier
+	t_size index{};              // index
 
-	t_vec_real pos{};        // atom position
+	t_vec_real pos{};            // atom position
 
-	std::string spin_dir[3]; // expression for spin direction
-	t_real spin_mag{};       // spin magnitude
-	t_mat g{};               // g factor
+	std::string spin_dir[3];     // expression for spin direction
+	std::string spin_ortho[3];   // spin orthogonal plane
+
+	t_real spin_mag{};           // spin magnitude
+	t_mat g{};                   // g factor
 };
 
 
@@ -171,9 +173,9 @@ struct t_AtomSiteCalc
 {
 	t_vec spin_dir{};        // spin direction
 
-	t_vec u{};
+	t_vec u{};               // spin orthogonal plane vector 1
+	t_vec v{};               // spin orthogonal plane vector 2
 	t_vec u_conj{};
-	t_vec v{};
 };
 
 
@@ -438,6 +440,14 @@ public:
 	}
 
 
+	void SetCalcHamiltonian(bool H, bool Hp, bool Hm)
+	{
+		m_calc_H = H;
+		m_calc_Hp = Hp;
+		m_calc_Hm = Hm;
+	}
+
+
 	void SetRotationAxis(const t_vec_real& axis)
 	{
 		m_rotaxis = axis;
@@ -572,24 +582,55 @@ public:
 			{
 				const AtomSite& site = m_sites[site_idx];
 				AtomSiteCalc site_calc{};
+				bool has_explicit_uv = true;
 
 				site_calc.spin_dir = tl2::zero<t_vec>(3);
+				site_calc.v = tl2::zero<t_vec>(3);
+				site_calc.u = tl2::zero<t_vec>(3);
+				site_calc.u_conj = tl2::zero<t_vec>(3);
 
 				for(t_size dir_idx=0; dir_idx<3; ++dir_idx)
 				{
-					// empty string?
-					if(!site.spin_dir[dir_idx].size())
-						continue;
-
-					if(bool dir_ok = parser.parse(site.spin_dir[dir_idx]); dir_ok)
+					// non-empty spin direction string?
+					if(site.spin_dir[dir_idx].size())
 					{
-						site_calc.spin_dir[dir_idx] = parser.eval();
+						if(bool dir_ok = parser.parse(site.spin_dir[dir_idx]); dir_ok)
+						{
+							site_calc.spin_dir[dir_idx] = parser.eval();
+							site_calc.v[dir_idx] = site_calc.spin_dir[dir_idx];
+						}
+						else
+						{
+							std::cerr << "Error parsing spin direction \""
+								<< site.spin_dir[dir_idx] << "\""
+								<< " for site " << site_idx
+								<< " and component " << dir_idx
+								<< "." << std::endl;
+						}
+					}
+
+					// non-empty spin-plane string?
+					if(site.spin_ortho[dir_idx].size())
+					{
+						if(bool dir_ok = parser.parse(site.spin_ortho[dir_idx]); dir_ok)
+						{
+							site_calc.u[dir_idx] = parser.eval();
+							site_calc.u_conj[dir_idx] = std::conj(site_calc.u[dir_idx]);
+						}
+						else
+						{
+							has_explicit_uv = false;
+
+							std::cerr << "Error parsing spin orthogonal plane \""
+								<< site.spin_ortho[dir_idx] << "\""
+								<< " for site " << site_idx
+								<< " and component " << dir_idx
+								<< "." << std::endl;
+						}
 					}
 					else
 					{
-						std::cerr << "Error parsing in spin direction \""
-							<< site.spin_dir[dir_idx]
-							<< "\"." << std::endl;
+						has_explicit_uv = false;
 					}
 				}
 
@@ -601,8 +642,15 @@ public:
 				}
 				else
 				{
-					std::tie(site_calc.u, site_calc.v) =
-						spin_to_uv(site_calc.spin_dir);
+					if(!has_explicit_uv)
+					{
+						// calculate u and v from the spin rotation
+						std::tie(site_calc.u, site_calc.v) =
+							spin_to_uv(site_calc.spin_dir);
+					}
+
+					// TODO: normalise the v vector as well as the real and imaginary u vectors
+					// in case they are explicitly given
 
 					/*std::cout << "Site " << site_idx << " u = " << site_calc.u[0] << " " << site_calc.u[1] << " " << site_calc.u[2] << std::endl;
 					std::cout << "Site " << site_idx << " v = " << site_calc.v[0] << " " << site_calc.v[1] << " " << site_calc.v[2] << std::endl;*/
@@ -735,7 +783,7 @@ public:
 	 * @note implements the formalism given by (Toth 2015)
 	 * @note a first version for a simplified ferromagnetic dispersion was based on (Heinsdorf 2021)
 	 */
-	t_mat GetHamiltonian(const t_vec_real& Qvec) const
+	t_mat CalcHamiltonian(const t_vec_real& Qvec) const
 	{
 		const t_size num_sites = m_sites.size();
 		const t_size num_terms = m_exchange_terms.size();
@@ -900,7 +948,7 @@ public:
 	 * get the energies and the dynamical structure factor from a hamiltonian
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	std::vector<EnergyAndWeight> GetEnergiesFromHamiltonian(t_mat _H, const t_vec_real& Qvec,
+	std::vector<EnergyAndWeight> CalcEnergiesFromHamiltonian(t_mat _H, const t_vec_real& Qvec,
 		bool only_energies = false) const
 	{
 		const t_size num_sites = m_sites.size();
@@ -1234,11 +1282,15 @@ public:
 	 * (also calculates incommensurate contributions and applies weight factors)
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	std::vector<EnergyAndWeight> GetEnergies(const t_vec_real& Qvec,
+	std::vector<EnergyAndWeight> CalcEnergies(const t_vec_real& Qvec,
 		bool only_energies = false) const
 	{
-		t_mat H = GetHamiltonian(Qvec);
-		std::vector<EnergyAndWeight> EandWs = GetEnergiesFromHamiltonian(H, Qvec, only_energies);
+		std::vector<EnergyAndWeight> EandWs;
+		if(m_calc_H)
+		{
+			t_mat H = CalcHamiltonian(Qvec);
+			EandWs = CalcEnergiesFromHamiltonian(H, Qvec, only_energies);
+		}
 
 		if(IsIncommensurate())
 		{
@@ -1254,13 +1306,21 @@ public:
 
 			t_mat rot_incomm_conj = tl2::conj(rot_incomm);
 
-			t_mat H_p = GetHamiltonian(Qvec + m_ordering);
-			t_mat H_m = GetHamiltonian(Qvec - m_ordering);
+			std::vector<EnergyAndWeight> EandWs_p, EandWs_m;
 
-			std::vector<EnergyAndWeight> EandWs_p = GetEnergiesFromHamiltonian(
-				H_p, Qvec + m_ordering, only_energies);
-			std::vector<EnergyAndWeight> EandWs_m = GetEnergiesFromHamiltonian(
-				H_m, Qvec - m_ordering, only_energies);
+			if(m_calc_Hp)
+			{
+				t_mat H_p = CalcHamiltonian(Qvec + m_ordering);
+				EandWs_p = CalcEnergiesFromHamiltonian(
+					H_p, Qvec + m_ordering, only_energies);
+			}
+
+			if(m_calc_Hm)
+			{
+				t_mat H_m = CalcHamiltonian(Qvec - m_ordering);
+				EandWs_m = CalcEnergiesFromHamiltonian(
+					H_m, Qvec - m_ordering, only_energies);
+			}
 
 			if(!only_energies)
 			{
@@ -1290,12 +1350,12 @@ public:
 	}
 
 
-	std::vector<EnergyAndWeight> GetEnergies(t_real h, t_real k, t_real l,
+	std::vector<EnergyAndWeight> CalcEnergies(t_real h, t_real k, t_real l,
 		bool only_energies = false) const
 	{
 		// momentum transfer
 		const t_vec_real Qvec = tl2::create<t_vec_real>({ h, k, l });
-		return GetEnergies(Qvec, only_energies);
+		return CalcEnergies(Qvec, only_energies);
 	}
 
 
@@ -1305,7 +1365,7 @@ public:
 	 */
 	t_real GetGoldstoneEnergy() const
 	{
-		auto energies_and_correlations = GetEnergies(0., 0., 0., true);
+		auto energies_and_correlations = CalcEnergies(0., 0., 0., true);
 		auto min_iter = std::min_element(
 			energies_and_correlations.begin(), energies_and_correlations.end(),
 			[](const auto& E_and_S_1, const auto& E_and_S_2) -> bool
@@ -1348,7 +1408,7 @@ public:
 			t_real k = std::lerp(k_start, k_end, t_real(i)/t_real(num_qs-1));
 			t_real l = std::lerp(l_start, l_end, t_real(i)/t_real(num_qs-1));
 
-			auto energies_and_correlations = GetEnergies(h, k, l, false);
+			auto energies_and_correlations = CalcEnergies(h, k, l, false);
 			for(const auto& E_and_S : energies_and_correlations)
 			{
 				ofstr
@@ -1463,6 +1523,10 @@ public:
 				atom_site.spin_dir[0] = site.second.get<std::string>("spin_x", "0");
 				atom_site.spin_dir[1] = site.second.get<std::string>("spin_y", "0");
 				atom_site.spin_dir[2] = site.second.get<std::string>("spin_z", "1");
+
+				atom_site.spin_ortho[0] = site.second.get<std::string>("spin_ortho_x", "");
+				atom_site.spin_ortho[1] = site.second.get<std::string>("spin_ortho_y", "");
+				atom_site.spin_ortho[2] = site.second.get<std::string>("spin_ortho_z", "");
 
 				atom_site.spin_mag = site.second.get<t_real>("spin_magnitude", 1.);
 				atom_site.g = -2. * tl2::unit<t_mat>(3);
@@ -1646,12 +1710,19 @@ public:
 		{
 			boost::property_tree::ptree itemNode;
 			itemNode.put<std::string>("name", site.name);
+
 			itemNode.put<t_real>("position_x", site.pos[0]);
 			itemNode.put<t_real>("position_y", site.pos[1]);
 			itemNode.put<t_real>("position_z", site.pos[2]);
+
 			itemNode.put<std::string>("spin_x", site.spin_dir[0]);
 			itemNode.put<std::string>("spin_y", site.spin_dir[1]);
 			itemNode.put<std::string>("spin_z", site.spin_dir[2]);
+
+			itemNode.put<std::string>("spin_ortho_x", site.spin_ortho[0]);
+			itemNode.put<std::string>("spin_ortho_y", site.spin_ortho[1]);
+			itemNode.put<std::string>("spin_ortho_z", site.spin_ortho[2]);
+
 			itemNode.put<t_real>("spin_magnitude", site.spin_mag);
 
 			node.add_child("atom_sites.site", itemNode);
@@ -1757,6 +1828,11 @@ private:
 	// ordering wave vector for incommensurate structures
 	t_vec_real m_ordering = tl2::zero<t_vec_real>(3);
 	t_vec_real m_rotaxis = tl2::create<t_vec_real>({1., 0., 0.});
+
+	// calculate the hamiltonian for Q, Q+ordering, and Q-ordering
+	bool m_calc_H{true};
+	bool m_calc_Hp{true};
+	bool m_calc_Hm{true};
 
 	// direction to rotation spins into, usually [001]
 	t_vec_real m_zdir = tl2::create<t_vec_real>({0., 0., 1.});

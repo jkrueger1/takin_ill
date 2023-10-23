@@ -73,6 +73,10 @@ using namespace tl2_mag;
 using t_magdyn = MagDyn<t_mat, t_vec, t_mat_real, t_vec_real, t_cplx, t_real, t_size>;
 
 
+// let the user explicitly specify the orthogonal spin
+#define MAGDYN_ALLOW_SPIN_ORTHO_SETTABLE
+
+
 
 /**
  * export file types
@@ -95,6 +99,9 @@ enum : int
 	COL_SITE_SPIN_X, COL_SITE_SPIN_Y, COL_SITE_SPIN_Z,
 	COL_SITE_SPIN_MAG,
 	COL_SITE_RGB,
+#ifdef MAGDYN_ALLOW_SPIN_ORTHO_SETTABLE
+	COL_SITE_SPIN_ORTHO_X, COL_SITE_SPIN_ORTHO_Y, COL_SITE_SPIN_ORTHO_Z,
+#endif
 
 	NUM_SITE_COLS
 };
@@ -204,6 +211,8 @@ protected:
 	QAction *m_plot_channels{};
 	QMenu *m_menuChannels{};
 	QAction *m_plot_channel[3]{};
+	QMenu *m_menuHamiltonians{};
+	QAction *m_hamiltonian_comp[3]{};
 
 	// recently opened files
 	tl2::RecentFiles m_recent{};
@@ -346,6 +355,9 @@ protected:
 		const std::string& sy = "0",
 		const std::string& sz = "1",
 		t_real S = 1.,
+		const std::string& sox = "auto",
+		const std::string& soy = "auto",
+		const std::string& soz = "auto",
 		const std::string& rgb = "auto");
 
 	void AddTermTabItem(int row = -1,

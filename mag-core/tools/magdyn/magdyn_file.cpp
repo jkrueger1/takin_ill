@@ -237,6 +237,12 @@ bool MagDynDlg::Load(const QString& filename)
 			m_ignore_annihilation->setChecked(*optVal);
 		if(auto optVal = magdyn.get_optional<bool>("config.force_incommensurate"))
 			m_force_incommensurate->setChecked(*optVal);
+		if(auto optVal = magdyn.get_optional<bool>("config.calc_H"))
+			m_hamiltonian_comp[0]->setChecked(*optVal);
+		if(auto optVal = magdyn.get_optional<bool>("config.calc_Hp"))
+			m_hamiltonian_comp[1]->setChecked(*optVal);
+		if(auto optVal = magdyn.get_optional<bool>("config.calc_Hm"))
+			m_hamiltonian_comp[2]->setChecked(*optVal);
 		if(auto optVal = magdyn.get_optional<bool>("config.use_projector"))
 			m_use_projector->setChecked(*optVal);
 		if(auto optVal = magdyn.get_optional<t_real>("config.field_axis_h"))
@@ -356,10 +362,22 @@ bool MagDynDlg::Load(const QString& filename)
 				rgb = siteiter->second.get<std::string>("colour", "auto");
 			}
 
+			std::string spin_ortho_x = site.spin_ortho[0];
+			std::string spin_ortho_y = site.spin_ortho[1];
+			std::string spin_ortho_z = site.spin_ortho[2];
+
+			if(spin_ortho_x == "")
+				spin_ortho_x = "auto";
+			if(spin_ortho_y == "")
+				spin_ortho_y = "auto";
+			if(spin_ortho_z == "")
+				spin_ortho_z = "auto";
+
 			AddSiteTabItem(-1,
 				site.name,
 				site.pos[0], site.pos[1], site.pos[2],
 				site.spin_dir[0], site.spin_dir[1], site.spin_dir[2], S,
+				spin_ortho_x, spin_ortho_y, spin_ortho_z,
 				rgb);
 		}
 
@@ -512,6 +530,9 @@ bool MagDynDlg::Save(const QString& filename)
 		magdyn.put<bool>("config.unite_degeneracies", m_unite_degeneracies->isChecked());
 		magdyn.put<bool>("config.ignore_annihilation", m_ignore_annihilation->isChecked());
 		magdyn.put<bool>("config.force_incommensurate", m_force_incommensurate->isChecked());
+		magdyn.put<bool>("config.calc_H", m_hamiltonian_comp[0]->isChecked());
+		magdyn.put<bool>("config.calc_Hp", m_hamiltonian_comp[1]->isChecked());
+		magdyn.put<bool>("config.calc_Hm", m_hamiltonian_comp[2]->isChecked());
 		magdyn.put<bool>("config.use_projector", m_use_projector->isChecked());
 		magdyn.put<t_real>("config.field_axis_h", m_rot_axis[0]->value());
 		magdyn.put<t_real>("config.field_axis_k", m_rot_axis[1]->value());
@@ -816,7 +837,7 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 		for(std::size_t l_idx=0; l_idx<num_pts_l; ++l_idx)
 		{
 			t_real l = l_pos + inc_l*t_real(l_idx);
-			auto energies_and_correlations = dyn.GetEnergies(
+			auto energies_and_correlations = dyn.CalcEnergies(
 				h_pos, k_pos, l, !use_weights);
 
 			std::vector<t_real> Es, weights;
