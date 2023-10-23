@@ -1328,9 +1328,9 @@ public:
 				for(EnergyAndWeight& EandW : EandWs)
 					EandW.S = EandW.S * proj_norm;
 				for(EnergyAndWeight& EandW : EandWs_p)
-					EandW.S = EandW.S * rot_incomm;
-				for(EnergyAndWeight& EandW : EandWs_m)
-					EandW.S = EandW.S * rot_incomm_conj;
+					EandW.S = EandW.S * rot_incomm_conj;      // order depends...
+				for(EnergyAndWeight& EandW : EandWs_m)            // ...on the two...
+					EandW.S = EandW.S * rot_incomm/*_conj*/;  // ...phase_signs
 			}
 
 			// unite energies and weights
