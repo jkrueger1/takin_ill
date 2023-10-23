@@ -89,7 +89,7 @@ void MagDynDlg::Clear()
 
 	SetCurrentFile("");
 
-	// set some defaults
+	// reset some defaults
 	m_comboSG->setCurrentIndex(0);
 
 	m_ordering[0]->setValue(0.);
@@ -107,6 +107,13 @@ void MagDynDlg::Clear()
 	m_notes->clear();
 
 	m_curSiteCtr = m_curCouplingCtr = 0;
+
+	// reset some options
+	for(int i=0; i<3; ++i)
+	{
+		m_hamiltonian_comp[i]->setChecked(true);
+		m_plot_channel[i]->setChecked(true);
+	}
 }
 
 
