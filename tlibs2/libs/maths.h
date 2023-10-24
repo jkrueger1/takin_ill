@@ -39,7 +39,7 @@
 #define __TLIBS2_CXX20_MATH_ALGOS_H__
 
 //#define USE_LAPACK 1
-#define __TLIBS2_QR_METHOD 0
+#define __TLIBS2_QR_METHOD__ 0
 
 #include <cstddef>
 #include <cstdint>
@@ -65,7 +65,6 @@
 
 #if __has_include(<numbers>)
 	#include <numbers>
-
 	#define __TLIBS2_USE_NUMBERS__
 #endif
 
@@ -3461,7 +3460,7 @@ requires is_vec<t_vec>
 
 /**
  * find orthonormal substitute basis for vector space (Gram-Schmidt algo)
- * remove orthogonal projections to all other base vectors: |i'> = (1 - sum_{j<i} |j><j|) |i>
+ * remove orthogonal projections to all other basis vectors: |i'> = (1 - sum_{j<i} |j><j|) |i>
  *
  * @see https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process
  * @see (Arens 2015), p. 744
@@ -3494,7 +3493,7 @@ requires is_vec<t_vec>
 
 /**
  * find orthonormal substitute basis for vector space (Gram-Schmidt algo)
- * remove orthogonal projections to all other base vectors: |i'> = (1 - sum_{j<i} |j><j|) |i>
+ * remove orthogonal projections to all other basis vectors: |i'> = (1 - sum_{j<i} |j><j|) |i>
  *
  * @see https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process
  * @see (Arens 2015), p. 744
@@ -8312,7 +8311,7 @@ requires is_mat<t_mat> && is_vec<t_vec>
 	const std::size_t cols = mat.size2();
 	const std::size_t N = std::min(cols, rows);
 
-#if __TLIBS2_QR_METHOD == 0
+#if __TLIBS2_QR_METHOD__ == 0
 	t_mat R = mat;
 	t_mat Q = unit<t_mat>(N, N);
 
@@ -8325,7 +8324,7 @@ requires is_mat<t_mat> && is_vec<t_vec>
 		R = prod(matMirror, R);
 	}
 
-#elif __TLIBS2_QR_METHOD == 1
+#elif __TLIBS2_QR_METHOD__ == 1
 	std::vector<t_vec> sysM;
 	sysM.reserve(mat.size2());
 	for(std::size_t i=0; i<mat.size2(); ++i)

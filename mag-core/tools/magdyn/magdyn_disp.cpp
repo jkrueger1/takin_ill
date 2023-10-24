@@ -247,7 +247,7 @@ void MagDynDlg::CalcDispersion()
 	const bool use_projector = m_use_projector->isChecked();
 	const bool force_incommensurate = m_force_incommensurate->isChecked();
 
-	t_real E0 = use_goldstone ? m_dyn.GetGoldstoneEnergy() : 0.;
+	t_real E0 = use_goldstone ? m_dyn.CalcGoldstoneEnergy() : 0.;
 	m_dyn.SetUniteDegenerateEnergies(unite_degeneracies);
 	m_dyn.SetForceIncommensurate(force_incommensurate);
 	m_dyn.SetCalcHamiltonian(
@@ -498,7 +498,7 @@ void MagDynDlg::CalcHamiltonian()
 		// commensurate case
 		energies_and_correlations = m_dyn.CalcEnergiesFromHamiltonian(H, Q, only_energies);
 		if(!only_energies)
-			m_dyn.GetIntensities(Q, energies_and_correlations);
+			m_dyn.CalcIntensities(Q, energies_and_correlations);
 		if(unite_degeneracies)
 			energies_and_correlations = m_dyn.UniteEnergies(energies_and_correlations);
 	}

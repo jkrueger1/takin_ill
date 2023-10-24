@@ -65,6 +65,10 @@
 #include "algos.h"
 #include "expr.h"
 
+// enables debug output
+//#define __TLIBS2_MAGDYN_DEBUG_OUTPUT__
+//#define __TLIBS2_MAGDYN_DEBUG_PY_OUTPUT__
+
 
 namespace tl2_mag {
 
@@ -102,9 +106,9 @@ template<class t_mat, class t_cplx = typename t_mat::value_type>
 #ifndef SWIG  // TODO: remove this as soon as swig understands concepts
 requires tl2::is_mat<t_mat>
 #endif
-t_mat get_polarisation(int channel = 0, bool in_chiral_base = true)
+t_mat get_polarisation(int channel = 0, bool in_chiral_basis = true)
 {
-	if(in_chiral_base)
+	if(in_chiral_basis)
 	{
 		t_mat pol = tl2::zero<t_mat>(3);
 
@@ -448,6 +452,12 @@ public:
 	}
 
 
+	void SetPhaseSign(t_real sign)
+	{
+		m_phase_sign = sign;
+	}
+
+
 	void SetRotationAxis(const t_vec_real& axis)
 	{
 		m_rotaxis = axis;
@@ -541,6 +551,9 @@ public:
 	}
 
 
+	// --------------------------------------------------------------------
+	// calculation functions
+	// --------------------------------------------------------------------
 	/**
 	 * calculate the spin rotation trafo for the atom sites
 	 */
@@ -565,13 +578,15 @@ public:
 					tl2::rotation<t_mat_real, t_vec_real>(
 						-m_field.dir, m_zdir, &m_rotaxis, m_eps)));
 
-			/*std::cout << "Field rotation from:\n";
+#ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
+			std::cout << "Field rotation from:\n";
 			tl2::niceprint(std::cout, -m_field.dir, 1e-4, 4);
 			std::cout << "\nto:\n";
 			tl2::niceprint(std::cout, m_zdir, 1e-4, 4);
 			std::cout << "\nmatrix:\n";
 			tl2::niceprint(std::cout, m_rot_field, 1e-4, 4);
-			std::cout << std::endl;*/
+			std::cout << std::endl;
+#endif
 		}
 
 		tl2::ExprParser parser = GetExprParser();
@@ -652,8 +667,10 @@ public:
 					// TODO: normalise the v vector as well as the real and imaginary u vectors
 					// in case they are explicitly given
 
-					/*std::cout << "Site " << site_idx << " u = " << site_calc.u[0] << " " << site_calc.u[1] << " " << site_calc.u[2] << std::endl;
-					std::cout << "Site " << site_idx << " v = " << site_calc.v[0] << " " << site_calc.v[1] << " " << site_calc.v[2] << std::endl;*/
+#ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
+					std::cout << "Site " << site_idx << " u = " << site_calc.u[0] << " " << site_calc.u[1] << " " << site_calc.u[2] << std::endl;
+					std::cout << "Site " << site_idx << " v = " << site_calc.v[0] << " " << site_calc.v[1] << " " << site_calc.v[2] << std::endl;
+#endif
 				}
 
 				site_calc.u_conj = tl2::conj(site_calc.u);
@@ -837,8 +854,10 @@ public:
 							m_rotaxis, rot_UC_angle));
 					J = J * rot_UC;
 
-					/*td::cout << "Coupling rot_UC = " << term_idx << ":\n";
-					tl2::niceprint(std::cout, rot_UC, 1e-4, 4);*/
+#ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
+					std::cout << "Coupling rot_UC = " << term_idx << ":\n";
+					tl2::niceprint(std::cout, rot_UC, 1e-4, 4);
+#endif
 				}
 			}
 
@@ -1084,16 +1103,25 @@ public:
 			t_mat trafo = C_inv * evec_mat * E_sqrt;
 			t_mat trafo_herm = tl2::herm(trafo);
 
-			/*t_mat D = trafo_herm * _H * trafo;
-			tl2::niceprint(std::cout, D, 1e-4, 4);
-			tl2::niceprint(std::cout, E, 1e-4, 4);
-			tl2::niceprint(std::cout, L, 1e-4, 4);
-			std::cout << std::endl;*/
+#ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
+			t_mat D_mat = trafo_herm * H_mat * trafo;
+			std::cout << "D = \n";
+			tl2::niceprint(std::cout, D_mat, 1e-4, 4);
+			std::cout << "\nE = \n";
+			tl2::niceprint(std::cout, E_sqrt, 1e-4, 4);
+			std::cout << "\nL = \n";
+			tl2::niceprint(std::cout, L_mat, 1e-4, 4);
+			std::cout << std::endl;
+#endif
 
-			/*std::cout << "Y = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
+#ifdef __TLIBS2_MAGDYN_DEBUG_PY_OUTPUT__
+			std::cout
+				<< "# --------------------------------------------------------------------------------\n";
+			std::cout << "Y = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
 			std::cout << "V = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
 			std::cout << "Z = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
-			std::cout << "W = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;*/
+			std::cout << "W = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
+#endif
 
 			// building the spin correlation functions of equation (47) from (Toth 2015)
 			for(int x_idx=0; x_idx<3; ++x_idx)
@@ -1143,7 +1171,8 @@ public:
 						Z(i, j) = phase * u_i[x_idx] * u_j[y_idx];
 						W(i, j) = phase * u_conj_i[x_idx] * u_j[y_idx];
 
-						/*std::cout << "Y[" << i << ", " << j << ", "
+#ifdef __TLIBS2_MAGDYN_DEBUG_PY_OUTPUT__
+						std::cout << "Y[" << i << ", " << j << ", "
 							<< x_idx << ", " << y_idx << "] = "
 							<< Y(i, j).real() << " + " << Y(i, j).imag() << "j\n"
 							<< "V[" << i << ", " << j << ", "
@@ -1155,12 +1184,12 @@ public:
 							<< "W[" << i << ", " << j << ", "
 							<< x_idx << ", " << y_idx << "] = "
 							<< W(i, j).real() << " + " << W(i, j).imag() << "j"
-							<< std::endl;*/
+							<< std::endl;
+#endif
 					};
 
 					calc_mat_elems(Qvec, Y, V, Z, W);
 				} // end of iteration over sites
-
 
 				auto calc_S = [num_sites, x_idx, y_idx, &trafo, &trafo_herm, &energies_and_correlations]
 					(t_mat EnergyAndWeight::*S, const t_mat& Y, const t_mat& V, const t_mat& Z, const t_mat& W)
@@ -1174,9 +1203,11 @@ public:
 
 					t_mat M_trafo = trafo_herm * M * trafo;
 
-					/*std::cout << "M_trafo for x=" << x_idx << ", y=" << y_idx << ":\n";
+#ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
+					std::cout << "M_trafo for x=" << x_idx << ", y=" << y_idx << ":\n";
 					tl2::niceprint(std::cout, M_trafo, 1e-4, 4);
-					std::cout << std::endl;*/
+					std::cout << std::endl;
+#endif
 
 					for(t_size i=0; i<energies_and_correlations.size(); ++i)
 						(energies_and_correlations[i].*S)(x_idx, y_idx) += M_trafo(i, i) / t_real(2*num_sites);
@@ -1184,6 +1215,12 @@ public:
 
 				calc_S(&EnergyAndWeight::S, Y, V, Z, W);
 			} // end of coordinate iteration
+
+#ifdef __TLIBS2_MAGDYN_DEBUG_PY_OUTPUT__
+				std::cout
+					<< "# --------------------------------------------------------------------------------\n"
+					<< std::endl;
+#endif
 		} // end of weight calculation
 
 		return energies_and_correlations;
@@ -1194,7 +1231,7 @@ public:
 	 * applies projectors and weight factors to get neutron intensities
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	void GetIntensities(const t_vec_real& Qvec, std::vector<EnergyAndWeight>& energies_and_correlations) const
+	void CalcIntensities(const t_vec_real& Qvec, std::vector<EnergyAndWeight>& energies_and_correlations) const
 	{
 		for(EnergyAndWeight& E_and_S : energies_and_correlations)
 		{
@@ -1338,7 +1375,7 @@ public:
 		}
 
 		if(!only_energies)
-			GetIntensities(Qvec, EandWs);
+			CalcIntensities(Qvec, EandWs);
 
 		if(m_unite_degenerate_energies)
 			EandWs = UniteEnergies(EandWs);
@@ -1360,7 +1397,7 @@ public:
 	 * get the energy of the goldstone mode
 	 * @note a first version for a simplified ferromagnetic dispersion was based on (Heinsdorf 2021)
 	 */
-	t_real GetGoldstoneEnergy() const
+	t_real CalcGoldstoneEnergy() const
 	{
 		auto energies_and_correlations = CalcEnergies(0., 0., 0., true);
 		auto min_iter = std::min_element(
@@ -1375,6 +1412,7 @@ public:
 
 		return 0.;
 	}
+	// --------------------------------------------------------------------
 
 
 	/**

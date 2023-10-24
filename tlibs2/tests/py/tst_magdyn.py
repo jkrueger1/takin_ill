@@ -65,7 +65,7 @@ else:
 
 if save_dispersion:
 	# directly calculate a dispersion and write it to a file
-	#print("Goldstone Energy: {:.4f} meV".format(mag.GetGoldstoneEnergy()))
+	#print("Goldstone Energy: {:.4f} meV".format(mag.CalcGoldstoneEnergy()))
 	print("\nSaving dispersion to {}...".format(dispfile))
 	mag.SaveDispersion(dispfile,  0, 0, 0.5,  1, 1, 0.5,  num_Q_points)
 
