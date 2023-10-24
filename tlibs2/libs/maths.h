@@ -2397,17 +2397,33 @@ requires is_quat<t_quat>
 	quat = t_quat(re, im1, im2, im3);
 };
 
+
 /**
  * set values lower than epsilon to zero
  * matrix version
  */
-template<typename t_mat, typename t_real = typename t_mat::value_type>
-void set_eps_0(t_mat& mat, t_real eps = std::numeric_limits<t_real>::epsilon())
-requires is_basic_mat<t_mat>
+template<typename t_mat, typename t_val = typename t_mat::value_type>
+void set_eps_0(t_mat& mat,
+	typename t_val::value_type eps = std::numeric_limits<typename t_val::value_type>::epsilon())
+requires is_basic_mat<t_mat> && is_complex<t_val>
 {
 	for(std::size_t i=0; i<mat.size1(); ++i)
 		for(std::size_t j=0; j<mat.size2(); ++j)
-			set_eps_0<t_real>(mat(i,j), eps);
+			set_eps_0<t_val, typename t_val::value_type>(mat(i,j), eps);
+};
+
+
+/**
+ * set values lower than epsilon to zero
+ * complex matrix version
+ */
+template<typename t_mat, typename t_val = typename t_mat::value_type>
+void set_eps_0(t_mat& mat, t_val eps = std::numeric_limits<t_val>::epsilon())
+requires is_basic_mat<t_mat> && (!is_complex<t_val>)
+{
+	for(std::size_t i=0; i<mat.size1(); ++i)
+		for(std::size_t j=0; j<mat.size2(); ++j)
+			set_eps_0<t_val>(mat(i,j), eps);
 };
 // -----------------------------------------------------------------------------
 
@@ -7514,7 +7530,7 @@ requires tl2::is_mat<t_mat>
  * @see http://www.netlib.org/utk/papers/factor/node9.html
  */
 template<class t_mat, class t_vec = std::vector<typename t_mat::value_type>>
-std::tuple<bool, t_mat> chol(const t_mat& mat)
+std::tuple<bool, t_mat> chol(const t_mat& mat, bool blocked = true)
 requires tl2::is_mat<t_mat>
 {
 	using namespace tl2_ops;
@@ -7539,13 +7555,21 @@ requires tl2::is_mat<t_mat>
 	{
 		if constexpr(std::is_same_v<t_real, float>)
 		{
-			err = LAPACKE_cpotrf(LAPACK_ROW_MAJOR,
-				'U', N, outmat.data(), N);
+			if(blocked)
+				err = LAPACKE_cpotrf(LAPACK_ROW_MAJOR,
+					'U', N, outmat.data(), N);
+			else
+				err = LAPACKE_cpotrf2(LAPACK_ROW_MAJOR,
+					'U', N, outmat.data(), N);
 		}
 		else if constexpr(std::is_same_v<t_real, double>)
 		{
-			err = LAPACKE_zpotrf(LAPACK_ROW_MAJOR,
-				'U', N, outmat.data(), N);
+			if(blocked)
+				err = LAPACKE_zpotrf(LAPACK_ROW_MAJOR,
+					'U', N, outmat.data(), N);
+			else
+				err = LAPACKE_zpotrf2(LAPACK_ROW_MAJOR,
+					'U', N, outmat.data(), N);
 		}
 		else
 		{
@@ -7557,13 +7581,21 @@ requires tl2::is_mat<t_mat>
 	{
 		if constexpr(std::is_same_v<t_real, float>)
 		{
-			err = LAPACKE_spotrf(LAPACK_ROW_MAJOR,
-				'U', N, outmat.data(), N);
+			if(blocked)
+				err = LAPACKE_spotrf(LAPACK_ROW_MAJOR,
+					'U', N, outmat.data(), N);
+			else
+				err = LAPACKE_spotrf2(LAPACK_ROW_MAJOR,
+					'U', N, outmat.data(), N);
 		}
 		else if constexpr(std::is_same_v<t_real, double>)
 		{
-			err = LAPACKE_dpotrf(LAPACK_ROW_MAJOR,
-				'U', N, outmat.data(), N);
+			if(blocked)
+				err = LAPACKE_dpotrf(LAPACK_ROW_MAJOR,
+					'U', N, outmat.data(), N);
+			else
+				err = LAPACKE_dpotrf2(LAPACK_ROW_MAJOR,
+					'U', N, outmat.data(), N);
 		}
 		else
 		{
@@ -7584,13 +7616,95 @@ requires tl2::is_mat<t_mat>
 
 
 /**
+ * cholesky decomposition of a hermitian, positive-semidefinite matrix, mat = C^H C
+ * @returns [ok, C, P]
+ * @see https://netlib.org/lapack/explore-html/db/dba/zpstrf_8f_source.html
+ */
+template<class t_mat, class t_vec = std::vector<typename t_mat::value_type>,
+	class t_real = tl2::underlying_value_type<typename t_mat::value_type>>
+std::tuple<bool, t_mat, t_mat> chol_semi(const t_mat& mat, t_real eps)
+requires tl2::is_mat<t_mat>
+{
+	using namespace tl2_ops;
+	using t_scalar = typename t_mat::value_type;
+
+	if constexpr(tl2::is_dyn_mat<t_mat>)
+		assert((mat.size1() == mat.size2()));
+	else
+		static_assert(t_mat::size1() == t_mat::size2());
+
+	const std::size_t N = mat.size1();
+	int err = -1;
+
+	std::vector<t_scalar> outmat(N*N);
+	std::vector<int> pivot(N, 0);
+	int steps = 0;
+
+	for(std::size_t i=0; i<N; ++i)
+		for(std::size_t j=0; j<N; ++j)
+			outmat[i*N + j] = (j >= i ? mat(i, j) : 0.);
+
+	if constexpr(tl2::is_complex<t_scalar>)
+	{
+		if constexpr(std::is_same_v<t_real, float>)
+		{
+			err = LAPACKE_cpstrf(LAPACK_ROW_MAJOR,
+				'U', N, outmat.data(), N, pivot.data(), &steps, eps);
+		}
+		else if constexpr(std::is_same_v<t_real, double>)
+		{
+			err = LAPACKE_zpstrf(LAPACK_ROW_MAJOR,
+				'U', N, outmat.data(), N, pivot.data(), &steps, eps);
+		}
+		else
+		{
+			static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
+			//throw std::domain_error("Invalid element type.");
+		}
+	}
+	else
+	{
+		if constexpr(std::is_same_v<t_real, float>)
+		{
+			err = LAPACKE_spstrf(LAPACK_ROW_MAJOR,
+				'U', N, outmat.data(), N, pivot.data(), &steps, eps);
+		}
+		else if constexpr(std::is_same_v<t_real, double>)
+		{
+			err = LAPACKE_dpstrf(LAPACK_ROW_MAJOR,
+				'U', N, outmat.data(), N, pivot.data(), &steps, eps);
+		}
+		else
+		{
+			static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
+			//throw std::domain_error("Invalid element type.");
+		}
+	}
+
+	t_mat C = tl2::create<t_mat>(N, N);
+	t_mat P = tl2::zero<t_mat>(N, N);    // pivot matrix
+
+	for(std::size_t i=0; i<N; ++i)
+	{
+		for(std::size_t j=0; j<N; ++j)
+			C(i, j) = outmat[i*N + j];
+
+		P(pivot[i]-1, i) = 1.;
+	}
+
+	//std::cerr << "error value: " << err << std::endl;
+	return std::make_tuple(err == 0, C, P);
+}
+
+
+/**
  * cholesky decomposition of a hermitian matrix, mat = C D C^H
  * @returns [ok, C, D]
  * @see http://www.math.utah.edu/software/lapack/lapack-z/zhptrf.html
  * @see http://www.math.utah.edu/software/lapack/lapack-d/dsptrf.html
  */
 template<class t_mat, class t_vec = std::vector<typename t_mat::value_type>>
-std::tuple<bool, t_mat, t_mat> chol2(const t_mat& mat)
+std::tuple<bool, t_mat, t_mat> chol_herm(const t_mat& mat)
 requires tl2::is_mat<t_mat>
 {
 	using namespace tl2_ops;
