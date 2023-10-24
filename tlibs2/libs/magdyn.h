@@ -413,6 +413,10 @@ public:
 	void SetUniteDegenerateEnergies(bool b) { m_unite_degenerate_energies = b; }
 	void SetForceIncommensurate(bool b) { m_force_incommensurate = b; }
 
+	void SetPhaseSign(t_real sign) { m_phase_sign = sign; }
+	void SetCholeskyMaxTries(t_size max_tries) { m_tries_chol = max_tries; }
+	void SetCholeskyInc(t_real delta) { m_delta_chol = delta; }
+
 
 	void SetExternalField(const ExternalField& field)
 	{
@@ -449,12 +453,6 @@ public:
 		m_calc_H = H;
 		m_calc_Hp = Hp;
 		m_calc_Hm = Hm;
-	}
-
-
-	void SetPhaseSign(t_real sign)
-	{
-		m_phase_sign = sign;
 	}
 
 
@@ -994,7 +992,7 @@ public:
 			}
 			else
 			{
-				if(chol_try == m_tries_chol-1)
+				if(chol_try >= m_tries_chol-1)
 				{
 					using namespace tl2_ops;
 					std::cerr << "Warning: Cholesky decomposition failed for Q = "
@@ -1009,7 +1007,7 @@ public:
 			}
 		}
 
-		if(chol_try > 1)
+		if(chol_try > 0)
 		{
 			using namespace tl2_ops;
 			std::cerr << "Warning: Needed " << chol_try
@@ -1885,7 +1883,7 @@ private:
 
 	// settings for cholesky decomposition
 	t_size m_tries_chol{50};
-	t_real m_delta_chol{0.01};
+	t_real m_delta_chol{0.0025};
 
 	// precisions
 	t_real m_eps{1e-6};
