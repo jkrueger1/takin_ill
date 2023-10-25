@@ -1911,6 +1911,17 @@ void MagDynDlg::CreateMenuBar()
 	m_menuChannels->addAction(m_plot_channel[2]);
 	m_menuChannels->setEnabled(m_plot_channels->isChecked());
 
+	// weight plot sub-menu
+	QMenu *menuWeights = new QMenu("Plot Weights", m_menuDisp);
+	m_plot_weights_pointsize = new QAction("As Point Size", menuWeights);
+	m_plot_weights_alpha = new QAction("As Colour Alpha", menuWeights);
+	m_plot_weights_pointsize->setCheckable(true);
+	m_plot_weights_pointsize->setChecked(true);
+	m_plot_weights_alpha->setCheckable(true);
+	m_plot_weights_alpha->setChecked(false);
+	menuWeights->addAction(m_plot_weights_pointsize);
+	menuWeights->addAction(m_plot_weights_alpha);
+
 	// recent files menu
 	m_menuOpenRecent = new QMenu("Open Recent", menuFile);
 
@@ -1978,18 +1989,18 @@ void MagDynDlg::CreateMenuBar()
 	m_force_incommensurate->setChecked(false);
 
 	// H components sub-menu
-	m_menuHamiltonians = new QMenu("Selected Hamiltonians", menuCalc);
-	m_hamiltonian_comp[0] = new QAction("H(Q)", m_menuHamiltonians);
-	m_hamiltonian_comp[1] = new QAction("H(Q + O)", m_menuHamiltonians);
-	m_hamiltonian_comp[2] = new QAction("H(Q - O)", m_menuHamiltonians);
+	QMenu *menuHamiltonians = new QMenu("Selected Hamiltonians", menuCalc);
+	m_hamiltonian_comp[0] = new QAction("H(Q)", menuHamiltonians);
+	m_hamiltonian_comp[1] = new QAction("H(Q + O)", menuHamiltonians);
+	m_hamiltonian_comp[2] = new QAction("H(Q - O)", menuHamiltonians);
 	for(int i=0; i<3; ++i)
 	{
 		m_hamiltonian_comp[i]->setCheckable(true);
 		m_hamiltonian_comp[i]->setChecked(true);
 	}
-	m_menuHamiltonians->addAction(m_hamiltonian_comp[0]);
-	m_menuHamiltonians->addAction(m_hamiltonian_comp[1]);
-	m_menuHamiltonians->addAction(m_hamiltonian_comp[2]);
+	menuHamiltonians->addAction(m_hamiltonian_comp[0]);
+	menuHamiltonians->addAction(m_hamiltonian_comp[1]);
+	menuHamiltonians->addAction(m_hamiltonian_comp[2]);
 
 	// tools menu
 	auto menuTools = new QMenu("Tools", m_menu);
@@ -2027,6 +2038,7 @@ void MagDynDlg::CreateMenuBar()
 	m_menuDisp->addMenu(m_menuChannels);
 	m_menuDisp->addSeparator();
 	m_menuDisp->addAction(acRescalePlot);
+	m_menuDisp->addMenu(menuWeights);
 	m_menuDisp->addSeparator();
 	m_menuDisp->addAction(acSaveFigure);
 	m_menuDisp->addAction(acSaveDisp);
@@ -2044,7 +2056,7 @@ void MagDynDlg::CreateMenuBar()
 	menuCalc->addAction(m_unite_degeneracies);
 	menuCalc->addAction(m_ignore_annihilation);
 	menuCalc->addAction(m_force_incommensurate);
-	menuCalc->addMenu(m_menuHamiltonians);
+	menuCalc->addMenu(menuHamiltonians);
 
 	menuTools->addAction(acTrafoCalc);
 
@@ -2119,6 +2131,15 @@ void MagDynDlg::CreateMenuBar()
 			this->PlotDispersion();
 		});
 	}
+
+	connect(m_plot_weights_pointsize, &QAction::toggled, [this](bool)
+	{
+		this->PlotDispersion();
+	});
+	connect(m_plot_weights_alpha, &QAction::toggled, [this](bool)
+	{
+		this->PlotDispersion();
+	});
 
 	connect(acCalc, &QAction::triggered, [this]()
 	{

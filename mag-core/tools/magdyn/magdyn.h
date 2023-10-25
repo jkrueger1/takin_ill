@@ -211,7 +211,8 @@ protected:
 	QAction *m_plot_channels{};
 	QMenu *m_menuChannels{};
 	QAction *m_plot_channel[3]{};
-	QMenu *m_menuHamiltonians{};
+	QAction *m_plot_weights_pointsize{};
+	QAction *m_plot_weights_alpha{};
 	QAction *m_hamiltonian_comp[3]{};
 
 	// recently opened files

@@ -28,6 +28,7 @@
 #ifndef __MAG_DYN_GRAPH_H__
 #define __MAG_DYN_GRAPH_H__
 
+#include <algorithm>
 #include <qcustomplot.h>
 #include <QtCore/QVector>
 
@@ -71,6 +72,18 @@ public:
 	}
 
 
+	void SetWeightAsPointSize(bool b)
+	{
+		m_weight_as_point_size = b;
+	}
+
+
+	void SetWeightAsAlpha(bool b)
+	{
+		m_weight_as_alpha = b;
+	}
+
+
 	/**
 	 * scatter plot with variable symbol sizes
 	 */
@@ -79,7 +92,6 @@ public:
 		const QVector<QPointF>& points,
 		const QCPScatterStyle& _style) const override
 	{
-		//QCPGraph::drawScatterPlot(paint, points, _style);
 		const int num_points = points.size();
 		if(!num_points)
 			return;
@@ -107,7 +119,9 @@ public:
 
 		// see: QCPGraph::drawScatterPlot
 		QCPGraph::applyScattersAntialiasingHint(paint);
-		style.applyTo(paint, pen());
+
+		QPen pen = this->pen();
+		style.applyTo(paint, pen);
 
 		const bool has_weights = (data_start_idx >= 0 && m_weights.size()-data_start_idx >= num_points);
 		const qreal size_saved = style.size();
@@ -115,19 +129,50 @@ public:
 		// iterate all data points
 		for(int idx=0; idx<num_points; ++idx)
 		{
-			// data point and its weight factor
+			// data point
 			const QPointF& pt = points[idx];
-			qreal weight = has_weights ? m_weights[idx + data_start_idx] : size_saved;
-			qreal scaled_weight = weight * m_weight_scale;
-			if(m_weight_max >= 0. && m_weight_min >= 0. && m_weight_min <= m_weight_max)
-				scaled_weight = tl2::clamp(scaled_weight, m_weight_min, m_weight_max);
+			bool weight_range_valid = m_weight_max >= 0. && m_weight_min >= 0. && m_weight_min <= m_weight_max;
 
-			// set symbol sizes per point
-			style.setSize(scaled_weight);
+			if(m_weight_as_point_size)
+			{
+				// size-based weight factor
+				qreal weight = has_weights ? m_weights[idx + data_start_idx] : size_saved;
+				weight *= m_weight_scale;
+				if(weight_range_valid)
+					weight = std::clamp(weight, m_weight_min, m_weight_max);
+
+				// set symbol sizes per point
+				style.setSize(weight);
+			}
+			else
+			{
+				style.setSize(2.);
+			}
+
+			if(m_weight_as_alpha)
+			{
+				// colour-based weight factor
+				qreal weight_c = has_weights
+					? m_weights[idx + data_start_idx] * m_weight_scale
+					: 1.;
+				if(has_weights && weight_range_valid)
+				{
+					weight_c = std::clamp(weight_c, m_weight_min, m_weight_max);
+					weight_c /= m_weight_max;
+
+					//weight_c = (weight_c - m_weight_min) / (m_weight_max - m_weight_min);
+					//weight_c = std::clamp(weight_c, 0., 1.);
+				}
+
+				QColor col = pen.color();
+				col.setAlphaF(weight_c);
+				pen.setColor(col);
+				style.setPen(pen);
+				style.applyTo(paint, pen);
+			}
 
 			// draw the symbol with the modified size
 			style.drawShape(paint, pt);
-			//paint->drawEllipse(pt, weight, weight);
 		}
 
 		// restore original symbol size
@@ -142,6 +187,9 @@ private:
 	qreal m_weight_scale = 1;
 	qreal m_weight_min = -1;
 	qreal m_weight_max = -1;
+
+	bool m_weight_as_point_size = true;
+	bool m_weight_as_alpha = false;
 };
 
 

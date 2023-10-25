@@ -359,16 +359,6 @@ t_vec<T> logspace(const T& tmin, const T& tmax, std::size_t iNum, T tBase=T(10))
 }
 
 
-template<typename T>
-T clamp(T t, T min, T max)
-{
-	if(t < min) t = min;
-	if(t > max) t = max;
-
-	return t;
-}
-
-
 template<class T>
 bool is_in_range(T val, T centre, T pm)
 {
@@ -3205,7 +3195,7 @@ requires is_basic_mat<t_mat> && is_basic_vec<t_vec>
 
 	t_real c = inner<t_mat, t_vec>(metric_co, vec1_contra, vec2_contra);
 	c /= len1 * len2;
-	c = clamp<t_real>(c, -1, 1);
+	c = std::clamp<t_real>(c, -1, 1);
 
 	return std::acos(c);
 }

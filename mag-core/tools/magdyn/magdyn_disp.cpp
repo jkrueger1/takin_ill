@@ -120,6 +120,8 @@ void MagDynDlg::PlotDispersion()
 			graph->setData(m_qs_data_channel[i], m_Es_data_channel[i], true /*already sorted*/);
 			graph->SetWeights(m_ws_data_channel[i]);
 			graph->SetWeightScale(m_weight_scale->value(), m_weight_min->value(), m_weight_max->value());
+			graph->SetWeightAsPointSize(m_plot_weights_pointsize->isChecked());
+			graph->SetWeightAsAlpha(m_plot_weights_alpha->isChecked());
 			m_graphs.push_back(graph);
 		}
 	}
@@ -139,6 +141,8 @@ void MagDynDlg::PlotDispersion()
 		graph->setData(m_qs_data, m_Es_data, true /*already sorted*/);
 		graph->SetWeights(m_ws_data);
 		graph->SetWeightScale(m_weight_scale->value(), m_weight_min->value(), m_weight_max->value());
+		graph->SetWeightAsPointSize(m_plot_weights_pointsize->isChecked());
+		graph->SetWeightAsAlpha(m_plot_weights_alpha->isChecked());
 		m_graphs.push_back(graph);
 	}
 
