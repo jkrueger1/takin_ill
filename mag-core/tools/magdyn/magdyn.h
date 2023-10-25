@@ -393,16 +393,11 @@ protected:
 	void VariablesTableItemChanged(QTableWidgetItem *item);
 
 	void ClearDispersion(bool replot = false);
-	void SetCurrentFile(const QString& filename);
 	void Clear();
 	void Load();
 	void Save();
 	void SaveAs();
 	void ExportSQE();
-
-	bool Load(const QString& filename);
-	bool Save(const QString& filename);
-	bool ExportSQE(const QString& filename);
 
 	void SavePlotFigure();
 	void SaveDispersion();
@@ -454,6 +449,16 @@ protected:
 	// disable/enable gui input for threaded operations
 	void EnableInput();
 	void DisableInput();
+
+
+public:
+	bool Load(const QString& filename);
+	bool Save(const QString& filename);
+
+	bool ExportSQE(const QString& filename);
+
+	void SetCurrentFileAndDir(const QString& filename);
+	void SetCurrentFile(const QString& filename);
 
 
 private:

@@ -1422,9 +1422,21 @@ public:
 		t_size num_qs = 128) const
 	{
 		std::ofstream ofstr{filename};
-		ofstr.precision(m_prec);
+		SaveDispersion(ofstr, h_start, k_start, l_start, h_end, k_end, l_end, num_qs);
+	}
 
-		ofstr
+
+	/**
+	 * generates the dispersion plot along the given q path
+	 */
+	void SaveDispersion(std::ostream& ostr,
+		t_real h_start, t_real k_start, t_real l_start,
+		t_real h_end, t_real k_end, t_real l_end,
+		t_size num_qs = 128) const
+	{
+		ostr.precision(m_prec);
+
+		ostr
 			<< std::setw(m_prec*2) << std::left << "# h"
 			<< std::setw(m_prec*2) << std::left << "k"
 			<< std::setw(m_prec*2) << std::left << "l"
@@ -1444,7 +1456,7 @@ public:
 			auto energies_and_correlations = CalcEnergies(h, k, l, false);
 			for(const auto& E_and_S : energies_and_correlations)
 			{
-				ofstr
+				ostr
 					<< std::setw(m_prec*2) << std::left << h
 					<< std::setw(m_prec*2) << std::left << k
 					<< std::setw(m_prec*2) << std::left << l

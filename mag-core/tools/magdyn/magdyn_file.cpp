@@ -132,6 +132,20 @@ void MagDynDlg::SetCurrentFile(const QString& filename)
 
 
 /**
+ * set the currently open file and its directory
+ */
+void MagDynDlg::SetCurrentFileAndDir(const QString& filename)
+{
+	if(filename == "")
+		return;
+
+	m_sett->setValue("dir", QFileInfo(filename).path());
+	m_recent.AddRecentFile(filename);
+	SetCurrentFile(filename);
+}
+
+
+/**
  * load magnetic structure configuration
  */
 void MagDynDlg::Load()
@@ -145,11 +159,7 @@ void MagDynDlg::Load()
 	Clear();
 
 	if(Load(filename))
-	{
-		m_sett->setValue("dir", QFileInfo(filename).path());
-		m_recent.AddRecentFile(filename);
-		SetCurrentFile(filename);
-	}
+		SetCurrentFileAndDir(filename);
 }
 
 
@@ -480,11 +490,7 @@ void MagDynDlg::SaveAs()
 		return;
 
 	if(Save(filename))
-	{
-		m_sett->setValue("dir", QFileInfo(filename).path());
-		m_recent.AddRecentFile(filename);
-		SetCurrentFile(filename);
-	}
+		SetCurrentFileAndDir(filename);
 }
 
 

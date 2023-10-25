@@ -66,7 +66,7 @@ endif()
 
 find_package(Threads REQUIRED)
 
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS program_options)
 set(Boost_USE_MULTITHREADED TRUE)
 add_definitions(${Boost_CXX_FLAGS})
 

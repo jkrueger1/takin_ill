@@ -46,11 +46,6 @@ col_axis  = "#000000"  # colour for coordinate cross
 col_full  = "#ff0000"  # colour for all weights
 
 
-# ranges
-set xrange  [ -qrange : qrange ]
-set yrange  [ -Erange : Erange ]
-
-
 # ticks
 set xtics 0.2 nomirror
 set mxtics 2
@@ -73,11 +68,16 @@ else {
 }
 
 
+# ranges
+#set xrange  [ -qrange : qrange ]
+#set yrange  [ -Erange : Erange ]
+
+
 # show coordinate cross
-set arrow 1 from 0,-Erange to 0,Erange lw 2 dt 2 lc rgb col_axis nohead
-set arrow 2 from -qrange,0 to qrange,0 lw 2 dt 2 lc rgb col_axis nohead
+#set arrow 1 from 0,-Erange to 0,Erange lw 2 dt 2 lc rgb col_axis nohead
+#set arrow 2 from -qrange,0 to qrange,0 lw 2 dt 2 lc rgb col_axis nohead
 
 
 plot \
-	file_dyn using ($3):($4):($5*point_size) \
+	file_dyn using ($1):($4):($5*point_size) \
 		with points pt 7 ps var lc rgb col_full title "Dispersion"
