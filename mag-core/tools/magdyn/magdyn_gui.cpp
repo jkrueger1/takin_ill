@@ -2061,10 +2061,8 @@ void MagDynDlg::CreateMenuBar()
 		this, static_cast<void (MagDynDlg::*)()>(&MagDynDlg::SaveAs));
 	connect(acExit, &QAction::triggered, this, &QDialog::close);
 
-	connect(acSaveFigure, &QAction::triggered,
-		this, &MagDynDlg::SavePlotFigure);
-	connect(acSaveDisp, &QAction::triggered,
-		this, &MagDynDlg::SaveDispersion);
+	connect(acSaveFigure, &QAction::triggered, this, &MagDynDlg::SavePlotFigure);
+	connect(acSaveDisp, &QAction::triggered, this, &MagDynDlg::SaveDispersion);
 
 	connect(acRescalePlot, &QAction::triggered, [this]()
 	{
@@ -2084,7 +2082,10 @@ void MagDynDlg::CreateMenuBar()
 	auto calc_all_dyn = [this]()
 	{
 		if(this->m_autocalc->isChecked())
-			this->CalcAllDynamics();
+		{
+			this->CalcDispersion();
+			this->CalcHamiltonian();
+		}
 	};
 
 	connect(acStructView, &QAction::triggered, this, &MagDynDlg::ShowStructurePlot);

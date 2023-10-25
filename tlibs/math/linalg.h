@@ -1235,7 +1235,6 @@ bool is_centering_matrix(const t_mat& mat)
 {
 	//if(is_identity_matrix(mat)) return 1;
 
-	using T = typename t_mat::value_type;
 	const std::size_t iN = mat.size1();
 	if(iN != mat.size2())
 		return false;
@@ -1453,7 +1452,6 @@ bool is_nan_or_inf(const T& mat)
 template<class mat_type = ublas::matrix<double>>
 bool inverse(const mat_type& mat, mat_type& inv)
 {
-	using T = typename mat_type::value_type;
 	const typename mat_type::size_type N = mat.size1();
 
 	if(N != mat.size2())
@@ -1874,8 +1872,6 @@ typename t_mat::value_type determinant(const t_mat& mat)
 template<class t_mat = ublas::matrix<double>>
 typename t_mat::value_type minor_det(const t_mat& mat, std::size_t iRow, std::size_t iCol)
 {
-	using T = typename t_mat::value_type;
-
 	t_mat M = submatrix(mat, iRow, iCol);
 	return determinant<t_mat>(M);
 }

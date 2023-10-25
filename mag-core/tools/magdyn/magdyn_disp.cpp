@@ -394,16 +394,6 @@ void MagDynDlg::CalcDispersion()
 
 
 /**
- * calculate all magnetic dynamics
- */
-void MagDynDlg::CalcAllDynamics()
-{
-	CalcDispersion();
-	CalcHamiltonian();
-}
-
-
-/**
  * calculate the hamiltonian for a single Q value
  */
 void MagDynDlg::CalcHamiltonian()
@@ -653,6 +643,38 @@ void MagDynDlg::CalcHamiltonian()
 	}
 
 	m_hamiltonian->setHtml(ostr.str().c_str());
+}
+
+
+/**
+ * set the current dispersion path and the hamiltonian to the given one
+ */
+void MagDynDlg::SetCoordinates(const t_vec_real& Qi, const t_vec_real& Qf, bool calc_dynamics)
+{
+	m_ignoreCalc = true;
+
+	BOOST_SCOPE_EXIT(this_, calc_dynamics)
+	{
+		this_->m_ignoreCalc = false;
+		if(this_->m_autocalc->isChecked() && calc_dynamics)
+		{
+			this_->CalcDispersion();
+			this_->CalcHamiltonian();
+		}
+	} BOOST_SCOPE_EXIT_END
+
+	// calculate the dispersion from Qi to Qf
+	m_q_start[0]->setValue(Qi[0]);
+	m_q_start[1]->setValue(Qi[1]);
+	m_q_start[2]->setValue(Qi[2]);
+	m_q_end[0]->setValue(Qf[0]);
+	m_q_end[1]->setValue(Qf[1]);
+	m_q_end[2]->setValue(Qf[2]);
+
+	// calculate the hamiltonian for Qi
+	m_q[0]->setValue(Qi[0]);
+	m_q[1]->setValue(Qi[1]);
+	m_q[2]->setValue(Qi[2]);
 }
 
 

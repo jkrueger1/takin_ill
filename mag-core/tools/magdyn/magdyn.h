@@ -410,11 +410,7 @@ protected:
 
 	std::optional<t_size> GetTermAtomIndex(int row, int num) const;
 	void SyncSitesAndTerms();
-
-	void CalcAll();
-	void CalcAllDynamics();
-	void CalcDispersion();
-	void CalcHamiltonian();
+	void CalcAll();          // syncs sites and terms and calculates all dynamics
 
 	void PlotDispersion();
 
@@ -452,13 +448,18 @@ protected:
 
 
 public:
-	bool Load(const QString& filename);
+	bool Load(const QString& filename, bool calc_dynamics = true);
 	bool Save(const QString& filename);
 
 	bool ExportSQE(const QString& filename);
 
 	void SetCurrentFileAndDir(const QString& filename);
 	void SetCurrentFile(const QString& filename);
+
+	void SetCoordinates(const t_vec_real& Qi, const t_vec_real& Qf, bool calc_dynamics = true);
+
+	void CalcDispersion();
+	void CalcHamiltonian();
 
 
 private:

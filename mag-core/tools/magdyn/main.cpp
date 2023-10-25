@@ -44,7 +44,8 @@ namespace pt = boost::property_tree;
 /**
  * starts the gui program
  */
-static int gui_main(int argc, char** argv, const std::string& model_file)
+static int gui_main(int argc, char** argv, const std::string& model_file,
+	const t_vec_real& Qi, const t_vec_real& Qf)
 {
 	tl2::set_gl_format(1, _GL_MAJ_VER, _GL_MIN_VER, 8);
 
@@ -60,9 +61,16 @@ static int gui_main(int argc, char** argv, const std::string& model_file)
 	if(model_file != "")
 	{
 		QString qfile = model_file.c_str();
-		if(magdyn->Load(qfile))
+		if(magdyn->Load(qfile, false))
 			magdyn->SetCurrentFileAndDir(qfile);
 	}
+
+	// override the dispersion branch to plot
+	if(Qi.size() == 3 && Qf.size() == 3)
+		magdyn->SetCoordinates(Qi, Qf, false);
+
+	magdyn->CalcDispersion();
+	magdyn->CalcHamiltonian();
 
 	return app->exec();
 }
@@ -71,7 +79,8 @@ static int gui_main(int argc, char** argv, const std::string& model_file)
 /**
  * starts the cli program
  */
-static int cli_main(const std::string& model_file, const std::string& results_file)
+static int cli_main(const std::string& model_file, const std::string& results_file,
+	const t_vec_real& Qi, const t_vec_real& Qf)
 {
 	using namespace tl2_ops;
 
@@ -150,6 +159,21 @@ static int cli_main(const std::string& model_file, const std::string& results_fi
 	t_real l_end = magdyn_node.get<t_real>("config.l_end", 0.);
 	t_size num_pts = magdyn_node.get<t_size>("config.num_Q_points", 128);
 
+	// get the override options
+	if(Qi.size() == 3)
+	{
+		h_start = Qi[0];
+		k_start = Qi[1];
+		l_start = Qi[2];
+	}
+	// get the override options
+	if(Qf.size() == 3)
+	{
+		h_end = Qf[0];
+		k_end = Qf[1];
+		l_end = Qf[2];
+	}
+
 
 	// calculate the dispersion
 	std::cout << "\nCalculating dispersion from Q_i = (" << h_start << ", " << k_start << ", " << l_start << ")"
@@ -178,7 +202,13 @@ int main(int argc, char** argv)
 			("help,h", args::bool_switch(&show_help), "show help")
 			("cli,c", args::bool_switch(&use_cli), "use command-line interface")
 			("input,i", args::value(&model_file), "input magnetic model file (.magdyn)")
-			("output,o", args::value(&results_file), "output results file (in cli mode)");
+			("output,o", args::value(&results_file), "output results file (in cli mode)")
+			("hi", args::value<t_real>(), "initial h coordinate")
+			("ki", args::value<t_real>(), "initial k coordinate")
+			("li", args::value<t_real>(), "initial l coordinate")
+			("hf", args::value<t_real>(), "final h coordinate")
+			("kf", args::value<t_real>(), "final k coordinate")
+			("lf", args::value<t_real>(), "final l coordinate");
 
 		args::positional_options_description posarg_descr;
 		posarg_descr.add("input", 1);
@@ -199,10 +229,38 @@ int main(int argc, char** argv)
 			return 0;
 		}
 
+
+		// get Qi and Qf override values
+		auto iterHi = mapArgs.find("hi");
+		auto iterKi = mapArgs.find("ki");
+		auto iterLi = mapArgs.find("li");
+		auto iterHf = mapArgs.find("hf");
+		auto iterKf = mapArgs.find("kf");
+		auto iterLf = mapArgs.find("lf");
+
+		t_vec_real Qi, Qf;
+		if(iterHi != mapArgs.end() &&iterKi != mapArgs.end() && iterLi != mapArgs.end())
+		{
+			Qi = tl2::create<t_vec_real>({
+				iterHi->second.as<t_real>(),
+				iterKi->second.as<t_real>(),
+				iterLi->second.as<t_real>()
+			});
+		}
+		if(iterHf != mapArgs.end() &&iterKf != mapArgs.end() && iterLf != mapArgs.end())
+		{
+			Qf = tl2::create<t_vec_real>({
+				iterHf->second.as<t_real>(),
+				iterKf->second.as<t_real>(),
+				iterLf->second.as<t_real>()
+			});
+		}
+
+
 		// either start the cli or the gui program
 		if(use_cli)
-			return cli_main(model_file, results_file);
-		return gui_main(argc, argv, model_file);
+			return cli_main(model_file, results_file, Qi, Qf);
+		return gui_main(argc, argv, model_file, Qi, Qf);
 	}
 	catch(const std::exception& ex)
 	{

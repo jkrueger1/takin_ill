@@ -770,9 +770,13 @@ void MagDynDlg::dropEvent(QDropEvent *evt)
  */
 void MagDynDlg::CalcAll()
 {
+	// calculate structure
 	SyncSitesAndTerms();
 	StructPlotSync();
-	CalcAllDynamics();
+
+	// calculate dynamics
+	CalcDispersion();
+	CalcHamiltonian();
 }
 
 

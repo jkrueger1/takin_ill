@@ -166,15 +166,20 @@ void MagDynDlg::Load()
 /**
  * load magnetic structure configuration
  */
-bool MagDynDlg::Load(const QString& filename)
+bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 {
 	try
 	{
-		BOOST_SCOPE_EXIT(this_)
+		BOOST_SCOPE_EXIT(this_, calc_dynamics)
 		{
 			this_->m_ignoreCalc = false;
 			if(this_->m_autocalc->isChecked())
-				this_->CalcAll();
+			{
+				if(calc_dynamics)
+					this_->CalcAll();
+				else
+					this_->SyncSitesAndTerms();
+			}
 		} BOOST_SCOPE_EXIT_END
 		m_ignoreCalc = true;
 
