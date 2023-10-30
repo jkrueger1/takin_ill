@@ -491,7 +491,7 @@ int main(int argc, char** argv)
 		std::cout << "module_name: " << pcModName << "\n";
 		std::cout << "module_type: sqw\n";
 		std::cout << "required_takin_version: " << TAKIN_VER << "\n";
-		std::cout << "module_help:begin\n" << pcModHelp << "\nmodule_help:end\n";
+		std::cout << "module_help: begin\n" << pcModHelp << "\nmodule_help: end\n";
 		std::cout.flush();
 		return 0;
 	}

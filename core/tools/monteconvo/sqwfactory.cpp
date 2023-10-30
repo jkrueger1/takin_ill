@@ -309,7 +309,7 @@ void load_sqw_ext_plugins()
 
 				if(in_help_text)
 				{
-					if(line == "module_help:end")
+					if(line == "module_help: end" || line == "module_help:end")
 					{
 						// end of help text
 						in_help_text = false;
@@ -336,9 +336,9 @@ void load_sqw_ext_plugins()
 					strModName = tl::trimmed(vecTokens[1]);
 				else if(vecTokens[0] == "required_takin_version")
 					strTakVer = tl::trimmed(vecTokens[1]);
-				else if(vecTokens[0] == "module_help" && vecTokens[1] == "begin")
+				else if(vecTokens[0] == "module_help" && tl::trimmed(vecTokens[1]) == "begin")
 					in_help_text = true;
-				else if(vecTokens[0] == "module_help" && vecTokens[1] == "end")
+				else if(vecTokens[0] == "module_help" && tl::trimmed(vecTokens[1]) == "end")
 					in_help_text = false;
 			}
 

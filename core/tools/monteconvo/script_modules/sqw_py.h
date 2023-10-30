@@ -30,6 +30,7 @@
 #define __SQWMOD_PY_H__
 
 #include "../sqwbase.h"
+
 #include <mutex>
 #include <memory>
 #include <string>
