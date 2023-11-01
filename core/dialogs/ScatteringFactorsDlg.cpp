@@ -54,9 +54,10 @@ ScatteringFactorsDlg::ScatteringFactorsDlg(QWidget* pParent, QSettings *pSetting
 
 	// -------------------------------------------------------------------------
 	// Bose Factor stuff
-	std::vector<QDoubleSpinBox*> vecSpinBoxesBose = {spinBoseT, spinBoseEMin, spinBoseEMax};
+	std::vector<QDoubleSpinBox*> vecSpinBoxesBose = { spinBoseT, spinBoseEMin, spinBoseEMax };
 	for(QDoubleSpinBox* pSpin : vecSpinBoxesBose)
 		QObject::connect(pSpin, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ScatteringFactorsDlg::CalcBose);
+	QObject::connect(spinBoseT, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ScatteringFactorsDlg::CalcBoseQuery);
 	QObject::connect(spinBoseEQuery, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ScatteringFactorsDlg::CalcBoseQuery);
 
 	m_plotwrapBose.reset(new QwtPlotWrapper(plotBose, 2));
@@ -208,11 +209,8 @@ void ScatteringFactorsDlg::CalcBoseQuery()
 	const tl::t_energy_si<t_real> E = spinBoseEQuery->value() * meV;
 
 	t_real bose = tl::bose(E, T);
-
-	std::ostringstream ostr;
-	ostr.precision(g_iPrec);
-	ostr << "Bose Factor: " << bose << ".";
-	editBoseQueryResult->setText(ostr.str().c_str());
+	std::string strbose = "Bose Factor: " + tl::var_to_str(bose, g_iPrec);
+	editBoseQueryResult->setText(strbose.c_str());
 }
 
 
