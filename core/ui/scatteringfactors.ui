@@ -61,7 +61,13 @@
          <property name="text">
           <string>Temperature (K):</string>
          </property>
-        </widget>
+         <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+             </sizepolicy>
+         </property>
+     </widget>
        </item>
        <item row="0" column="1">
         <widget class="QDoubleSpinBox" name="spinBoseT">
@@ -80,12 +86,24 @@
          <property name="decimals">
           <number>4</number>
          </property>
+         <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>1</horstretch>
+                 <verstretch>1</verstretch>
+             </sizepolicy>
+         </property>
         </widget>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_4">
          <property name="text">
           <string>Energy Range (meV):</string>
+         </property>
+         <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+             </sizepolicy>
          </property>
         </widget>
        </item>
@@ -106,6 +124,12 @@
          <property name="decimals">
           <number>4</number>
          </property>
+         <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>1</horstretch>
+                 <verstretch>1</verstretch>
+             </sizepolicy>
+         </property>
         </widget>
        </item>
        <item row="1" column="2">
@@ -121,6 +145,12 @@
          </property>
          <property name="decimals">
           <number>4</number>
+         </property>
+         <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>1</horstretch>
+                 <verstretch>1</verstretch>
+             </sizepolicy>
          </property>
         </widget>
        </item>
@@ -138,6 +168,12 @@
         <widget class="QLabel" name="label_a1">
          <property name="text">
           <string>Query at E (meV):</string>
+         </property>
+         <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+             </sizepolicy>
          </property>
         </widget>
        </item>
@@ -158,12 +194,24 @@
          <property name="decimals">
           <number>4</number>
          </property>
+         <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>1</horstretch>
+                 <verstretch>1</verstretch>
+             </sizepolicy>
+         </property>
         </widget>
        </item>
        <item row="3" column="2">
         <widget class="QLineEdit" name="editBoseQueryResult">
          <property name="readOnly">
           <bool>true</bool>
+         </property>
+         <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>1</horstretch>
+                 <verstretch>1</verstretch>
+             </sizepolicy>
          </property>
         </widget>
        </item>
@@ -177,10 +225,10 @@
        <item row="0" column="0">
         <widget class="QLabel" name="label_20">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+             </sizepolicy>
          </property>
          <property name="text">
           <string>Atomic Mass (amu):</string>
@@ -190,10 +238,10 @@
        <item row="0" column="1">
         <widget class="QLabel" name="label_21">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+             </sizepolicy>
          </property>
          <property name="text">
           <string>Debye Temp. (K):</string>
@@ -216,10 +264,10 @@
        <item row="1" column="0">
         <widget class="QDoubleSpinBox" name="spinAMU_deb">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                 <horstretch>1</horstretch>
+                 <verstretch>1</verstretch>
+             </sizepolicy>
          </property>
          <property name="maximum">
           <double>9999.000000000000000</double>
@@ -232,10 +280,10 @@
        <item row="1" column="1">
         <widget class="QDoubleSpinBox" name="spinTD_deb">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                 <horstretch>1</horstretch>
+                 <verstretch>1</verstretch>
+             </sizepolicy>
          </property>
          <property name="maximum">
           <double>9999.000000000000000</double>
@@ -251,10 +299,10 @@
        <item row="1" column="2">
         <widget class="QDoubleSpinBox" name="spinT_deb">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                 <horstretch>1</horstretch>
+                 <verstretch>1</verstretch>
+             </sizepolicy>
          </property>
          <property name="maximum">
           <double>9999.000000000000000</double>
@@ -270,10 +318,10 @@
        <item row="2" column="0">
         <widget class="QLabel" name="label_23">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+             </sizepolicy>
          </property>
          <property name="text">
           <string>Q Range (Å⁻¹):</string>
@@ -283,10 +331,10 @@
        <item row="2" column="1">
         <widget class="QDoubleSpinBox" name="spinMinQ_deb">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>1</horstretch>
+                 <verstretch>1</verstretch>
+             </sizepolicy>
          </property>
          <property name="decimals">
           <number>4</number>
@@ -299,10 +347,10 @@
        <item row="2" column="2">
         <widget class="QDoubleSpinBox" name="spinMaxQ_deb">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>1</horstretch>
+                 <verstretch>1</verstretch>
+             </sizepolicy>
          </property>
          <property name="decimals">
           <number>4</number>
@@ -318,10 +366,10 @@
        <item row="3" column="0">
         <widget class="QLabel" name="label_24">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+             </sizepolicy>
          </property>
          <property name="text">
           <string>RMS Atom. Displ. (Å):</string>
@@ -334,9 +382,9 @@
           <bool>true</bool>
          </property>
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
            <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
+           <verstretch>1</verstretch>
           </sizepolicy>
          </property>
          <property name="readOnly">
@@ -376,10 +424,10 @@
        <item row="0" column="1">
         <widget class="QDoubleSpinBox" name="spinAnad">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>1</horstretch>
+                 <verstretch>1</verstretch>
+             </sizepolicy>
          </property>
          <property name="decimals">
           <number>4</number>
@@ -395,10 +443,10 @@
        <item row="1" column="0">
         <widget class="QLabel" name="label_25">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+             </sizepolicy>
          </property>
          <property name="text">
           <string>kf Range (Å⁻¹):</string>
@@ -410,15 +458,21 @@
          <property name="text">
           <string>Analyser d (Å):</string>
          </property>
+         <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+             </sizepolicy>
+         </property>
         </widget>
        </item>
        <item row="1" column="1">
         <widget class="QDoubleSpinBox" name="spinMinkf">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>1</horstretch>
+                 <verstretch>1</verstretch>
+             </sizepolicy>
          </property>
          <property name="decimals">
           <number>4</number>
@@ -434,10 +488,10 @@
        <item row="1" column="2">
         <widget class="QDoubleSpinBox" name="spinMaxkf">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>1</horstretch>
+                 <verstretch>1</verstretch>
+             </sizepolicy>
          </property>
          <property name="decimals">
           <number>4</number>
@@ -465,6 +519,12 @@
          <property name="text">
           <string>Analyser Angle ϑ (deg):</string>
          </property>
+         <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+             </sizepolicy>
+         </property>
         </widget>
        </item>
        <item row="2" column="1">
@@ -472,12 +532,24 @@
          <property name="readOnly">
           <bool>true</bool>
          </property>
+         <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>1</horstretch>
+                 <verstretch>1</verstretch>
+             </sizepolicy>
+         </property>
         </widget>
        </item>
        <item row="2" column="2">
         <widget class="QLineEdit" name="editAngMax">
          <property name="readOnly">
           <bool>true</bool>
+         </property>
+         <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>1</horstretch>
+                 <verstretch>1</verstretch>
+             </sizepolicy>
          </property>
         </widget>
        </item>
@@ -491,10 +563,10 @@
        <item row="0" column="2">
         <widget class="QDoubleSpinBox" name="spinMax2Th">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>1</horstretch>
+                 <verstretch>1</verstretch>
+             </sizepolicy>
          </property>
          <property name="decimals">
           <number>4</number>
@@ -513,10 +585,10 @@
        <item row="0" column="0">
         <widget class="QLabel" name="label_26">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+             </sizepolicy>
          </property>
          <property name="text">
           <string>Scattering Angle 2ϑ Range (deg):</string>
@@ -526,10 +598,10 @@
        <item row="0" column="1">
         <widget class="QDoubleSpinBox" name="spinMin2Th">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>1</horstretch>
+                 <verstretch>1</verstretch>
+             </sizepolicy>
          </property>
          <property name="decimals">
           <number>4</number>
