@@ -1,5 +1,5 @@
 /**
- * Scan viewer
+ * scan viewer
  * @author Tobias Weber <tweber@ill.fr>
  * @date mar-2015 - 2020
  * @license GPLv2
@@ -54,6 +54,7 @@ public:
 
 	void SelectDir(const QString& path);
 
+
 private:
 	QSettings m_settings;
 
@@ -71,8 +72,10 @@ private:
 
 	FitParamDlg *m_pFitParamDlg = nullptr;
 
+
 private:
 	void SetAbout();
+
 
 protected:
 	void ClearPlot();
@@ -93,6 +96,7 @@ protected:
 
 	void ShowRawFiles(const std::vector<std::string>& files);
 
+
 protected slots:
 	void GenerateExternal(int iLang=0);
 
@@ -101,7 +105,7 @@ protected slots:
 	void PropSelected(QTableWidgetItem *pItem, QTableWidgetItem *pItemPrev);
 	void SelectDir();
 	void ChangedPath();
-	void DirWasModified(const QString&);
+	void DirWasModified();
 	void SearchProps(const QString&);
 
 	void XAxisSelected(int);

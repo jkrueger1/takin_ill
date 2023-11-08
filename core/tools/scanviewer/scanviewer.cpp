@@ -128,6 +128,7 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	QObject::connect(listFiles, &QListWidget::itemSelectionChanged, pThis, &ScanViewerDlg::FileSelected);
 	QObject::connect(editSearch, &QLineEdit::textEdited, pThis, &ScanViewerDlg::SearchProps);
 	QObject::connect(btnBrowse, &QToolButton::clicked, pThis, static_cast<void (ScanViewerDlg::*)()>(&ScanViewerDlg::SelectDir));
+	QObject::connect(btnRefresh, &QToolButton::clicked, pThis, static_cast<void (ScanViewerDlg::*)()>(&ScanViewerDlg::DirWasModified));
 	for(QLineEdit* pEdit : {editPolVec1, editPolVec2, editPolCur1, editPolCur2})
 		QObject::connect(pEdit, &QLineEdit::textEdited, pThis, &ScanViewerDlg::CalcPol);
 
@@ -189,7 +190,7 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	if(m_settings.contains("pol/cur2"))
 		editPolCur2->setText(m_settings.value("pol/cur2").toString());
 
-	m_bDoUpdate = 1;
+	m_bDoUpdate = true;
 	ChangedPath();
 
 #ifndef HAS_COMPLEX_ERF
@@ -198,7 +199,10 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 
 	if(m_settings.contains("geo"))
 		restoreGeometry(m_settings.value("geo").toByteArray());
+	if(m_settings.contains("splitter"))
+		splitter->restoreState(m_settings.value("splitter").toByteArray());
 }
+
 
 ScanViewerDlg::~ScanViewerDlg()
 {
@@ -238,8 +242,9 @@ void ScanViewerDlg::closeEvent(QCloseEvent* pEvt)
 	m_settings.setValue("pol/vec2", editPolVec2->text());
 	m_settings.setValue("pol/cur1", editPolCur1->text());
 	m_settings.setValue("pol/cur2", editPolCur2->text());
-	m_settings.setValue("geo", saveGeometry());
 	m_settings.setValue("last_dir", QString(m_strCurDir.c_str()));
+	m_settings.setValue("geo", saveGeometry());
+	m_settings.setValue("splitter", splitter->saveState());
 
 	// save recent directory list
 	QStringList lstDirs;
@@ -446,7 +451,7 @@ void ScanViewerDlg::FileSelected()
 
 	const std::wstring strPM = tl::get_spec_char_utf16("pm");  // +-
 
-	m_bDoUpdate = 0;
+	m_bDoUpdate = false;
 	int iIdxX=-1, iIdxY=-1, iIdxMon=-1, iCurIdx=0;
 	int iAlternateX = -1;
 	const tl::FileInstrBase<t_real>::t_vecColNames& vecColNames = m_pInstr->GetColNames();
@@ -507,7 +512,7 @@ void ScanViewerDlg::FileSelected()
 	if(iNumPol < 0) iNumPol = 0;
 	spinSkip->setValue(iNumPol);
 
-	m_bDoUpdate = 1;
+	m_bDoUpdate = true;
 
 	ShowProps();
 	PlotScan();
@@ -973,7 +978,7 @@ void ScanViewerDlg::ChangedPath()
 /**
  * the current directory has been modified externally
  */
-void ScanViewerDlg::DirWasModified(const QString& strDir)
+void ScanViewerDlg::DirWasModified()
 {
 	// get currently selected item
 	QString strTxt;
@@ -986,8 +991,7 @@ void ScanViewerDlg::DirWasModified(const QString& strDir)
 	// re-select previously selected item
 	if(pCur)
 	{
-		QList<QListWidgetItem*> lstItems = listFiles->findItems(
-			strTxt, Qt::MatchExactly);
+		QList<QListWidgetItem*> lstItems = listFiles->findItems(strTxt, Qt::MatchExactly);
 		if(lstItems.size())
 			listFiles->setCurrentItem(*lstItems.begin(), QItemSelectionModel::SelectCurrent);
 	}

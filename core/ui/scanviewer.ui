@@ -33,7 +33,7 @@
        <property name="spacing">
         <number>4</number>
        </property>
-       <item row="0" column="0" colspan="2">
+       <item row="0" column="0" colspan="3">
         <widget class="QListWidget" name="listFiles">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -55,7 +55,7 @@
        <item row="1" column="0" rowspan="2">
         <widget class="QComboBox" name="comboPath">
          <property name="toolTip">
-          <string>Current and recent directories.</string>
+          <string>Current and recent data directories.</string>
          </property>
          <property name="editable">
           <bool>true</bool>
@@ -69,6 +69,22 @@
         </widget>
        </item>
        <item row="1" column="1" rowspan="2">
+        <widget class="QToolButton" name="btnRefresh">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>Refresh current data directory.</string>
+         </property>
+         <property name="text">
+          <string>⭯</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2" rowspan="2">
         <widget class="QToolButton" name="btnBrowse">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -1146,6 +1162,7 @@
  <tabstops>
   <tabstop>listFiles</tabstop>
   <tabstop>comboPath</tabstop>
+  <tabstop>btnRefresh</tabstop>
   <tabstop>btnBrowse</tabstop>
   <tabstop>comboX</tabstop>
   <tabstop>comboY</tabstop>
