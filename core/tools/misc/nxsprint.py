@@ -273,7 +273,6 @@ class H5Loader:
 		print("\tScan start time:          %s" % self.starttime)
 		print("\tScan stop time:           %s" % self.endtime)
 		print("\tScan time:                %s = %d s" % (str(scan_duration), scantime))
-		print("\tTotal scan time:          %.2f s" % scantime)
 		print("\tActual counting time:     %.2f s = %.2f %%" % (counttime, counttime / scantime * 100.))
 		print("\tInstrument movement time: %.2f s = %.2f %%" % (movetime, movetime / scantime * 100.))
 
