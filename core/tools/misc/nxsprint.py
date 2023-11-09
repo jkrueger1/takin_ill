@@ -158,6 +158,7 @@ class H5Loader:
 		# get experiment infos
 		self.exptitle = self.get_str(entry, "title")
 		self.starttime = self.get_str(entry, "start_time")
+		self.endtime = self.get_str(entry, "end_time")
 		self.numor = self.get_dat(entry, "run_number")
 
 		# get sample infos
@@ -249,6 +250,34 @@ class H5Loader:
 		self.print_table(table_format = "plain")
 
 
+	#
+	# prints some statistics about the measurement
+	#
+	def print_statistics(self):
+		import datetime as dt
+
+		indices = np.array([np.where(self.columns == "Time")])
+
+		counttime = 0.
+		for time in self.data[:,indices]:
+			counttime += time[0][0][0]
+
+		start = dt.datetime.strptime(self.starttime, "%d-%b-%y %H:%M:%S")
+		end = dt.datetime.strptime(self.endtime, "%d-%b-%y %H:%M:%S")
+		scan_duration = end - start
+		scantime = scan_duration.total_seconds()
+
+		movetime = scantime - counttime
+
+		print("\nTotal time needed for scan")
+		print("\tScan start time:          %s" % self.starttime)
+		print("\tScan stop time:           %s" % self.endtime)
+		print("\tScan time:                %s = %d s" % (str(scan_duration), scantime))
+		print("\tTotal scan time:          %.2f s" % scantime)
+		print("\tActual counting time:     %.2f s = %.2f %%" % (counttime, counttime / scantime * 100.))
+		print("\tInstrument movement time: %.2f s = %.2f %%" % (movetime, movetime / scantime * 100.))
+
+
 #
 # loads TAS files from the command line and converts them
 #
@@ -258,6 +287,7 @@ def main(argv):
 			h5 = H5Loader(filename)
 			#h5.selected_columns = [ "QH", "QK", "QL", "EN" ]
 			h5.print_retro()
+			#h5.print_statistics()
 		except FileNotFoundError as err:
 			print(err, file = sys.stderr)
 
