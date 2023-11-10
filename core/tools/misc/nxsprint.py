@@ -12,6 +12,10 @@ import tabulate as tab
 import re
 
 
+print_retro = True
+print_statistics = False
+
+
 class H5Loader:
 	#
 	# get data out of an hdf5 entry
@@ -251,44 +255,78 @@ class H5Loader:
 
 
 	#
-	# prints some statistics about the measurement
+	# get some statistics about the measurement
 	#
-	def print_statistics(self):
-		import datetime as dt
-
+	def get_statistics(self):
 		indices = np.array([np.where(self.columns == "Time")])
 
-		counttime = 0.
+		count_time = 0.
 		for time in self.data[:,indices]:
-			counttime += time[0][0][0]
+			count_time += time[0][0][0]
+
+		import datetime as dt
 
 		start = dt.datetime.strptime(self.starttime, "%d-%b-%y %H:%M:%S")
 		end = dt.datetime.strptime(self.endtime, "%d-%b-%y %H:%M:%S")
 		scan_duration = end - start
-		scantime = scan_duration.total_seconds()
 
-		movetime = scantime - counttime
+		scan_time = scan_duration.total_seconds()
+		move_time = scan_time - count_time
 
-		print("\nTotal time needed for scan")
-		print("\tScan start time:          %s" % self.starttime)
-		print("\tScan stop time:           %s" % self.endtime)
-		print("\tScan time:                %s = %d s" % (str(scan_duration), scantime))
-		print("\tActual counting time:     %.2f s = %.2f %%" % (counttime, counttime / scantime * 100.))
-		print("\tInstrument movement time: %.2f s = %.2f %%" % (movetime, movetime / scantime * 100.))
+		return [ scan_duration, count_time, move_time ]
+
+
+	#
+	# prints some statistics about the measurement
+	#
+	def print_statistics(self, title, scan_duration, count_time, move_time):
+		scan_time = scan_duration.total_seconds()
+
+		print("\nTotal time needed for %s:" % title)
+		if self != None:
+			print("\tScan start time:          %s" % self.starttime)
+			print("\tScan stop time:           %s" % self.endtime)
+		print("\tScan time:                %d s = %.2f min = %.2f h = %s" % \
+			(scan_time, scan_time / 60., scan_time / 3600., str(scan_duration)))
+		print("\tActual counting time:     %.2f s = %.3f min = %.4f h = %.2f %%" % \
+			(count_time, count_time / 60., count_time / 3600., count_time / scan_time * 100.))
+		print("\tInstrument movement time: %.2f s = %.3f min = %.4f h = %.2f %%" % \
+			(move_time, move_time / 60., move_time / 3600., move_time / scan_time * 100.))
 
 
 #
 # loads TAS files from the command line and converts them
 #
 def main(argv):
-	for filename in argv[1:]:
+
+	total_scan_duration = None
+	total_count_time = 0.
+	total_move_time = 0.
+	files = argv[1:]
+
+	for filename in files:
 		try:
 			h5 = H5Loader(filename)
-			#h5.selected_columns = [ "QH", "QK", "QL", "EN" ]
-			h5.print_retro()
-			#h5.print_statistics()
+
+			if print_retro:
+				#h5.selected_columns = [ "QH", "QK", "QL", "EN" ]
+				h5.print_retro()
+
+			if print_statistics:
+				[scan_duration, count_time, move_time] = h5.get_statistics()
+				h5.print_statistics("scan %s" % h5.numor, scan_duration, count_time, move_time)
+
+				if total_scan_duration == None:
+					total_scan_duration = scan_duration
+				else:
+					total_scan_duration += scan_duration
+				total_count_time += count_time
+				total_move_time += move_time
 		except FileNotFoundError as err:
 			print(err, file = sys.stderr)
+
+	if print_statistics and len(files) > 1:
+		H5Loader.print_statistics(None, "all scans" , total_scan_duration, total_count_time, total_move_time)
 
 
 if __name__ == "__main__":
