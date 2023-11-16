@@ -871,18 +871,17 @@ public:
 			const t_indices indices_t = std::make_pair(term.atom2, term.atom1);
 
 			t_mat J_T = tl2::trans(J);
-			t_real factor = /*0.5*/ 1.;
 
 			// equations (14), (12), and (11) from (Toth 2015)
-			insert_or_add(J_Q, indices, factor * J *
+			insert_or_add(J_Q, indices, J *
 				std::exp(m_phase_sign * s_imag * s_twopi *
 					tl2::inner<t_vec_real>(term.dist, Qvec)));
-			insert_or_add(J_Q, indices_t, factor * J_T *
+			insert_or_add(J_Q, indices_t, J_T *
 				std::exp(m_phase_sign * s_imag * s_twopi *
 					tl2::inner<t_vec_real>(term.dist, -Qvec)));
 
-			insert_or_add(J_Q0, indices, factor * J);
-			insert_or_add(J_Q0, indices_t, factor * J_T);
+			insert_or_add(J_Q0, indices, J);
+			insert_or_add(J_Q0, indices_t, J_T);
 		}  // end of iteration over couplings
 
 		// create the hamiltonian of equation (25) and (26) from (Toth 2015)
@@ -944,8 +943,8 @@ public:
 				constexpr const t_real muB = tl2::mu_B<t_real>
 					/ tl2::meV<t_real> * tl2::tesla<t_real>;
 
-				A(i, i) -= 0.5 * muB * Bgv;
-				A_conj_mQ(i, i) -= 0.5 * muB * Bgv;
+				A(i, i) -= muB * Bgv;
+				A_conj_mQ(i, i) -= std::conj(muB * Bgv);
 			}
 		}  // end of iteration over i sites
 
