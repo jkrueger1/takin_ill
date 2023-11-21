@@ -73,7 +73,7 @@ struct Scan
 {
 	Sample sample;
 	Plane plane;
-	bool bKiFixed=0;
+	bool bKiFixed = false;
 	t_real_sc dKFix = 2.662;
 
 	std::string strTempCol = "TT";
@@ -122,13 +122,13 @@ struct Scan
 
 
 extern bool load_file(const std::vector<std::string>& vecFiles, Scan& scan,
-	bool bNormToMon = 1, const Filter& filter = Filter(),
-	bool bFlipCoords = 0, bool bUseFirstAndLastPoints = 0,
-	unsigned iScanAxis = 0, bool bVerbose = 1);
+	bool bNormToMon = true, const Filter& filter = Filter(),
+	bool bFlipCoords = false, bool bUseFirstAndLastPoints = false,
+	unsigned iScanAxis = 0, bool bVerbose = true);
 
 extern bool load_file(const char* pcFile, Scan& scan,
-	bool bNormToMon = 1, const Filter& filter = Filter(),
-	bool bFlipCoords = 0, bool bUseFirstAndLastPoints = 0);
+	bool bNormToMon = true, const Filter& filter = Filter(),
+	bool bFlipCoords = false, bool bUseFirstAndLastPoints = false);
 
 extern bool save_file(const char* pcFile, const Scan& sc);
 

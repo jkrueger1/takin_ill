@@ -67,6 +67,7 @@ void ConvoDlg::New()
 	editSlope->setText("0");
 	editOffs->setText("0");
 
+	m_scan = Scan();
 	ClearPlot1D();
 
 	setWindowTitle(s_strTitle.c_str());
@@ -205,7 +206,7 @@ void ConvoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 		return;
 	}
 
-	m_bAllowSqwReinit = 0;
+	m_bAllowSqwReinit = false;
 
 	for(std::size_t iCheck=0; iCheck<m_vecCheckBoxes.size(); ++iCheck)
 	{
@@ -247,7 +248,7 @@ void ConvoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 		QString qstrSqw = (*opSqw).c_str();
 		comboSqw->setCurrentIndex(comboSqw->findData(qstrSqw));
 
-		m_bAllowSqwReinit = 1;
+		m_bAllowSqwReinit = true;
 		QString qstrSqwConf = xml.Query<std::string>(strXmlRoot + "monteconvo/sqw_conf", "").c_str();
 		createSqwModel(qstrSqwConf);
 
@@ -261,7 +262,7 @@ void ConvoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 
 	if(checkScan->isChecked())
 		scanFileChanged(editScan->text());
-	m_bAllowSqwReinit = 1;
+	m_bAllowSqwReinit = true;
 }
 
 
@@ -431,7 +432,7 @@ void ConvoDlg::SaveResult(const QString* outfile)
 void ConvoDlg::LoadSettings()
 {
 	if(!m_pSett) return;
-	m_bAllowSqwReinit = 0;
+	m_bAllowSqwReinit = false;
 
 	for(std::size_t iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
 	{
@@ -470,10 +471,10 @@ void ConvoDlg::LoadSettings()
 
 	//if(editSqw->text() != "")
 	{
-		m_bAllowSqwReinit = 1;
+		m_bAllowSqwReinit = true;
 		createSqwModel(editSqw->text());
 	}
-	m_bAllowSqwReinit = 1;
+	m_bAllowSqwReinit = true;
 
 
 	if(m_pSett->contains("monteconvo/geo"))

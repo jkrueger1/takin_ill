@@ -77,6 +77,7 @@ class FileInstrBase
 		virtual t_real GetKFix() const = 0;
 		virtual bool IsKiFixed() const = 0;
 
+		virtual bool HasCol(const std::string& strName) const;
 		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) const = 0;
 		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) = 0;
 
@@ -178,7 +179,6 @@ class FilePsi : public FileInstrBase<_t_real>
 		const std::string& GetColName(std::size_t iCol) const { return m_vecColNames[iCol]; }
 		std::size_t GetColCount() const { return m_vecColNames.size(); }
 
-		bool HasCol(const std::string& strName) const;
 		const t_vecVals& GetCol(std::size_t iCol) const { return m_vecData[iCol]; }
 		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) const override;
 		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) override;

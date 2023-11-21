@@ -89,23 +89,6 @@ bool FileH5<t_real>::Load(const char* pcFile)
 		{
 			log_err("Cannot load column names.");
 			return false;
-
-			/*std::vector<int> axes;
-			std::vector<std::string> names, props;
-
-			bool ok1 = get_h5_vector(h5file, entry + "/data_scan/scanned_variables/variables_names/name", axes);
-			bool ok2 = get_h5_string_vector(h5file, entry + "/data_scan/scanned_variables/variables_names/name", names);
-			bool ok3 = get_h5_string_vector(h5file, entry + "/data_scan/scanned_variables/variables_names/property", props);
-
-			if(!ok1 || !ok2 || !ok3)
-			{
-				log_err("Cannot load column names in old format.");
-				return false;
-			}
-
-			m_vecCols.resize(axes.size());
-			for(std::size_t col=0; col<axes.size(); ++col)
-				m_vecCols[col] = axes[col] ? names[col] : props[col];*/
 		}
 
 		// get scanned variables
@@ -141,6 +124,14 @@ bool FileH5<t_real>::Load(const char* pcFile)
 				scanned_stddevs.push_back(dStd);
 			}
 		}
+
+		// add index column
+		m_vecCols.insert(m_vecCols.begin(), "Point_Index");
+		t_vecVals vals_idx;
+		vals_idx.reserve(GetScanCount());
+		for(std::size_t idx=0; idx<GetScanCount(); ++idx)
+			vals_idx.push_back(idx);
+		m_data.emplace(m_data.begin(), std::move(vals_idx));
 
 		// if Q, E coordinates are among the scan variables, move them to the front
 		auto iterQL = std::find(m_scanned_vars.begin(), m_scanned_vars.end(), "QL");
@@ -312,6 +303,17 @@ bool FileH5<t_real>::Load(const char* pcFile)
 			{
 				m_scanned_vars.erase(iterVar);
 				m_scanned_vars.insert(m_scanned_vars.begin(), scanned_var);
+			}
+		}
+
+		// use first column in case no scan variables are given
+		if(!m_scanned_vars.size())
+		{
+			log_warn("Could not determine scan variable.");
+			if(m_vecCols.size() >= 1)
+			{
+				log_warn("Using first column: \"", m_vecCols[0], "\".");
+				m_scanned_vars.push_back(m_vecCols[0]);
 			}
 		}
 
@@ -673,7 +675,6 @@ template<class t_real> std::string FileH5<t_real>::GetTimestamp() const
 
 template<class t_real> std::string FileH5<t_real>::GetSampleName() const { return ""; }
 template<class t_real> std::string FileH5<t_real>::GetSpacegroup() const { return ""; }
-
 
 }
 

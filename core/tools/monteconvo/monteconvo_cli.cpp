@@ -242,7 +242,7 @@ static bool start_convo_1d(const ConvoConfig& cfg, const tl::Prop<std::string>& 
 	std::shared_ptr<SqwBase> pSqw = create_sqw_model(cfg.sqw, cfg.sqw_conf);
 	if(!pSqw)
 		return false;
-	if(!load_sqw_params(pSqw.get(), xml, g_strXmlRoot+"monteconvo/"))
+	if(!load_sqw_params(pSqw.get(), xml, g_strXmlRoot + "monteconvo/"))
 		return false;
 
 	Filter filter;
@@ -252,6 +252,14 @@ static bool start_convo_1d(const ConvoConfig& cfg, const tl::Prop<std::string>& 
 	Scan scan;
 	if(cfg.has_scanfile)
 	{
+		// optional counter and monitor overrides
+		boost::optional<std::string> optCtr = xml.QueryOpt<std::string>(g_strXmlRoot + "convofit/counter");
+		boost::optional<std::string> optMon = xml.QueryOpt<std::string>(g_strXmlRoot + "convofit/monitor");
+		if(optCtr)
+			scan.strCntCol = *optCtr;
+		if(optMon)
+			scan.strMonCol = *optMon;
+
 		if(!load_scan_file(cfg.scanfile, scan, cfg.flip_coords, filter))
 		{
 			tl::log_err("Cannot load scan(s) \"", cfg.scanfile, "\".");
@@ -277,7 +285,7 @@ static bool start_convo_1d(const ConvoConfig& cfg, const tl::Prop<std::string>& 
 	tl::Stopwatch<t_real> watch;
 	watch.start();
 
-	bool bScanAxisFound = 0;
+	bool bScanAxisFound = false;
 	int iScanAxisIdx = 0;
 	std::string strScanVar = "";
 	std::vector<std::vector<t_real>> vecAxes;
@@ -907,7 +915,7 @@ int monteconvo_main(int argc, char** argv)
 			opts::value<decltype(g_iMaxThreads)>(&g_iMaxThreads),
 			"maximum number of threads")));
 		// dummy arg if launched from takin executable
-		bool bStartedFromTakin = 0;
+		bool bStartedFromTakin = false;
 #ifndef MONTECONVO_STANDALONE
 		args.add(boost::shared_ptr<opts::option_description>(
 			new opts::option_description("convosim",
@@ -987,7 +995,7 @@ int monteconvo_main(int argc, char** argv)
 		tl::Stopwatch<t_real> watch;
 		watch.start();
 
-		bool ok = 0;
+		bool ok = false;
 		if(cfg.scan_2d)
 		{
 			tl::log_info("Performing a 2d convolution simulation.");

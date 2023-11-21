@@ -345,6 +345,21 @@ void FileInstrBase<t_real>::SmoothData(const std::string& strCol,
 
 
 template<class t_real>
+bool FileInstrBase<t_real>::HasCol(const std::string& strName) const
+{
+	const t_vecColNames& cols = GetColNames();
+
+	for(std::size_t i=0; i<cols.size(); ++i)
+	{
+		if(str_to_lower(cols[i]) == str_to_lower(strName))
+			return true;
+	}
+
+	return false;
+}
+
+
+template<class t_real>
 void FileInstrBase<t_real>::ParsePolData()
 {}
 

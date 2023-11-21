@@ -32,6 +32,7 @@
 #define EPS_RLU 1e-3
 
 
+
 ResoFocus get_reso_focus(int iFocMono, int iFocAna)
 {
 	unsigned ifocMode = unsigned(ResoFocus::FOC_UNCHANGED);
@@ -49,8 +50,7 @@ ResoFocus get_reso_focus(int iFocMono, int iFocAna)
 
 
 
-bool load_scan_file(const std::string& _strFile, Scan& scan,
-	bool bFlipAxis, const Filter& filter)
+bool load_scan_file(const std::string& _strFile, Scan& scan, bool bFlipAxis, const Filter& filter)
 {
 	std::string strFile = _strFile;
 	tl::trim(strFile);
@@ -61,8 +61,7 @@ bool load_scan_file(const std::string& _strFile, Scan& scan,
 	tl::get_tokens<std::string, std::string>(strFile, ";", vecFiles);
 	std::for_each(vecFiles.begin(), vecFiles.end(), [](std::string& str){ tl::trim(str); });
 
-	scan = Scan();
-	bool bLoaded = ::load_file(vecFiles, scan, 1, filter, bFlipAxis);
+	bool bLoaded = ::load_file(vecFiles, scan, true, filter, bFlipAxis);
 
 	// if file was not found, alternatively look in global paths
 	if(!bLoaded)
@@ -74,7 +73,7 @@ bool load_scan_file(const std::string& _strFile, Scan& scan,
 			for(const std::string& _strFile : vecFiles)
 				_vecFiles.push_back(strGlobPath + "/" + _strFile);
 
-			if((bLoaded = ::load_file(_vecFiles, scan, 1, filter, bFlipAxis)))
+			if((bLoaded = ::load_file(_vecFiles, scan, true, filter, bFlipAxis)))
 				break;
 		}
 	}

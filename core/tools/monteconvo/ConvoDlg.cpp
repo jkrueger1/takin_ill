@@ -389,6 +389,10 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	{ scanFileChanged(editScan->text()); });
 	connect(editFilterVal, &QLineEdit::textChanged, this, [this]() -> void
 	{ scanFileChanged(editScan->text()); });
+	connect(editCounter, &QLineEdit::textChanged, this, [this]() -> void
+	{ scanFileChanged(editScan->text()); });
+	connect(editMonitor, &QLineEdit::textChanged, this, [this]() -> void
+	{ scanFileChanged(editScan->text()); });
 
 	connect(editScale, &QLineEdit::textChanged, this, &ConvoDlg::scaleChanged);
 	connect(editSlope, &QLineEdit::textChanged, this, &ConvoDlg::scaleChanged);
@@ -704,7 +708,7 @@ void ConvoDlg::coordFlipToggled(bool bChecked)
 
 void ConvoDlg::scanFileChanged(const QString& qstrFile)
 {
-	m_bUseScan = 0;
+	m_bUseScan = false;
 	if(!checkScan->isChecked())
 		return;
 
@@ -715,6 +719,12 @@ void ConvoDlg::scanFileChanged(const QString& qstrFile)
 			editFilterCol->text().toStdString(),
 			editFilterVal->text().toStdString());
 	}
+
+	m_scan = Scan();
+
+	// optional counter and monitor overrides
+	m_scan.strCntCol = editCounter->text().toStdString();
+	m_scan.strMonCol = editMonitor->text().toStdString();
 
 	if(!load_scan_file(qstrFile.toStdString(), m_scan, checkFlip->isChecked(), filter))
 	{
@@ -728,23 +738,21 @@ void ConvoDlg::scanFileChanged(const QString& qstrFile)
 		return;
 	}
 
-	const ScanPoint& ptBegin = *m_scan.vecPoints.cbegin();
-	const ScanPoint& ptEnd = *m_scan.vecPoints.crbegin();
-
+	// get scan start and end coordinates
 	comboFixedK->setCurrentIndex(m_scan.bKiFixed ? 0 : 1);
 	spinKfix->setValue(m_scan.dKFix);
 
-	spinStartH->setValue(ptBegin.h);
-	spinStartK->setValue(ptBegin.k);
-	spinStartL->setValue(ptBegin.l);
-	spinStartE->setValue(ptBegin.E / tl::get_one_meV<t_real>());
+	spinStartH->setValue(m_scan.vecScanOrigin[0]);
+	spinStartK->setValue(m_scan.vecScanOrigin[1]);
+	spinStartL->setValue(m_scan.vecScanOrigin[2]);
+	spinStartE->setValue(m_scan.vecScanOrigin[3]);
 
-	spinStopH->setValue(ptEnd.h);
-	spinStopK->setValue(ptEnd.k);
-	spinStopL->setValue(ptEnd.l);
-	spinStopE->setValue(ptEnd.E / tl::get_one_meV<t_real>());
+	spinStopH->setValue(m_scan.vecScanOrigin[0] + m_scan.vecScanDir[0]);
+	spinStopK->setValue(m_scan.vecScanOrigin[1] + m_scan.vecScanDir[1]);
+	spinStopL->setValue(m_scan.vecScanOrigin[2] + m_scan.vecScanDir[2]);
+	spinStopE->setValue(m_scan.vecScanOrigin[3] + m_scan.vecScanDir[3]);
 
-	m_bUseScan = 1;
+	m_bUseScan = true;
 }
 
 

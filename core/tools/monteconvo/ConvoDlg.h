@@ -56,8 +56,8 @@
 #include "TASReso.h"
 
 
-#define CONVO_MAX_CURVES		32
-#define CONVO_DISP_CURVE_START 		3
+#define CONVO_MAX_CURVES          32
+#define CONVO_DISP_CURVE_START    3
 
 
 
@@ -72,13 +72,13 @@ protected:
 	SqwParamDlg *m_pSqwParamDlg = nullptr;
 	FavDlg *m_pFavDlg = nullptr;
 
-	bool m_bAllowSqwReinit = 1;
+	bool m_bAllowSqwReinit = true;
 	std::shared_ptr<SqwBase> m_pSqw;
 	std::vector<t_real_reso> m_vecQ, m_vecS, m_vecScaledS;
 	std::vector<std::vector<t_real_reso>> m_vecvecQ, m_vecvecE, m_vecvecW;
 	std::unique_ptr<QwtPlotWrapper> m_plotwrap, m_plotwrap2d;
 
-	bool m_bUseScan = 0;
+	bool m_bUseScan = false;
 	Scan m_scan;
 
 	static const std::string s_strTitle;
@@ -161,10 +161,10 @@ protected slots:
 
 	void SaveResult(const QString* outfile = nullptr);
 
-	void Start();		// convolution
-	void StartFit();	// convolution fit
-	void StartDisp();	// plot dispersion
-	void Stop();		// stop convo
+	void Start();       // convolution
+	void StartFit();    // convolution fit
+	void StartDisp();   // plot dispersion
+	void Stop();        // stop convo
 
 	void ChangeHK();
 	void ChangeHL();
@@ -187,7 +187,7 @@ protected slots:
 
 
 public:
-	ConvoDlg(QWidget* pParent=0, QSettings* pSett=0);
+	ConvoDlg(QWidget* pParent=nullptr, QSettings* pSett=nullptr);
 	virtual ~ConvoDlg();
 
 

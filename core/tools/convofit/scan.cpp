@@ -41,6 +41,7 @@
 #endif
 
 
+
 /**
  * saving a scan file
  */
@@ -68,8 +69,8 @@ bool save_file(const char* pcFile, const Scan& sc)
 	ofstr << "#\n";
 
 	ofstr << std::left << std::setw(21) << "# x"
-		<< std::left << std::setw(21) << "counts"
-		<< std::left << std::setw(21) << "count errors"
+		<< std::left << std::setw(21) << "counter"
+		<< std::left << std::setw(21) << "counter errors"
 		<< std::left << std::setw(21) << "monitor"
 		<< std::left << std::setw(21) << "monitor errors" << "\n";
 
@@ -85,6 +86,7 @@ bool save_file(const char* pcFile, const Scan& sc)
 
 	return true;
 }
+
 
 
 /**
@@ -120,20 +122,49 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 	}
 
 
-	std::string strCountVar = pInstr->GetCountVar();	// defaults
+	// defaults
+	std::string strCountVar = pInstr->GetCountVar();
 	std::string strMonVar = pInstr->GetMonVar();
 	std::string strCountErr = pInstr->GetCountErr();
 	std::string strMonErr = pInstr->GetMonErr();
 
-	if(scan.strCntCol != "") strCountVar = scan.strCntCol;	// overrides
-	if(scan.strMonCol != "") strMonVar = scan.strMonCol;
-	if(scan.strCntErrCol != "") strCountErr = scan.strCntErrCol;
-	if(scan.strMonErrCol != "") strMonErr = scan.strMonErrCol;
+	// overrides
+	if(scan.strCntCol != "")
+	{
+		if(pInstr->HasCol(scan.strCntCol))
+			strCountVar = scan.strCntCol;
+		else
+			tl::log_err("Invalid counter column \"", scan.strCntCol, "\", using default: \"", strCountVar, "\".");
+	}
+
+	if(scan.strMonCol != "")
+	{
+		if(pInstr->HasCol(scan.strMonCol))
+			strMonVar = scan.strMonCol;
+		else
+			tl::log_err("Invalid monitor column \"", scan.strMonCol, "\", using default: \"", strMonVar, "\".");
+	}
+
+	if(scan.strCntErrCol != "")
+	{
+		if(pInstr->HasCol(scan.strCntErrCol))
+			strCountErr = scan.strCntErrCol;
+		else
+			tl::log_err("Invalid counter error column \"", scan.strCntErrCol, "\", using default: \"", strCountErr, "\".");
+	}
+
+	if(scan.strMonErrCol != "")
+	{
+		if(pInstr->HasCol(scan.strMonErrCol))
+			strMonErr = scan.strMonErrCol;
+		else
+			tl::log_err("Invalid monitor error column \"", scan.strMonErrCol, "\", using default: \"", strMonErr, "\".");
+	}
 
 	scan.vecCts = pInstr->GetCol(strCountVar);
 	scan.vecMon = pInstr->GetCol(strMonVar);
 
-	tl::log_info("Counts column: ", strCountVar, "\nMonitor column: ", strMonVar, ".");
+	tl::log_info("Counter column: ", strCountVar, "\nMonitor column: ", strMonVar, ".");
 
 	// error
 	std::function<t_real_sc(t_real_sc)> funcErr = [](t_real_sc d) -> t_real_sc
@@ -147,7 +178,7 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 	{
 		// use the given counter error column
 		scan.vecCtsErr = pInstr->GetCol(strCountErr);
-		tl::log_info("Counts error column: ", strCountErr, ".");
+		tl::log_info("Counter error column: ", strCountErr, ".");
 	}
 	else
 	{
@@ -254,9 +285,10 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 
 		ScanPoint pt;
 		pt.h = sc[0]; pt.k = sc[1]; pt.l = sc[2];
-		pt.ki = sc[3]/tl::get_one_angstrom<t_real_sc>();
-		pt.kf = sc[4]/tl::get_one_angstrom<t_real_sc>();
-		pt.Ei = tl::k2E(pt.ki); pt.Ef = tl::k2E(pt.kf);
+		pt.ki = sc[3] / tl::get_one_angstrom<t_real_sc>();
+		pt.kf = sc[4] / tl::get_one_angstrom<t_real_sc>();
+		pt.Ei = tl::k2E(pt.ki);
+		pt.Ef = tl::k2E(pt.kf);
 		pt.E = pt.Ei - pt.Ef;
 
 		// component-wise minima and maxima
@@ -284,7 +316,6 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 	}
 
 
-	// TODO: find start and end point of scan when the points are unsorted
 	const ScanPoint* ptBegin = &ptMin;
 	const ScanPoint* ptEnd = &ptMax;
 
@@ -305,10 +336,9 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 	scan.vecScanDir[2] = ptEnd->l - ptBegin->l;
 	scan.vecScanDir[3] = (ptEnd->E - ptBegin->E) / tl::get_one_meV<t_real_sc>();
 
+	// determine principal scan axis
 	const t_real_sc dEps = 0.01;
 
-
-	// principal scan axis
 	for(unsigned iAx=0; iAx<4; ++iAx)
 		scan.vecMainScanDir[iAx] = 0.;
 
@@ -426,6 +456,7 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 
 	return true;
 }
+
 
 
 /**

@@ -559,19 +559,6 @@ FilePsi<t_real>::GetCol(const std::string& strName, std::size_t *pIdx)
 
 
 template<class t_real>
-bool FilePsi<t_real>::HasCol(const std::string& strName) const
-{
-	for(std::size_t i=0; i<m_vecColNames.size(); ++i)
-	{
-		if(str_to_lower(m_vecColNames[i]) == str_to_lower(strName))
-			return true;
-	}
-
-	return false;
-}
-
-
-template<class t_real>
 void FilePsi<t_real>::PrintParams(std::ostream& ostr) const
 {
 	for(const typename t_mapParams::value_type& val : m_mapParams)
@@ -769,13 +756,13 @@ std::array<t_real, 5> FilePsi<t_real>::GetScanHKLKiKf(std::size_t i) const
 	const char *E = "EN";
 
 	// alternate column names
-	if(!HasCol("QH") && HasCol("H"))
+	if(!FileInstrBase<t_real>::HasCol("QH") && FileInstrBase<t_real>::HasCol("H"))
 		h = "H";
-	if(!HasCol("QK") && HasCol("K"))
+	if(!FileInstrBase<t_real>::HasCol("QK") && FileInstrBase<t_real>::HasCol("K"))
 		k = "K";
-	if(!HasCol("QL") && HasCol("L"))
+	if(!FileInstrBase<t_real>::HasCol("QL") && FileInstrBase<t_real>::HasCol("L"))
 		l = "L";
-	if(!HasCol("EN") && HasCol("E"))
+	if(!FileInstrBase<t_real>::HasCol("EN") && FileInstrBase<t_real>::HasCol("E"))
 		E = "E";
 
 	return FileInstrBase<t_real>::GetScanHKLKiKf(h, k, l, E, i);
