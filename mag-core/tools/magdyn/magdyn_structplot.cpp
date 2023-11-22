@@ -37,7 +37,7 @@ using namespace tl2_ops;
 
 
 /**
- * show the 3d view of the atomic structure
+ * show the 3d view of the magnetic structure
  */
 void MagDynDlg::ShowStructurePlot()
 {
@@ -132,7 +132,7 @@ void MagDynDlg::StructPlotPickerIntersection(
 
 	m_structplot_cur_obj = objIdx;
 
-	// look for atom sites
+	// look for magnetic sites
 	if(auto iter_atoms = m_structplot_atoms.find(objIdx);
 		iter_atoms != m_structplot_atoms.end())
 	{
@@ -159,7 +159,7 @@ void MagDynDlg::StructPlotPickerIntersection(
 
 
 /**
- * delete currently selected atom or bond
+ * delete currently selected magnetic site or bond
  */
 void MagDynDlg::StructPlotDelete()
 {
@@ -319,8 +319,8 @@ void MagDynDlg::StructPlotSync()
 		return;
 
 	// get sites and terms
-	const auto& sites = m_dyn.GetAtomSites();
-	const auto& sites_calc = m_dyn.GetAtomSitesCalc();
+	const auto& sites = m_dyn.GetMagneticSites();
+	const auto& sites_calc = m_dyn.GetMagneticSitesCalc();
 	const auto& terms = m_dyn.GetExchangeTerms();
 	const auto& terms_calc = m_dyn.GetExchangeTermsCalc();
 	const auto& field = m_dyn.GetExternalField();
@@ -330,7 +330,7 @@ void MagDynDlg::StructPlotSync()
 	//const auto [sc_min, sc_max] = m_dyn.GetSupercellMinMax();
 
 
-	// clear old atoms
+	// clear old magnetic sites
 	for(const auto& [atom_idx, atom_site] : m_structplot_atoms)
 	{
 		m_structplot->GetRenderer()->RemoveObject(atom_idx);
@@ -348,12 +348,12 @@ void MagDynDlg::StructPlotSync()
 	m_structplot_terms.clear();
 
 
-	// hashes of already seen atom sites
+	// hashes of already seen magnetic sites
 	std::unordered_set<std::size_t> atom_hashes;
 
 
-	// calculate the hash of an atom site
-	auto get_atom_hash = [](const t_magdyn::AtomSite& site,
+	// calculate the hash of a magnetic site
+	auto get_atom_hash = [](const t_magdyn::MagneticSite& site,
 		t_real_gl sc_x, t_real_gl sc_y, t_real_gl sc_z)
 			-> std::size_t
 	{
@@ -371,9 +371,9 @@ void MagDynDlg::StructPlotSync()
 	};
 
 
-	// check if the atom site has already been seen
+	// check if the magnetic site has already been seen
 	auto atom_not_yet_seen = [&atom_hashes, &get_atom_hash](
-		const t_magdyn::AtomSite& site,
+		const t_magdyn::MagneticSite& site,
 		t_real_gl sc_x, t_real_gl sc_y, t_real_gl sc_z)
 	{
 		std::size_t hash = get_atom_hash(site, sc_x, sc_y, sc_z);
@@ -381,12 +381,12 @@ void MagDynDlg::StructPlotSync()
 	};
 
 
-	// add an atom site to the plot
+	// add a magnetic site to the plot
 	auto add_atom_site = [this, &atom_hashes, &get_atom_hash,
 		is_incommensurate, &ordering, &rotaxis](
 		std::size_t site_idx,
-		const t_magdyn::AtomSite& site,
-		const t_magdyn::AtomSiteCalc& site_calc,
+		const t_magdyn::MagneticSite& site,
+		const t_magdyn::MagneticSiteCalc& site_calc,
 		const t_magdyn::ExternalField& field,
 		t_real_gl sc_x, t_real_gl sc_y, t_real_gl sc_z)
 	{
@@ -395,7 +395,7 @@ void MagDynDlg::StructPlotSync()
 		int _sc_y = int(std::round(sc_y));
 		int _sc_z = int(std::round(sc_z));
 
-		// default colour for unit cell atom
+		// default colour for unit cell magnetic sites
 		t_real_gl rgb[3] {0., 0., 1.};
 
 		// get user-defined colour
@@ -403,7 +403,7 @@ void MagDynDlg::StructPlotSync()
 		if(site_idx < std::size_t(m_sitestab->rowCount()))
 			user_col = get_colour<t_real_gl>(m_sitestab->item(site_idx, COL_SITE_RGB)->text().toStdString(), rgb);
 
-		// no user-defined colour -> use default for super-cell atom
+		// no user-defined colour -> use default for super-cell magnetic sites
 		if(!user_col)
 		{
 			if(_sc_x == 0 && _sc_y == 0 && _sc_z == 0)
@@ -484,13 +484,13 @@ void MagDynDlg::StructPlotSync()
 		m_structplot->GetRenderer()->SetObjectLabel(obj, site.name);
 		//m_structplot->GetRenderer()->SetObjectLabel(arrow, site.name);
 
-		// mark the atom as already seen
+		// mark the magnetic site as already seen
 		std::size_t hash = get_atom_hash(site, sc_x, sc_y, sc_z);
 		atom_hashes.insert(hash);
 	};
 
 
-	// iterate and add unit cell atom sites
+	// iterate and add unit cell magnetic sites
 	for(std::size_t site_idx=0; site_idx<sites.size(); ++site_idx)
 	{
 		add_atom_site(site_idx, sites[site_idx],
@@ -505,12 +505,12 @@ void MagDynDlg::StructPlotSync()
 		const auto& term = terms[term_idx];
 		const auto& term_calc = terms_calc[term_idx];
 
-		if(term.atom1 >= sites.size() || term.atom2 >= sites.size())
+		if(term.site1 >= sites.size() || term.site2 >= sites.size())
 			continue;
 
-		const auto& site1 = sites[term.atom1];
-		const auto& site2 = sites[term.atom2];
-		const auto& site2_calc = sites_calc[term.atom2];
+		const auto& site1 = sites[term.site1];
+		const auto& site2 = sites[term.site2];
+		const auto& site2_calc = sites_calc[term.site2];
 
 		t_real_gl sc_x = t_real_gl(term.dist[0]);
 		t_real_gl sc_y = t_real_gl(term.dist[1]);
@@ -532,14 +532,14 @@ void MagDynDlg::StructPlotSync()
 			m_structplot_terms.emplace(std::make_pair(obj, std::move(terminfo)));
 		}
 
-		// connection from unit cell atom site...
+		// connection from unit cell magnetic site...
 		const t_vec_gl pos1_vec = tl2::create<t_vec_gl>({
 			t_real_gl(site1.pos[0]),
 			t_real_gl(site1.pos[1]),
 			t_real_gl(site1.pos[2]),
 		});
 
-		// ... to atom in super cell
+		// ... to magnetic site in super cell
 		const t_vec_gl pos2_vec = tl2::create<t_vec_gl>({
 			t_real_gl(site2.pos[0]) + sc_x,
 			t_real_gl(site2.pos[1]) + sc_y,
@@ -548,7 +548,7 @@ void MagDynDlg::StructPlotSync()
 
 		// add the supercell site if it hasn't been inserted yet
 		if(atom_not_yet_seen(site2, sc_x, sc_y, sc_z))
-			add_atom_site(term.atom2, site2, site2_calc, field, sc_x, sc_y, sc_z);
+			add_atom_site(term.site2, site2, site2_calc, field, sc_x, sc_y, sc_z);
 
 		t_vec_gl dir_vec = pos2_vec - pos1_vec;
 		t_real_gl dir_len = tl2::norm<t_vec_gl>(dir_vec);

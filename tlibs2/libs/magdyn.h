@@ -151,15 +151,15 @@ t_mat get_polarisation(int channel = 0, bool in_chiral_basis = true)
 // input- and output struct templates
 // ----------------------------------------------------------------------------
 /**
- * magnetic atom sites
+ * magnetic sites
  */
 template<class t_vec_real, class t_mat, class t_real, class t_size>
-struct t_AtomSite
+struct t_MagneticSite
 {
 	std::string name{};          // identifier
 	t_size index{};              // index
 
-	t_vec_real pos{};            // atom position
+	t_vec_real pos{};            // magnetic site position
 
 	std::string spin_dir[3];     // expression for spin direction
 	std::string spin_ortho[3];   // spin orthogonal plane
@@ -173,7 +173,7 @@ struct t_AtomSite
  * temporary per-site calculation results
  */
 template<class t_vec>
-struct t_AtomSiteCalc
+struct t_MagneticSiteCalc
 {
 	t_vec spin_dir{};        // spin direction
 
@@ -184,7 +184,7 @@ struct t_AtomSiteCalc
 
 
 /**
- * couplings between magnetic atoms
+ * couplings between magnetic sites
  */
 template<class t_vec_real, class t_size>
 struct t_ExchangeTerm
@@ -192,13 +192,13 @@ struct t_ExchangeTerm
 	std::string name{};      // identifier
 	t_size index{};          // index
 
-	t_size atom1{};          // atom 1 index
-	t_size atom2{};          // atom 2 index
+	t_size site1{};          // index of first magnetic site
+	t_size site2{};          // index of second magnetic site
 	t_vec_real dist{};       // distance between unit cells
 
 	std::string J{};         // parsable expression for Heisenberg interaction
 	std::string dmi[3];      // parsable expression for Dzyaloshinskij-Moriya interaction
-	std::string Jgen[3][3];  // parsable expression for a general interaction
+	std::string Jgen[3][3];  // parsable expression for a general exchange interaction
 };
 
 
@@ -210,7 +210,7 @@ struct t_ExchangeTermCalc
 {
 	t_cplx J{};              // Heisenberg interaction
 	t_vec dmi{};             // Dzyaloshinskij-Moriya interaction
-	t_mat Jgen{};            // general interaction
+	t_mat Jgen{};            // general exchange interaction
 };
 
 
@@ -279,8 +279,8 @@ public:
 	// --------------------------------------------------------------------
 	// structs
 	// --------------------------------------------------------------------
-	using AtomSite = t_AtomSite<t_vec_real, t_mat, t_real, t_size>;
-	using AtomSiteCalc = t_AtomSiteCalc<t_vec>;
+	using MagneticSite = t_MagneticSite<t_vec_real, t_mat, t_real, t_size>;
+	using MagneticSiteCalc = t_MagneticSiteCalc<t_vec>;
 	using ExchangeTerm = t_ExchangeTerm<t_vec_real, t_size>;
 	using ExchangeTermCalc = t_ExchangeTermCalc<t_mat, t_vec, t_cplx>;
 	using ExternalField = t_ExternalField<t_vec_real, t_real>;
@@ -306,7 +306,7 @@ public:
 	void Clear()
 	{
 		ClearVariables();
-		ClearAtomSites();
+		ClearMagneticSites();
 		ClearExchangeTerms();
 		ClearExternalField();
 
@@ -331,9 +331,9 @@ public:
 
 
 	/**
-	 * clear all atom sites
+	 * clear all magnetic sites
 	 */
-	void ClearAtomSites()
+	void ClearMagneticSites()
 	{
 		m_sites.clear();
 		m_sites_calc.clear();
@@ -366,8 +366,8 @@ public:
 	// getter
 	// --------------------------------------------------------------------
 	const std::vector<Variable>& GetVariables() const { return m_variables; }
-	const std::vector<AtomSite>& GetAtomSites() const { return m_sites; }
-	const std::vector<AtomSiteCalc>& GetAtomSitesCalc() const { return m_sites_calc; }
+	const std::vector<MagneticSite>& GetMagneticSites() const { return m_sites; }
+	const std::vector<MagneticSiteCalc>& GetMagneticSitesCalc() const { return m_sites_calc; }
 	const std::vector<ExchangeTerm>& GetExchangeTerms() const { return m_exchange_terms; }
 	const std::vector<ExchangeTermCalc>& GetExchangeTermsCalc() const { return m_exchange_terms_calc; }
 
@@ -386,11 +386,11 @@ public:
 
 
 	/**
-	 * get number of atom sites with the given name (to check if the name is unique)
+	 * get number of magnetic sites with the given name (to check if the name is unique)
 	 */
-	std::vector<const AtomSite*> FindAtomSites(const std::string& name) const
+	std::vector<const MagneticSite*> FindMagneticSites(const std::string& name) const
 	{
-		std::vector<const AtomSite*> sites;
+		std::vector<const MagneticSite*> sites;
 
 		for(const auto& site : m_sites)
 		{
@@ -493,11 +493,11 @@ public:
 	}
 
 
-	void AddAtomSite(AtomSite&& site, bool set_index = true)
+	void AddMagneticSite(MagneticSite&& site, bool set_index = true)
 	{
 		if(set_index)
-			site.index = GetAtomSites().size();
-		m_sites.emplace_back(std::forward<AtomSite&&>(site));
+			site.index = GetMagneticSites().size();
+		m_sites.emplace_back(std::forward<MagneticSite&&>(site));
 	}
 
 
@@ -553,9 +553,9 @@ public:
 	// calculation functions
 	// --------------------------------------------------------------------
 	/**
-	 * calculate the spin rotation trafo for the atom sites
+	 * calculate the spin rotation trafo for the magnetic sites
 	 */
-	void CalcAtomSites()
+	void CalcMagneticSites()
 	{
 		const t_size num_sites = m_sites.size();
 		if(num_sites == 0)
@@ -593,8 +593,8 @@ public:
 		{
 			try
 			{
-				const AtomSite& site = m_sites[site_idx];
-				AtomSiteCalc site_calc{};
+				const MagneticSite& site = m_sites[site_idx];
+				MagneticSiteCalc site_calc{};
 				bool has_explicit_uv = true;
 
 				site_calc.spin_dir = tl2::zero<t_vec>(3);
@@ -740,7 +740,7 @@ public:
 				}
 
 
-				// general interaction
+				// general exchange interaction
 				calc.Jgen = tl2::zero<t_mat>(3, 3);
 
 				for(t_size i=0; i<calc.Jgen.size1(); ++i)
@@ -780,7 +780,7 @@ public:
 	{
 		for(t_size site_idx=0; site_idx<m_sites.size(); ++site_idx)
 		{
-			AtomSite& site = m_sites[site_idx];
+			MagneticSite& site = m_sites[site_idx];
 			site.index = site_idx;
 		}
 
@@ -794,7 +794,7 @@ public:
 
 	/**
 	 * get the hamiltonian at the given momentum
-	 * (CalcAtomSites() needs to be called once before this function)
+	 * (CalcMagneticSites() needs to be called once before this function)
 	 * @note implements the formalism given by (Toth 2015)
 	 * @note a first version for a simplified ferromagnetic dispersion was based on (Heinsdorf 2021)
 	 */
@@ -820,7 +820,7 @@ public:
 			const ExchangeTerm& term = m_exchange_terms[term_idx];
 			const ExchangeTermCalc& term_calc = m_exchange_terms_calc[term_idx];
 
-			if(term.atom1 >= num_sites || term.atom2 >= num_sites)
+			if(term.site1 >= num_sites || term.site2 >= num_sites)
 			{
 				std::cerr << "Error: Site index out of bounds for coupling term "
 					<< term_idx << "." << std::endl;
@@ -867,8 +867,8 @@ public:
 					J.emplace(std::move(std::make_pair(indices, J33)));
 			};
 
-			const t_indices indices = std::make_pair(term.atom1, term.atom2);
-			const t_indices indices_t = std::make_pair(term.atom2, term.atom1);
+			const t_indices indices = std::make_pair(term.site1, term.site2);
+			const t_indices indices_t = std::make_pair(term.site2, term.site1);
 
 			t_mat J_T = tl2::trans(J);
 
@@ -963,7 +963,8 @@ public:
 	 * get the energies and the dynamical structure factor from a hamiltonian
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	std::vector<EnergyAndWeight> CalcEnergiesFromHamiltonian(t_mat _H, const t_vec_real& Qvec,
+	std::vector<EnergyAndWeight> CalcEnergiesFromHamiltonian(
+		t_mat _H, const t_vec_real& Qvec,
 		bool only_energies = false) const
 	{
 		const t_size num_sites = m_sites.size();
@@ -1228,7 +1229,8 @@ public:
 	 * applies projectors and weight factors to get neutron intensities
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	void CalcIntensities(const t_vec_real& Qvec, std::vector<EnergyAndWeight>& energies_and_correlations) const
+	void CalcIntensities(const t_vec_real& Qvec, std::vector<EnergyAndWeight>&
+		energies_and_correlations) const
 	{
 		for(EnergyAndWeight& E_and_S : energies_and_correlations)
 		{
@@ -1264,7 +1266,8 @@ public:
 	/**
 	 * unite degenerate energies and their corresponding eigenstates
 	 */
-	std::vector<EnergyAndWeight> UniteEnergies(const std::vector<EnergyAndWeight>& energies_and_correlations) const
+	std::vector<EnergyAndWeight> UniteEnergies(const std::vector<EnergyAndWeight>&
+		energies_and_correlations) const
 	{
 		std::vector<EnergyAndWeight> new_energies_and_correlations{};
 		new_energies_and_correlations.reserve(energies_and_correlations.size());
@@ -1325,7 +1328,7 @@ public:
 
 		if(IsIncommensurate())
 		{
-			// equations 39 and 40 from (Toth 2015)
+			// equations (39) and (40) from (Toth 2015)
 			t_mat proj_norm = tl2::convert<t_mat>(
 				tl2::projector<t_mat_real, t_vec_real>(
 					m_rotaxis, true));
@@ -1547,35 +1550,35 @@ public:
 			}
 		}
 
-		// atom sites
+		// magnetic sites
 		if(auto sites = node.get_child_optional("atom_sites"); sites)
 		{
 			for(const auto &site : *sites)
 			{
-				AtomSite atom_site;
+				MagneticSite magnetic_site;
 
-				atom_site.name = site.second.get<std::string>("name", "n/a");
-				atom_site.index = m_sites.size();
+				magnetic_site.name = site.second.get<std::string>("name", "n/a");
+				magnetic_site.index = m_sites.size();
 
-				atom_site.pos = tl2::create<t_vec_real>(
+				magnetic_site.pos = tl2::create<t_vec_real>(
 				{
 					site.second.get<t_real>("position_x", 0.),
 					site.second.get<t_real>("position_y", 0.),
 					site.second.get<t_real>("position_z", 0.),
 				});
 
-				atom_site.spin_dir[0] = site.second.get<std::string>("spin_x", "0");
-				atom_site.spin_dir[1] = site.second.get<std::string>("spin_y", "0");
-				atom_site.spin_dir[2] = site.second.get<std::string>("spin_z", "1");
+				magnetic_site.spin_dir[0] = site.second.get<std::string>("spin_x", "0");
+				magnetic_site.spin_dir[1] = site.second.get<std::string>("spin_y", "0");
+				magnetic_site.spin_dir[2] = site.second.get<std::string>("spin_z", "1");
 
-				atom_site.spin_ortho[0] = site.second.get<std::string>("spin_ortho_x", "");
-				atom_site.spin_ortho[1] = site.second.get<std::string>("spin_ortho_y", "");
-				atom_site.spin_ortho[2] = site.second.get<std::string>("spin_ortho_z", "");
+				magnetic_site.spin_ortho[0] = site.second.get<std::string>("spin_ortho_x", "");
+				magnetic_site.spin_ortho[1] = site.second.get<std::string>("spin_ortho_y", "");
+				magnetic_site.spin_ortho[2] = site.second.get<std::string>("spin_ortho_z", "");
 
-				atom_site.spin_mag = site.second.get<t_real>("spin_magnitude", 1.);
-				atom_site.g = -2. * tl2::unit<t_mat>(3);
+				magnetic_site.spin_mag = site.second.get<t_real>("spin_magnitude", 1.);
+				magnetic_site.g = -2. * tl2::unit<t_mat>(3);
 
-				AddAtomSite(std::move(atom_site), false);
+				AddMagneticSite(std::move(magnetic_site), false);
 			}
 		}
 
@@ -1588,38 +1591,38 @@ public:
 
 				exchange_term.name = term.second.get<std::string>("name", "n/a");
 				exchange_term.index = m_exchange_terms.size();
-				exchange_term.atom1 = term.second.get<t_size>("atom_1_index", 0);
-				exchange_term.atom2 = term.second.get<t_size>("atom_2_index", 0);
+				exchange_term.site1 = term.second.get<t_size>("atom_1_index", 0);
+				exchange_term.site2 = term.second.get<t_size>("atom_2_index", 0);
 
-				// alternatively get the atom indices via the names
+				// alternatively get the magnetic site indices via the names
 				if(auto name1 = term.second.get_optional<std::string>("atom_1_name"); name1)
 				{
-					t_size atom1_old = exchange_term.atom1;
-					if(auto sites1 = FindAtomSites(*name1); sites1.size()==1)
-						exchange_term.atom1 = sites1[0]->index;
-					if(exchange_term.atom1 != atom1_old)
+					t_size site1_old = exchange_term.site1;
+					if(auto sites1 = FindMagneticSites(*name1); sites1.size()==1)
+						exchange_term.site1 = sites1[0]->index;
+					if(exchange_term.site1 != site1_old)
 					{
 						std::cerr
 							<< "Error in coupling " << exchange_term.index
-							<< ": Index of site 1 (" << atom1_old
+							<< ": Index of site 1 (" << site1_old
 							<< ") does not correspond to the selected name (" << *name1
 							<< ")." << std::endl;
-						exchange_term.atom1 = atom1_old;
+						exchange_term.site1 = site1_old;
 					}
 				}
 				if(auto name2 = term.second.get_optional<std::string>("atom_2_name"); name2)
 				{
-					t_size atom2_old = exchange_term.atom2;
-					if(auto sites2 = FindAtomSites(*name2); sites2.size()==1)
-						exchange_term.atom2 = sites2[0]->index;
-					if(exchange_term.atom2 != atom2_old)
+					t_size site2_old = exchange_term.site2;
+					if(auto sites2 = FindMagneticSites(*name2); sites2.size()==1)
+						exchange_term.site2 = sites2[0]->index;
+					if(exchange_term.site2 != site2_old)
 					{
 						std::cerr
 							<< "Error in coupling " << exchange_term.index
-							<< ": Index of site 2 (" << atom2_old
+							<< ": Index of site 2 (" << site2_old
 							<< ") does not correspond to the selected name (" << *name2
 							<< ")." << std::endl;
-						exchange_term.atom2 = atom2_old;
+						exchange_term.site2 = site2_old;
 					}
 				}
 
@@ -1702,7 +1705,7 @@ public:
 			SetRotationAxis(rotaxis);
 		}
 
-		CalcAtomSites();
+		CalcMagneticSites();
 		CalcExchangeTerms();
 		return true;
 	}
@@ -1749,8 +1752,8 @@ public:
 			node.add_child("variables.variable", itemNode);
 		}
 
-		// atom sites
-		for(const auto& site : GetAtomSites())
+		// magnetic sites
+		for(const auto& site : GetMagneticSites())
 		{
 			boost::property_tree::ptree itemNode;
 			itemNode.put<std::string>("name", site.name);
@@ -1778,8 +1781,8 @@ public:
 			boost::property_tree::ptree itemNode;
 			itemNode.put<std::string>("name", term.name);
 
-			itemNode.put<t_size>("atom_1_index", term.atom1);
-			itemNode.put<t_size>("atom_2_index", term.atom2);
+			itemNode.put<t_size>("atom_1_index", term.site1);
+			itemNode.put<t_size>("atom_2_index", term.site2);
 
 			itemNode.put<t_real>("distance_x", term.dist[0]);
 			itemNode.put<t_real>("distance_y", term.dist[1]);
@@ -1800,12 +1803,12 @@ public:
 				}
 			}
 
-			// also save the site atom names
-			const auto& sites = GetAtomSites();
-			if(term.atom1 < sites.size())
-				itemNode.put<std::string>("atom_1_name", sites[term.atom1].name);
-			if(term.atom2 < sites.size())
-				itemNode.put<std::string>("atom_2_name", sites[term.atom2].name);
+			// also save the magnetic site names
+			const auto& sites = GetMagneticSites();
+			if(term.site1 < sites.size())
+				itemNode.put<std::string>("atom_1_name", sites[term.site1].name);
+			if(term.site2 < sites.size())
+				itemNode.put<std::string>("atom_2_name", sites[term.site2].name);
 
 			node.add_child("exchange_terms.term", itemNode);
 		}
@@ -1831,8 +1834,8 @@ protected:
 
 
 	/**
-	 * spin rotation of equation (9) from (Toth 2015)
 	 * rotate local spin to ferromagnetic [001] direction
+	 * @see equations (7) and (9) from (Toth 2015)
 	 */
 	std::tuple<t_vec, t_vec> spin_to_uv(const t_vec& spin_dir)
 	{
@@ -1853,9 +1856,9 @@ protected:
 
 
 private:
-	// atom sites
-	std::vector<AtomSite> m_sites{};
-	std::vector<AtomSiteCalc> m_sites_calc{};
+	// magnetic sites
+	std::vector<MagneticSite> m_sites{};
+	std::vector<MagneticSiteCalc> m_sites_calc{};
 
 	// magnetic couplings
 	std::vector<ExchangeTerm> m_exchange_terms{};

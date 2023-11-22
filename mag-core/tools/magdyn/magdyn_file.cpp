@@ -371,7 +371,7 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 		auto sites = magdyn.get_child_optional("atom_sites");
 
 		// atom sites
-		for(const auto &site : m_dyn.GetAtomSites())
+		for(const auto &site : m_dyn.GetMagneticSites())
 		{
 			t_real S = site.spin_mag;
 
@@ -427,7 +427,7 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 			}
 
 			AddTermTabItem(-1,
-				term.name, term.atom1, term.atom2,
+				term.name, term.site1, term.site2,
 				term.dist[0], term.dist[1], term.dist[2],
 				term.J,
 				term.dmi[0], term.dmi[1], term.dmi[2],

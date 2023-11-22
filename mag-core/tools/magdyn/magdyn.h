@@ -161,11 +161,11 @@ enum : int
 
 
 /**
- * infos for atom sites
+ * infos for magnetic sites
  */
 struct AtomSiteInfo
 {
-	const t_magdyn::AtomSite* site = nullptr;
+	const t_magdyn::MagneticSite* site = nullptr;
 };
 
 

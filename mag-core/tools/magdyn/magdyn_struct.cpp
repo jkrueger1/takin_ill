@@ -35,7 +35,7 @@
 
 
 /**
- * flip the coordinates of the atom positions
+ * flip the coordinates of the magnetic site positions
  * (e.g. to get the negative phase factor for weights)
  */
 void MagDynDlg::MirrorAtoms()
@@ -48,7 +48,7 @@ void MagDynDlg::MirrorAtoms()
 	} BOOST_SCOPE_EXIT_END
 	m_ignoreCalc = true;
 
-	// iterate the atom sites
+	// iterate the magnetic sites
 	for(int row=0; row<m_sitestab->rowCount(); ++row)
 	{
 		auto *pos_x = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
@@ -151,7 +151,7 @@ void MagDynDlg::SetCurrentField()
 
 
 /**
- * generate atom sites form the space group symmetries
+ * generate magnetic sites form the space group symmetries
  */
 void MagDynDlg::GenerateSitesFromSG()
 {
@@ -303,7 +303,7 @@ void MagDynDlg::GenerateCouplingsFromSG()
 
 		std::vector<std::tuple<
 			std::string,                           // ident
-			t_size, t_size,                        // uc atom indices
+			t_size, t_size,                        // uc magnetic site indices
 			t_real, t_real, t_real,                // supercell vector
 			std::string,                           // exchange term (not modified)
 			std::string, std::string, std::string, // dmi vector
@@ -332,7 +332,7 @@ void MagDynDlg::GenerateCouplingsFromSG()
 			}
 		};
 
-		const auto& sites = m_dyn.GetAtomSites();
+		const auto& sites = m_dyn.GetMagneticSites();
 		const auto& ops = m_SGops[sgidx];
 
 		// get all site positions in unit cell in homogeneous coordinates
@@ -346,7 +346,7 @@ void MagDynDlg::GenerateCouplingsFromSG()
 		if(!m_termstab->rowCount())
 		{
 			AddTermTabItem(-1, "term",
-				0, 1,                             // atom indices
+				0, 1,                             // magnetic site indices
 				t_real(0), t_real(0), t_real(0),  // dist
 				"-1",                             // J
 				"0", "0", "0.1");                 // dmi
@@ -393,7 +393,7 @@ void MagDynDlg::GenerateCouplingsFromSG()
 				continue;
 			}
 
-			// atom positions in unit cell
+			// magnetic site positions in unit cell
 			if(*atom_1_idx >= sites_uc.size() || *atom_2_idx >= sites_uc.size())
 			{
 				std::cerr << "Site indices for term " << row << " (\""
@@ -477,7 +477,7 @@ struct PossibleCoupling
 	t_vec_real pos1_uc{};
 	t_vec_real pos2_uc{};
 
-	// atom position in supercell
+	// magnetic site position in supercell
 	t_vec_real sc_vec{};
 	t_vec_real pos2_sc{};
 
@@ -489,7 +489,7 @@ struct PossibleCoupling
 	t_size idx1_uc{};
 	t_size idx2_uc{};
 
-	// distance between the two atoms
+	// distance between the two magnetic sites
 	t_real dist{};
 };
 
@@ -523,7 +523,7 @@ void MagDynDlg::GeneratePossibleCouplings()
 		t_mat_real A = tl2::A_matrix<t_mat_real>(a, b, c, alpha, beta, gamma);
 
 		std::vector<PossibleCoupling> couplings;
-		const auto& sites = m_dyn.GetAtomSites();
+		const auto& sites = m_dyn.GetMagneticSites();
 
 		// get all site position vectors in unit cell
 		std::vector<t_vec_real> sites_uc;
@@ -623,9 +623,9 @@ std::optional<t_size> MagDynDlg::GetTermAtomIndex(int row, int num) const
 
 	std::optional<t_size> idx = std::nullopt;
 
-	// try to find the atom with the given name (if it's unique)
+	// try to find the magnetic site with the given name (if it's unique)
 	std::string atomName = atom_idx->text().toStdString();
-	if(auto sites = m_dyn.FindAtomSites(atomName); sites.size() == 1)
+	if(auto sites = m_dyn.FindMagneticSites(atomName); sites.size() == 1)
 	{
 		//std::cout << sites[0]->name<< " -> " << sites[0]->index << std::endl;
 		idx = sites[0]->index;
@@ -641,7 +641,7 @@ std::optional<t_size> MagDynDlg::GetTermAtomIndex(int row, int num) const
 	}
 
 	// out-of-bounds check for atom index
-	if(!idx || *idx >= m_dyn.GetAtomSites().size() || !valid)
+	if(!idx || *idx >= m_dyn.GetMagneticSites().size() || !valid)
 	{
 		// set background red
 		atom_idx->setBackground(QBrush(QColor(0xff, 0x00, 0x00)));
@@ -748,7 +748,7 @@ void MagDynDlg::SyncSitesAndTerms()
 		m_dyn.AddVariable(std::move(var));
 	}
 
-	// get atom sites
+	// get magnetic sites
 	for(int row=0; row<m_sitestab->rowCount(); ++row)
 	{
 		auto *name = m_sitestab->item(row, COL_SITE_NAME);
@@ -783,7 +783,7 @@ void MagDynDlg::SyncSitesAndTerms()
 			continue;
 		}
 
-		t_magdyn::AtomSite site;
+		t_magdyn::MagneticSite site;
 		site.name = name->text().toStdString();
 		site.g = -2. * tl2::unit<t_mat>(3);
 
@@ -811,10 +811,10 @@ void MagDynDlg::SyncSitesAndTerms()
 			site.spin_ortho[2] = spin_ortho_z->text().toStdString();
 #endif
 
-		m_dyn.AddAtomSite(std::move(site));
+		m_dyn.AddMagneticSite(std::move(site));
 	}
 
-	m_dyn.CalcAtomSites();
+	m_dyn.CalcMagneticSites();
 
 	// get exchange terms
 	for(int row=0; row<m_termstab->rowCount(); ++row)
@@ -849,8 +849,8 @@ void MagDynDlg::SyncSitesAndTerms()
 
 		t_magdyn::ExchangeTerm term;
 		term.name = name->text().toStdString();
-		term.atom1 = *atom_1_idx;
-		term.atom2 = *atom_2_idx;
+		term.site1 = *atom_1_idx;
+		term.site2 = *atom_2_idx;
 		term.dist = tl2::create<t_vec_real>(
 		{
 			dist_x->GetValue(),
@@ -900,7 +900,7 @@ void MagDynDlg::ShowTableImporter()
 
 
 /**
- * import atom positions from table dialog
+ * import magnetic site positions from table dialog
  */
 void MagDynDlg::ImportAtoms(const std::vector<TableImportAtom>& atompos_vec)
 {

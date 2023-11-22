@@ -66,30 +66,30 @@
 // ----------------------------------------------------------------------------
 // input- and output structs (and vectors of them)
 // ----------------------------------------------------------------------------
-%template(AtomSiteD) tl2_mag::t_AtomSite<
+%template(MagneticSiteD) tl2_mag::t_MagneticSite<
 	tl2::vec<double>,
 	tl2::mat<std::complex<double>>,
 	double,
 	std::size_t>;
-%template(VecAtomSite) std::vector<
-	tl2_mag::t_AtomSite<
+%template(VecMagneticSite) std::vector<
+	tl2_mag::t_MagneticSite<
 		tl2::vec<double>,
 		tl2::mat<std::complex<double>>,
 		double,
 		std::size_t>
 	>;
-%template(VecAtomSitePtr) std::vector<
-	const tl2_mag::t_AtomSite<
+%template(VecMagneticSitePtr) std::vector<
+	const tl2_mag::t_MagneticSite<
 		tl2::vec<double>,
 		tl2::mat<std::complex<double>>,
 		double,
 		std::size_t>*
 	>;
 
-%template(AtomSiteCalcD) tl2_mag::t_AtomSiteCalc<
+%template(MagneticSiteCalcD) tl2_mag::t_MagneticSiteCalc<
 	tl2::vec<std::complex<double>>>;
-%template(VecAtomSiteCalc) std::vector<
-	tl2_mag::t_AtomSiteCalc<
+%template(VecMagneticSiteCalc) std::vector<
+	tl2_mag::t_MagneticSiteCalc<
 		tl2::vec<std::complex<double>>>
 	>;
 
