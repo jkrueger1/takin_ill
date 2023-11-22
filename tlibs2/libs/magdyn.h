@@ -859,6 +859,7 @@ public:
 				}
 			}
 
+			// insert or add an exchange matrix at the given site indices
 			auto insert_or_add = [](t_Jmap& J, const t_indices& indices, const t_mat& J33)
 			{
 				if(auto iter = J.find(indices); iter != J.end())
@@ -872,7 +873,7 @@ public:
 
 			t_mat J_T = tl2::trans(J);
 
-			// equations (14), (12), and (11) from (Toth 2015)
+			// equations (14), (12), (11), and (52) from (Toth 2015)
 			insert_or_add(J_Q, indices, J *
 				std::exp(m_phase_sign * s_imag * s_twopi *
 					tl2::inner<t_vec_real>(term.dist, Qvec)));
@@ -893,7 +894,7 @@ public:
 		bool use_field = !tl2::equals_0<t_real>(m_field.mag, m_eps)
 			&& m_field.dir.size() == 3;
 
-		// iterate sites
+		// iterate magnetic sites
 		for(t_size i=0; i<num_sites; ++i)
 		{
 			// get the precalculated u and v vectors for the commensurate case
@@ -910,7 +911,7 @@ public:
 				const t_vec& v_j = m_sites_calc[j].v;
 				t_real S_j = m_sites[j].spin_mag;
 
-				// get the pre-calculated J matrices for the (i, j) coupling
+				// get the pre-calculated exchange matrices for the (i, j) coupling
 				const t_indices indices_ij = std::make_pair(i, j);
 				const t_mat* J_Q33 = nullptr;
 				const t_mat* J_Q033 = nullptr;
@@ -1145,9 +1146,9 @@ public:
 						const t_vec_real& Qvec,
 						t_mat& Y, t_mat& V, t_mat& Z, t_mat& W)
 					{
+						// get the sites and spins
 						const t_vec_real& pos_i = m_sites[i].pos;
 						const t_vec_real& pos_j = m_sites[j].pos;
-
 						t_real S_i = m_sites[i].spin_mag;
 						t_real S_j = m_sites[j].spin_mag;
 
@@ -1157,17 +1158,16 @@ public:
 						const t_vec& u_conj_i = m_sites_calc[i].u_conj;
 						const t_vec& u_conj_j = m_sites_calc[j].u_conj;
 
-						// TODO: check these
+						// pre-factors of equation (44) from (Toth 2015)
 						t_real SiSj = 4. * std::sqrt(S_i*S_j);
 						t_cplx phase = std::exp(-m_phase_sign * s_imag * s_twopi *
-							tl2::inner<t_vec_real>(pos_j - pos_i, Qvec));
-						phase *= SiSj;
+						tl2::inner<t_vec_real>(pos_j - pos_i, Qvec));
 
 						// matrix elements of equation (44) from (Toth 2015)
-						Y(i, j) = phase * u_i[x_idx] * u_conj_j[y_idx];
-						V(i, j) = phase * u_conj_i[x_idx] * u_conj_j[y_idx];
-						Z(i, j) = phase * u_i[x_idx] * u_j[y_idx];
-						W(i, j) = phase * u_conj_i[x_idx] * u_j[y_idx];
+						Y(i, j) = phase * SiSj * u_i[x_idx] * u_conj_j[y_idx];
+						V(i, j) = phase * SiSj * u_conj_i[x_idx] * u_conj_j[y_idx];
+						Z(i, j) = phase * SiSj * u_i[x_idx] * u_j[y_idx];
+						W(i, j) = phase * SiSj * u_conj_i[x_idx] * u_j[y_idx];
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_PY_OUTPUT__
 						std::cout << "Y[" << i << ", " << j << ", "
@@ -1821,7 +1821,7 @@ protected:
 	/**
 	 * converts the rotation matrix rotating the local spins to ferromagnetic
 	 * [001] directions into the vectors comprised of the matrix columns
-	 * @see equation (9) from (Toth 2015)
+	 * @see equation (9) and (51) from (Toth 2015)
 	 */
 	std::tuple<t_vec, t_vec> R_to_uv(const t_mat& R)
 	{
