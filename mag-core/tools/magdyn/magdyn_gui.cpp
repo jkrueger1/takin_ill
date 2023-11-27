@@ -418,6 +418,26 @@ void MagDynDlg::CreateExchangeTermsPanel()
 		COL_XCH_DMI_Y, new QTableWidgetItem{"DMI y"});
 	m_termstab->setHorizontalHeaderItem(
 		COL_XCH_DMI_Z, new QTableWidgetItem{"DMI z"});
+#ifdef MAGDYN_ALLOW_GENERAL_J
+	m_termstab->setHorizontalHeaderItem(
+		COL_XCH_GEN_XX, new QTableWidgetItem{"J xx"});
+	m_termstab->setHorizontalHeaderItem(
+		COL_XCH_GEN_XY, new QTableWidgetItem{"J xy"});
+	m_termstab->setHorizontalHeaderItem(
+		COL_XCH_GEN_XZ, new QTableWidgetItem{"J xz"});
+	m_termstab->setHorizontalHeaderItem(
+		COL_XCH_GEN_YX, new QTableWidgetItem{"J yx"});
+	m_termstab->setHorizontalHeaderItem(
+		COL_XCH_GEN_YY, new QTableWidgetItem{"J yy"});
+	m_termstab->setHorizontalHeaderItem(
+		COL_XCH_GEN_YZ, new QTableWidgetItem{"J yz"});
+	m_termstab->setHorizontalHeaderItem(
+		COL_XCH_GEN_ZX, new QTableWidgetItem{"J zx"});
+	m_termstab->setHorizontalHeaderItem(
+		COL_XCH_GEN_ZY, new QTableWidgetItem{"J zy"});
+	m_termstab->setHorizontalHeaderItem(
+		COL_XCH_GEN_ZZ, new QTableWidgetItem{"J zz"});
+#endif
 	m_termstab->setHorizontalHeaderItem(
 		COL_XCH_RGB, new QTableWidgetItem{"Colour"});
 
@@ -431,6 +451,17 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	m_termstab->setColumnWidth(COL_XCH_DMI_X, 80);
 	m_termstab->setColumnWidth(COL_XCH_DMI_Y, 80);
 	m_termstab->setColumnWidth(COL_XCH_DMI_Z, 80);
+#ifdef MAGDYN_ALLOW_GENERAL_J
+	m_termstab->setColumnWidth(COL_XCH_GEN_XX, 80);
+	m_termstab->setColumnWidth(COL_XCH_GEN_XY, 80);
+	m_termstab->setColumnWidth(COL_XCH_GEN_XZ, 80);
+	m_termstab->setColumnWidth(COL_XCH_GEN_YX, 80);
+	m_termstab->setColumnWidth(COL_XCH_GEN_YY, 80);
+	m_termstab->setColumnWidth(COL_XCH_GEN_YZ, 80);
+	m_termstab->setColumnWidth(COL_XCH_GEN_ZX, 80);
+	m_termstab->setColumnWidth(COL_XCH_GEN_ZY, 80);
+	m_termstab->setColumnWidth(COL_XCH_GEN_ZZ, 80);
+#endif
 	m_termstab->setColumnWidth(COL_XCH_RGB, 80);
 	m_termstab->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Expanding});

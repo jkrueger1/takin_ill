@@ -76,6 +76,9 @@ using t_magdyn = MagDyn<t_mat, t_vec, t_mat_real, t_vec_real, t_cplx, t_real, t_
 // let the user explicitly specify the orthogonal spin
 //#define MAGDYN_ALLOW_SPIN_ORTHO_SETTABLE
 
+// make the general interaction matrix accessible
+//#define MAGDYN_ALLOW_GENERAL_J
+
 
 
 /**
@@ -115,8 +118,13 @@ enum : int
 	COL_XCH_NAME = 0,
 	COL_XCH_ATOM1_IDX, COL_XCH_ATOM2_IDX,
 	COL_XCH_DIST_X, COL_XCH_DIST_Y, COL_XCH_DIST_Z,
-	COL_XCH_INTERACTION,
-	COL_XCH_DMI_X, COL_XCH_DMI_Y, COL_XCH_DMI_Z,
+	COL_XCH_INTERACTION,                             // isotropic exchange interaction
+	COL_XCH_DMI_X, COL_XCH_DMI_Y, COL_XCH_DMI_Z,     // antisymmetric DMI
+#ifdef MAGDYN_ALLOW_GENERAL_J
+	COL_XCH_GEN_XX, COL_XCH_GEN_XY, COL_XCH_GEN_XZ,  //
+	COL_XCH_GEN_YX, COL_XCH_GEN_YY, COL_XCH_GEN_YZ,  // general interaction matrix
+	COL_XCH_GEN_ZX, COL_XCH_GEN_ZY, COL_XCH_GEN_ZZ,  //
+#endif
 	COL_XCH_RGB,
 
 	NUM_XCH_COLS
@@ -349,6 +357,7 @@ protected:
 	std::vector<int> GetSelectedRows(
 		QTableWidget *pTab, bool sort_reversed = false) const;
 
+	// add a site to the table
 	void AddSiteTabItem(int row = -1,
 		const std::string& name = "",
 		t_real x = 0., t_real y = 0., t_real z = 0.,
@@ -361,24 +370,29 @@ protected:
 		const std::string& soz = "auto",
 		const std::string& rgb = "auto");
 
+	// add a coupling to the table
 	void AddTermTabItem(int row = -1,
 		const std::string& name = "",
 		t_size atom_1 = 0, t_size atom_2 = 0,
 		t_real dist_x = 0., t_real dist_y = 0., t_real dist_z = 0.,
 		const std::string& J = "0",
-		const std::string& dmi_x = "0",
-		const std::string& dmi_y = "0",
-		const std::string& dmi_z = "0",
+		const std::string& dmi_x = "0", const std::string& dmi_y = "0", const std::string& dmi_z = "0",
+		const std::string& gen_xx = "0", const std::string& gen_xy = "0", const std::string& gen_xz = "0",
+		const std::string& gen_yx = "0", const std::string& gen_yy = "0", const std::string& gen_yz = "0",
+		const std::string& gen_zx = "0", const std::string& gen_zy = "0", const std::string& gen_zz = "0",
 		const std::string& rgb = "#0x00bf00");
 
+	// add a variable to the table
 	void AddVariableTabItem(int row = -1,
 		const std::string& name = "var",
 		const t_cplx& var = t_cplx{0, 0});
 
+	// add a coordinate to the table
 	void AddCoordinateTabItem(int row = -1,
 		t_real hi = 0., t_real ki = 0., t_real li = 1.,
 		t_real hf = 0., t_real kf = 0., t_real lf = 1.);
 
+	// add a magnetic field to the table
 	void AddFieldTabItem(int row = -1,
 		t_real Bh = 0., t_real Bk = 0., t_real Bl = 1.,
 		t_real Bmag = 1.);

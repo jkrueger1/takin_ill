@@ -7177,7 +7177,7 @@ t_cont<t_vec> apply_ops_hom(const t_vec& _atom, const t_cont<t_mat>& ops,
 	bool keepInUnitCell = true, bool ignore_occupied = false, bool ret_hom = false)
 requires is_vec<t_vec> && is_mat<t_mat>
 {
-	// in homogeneous coordinates
+	// convert vector to homogeneous coordinates
 	t_vec atom = _atom;
 	if(atom.size() == 3)
 		atom = create<t_vec>({atom[0], atom[1], atom[2], 1});
@@ -7187,11 +7187,12 @@ requires is_vec<t_vec> && is_mat<t_mat>
 
 	for(const auto& op : ops)
 	{
-		auto newatom = op*atom;
+		// apply symmetry operator
+		auto newatom = op * atom;
 
 		// return a homogeneous 4-vector or a 3-vector
 		if(!ret_hom)
-			newatom.resize(3);
+			newatom = create<t_vec>({newatom[0], newatom[1], newatom[2]});
 
 		if(keepInUnitCell)
 			newatom = keep_atom_in_uc<t_vec>(newatom, 3);
@@ -7209,6 +7210,52 @@ requires is_vec<t_vec> && is_mat<t_mat>
 	}
 
 	return newatoms;
+}
+
+
+/**
+ * transform matrices using the given symmetry operations
+ */
+template<class t_mat, class t_real = typename t_mat::value_type,
+template<class...> class t_cont = std::vector>
+t_cont<t_mat> apply_ops_hom(const t_mat& _mat, const t_cont<t_mat>& ops,
+	t_real eps=std::numeric_limits<t_real>::epsilon(), bool ret_hom = false)
+requires is_mat<t_mat>
+{
+	// convert matrix to homogeneous coordinates
+	t_mat mat = _mat;
+	if(mat.size1() == 3)
+	{
+		mat = create<t_mat>({
+			mat(0, 0), mat(0, 1), mat(0, 2),  0,
+			mat(1, 0), mat(1, 1), mat(1, 2),  0,
+			mat(2, 0), mat(2, 1), mat(2, 2),  0,
+			        0,         0,         0,  1
+		});
+	}
+
+	t_cont<t_mat> newmatrices;
+	newmatrices.reserve(ops.size());
+
+	for(const auto& op : ops)
+	{
+		// apply symmetry operator
+		auto newmatrix = trans(op) * mat * op;
+
+		// return a homogeneous 4-vector or a 3-vector
+		if(!ret_hom)
+		{
+			newmatrix = create<t_mat>({
+				newmatrix(0, 0), newmatrix(0, 1), newmatrix(0, 2),
+				newmatrix(1, 0), newmatrix(1, 1), newmatrix(1, 2),
+				newmatrix(2, 0), newmatrix(2, 1), newmatrix(2, 2)
+			});
+		}
+
+		newmatrices.emplace_back(std::move(newmatrix));
+	}
+
+	return newmatrices;
 }
 // ----------------------------------------------------------------------------
 

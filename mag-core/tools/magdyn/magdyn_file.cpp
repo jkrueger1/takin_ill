@@ -431,6 +431,9 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 				term.dist[0], term.dist[1], term.dist[2],
 				term.J,
 				term.dmi[0], term.dmi[1], term.dmi[2],
+				term.Jgen[0][0], term.Jgen[0][1], term.Jgen[0][2],
+				term.Jgen[1][0], term.Jgen[1][1], term.Jgen[1][2],
+				term.Jgen[2][0], term.Jgen[2][1], term.Jgen[2][2],
 				rgb);
 		}
 

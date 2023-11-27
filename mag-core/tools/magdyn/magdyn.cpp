@@ -228,6 +228,15 @@ void MagDynDlg::AddTermTabItem(int row,
 	t_real dist_x, t_real dist_y, t_real dist_z,
 	const std::string& J,
 	const std::string& dmi_x, const std::string& dmi_y, const std::string& dmi_z,
+	[[__maybe_unused__]] const std::string& gen_xx,
+	[[__maybe_unused__]] const std::string& gen_xy,
+	[[__maybe_unused__]] const std::string& gen_xz,
+	[[__maybe_unused__]] const std::string& gen_yx,
+	[[__maybe_unused__]] const std::string& gen_yy,
+	[[__maybe_unused__]] const std::string& gen_yz,
+	[[__maybe_unused__]] const std::string& gen_zx,
+	[[__maybe_unused__]] const std::string& gen_zy,
+	[[__maybe_unused__]] const std::string& gen_zz,
 	const std::string& rgb)
 {
 	bool bclone = 0;
@@ -294,6 +303,26 @@ void MagDynDlg::AddTermTabItem(int row,
 		m_termstab->setItem(row, COL_XCH_DMI_Z,
 			new tl2::NumericTableWidgetItem<t_real>(dmi_z));
 		m_termstab->setItem(row, COL_XCH_RGB, new QTableWidgetItem(rgb.c_str()));
+#ifdef MAGDYN_ALLOW_GENERAL_J
+		m_termstab->setItem(row, COL_XCH_GEN_XX,
+			new tl2::NumericTableWidgetItem<t_real>(gen_xx));
+		m_termstab->setItem(row, COL_XCH_GEN_XY,
+			new tl2::NumericTableWidgetItem<t_real>(gen_xy));
+		m_termstab->setItem(row, COL_XCH_GEN_XZ,
+			new tl2::NumericTableWidgetItem<t_real>(gen_xz));
+		m_termstab->setItem(row, COL_XCH_GEN_YX,
+			new tl2::NumericTableWidgetItem<t_real>(gen_yx));
+		m_termstab->setItem(row, COL_XCH_GEN_YY,
+			new tl2::NumericTableWidgetItem<t_real>(gen_yy));
+		m_termstab->setItem(row, COL_XCH_GEN_YZ,
+			new tl2::NumericTableWidgetItem<t_real>(gen_yz));
+		m_termstab->setItem(row, COL_XCH_GEN_ZX,
+			new tl2::NumericTableWidgetItem<t_real>(gen_zx));
+		m_termstab->setItem(row, COL_XCH_GEN_ZY,
+			new tl2::NumericTableWidgetItem<t_real>(gen_zy));
+		m_termstab->setItem(row, COL_XCH_GEN_ZZ,
+			new tl2::NumericTableWidgetItem<t_real>(gen_zz));
+#endif
 	}
 
 	m_termstab->scrollToItem(m_termstab->item(row, 0));

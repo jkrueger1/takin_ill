@@ -307,6 +307,9 @@ void MagDynDlg::GenerateCouplingsFromSG()
 			t_real, t_real, t_real,                // supercell vector
 			std::string,                           // exchange term (not modified)
 			std::string, std::string, std::string, // dmi vector
+			std::string, std::string, std::string, //
+			std::string, std::string, std::string, // general exchange matrix
+			std::string, std::string, std::string, //
 			std::string                            // colour
 			>> generatedcouplings;
 
@@ -376,11 +379,50 @@ void MagDynDlg::GenerateCouplingsFromSG()
 			bool dmi_z_ok = parser.parse(
 				m_termstab->item(row, COL_XCH_DMI_Z)->text().toStdString());
 			t_real dmi_z = parser.eval().real();
-			std::string rgb = m_termstab->item(row, COL_XCH_RGB)->text().toStdString();
 
 			if(!dmi_x_ok || !dmi_y_ok || !dmi_z_ok)
 				std::cerr << "Could not parse DMI vector expression." << std::endl;
 
+			// have to evaluate the general interaction matrix here, because we can't transform its expression symbolically yet
+			t_real genJ_xx = 0, genJ_xy = 0, genJ_xz = 0;
+			t_real genJ_yx = 0, genJ_yy = 0, genJ_yz = 0;
+			t_real genJ_zx = 0, genJ_zy = 0, genJ_zz = 0;
+#ifdef MAGDYN_ALLOW_GENERAL_J
+			bool genJ_xx_ok = parser.parse(
+				m_termstab->item(row, COL_XCH_GEN_XX)->text().toStdString());
+			genJ_xx = parser.eval().real();
+			bool genJ_xy_ok = parser.parse(
+				m_termstab->item(row, COL_XCH_GEN_XY)->text().toStdString());
+			genJ_xy = parser.eval().real();
+			bool genJ_xz_ok = parser.parse(
+				m_termstab->item(row, COL_XCH_GEN_XZ)->text().toStdString());
+			genJ_xz = parser.eval().real();
+			bool genJ_yx_ok = parser.parse(
+				m_termstab->item(row, COL_XCH_GEN_YX)->text().toStdString());
+			genJ_yx = parser.eval().real();
+			bool genJ_yy_ok = parser.parse(
+				m_termstab->item(row, COL_XCH_GEN_YY)->text().toStdString());
+			genJ_yy = parser.eval().real();
+			bool genJ_yz_ok = parser.parse(
+				m_termstab->item(row, COL_XCH_GEN_YZ)->text().toStdString());
+			genJ_yz = parser.eval().real();
+			bool genJ_zx_ok = parser.parse(
+				m_termstab->item(row, COL_XCH_GEN_ZX)->text().toStdString());
+			genJ_zx = parser.eval().real();
+			bool genJ_zy_ok = parser.parse(
+				m_termstab->item(row, COL_XCH_GEN_ZY)->text().toStdString());
+			genJ_zy = parser.eval().real();
+			bool genJ_zz_ok = parser.parse(
+				m_termstab->item(row, COL_XCH_GEN_ZZ)->text().toStdString());
+			genJ_zz = parser.eval().real();
+
+			if(!genJ_xx_ok || !genJ_xy_ok || !genJ_xz_ok ||
+				!genJ_yx_ok || !genJ_yy_ok || !genJ_yz_ok ||
+				!genJ_zx_ok || !genJ_zy_ok || !genJ_zz_ok)
+				std::cerr << "Could not parse general interaction matrix expression." << std::endl;
+#endif
+
+			std::string rgb = m_termstab->item(row, COL_XCH_RGB)->text().toStdString();
 			std::string oldJ = m_termstab->item(row, COL_XCH_INTERACTION)->text().toStdString();
 
 			auto atom_1_idx = GetTermAtomIndex(row, 0);
@@ -417,11 +459,21 @@ void MagDynDlg::GenerateCouplingsFromSG()
 			auto newdmis = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
 				dmi, ops, g_eps, false, true);
 
+			// generate general J matrices
+			t_mat_real Jgen = tl2::create<t_mat_real>({
+				genJ_xx, genJ_xy, genJ_xz,  0,
+				genJ_yx, genJ_yy, genJ_yz,  0,
+				genJ_zx, genJ_zy, genJ_zz,  0,
+				0,             0,       0,  0
+			});
+			auto newJgens = tl2::apply_ops_hom<t_mat_real, t_real>(Jgen, ops, g_eps);
+
 			for(t_size op_idx=0; op_idx<sites1_sc.size(); ++op_idx)
 			{
 				const t_vec_real& site1_sc = sites1_sc[op_idx];
 				const t_vec_real& site2_sc = sites2_sc[op_idx];
 				const t_vec_real& newdmi = newdmis[op_idx];
+				const t_mat_real& newJgen = newJgens[op_idx];
 
 				// get position of the site in the supercell
 				auto [sc1_ok, site1_sc_idx, sc1] = tl2::get_supercell(site1_sc, sites_uc, 3, g_eps);
@@ -438,6 +490,9 @@ void MagDynDlg::GenerateCouplingsFromSG()
 					ident + "_" + tl2::var_to_str(op_idx), site1_sc_idx, site2_sc_idx,
 					sc_dist[0], sc_dist[1], sc_dist[2], oldJ,
 					tl2::var_to_str(newdmi[0]), tl2::var_to_str(newdmi[1]), tl2::var_to_str(newdmi[2]),
+					tl2::var_to_str(newJgen(0,0)), tl2::var_to_str(newJgen(0,1)), tl2::var_to_str(newJgen(0,2)),
+					tl2::var_to_str(newJgen(1,0)), tl2::var_to_str(newJgen(1,1)), tl2::var_to_str(newJgen(1,2)),
+					tl2::var_to_str(newJgen(2,0)), tl2::var_to_str(newJgen(2,1)), tl2::var_to_str(newJgen(2,2)),
 					rgb));
 			}
 
@@ -598,6 +653,9 @@ void MagDynDlg::GeneratePossibleCouplings()
 				coupling.sc_vec[0], coupling.sc_vec[1], coupling.sc_vec[2],
 				"0",                                   // exchange term
 				"0", "0", "0",                         // dmi vector
+				"0", "0", "0",                         //
+				"0", "0", "0",                         // general exchange matrix
+				"0", "0", "0",                         //
 				"auto");                               // colour
 
 			++coupling_idx;
@@ -834,6 +892,26 @@ void MagDynDlg::SyncSitesAndTerms()
 			m_termstab->item(row, COL_XCH_DMI_Y));
 		auto *dmi_z = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
 			m_termstab->item(row, COL_XCH_DMI_Z));
+#ifdef MAGDYN_ALLOW_GENERAL_J
+		auto *gen_xx = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_termstab->item(row, COL_XCH_GEN_XX));
+		auto *gen_xy = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_termstab->item(row, COL_XCH_GEN_XY));
+		auto *gen_xz = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_termstab->item(row, COL_XCH_GEN_XZ));
+		auto *gen_yx = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_termstab->item(row, COL_XCH_GEN_YX));
+		auto *gen_yy = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_termstab->item(row, COL_XCH_GEN_YY));
+		auto *gen_yz = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_termstab->item(row, COL_XCH_GEN_YZ));
+		auto *gen_zx = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_termstab->item(row, COL_XCH_GEN_ZX));
+		auto *gen_zy = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_termstab->item(row, COL_XCH_GEN_ZY));
+		auto *gen_zz = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_termstab->item(row, COL_XCH_GEN_ZZ));
+#endif
 
 		auto atom_1_idx = GetTermAtomIndex(row, 0);
 		auto atom_2_idx = GetTermAtomIndex(row, 1);
@@ -867,6 +945,18 @@ void MagDynDlg::SyncSitesAndTerms()
 			term.dmi[1] = dmi_y->text().toStdString();
 			term.dmi[2] = dmi_z->text().toStdString();
 		}
+
+#ifdef MAGDYN_ALLOW_GENERAL_J
+		term.Jgen[0][0] = gen_xx->text().toStdString();
+		term.Jgen[0][1] = gen_xy->text().toStdString();
+		term.Jgen[0][2] = gen_xz->text().toStdString();
+		term.Jgen[1][0] = gen_yx->text().toStdString();
+		term.Jgen[1][1] = gen_yy->text().toStdString();
+		term.Jgen[1][2] = gen_yz->text().toStdString();
+		term.Jgen[2][0] = gen_zx->text().toStdString();
+		term.Jgen[2][1] = gen_zy->text().toStdString();
+		term.Jgen[2][2] = gen_zz->text().toStdString();
+#endif
 
 		m_dyn.AddExchangeTerm(std::move(term));
 	}
