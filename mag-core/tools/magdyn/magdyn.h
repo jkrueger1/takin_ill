@@ -7,7 +7,7 @@
  *
  * ----------------------------------------------------------------------------
  * mag-core (part of the Takin software suite)
- * Copyright (C) 2018-2022  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2018-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * "misc" project
  * Copyright (C) 2017-2022  Tobias WEBER (privately developed).
@@ -70,15 +70,19 @@
 using namespace tl2_mag;
 
 
-using t_magdyn = MagDyn<t_mat, t_vec, t_mat_real, t_vec_real, t_cplx, t_real, t_size>;
-
-
 // let the user explicitly specify the orthogonal spin
 //#define MAGDYN_ALLOW_SPIN_ORTHO_SETTABLE
 
 // make the general interaction matrix accessible
 #define MAGDYN_ALLOW_GENERAL_J
 
+
+// magnon calculation core
+using t_magdyn = MagDyn<t_mat, t_vec, t_mat_real, t_vec_real, t_cplx, t_real, t_size>;
+
+
+// settings dialog
+using t_SettingsDlg = SettingsDlg<g_settingsvariables.size(), &g_settingsvariables>;
 
 
 /**
@@ -315,6 +319,9 @@ protected:
 	// trafo calculator
 	TrafoCalculator *m_trafos{};
 
+	// settings dialog
+	t_SettingsDlg *m_settings_dlg{};
+
 	// structure plotter
 	QDialog *m_structplot_dlg{};
 	QLabel *m_structplot_status{};
@@ -338,6 +345,7 @@ protected:
 	void CreateMainWindow();
 	void CreateInfoDlg();
 	void CreateMenuBar();
+	void InitSettings();
 
 	// set up input panels
 	void CreateSitesPanel();

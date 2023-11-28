@@ -1,5 +1,5 @@
 /**
- * magnetic dynamics -- definitions
+ * magnon dynamics -- definitions and setting variables
  * @author Tobias Weber <tweber@ill.fr>
  * @date Jan-2023
  * @license GPLv3, see 'LICENSE' file
@@ -26,9 +26,63 @@
  * ----------------------------------------------------------------------------
  */
 
+#include <QtCore/QSettings>
+
 #include "defs.h"
 
 
-t_real g_eps = 1e-6;
+// ----------------------------------------------------------------------------
+// global settings variables
+// ----------------------------------------------------------------------------
+// maximum number of recent files
+unsigned int g_maxnum_recents = 16;
+
+// epsilons and precisions
 int g_prec = 6;
 int g_prec_gui = 3;
+t_real g_eps = 1e-6;
+t_real g_eps_gui = 1e-4;
+
+// gui theme
+QString g_theme = "Fusion";
+
+// gui font
+QString g_font = "";
+
+// use native menubar?
+int g_use_native_menubar = 0;
+
+// use native dialogs?
+int g_use_native_dialogs = 0;
+// ----------------------------------------------------------------------------
+
+
+/**
+ * transfer the setting from the takin core program
+ */
+void get_settings_from_takin_core()
+{
+	QSettings sett_core("takin", "core");
+
+	if(sett_core.contains("main/font_gen"))
+	{
+		g_font = sett_core.value("main/font_gen").toString();
+	}
+
+	if(sett_core.contains("main/prec"))
+	{
+		g_prec = sett_core.value("main/prec").toInt();
+		g_eps = std::pow(t_real(10), -t_real(g_prec));
+	}
+
+	if(sett_core.contains("main/prec_gfx"))
+	{
+		g_prec_gui = sett_core.value("main/prec_gfx").toInt();
+	}
+
+	if(sett_core.contains("main/gui_style_value"))
+	{
+		g_theme = sett_core.value("main/gui_style_value").toString();
+		//std::cout << g_theme.toStdString() << std::endl;
+	}
+}

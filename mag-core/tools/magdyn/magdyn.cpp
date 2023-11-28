@@ -36,34 +36,31 @@
 #include <boost/scope_exit.hpp>
 
 
-
 MagDynDlg::MagDynDlg(QWidget* pParent) : QDialog{pParent},
 	m_sett{new QSettings{"takin", "magdyn"}}
 {
 	// restore settings done from takin main settings dialog
-	QSettings sett_core("takin", "core");
-	if(sett_core.contains("main/font_gen"))
+	get_settings_from_takin_core();
+
+	if(g_font != "")
 	{
-		QString font_str = sett_core.value("main/font_gen").toString();
 		QFont font = this->font();
-		if(font.fromString(font_str))
+		if(font.fromString(g_font))
 			setFont(font);
 	}
-	if(sett_core.contains("main/prec"))
-	{
-		g_prec = sett_core.value("main/prec").toInt();
-		g_eps = std::pow(t_real(10), -t_real(g_prec));
-	}
-	if(sett_core.contains("main/prec_gfx"))
-	{
-		g_prec_gui = sett_core.value("main/prec_gfx").toInt();
-	}
 
+	// set-up common gui variables
+	t_SettingsDlg::SetGuiTheme(&g_theme);
+	t_SettingsDlg::SetGuiFont(&g_font);
+	t_SettingsDlg::SetGuiUseNativeMenubar(&g_use_native_menubar);
+	t_SettingsDlg::SetGuiUseNativeDialogs(&g_use_native_dialogs);
+
+	// restore settings
+	t_SettingsDlg::ReadSettings(m_sett);
 
 	// calculator settings
 	m_dyn.SetEpsilon(g_eps);
 	m_dyn.SetPrecision(g_prec);
-
 
 	// create gui
 	CreateMainWindow();
@@ -82,6 +79,8 @@ MagDynDlg::MagDynDlg(QWidget* pParent) : QDialog{pParent},
 	CreateHamiltonPanel();
 	CreateCoordinatesPanel();
 	CreateExportPanel();
+
+	m_recent.SetMaxRecentFiles(g_maxnum_recents);
 
 	// restore settings
 	if(m_sett)
@@ -125,6 +124,15 @@ MagDynDlg::~MagDynDlg()
 		delete m_info_dlg;
 		m_info_dlg = nullptr;
 	}
+}
+
+
+/**
+ * get changes from settings dialog
+ */
+void MagDynDlg::InitSettings()
+{
+	m_recent.SetMaxRecentFiles(g_maxnum_recents);
 }
 
 

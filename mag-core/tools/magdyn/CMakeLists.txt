@@ -120,7 +120,7 @@ add_executable(takin_magdyn
 	magdyn.cpp magdyn.h
 	magdyn_gui.cpp magdyn_struct.cpp magdyn_file.cpp
 	magdyn_disp.cpp magdyn_structplot.cpp
-	defs.cpp defs.h
+	defs.cpp defs.h settings.h
 	table_import.cpp table_import.h
 	trafos.cpp trafos.h
 

@@ -1,5 +1,5 @@
 /**
- * magnon dynamics -- definitions
+ * magnon dynamics -- definitions and setting variables
  * @author Tobias Weber <tweber@ill.fr>
  * @date Jan-2023
  * @license GPLv3, see 'LICENSE' file
@@ -26,17 +26,24 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef __MAGDYN_DEFS_H__
-#define __MAGDYN_DEFS_H__
+#ifndef __MAGDYN_DEFS__
+#define __MAGDYN_DEFS__
 
-#include <complex>
-#include <vector>
+#include <QtCore/QString>
+
+#include <string>
+#include <array>
+#include <variant>
+#include <optional>
 
 #include "tlibs2/libs/maths.h"
 #include "tlibs2/libs/qt/gl.h"
 
 
 
+// ----------------------------------------------------------------------------
+// types
+// ----------------------------------------------------------------------------
 using t_size = std::size_t;
 using t_real = double;
 using t_cplx = std::complex<t_real>;
@@ -52,11 +59,77 @@ using t_vec2_gl = tl2::t_vec2_gl;
 using t_vec3_gl = tl2::t_vec3_gl;
 using t_vec_gl = tl2::t_vec_gl;
 using t_mat_gl = tl2::t_mat_gl;
+// ----------------------------------------------------------------------------
 
 
-extern t_real g_eps;
-extern int g_prec;
-extern int g_prec_gui;
+
+// ----------------------------------------------------------------------------
+// global settings variables
+// ----------------------------------------------------------------------------
+// maximum number of recent files
+extern unsigned int g_maxnum_recents;
+
+// number precisions
+extern int g_prec, g_prec_gui;
+
+// epsilons
+extern t_real g_eps, g_eps_gui;
+
+// gui theme
+extern QString g_theme;
+
+// gui font
+extern QString g_font;
+
+// use native menubar?
+extern int g_use_native_menubar;
+
+// use native dialogs?
+extern int g_use_native_dialogs;
+
+
+void get_settings_from_takin_core();
+// ----------------------------------------------------------------------------
+
+
+
+// ----------------------------------------------------------------------------
+// variables register
+// ----------------------------------------------------------------------------
+#include "settings.h"
+
+constexpr std::array<SettingsVariable, 5> g_settingsvariables
+{{
+	// epsilons and precisions
+	{
+		.description = "Calculation epsilon.",
+		.key = "eps",
+		.value = &g_eps,
+	},
+	{
+		.description = "Drawing epsilon.",
+		.key = "eps_gui",
+		.value = &g_eps_gui,
+	},
+	{
+		.description = "Number precision.",
+		.key = "prec",
+		.value = &g_prec,
+	},
+	{
+		.description = "GUI number precision.",
+		.key = "prec_gui",
+		.value = &g_prec_gui,
+	},
+
+	// file options
+	{
+		.description = "Maximum number of recent files.",
+		.key = "maxnum_recents",
+		.value = &g_maxnum_recents,
+	},
+}};
+// ----------------------------------------------------------------------------
 
 
 #endif

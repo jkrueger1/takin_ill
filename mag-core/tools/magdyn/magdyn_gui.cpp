@@ -42,6 +42,9 @@ namespace algo = boost::algorithm;
 #include "../structfact/loadcif.h"
 
 
+// instantiate settings dialog
+template class SettingsDlg<g_settingsvariables.size(), &g_settingsvariables>;
+
 
 void MagDynDlg::CreateMainWindow()
 {
@@ -2042,7 +2045,12 @@ void MagDynDlg::CreateMenuBar()
 	// tools menu
 	auto menuTools = new QMenu("Tools", m_menu);
 	auto acTrafoCalc = new QAction("Transformation Calculator...", menuTools);
+	auto acPreferences = new QAction("Preferences...", menuTools);
 	acTrafoCalc->setIcon(QIcon::fromTheme("accessories-calculator"));
+	acPreferences->setIcon(QIcon::fromTheme("preferences-system"));
+
+	acPreferences->setShortcut(QKeySequence::Preferences);
+	acPreferences->setMenuRole(QAction::PreferencesRole);
 
 	// help menu
 	auto menuHelp = new QMenu("Help", m_menu);
@@ -2099,6 +2107,8 @@ void MagDynDlg::CreateMenuBar()
 	menuCalc->addMenu(menuHamiltonians);
 
 	menuTools->addAction(acTrafoCalc);
+	menuTools->addSeparator();
+	menuTools->addAction(acPreferences);
 
 	menuHelp->addAction(acAboutQt);
 	menuHelp->addAction(acAbout);
@@ -2198,6 +2208,21 @@ void MagDynDlg::CreateMenuBar()
 		m_trafos->show();
 		m_trafos->raise();
 		m_trafos->activateWindow();
+	});
+
+	// show preferences dialog
+	connect(acPreferences, &QAction::triggered, [this]()
+	{
+		this->m_settings_dlg = new t_SettingsDlg(this, m_sett);
+
+		m_settings_dlg->AddChangedSettingsSlot([this]()
+		{
+			MagDynDlg::InitSettings();
+		});
+
+		m_settings_dlg->show();
+		m_settings_dlg->raise();
+		m_settings_dlg->activateWindow();
 	});
 
 	connect(acAboutQt, &QAction::triggered, []()
