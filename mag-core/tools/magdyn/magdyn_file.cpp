@@ -251,6 +251,8 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 			m_autocalc->setChecked(*optVal);
 		if(auto optVal = magdyn.get_optional<bool>("config.use_DMI"))
 			m_use_dmi->setChecked(*optVal);
+		if(auto optVal = magdyn.get_optional<bool>("config.use_genJ"))
+			m_use_genJ->setChecked(*optVal);
 		if(auto optVal = magdyn.get_optional<bool>("config.use_field"))
 			m_use_field->setChecked(*optVal);
 		if(auto optVal = magdyn.get_optional<bool>("config.use_temperature"))
@@ -551,6 +553,7 @@ bool MagDynDlg::Save(const QString& filename)
 		magdyn.put<bool>("config.plot_weight_as_alpha", m_plot_weights_alpha->isChecked());
 		magdyn.put<bool>("config.auto_calc", m_autocalc->isChecked());
 		magdyn.put<bool>("config.use_DMI", m_use_dmi->isChecked());
+		magdyn.put<bool>("config.use_genJ", m_use_genJ->isChecked());
 		magdyn.put<bool>("config.use_field", m_use_field->isChecked());
 		magdyn.put<bool>("config.use_temperature", m_use_temperature->isChecked());
 		magdyn.put<bool>("config.use_weights", m_use_weights->isChecked());
