@@ -77,7 +77,7 @@ using t_magdyn = MagDyn<t_mat, t_vec, t_mat_real, t_vec_real, t_cplx, t_real, t_
 //#define MAGDYN_ALLOW_SPIN_ORTHO_SETTABLE
 
 // make the general interaction matrix accessible
-//#define MAGDYN_ALLOW_GENERAL_J
+#define MAGDYN_ALLOW_GENERAL_J
 
 
 
@@ -209,6 +209,9 @@ protected:
 
 	QAction *m_autocalc{};
 	QAction *m_use_dmi{};
+#ifdef MAGDYN_ALLOW_GENERAL_J
+	QAction *m_use_genJ{};
+#endif
 	QAction *m_use_field{};
 	QAction *m_use_temperature{};
 	QAction *m_use_weights{};

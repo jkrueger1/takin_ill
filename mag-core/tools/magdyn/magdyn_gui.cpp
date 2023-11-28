@@ -1990,6 +1990,12 @@ void MagDynDlg::CreateMenuBar()
 	m_use_dmi->setToolTip("Enables the Dzyaloshinskij-Moriya interaction.");
 	m_use_dmi->setCheckable(true);
 	m_use_dmi->setChecked(true);
+#ifdef MAGDYN_ALLOW_GENERAL_J
+	m_use_genJ = new QAction("Use General J", menuCalc);
+	m_use_genJ->setToolTip("Enables the general interaction matrix.");
+	m_use_genJ->setCheckable(true);
+	m_use_genJ->setChecked(true);
+#endif
 	m_use_field = new QAction("Use External Field", menuCalc);
 	m_use_field->setToolTip("Enables an external field.");
 	m_use_field->setCheckable(true);
@@ -2015,7 +2021,7 @@ void MagDynDlg::CreateMenuBar()
 	m_ignore_annihilation->setCheckable(true);
 	m_ignore_annihilation->setChecked(false);
 	m_force_incommensurate = new QAction("Force Incommensurate", menuCalc);
-	m_force_incommensurate->setToolTip("Enforce incommensurate calculation even for commensurate magnetic structures..");
+	m_force_incommensurate->setToolTip("Enforce incommensurate calculation even for commensurate magnetic structures.");
 	m_force_incommensurate->setCheckable(true);
 	m_force_incommensurate->setChecked(false);
 
@@ -2078,6 +2084,9 @@ void MagDynDlg::CreateMenuBar()
 	menuCalc->addAction(acCalc);
 	menuCalc->addSeparator();
 	menuCalc->addAction(m_use_dmi);
+#ifdef MAGDYN_ALLOW_GENERAL_J
+	menuCalc->addAction(m_use_genJ);
+#endif
 	menuCalc->addAction(m_use_field);
 	menuCalc->addAction(m_use_temperature);
 	menuCalc->addSeparator();
@@ -2134,6 +2143,9 @@ void MagDynDlg::CreateMenuBar()
 	connect(acStructView, &QAction::triggered, this, &MagDynDlg::ShowStructurePlot);
 	connect(acStructImport, &QAction::triggered, this, &MagDynDlg::ShowTableImporter);
 	connect(m_use_dmi, &QAction::toggled, calc_all);
+#ifdef MAGDYN_ALLOW_GENERAL_J
+	connect(m_use_genJ, &QAction::toggled, calc_all);
+#endif
 	connect(m_use_field, &QAction::toggled, calc_all);
 	connect(m_use_temperature, &QAction::toggled, calc_all);
 	connect(m_use_weights, &QAction::toggled, calc_all_dyn);

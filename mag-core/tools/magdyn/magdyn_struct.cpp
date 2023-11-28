@@ -756,9 +756,6 @@ void MagDynDlg::SyncSitesAndTerms()
 		m_dyn.SetRotationAxis(rotaxis);
 	}
 
-	// dmi
-	bool use_dmi = m_use_dmi->isChecked();
-
 	// get external field
 	if(m_use_field->isChecked())
 	{
@@ -939,7 +936,7 @@ void MagDynDlg::SyncSitesAndTerms()
 		//term.J = interaction->GetValue();
 		term.J = interaction->text().toStdString();
 
-		if(use_dmi)
+		if(m_use_dmi->isChecked())
 		{
 			term.dmi[0] = dmi_x->text().toStdString();
 			term.dmi[1] = dmi_y->text().toStdString();
@@ -947,15 +944,18 @@ void MagDynDlg::SyncSitesAndTerms()
 		}
 
 #ifdef MAGDYN_ALLOW_GENERAL_J
-		term.Jgen[0][0] = gen_xx->text().toStdString();
-		term.Jgen[0][1] = gen_xy->text().toStdString();
-		term.Jgen[0][2] = gen_xz->text().toStdString();
-		term.Jgen[1][0] = gen_yx->text().toStdString();
-		term.Jgen[1][1] = gen_yy->text().toStdString();
-		term.Jgen[1][2] = gen_yz->text().toStdString();
-		term.Jgen[2][0] = gen_zx->text().toStdString();
-		term.Jgen[2][1] = gen_zy->text().toStdString();
-		term.Jgen[2][2] = gen_zz->text().toStdString();
+		if(m_use_genJ->isChecked())
+		{
+			term.Jgen[0][0] = gen_xx->text().toStdString();
+			term.Jgen[0][1] = gen_xy->text().toStdString();
+			term.Jgen[0][2] = gen_xz->text().toStdString();
+			term.Jgen[1][0] = gen_yx->text().toStdString();
+			term.Jgen[1][1] = gen_yy->text().toStdString();
+			term.Jgen[1][2] = gen_yz->text().toStdString();
+			term.Jgen[2][0] = gen_zx->text().toStdString();
+			term.Jgen[2][1] = gen_zy->text().toStdString();
+			term.Jgen[2][2] = gen_zz->text().toStdString();
+		}
 #endif
 
 		m_dyn.AddExchangeTerm(std::move(term));
