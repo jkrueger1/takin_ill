@@ -81,9 +81,6 @@ using namespace tl2_mag;
 using t_magdyn = MagDyn<t_mat, t_vec, t_mat_real, t_vec_real, t_cplx, t_real, t_size>;
 
 
-// settings dialog
-using t_SettingsDlg = SettingsDlg<g_settingsvariables.size(), &g_settingsvariables>;
-
 
 /**
  * export file types
@@ -320,7 +317,7 @@ protected:
 	TrafoCalculator *m_trafos{};
 
 	// settings dialog
-	t_SettingsDlg *m_settings_dlg{};
+	QDialog *m_settings_dlg{};
 
 	// structure plotter
 	QDialog *m_structplot_dlg{};
@@ -345,6 +342,8 @@ protected:
 	void CreateMainWindow();
 	void CreateInfoDlg();
 	void CreateMenuBar();
+
+	void InitSettingsDlg();
 	void InitSettings();
 
 	// set up input panels

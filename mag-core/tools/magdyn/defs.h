@@ -1,5 +1,5 @@
 /**
- * magnon dynamics -- definitions and setting variables
+ * magnon dynamics -- type definitions and setting variables
  * @author Tobias Weber <tweber@ill.fr>
  * @date Jan-2023
  * @license GPLv3, see 'LICENSE' file
@@ -42,7 +42,7 @@
 
 
 // ----------------------------------------------------------------------------
-// types
+// type definitions
 // ----------------------------------------------------------------------------
 using t_size = std::size_t;
 using t_real = double;
@@ -73,21 +73,15 @@ extern unsigned int g_maxnum_recents;
 extern int g_prec, g_prec_gui;
 
 // epsilons
-extern t_real g_eps, g_eps_gui;
+extern t_real g_eps;
 
-// gui theme
-extern QString g_theme;
+// gui theme and font
+extern QString g_theme, g_font;
 
-// gui font
-extern QString g_font;
+// use native menubar and dialogs?
+extern int g_use_native_menubar, g_use_native_dialogs;
 
-// use native menubar?
-extern int g_use_native_menubar;
-
-// use native dialogs?
-extern int g_use_native_dialogs;
-
-
+// transfer the setting from the takin core program
 void get_settings_from_takin_core();
 // ----------------------------------------------------------------------------
 
@@ -98,18 +92,13 @@ void get_settings_from_takin_core();
 // ----------------------------------------------------------------------------
 #include "settings.h"
 
-constexpr std::array<SettingsVariable, 5> g_settingsvariables
+constexpr std::array<SettingsVariable, 4> g_settingsvariables
 {{
 	// epsilons and precisions
 	{
 		.description = "Calculation epsilon.",
 		.key = "eps",
 		.value = &g_eps,
-	},
-	{
-		.description = "Drawing epsilon.",
-		.key = "eps_gui",
-		.value = &g_eps_gui,
 	},
 	{
 		.description = "Number precision.",

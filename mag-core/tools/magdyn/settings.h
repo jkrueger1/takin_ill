@@ -96,6 +96,14 @@ struct SettingsVariable
 
 
 // ----------------------------------------------------------------------------
+enum class SettingsColumn : int
+{
+	SETTING = 0,
+	TYPE    = 1,
+	VALUE   = 2,
+};
+
+
 /**
  * settings dialog
  */
@@ -128,9 +136,9 @@ public:
 		setSizeGripEnabled(true);
 
 		// table column widths
-		int col0_w = 200;
-		int col1_w = 100;
-		int col2_w = 150;
+		int col_sett_w = 200;
+		int col_type_w = 100;
+		int col_value_w = 150;
 
 		if(m_sett)
 		{
@@ -141,12 +149,12 @@ public:
 				resize(512, 425);
 
 			// restore table column widths
-			if(m_sett->contains("settings/col0_width"))
-				col0_w = m_sett->value("settings/col0_width").toInt();
-			if(m_sett->contains("settings/col1_width"))
-				col1_w = m_sett->value("settings/col1_width").toInt();
-			if(m_sett->contains("settings/col2_width"))
-				col2_w = m_sett->value("settings/col2_width").toInt();
+			if(m_sett->contains("settings/col_setting_width"))
+				col_sett_w = m_sett->value("settings/col_setting_width").toInt();
+			if(m_sett->contains("settings/col_type_width"))
+				col_type_w = m_sett->value("settings/col_type_width").toInt();
+			if(m_sett->contains("settings/col_value_width"))
+				col_value_w = m_sett->value("settings/col_value_width").toInt();
 		}
 
 		// general settings
@@ -168,12 +176,12 @@ public:
 		m_table->verticalHeader()->setDefaultSectionSize(32);
 		m_table->verticalHeader()->setVisible(false);
 		m_table->setColumnCount(3);
-		m_table->setColumnWidth(0, col0_w);
-		m_table->setColumnWidth(1, col1_w);
-		m_table->setColumnWidth(2, col2_w);
-		m_table->setHorizontalHeaderItem(0, new QTableWidgetItem{"Setting"});
-		m_table->setHorizontalHeaderItem(1, new QTableWidgetItem{"Type"});
-		m_table->setHorizontalHeaderItem(2, new QTableWidgetItem{"Value"});
+		m_table->setColumnWidth((int)SettingsColumn::SETTING, col_sett_w);
+		m_table->setColumnWidth((int)SettingsColumn::TYPE, col_type_w);
+		m_table->setColumnWidth((int)SettingsColumn::VALUE, col_value_w);
+		m_table->setHorizontalHeaderItem((int)SettingsColumn::SETTING, new QTableWidgetItem{"Setting"});
+		m_table->setHorizontalHeaderItem((int)SettingsColumn::TYPE, new QTableWidgetItem{"Type"});
+		m_table->setHorizontalHeaderItem((int)SettingsColumn::VALUE, new QTableWidgetItem{"Value"});
 
 		// table contents
 		PopulateSettingsTable();
@@ -417,9 +425,12 @@ protected:
 			// save table column widths
 			if(m_table)
 			{
-				m_sett->setValue("settings/col0_width", m_table->columnWidth(0));
-				m_sett->setValue("settings/col1_width", m_table->columnWidth(1));
-				m_sett->setValue("settings/col2_width", m_table->columnWidth(2));
+				m_sett->setValue("settings/col_setting_width",
+					m_table->columnWidth((int)SettingsColumn::SETTING));
+				m_sett->setValue("settings/col_type_width",
+					m_table->columnWidth((int)SettingsColumn::TYPE));
+				m_sett->setValue("settings/col_value_width",
+					m_table->columnWidth((int)SettingsColumn::VALUE));
 			}
 		}
 
@@ -441,12 +452,12 @@ protected:
 		// set value field editable
 		for(int row=0; row<m_table->rowCount(); ++row)
 		{
-			m_table->item(row, 0)->setFlags(
-				m_table->item(row, 0)->flags() & ~Qt::ItemIsEditable);
-			m_table->item(row, 1)->setFlags(
-				m_table->item(row, 1)->flags() & ~Qt::ItemIsEditable);
-			m_table->item(row, 2)->setFlags(
-				m_table->item(row, 2)->flags() | Qt::ItemIsEditable);
+			m_table->item(row, (int)SettingsColumn::SETTING)->setFlags(
+				m_table->item(row, (int)SettingsColumn::SETTING)->flags() & ~Qt::ItemIsEditable);
+			m_table->item(row, (int)SettingsColumn::TYPE)->setFlags(
+				m_table->item(row, (int)SettingsColumn::TYPE)->flags() & ~Qt::ItemIsEditable);
+			m_table->item(row, (int)SettingsColumn::VALUE)->setFlags(
+				m_table->item(row, (int)SettingsColumn::VALUE)->flags() | Qt::ItemIsEditable);
 		}
 	}
 
@@ -629,9 +640,9 @@ protected:
 			finalval = finalval / tl2::pi<t_real>*180;
 
 		QTableWidgetItem *item = new tl2::NumericTableWidgetItem<t_value>(finalval, 10);
-		table->setItem((int)idx, 0, new QTableWidgetItem{var.description});
-		table->setItem((int)idx, 1, new QTableWidgetItem{get_type_str<t_value>()});
-		table->setItem((int)idx, 2, item);
+		table->setItem((int)idx, (int)SettingsColumn::SETTING, new QTableWidgetItem{var.description});
+		table->setItem((int)idx, (int)SettingsColumn::TYPE, new QTableWidgetItem{get_type_str<t_value>()});
+		table->setItem((int)idx, (int)SettingsColumn::VALUE, item);
 
 		if(var.editor == SettingsVariableEditor::YESNO)
 		{
@@ -640,7 +651,7 @@ protected:
 			combo->addItem("Yes");
 
 			combo->setCurrentIndex(finalval==0 ? 0 : 1);
-			table->setCellWidget((int)idx, 2, combo);
+			table->setCellWidget((int)idx, (int)SettingsColumn::VALUE, combo);
 		}
 		if(var.editor == SettingsVariableEditor::COMBOBOX)
 		{
@@ -653,7 +664,7 @@ protected:
 				combo->addItem(config_token.c_str());
 
 			combo->setCurrentIndex((int)finalval);
-			table->setCellWidget((int)idx, 2, combo);
+			table->setCellWidget((int)idx, (int)SettingsColumn::VALUE, combo);
 		}
 	}
 
@@ -785,7 +796,7 @@ protected:
 		using t_value = std::decay_t<decltype(*value)>;
 
 		t_value finalval = dynamic_cast<tl2::NumericTableWidgetItem<t_value>*>(
-			table->item((int)idx, 2))->GetValue();
+			table->item((int)idx, (int)SettingsColumn::VALUE))->GetValue();
 		if(var.is_angle)
 			finalval = finalval / 180.*tl2::pi<t_real>;
 
@@ -794,7 +805,7 @@ protected:
 			var.editor == SettingsVariableEditor::COMBOBOX)
 		{
 			QComboBox *combo = static_cast<QComboBox*>(
-				table->cellWidget((int)idx, 2));
+				table->cellWidget((int)idx, (int)SettingsColumn::VALUE));
 			finalval = (t_value)combo->currentIndex();
 		}
 

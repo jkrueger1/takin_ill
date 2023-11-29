@@ -1,5 +1,5 @@
 /**
- * magnon dynamics -- definitions and setting variables
+ * magnon dynamics -- type definitions and setting variables
  * @author Tobias Weber <tweber@ill.fr>
  * @date Jan-2023
  * @license GPLv3, see 'LICENSE' file
@@ -31,6 +31,7 @@
 #include "defs.h"
 
 
+
 // ----------------------------------------------------------------------------
 // global settings variables
 // ----------------------------------------------------------------------------
@@ -41,7 +42,6 @@ unsigned int g_maxnum_recents = 16;
 int g_prec = 6;
 int g_prec_gui = 3;
 t_real g_eps = 1e-6;
-t_real g_eps_gui = 1e-4;
 
 // gui theme
 QString g_theme = "Fusion";
@@ -49,12 +49,13 @@ QString g_theme = "Fusion";
 // gui font
 QString g_font = "";
 
-// use native menubar?
+// use native menu bar?
 int g_use_native_menubar = 0;
 
 // use native dialogs?
 int g_use_native_dialogs = 0;
 // ----------------------------------------------------------------------------
+
 
 
 /**

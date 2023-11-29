@@ -44,6 +44,35 @@ namespace algo = boost::algorithm;
 
 // instantiate settings dialog
 template class SettingsDlg<g_settingsvariables.size(), &g_settingsvariables>;
+using t_SettingsDlg = SettingsDlg<g_settingsvariables.size(), &g_settingsvariables>;
+
+
+
+/**
+ * initialise the static part of the settings dialog
+ */
+void MagDynDlg::InitSettingsDlg()
+{
+	// set-up common gui variables
+	t_SettingsDlg::SetGuiTheme(&g_theme);
+	t_SettingsDlg::SetGuiFont(&g_font);
+	t_SettingsDlg::SetGuiUseNativeMenubar(&g_use_native_menubar);
+	t_SettingsDlg::SetGuiUseNativeDialogs(&g_use_native_dialogs);
+
+	// restore settings
+	t_SettingsDlg::ReadSettings(m_sett);
+}
+
+
+
+/**
+ * get changes from settings dialog
+ */
+void MagDynDlg::InitSettings()
+{
+	m_recent.SetMaxRecentFiles(g_maxnum_recents);
+}
+
 
 
 void MagDynDlg::CreateMainWindow()
@@ -2213,9 +2242,9 @@ void MagDynDlg::CreateMenuBar()
 	// show preferences dialog
 	connect(acPreferences, &QAction::triggered, [this]()
 	{
-		this->m_settings_dlg = new t_SettingsDlg(this, m_sett);
+		m_settings_dlg = new t_SettingsDlg(this, m_sett);
 
-		m_settings_dlg->AddChangedSettingsSlot([this]()
+		dynamic_cast<t_SettingsDlg*>(m_settings_dlg)->AddChangedSettingsSlot([this]()
 		{
 			MagDynDlg::InitSettings();
 		});

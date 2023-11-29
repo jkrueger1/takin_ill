@@ -36,6 +36,7 @@
 #include <boost/scope_exit.hpp>
 
 
+
 MagDynDlg::MagDynDlg(QWidget* pParent) : QDialog{pParent},
 	m_sett{new QSettings{"takin", "magdyn"}}
 {
@@ -49,14 +50,7 @@ MagDynDlg::MagDynDlg(QWidget* pParent) : QDialog{pParent},
 			setFont(font);
 	}
 
-	// set-up common gui variables
-	t_SettingsDlg::SetGuiTheme(&g_theme);
-	t_SettingsDlg::SetGuiFont(&g_font);
-	t_SettingsDlg::SetGuiUseNativeMenubar(&g_use_native_menubar);
-	t_SettingsDlg::SetGuiUseNativeDialogs(&g_use_native_dialogs);
-
-	// restore settings
-	t_SettingsDlg::ReadSettings(m_sett);
+	InitSettingsDlg();
 
 	// calculator settings
 	m_dyn.SetEpsilon(g_eps);
@@ -103,6 +97,7 @@ MagDynDlg::MagDynDlg(QWidget* pParent) : QDialog{pParent},
 }
 
 
+
 MagDynDlg::~MagDynDlg()
 {
 	Clear();
@@ -126,14 +121,6 @@ MagDynDlg::~MagDynDlg()
 	}
 }
 
-
-/**
- * get changes from settings dialog
- */
-void MagDynDlg::InitSettings()
-{
-	m_recent.SetMaxRecentFiles(g_maxnum_recents);
-}
 
 
 /**
@@ -225,6 +212,7 @@ void MagDynDlg::AddSiteTabItem(int row,
 
 	UpdateVerticalHeader(m_sitestab);
 }
+
 
 
 /**
@@ -341,6 +329,7 @@ void MagDynDlg::AddTermTabItem(int row,
 }
 
 
+
 /**
  * add a variable
  */
@@ -397,6 +386,7 @@ void MagDynDlg::AddVariableTabItem(int row,
 }
 
 
+
 /**
  * add a magnetic field
  */
@@ -447,6 +437,7 @@ void MagDynDlg::AddFieldTabItem(int row,
 
 	UpdateVerticalHeader(m_fieldstab);
 }
+
 
 
 /**
@@ -505,6 +496,7 @@ void MagDynDlg::AddCoordinateTabItem(int row,
 }
 
 
+
 /**
  * delete table widget items
  */
@@ -549,6 +541,7 @@ void MagDynDlg::DelTabItem(QTableWidget *pTab, int begin, int end)
 
 	UpdateVerticalHeader(pTab);
 }
+
 
 
 void MagDynDlg::MoveTabItemUp(QTableWidget *pTab)
@@ -600,6 +593,7 @@ void MagDynDlg::MoveTabItemUp(QTableWidget *pTab)
 }
 
 
+
 void MagDynDlg::MoveTabItemDown(QTableWidget *pTab)
 {
 	bool needs_recalc = true;
@@ -649,6 +643,7 @@ void MagDynDlg::MoveTabItemDown(QTableWidget *pTab)
 }
 
 
+
 /**
  * insert a vertical header column showing the row index
  */
@@ -663,6 +658,7 @@ void MagDynDlg::UpdateVerticalHeader(QTableWidget *pTab)
 		pTab->setVerticalHeaderItem(row, item);
 	}
 }
+
 
 
 std::vector<int> MagDynDlg::GetSelectedRows(
@@ -687,6 +683,7 @@ std::vector<int> MagDynDlg::GetSelectedRows(
 }
 
 
+
 /**
  * item contents changed
  */
@@ -698,6 +695,7 @@ void MagDynDlg::SitesTableItemChanged(QTableWidgetItem * /*item*/)
 	if(m_autocalc->isChecked())
 		CalcAll();
 }
+
 
 
 /**
@@ -713,6 +711,7 @@ void MagDynDlg::TermsTableItemChanged(QTableWidgetItem * /*item*/)
 }
 
 
+
 /**
  * item contents changed
  */
@@ -724,6 +723,7 @@ void MagDynDlg::VariablesTableItemChanged(QTableWidgetItem * /*item*/)
 	if(m_autocalc->isChecked())
 		CalcAll();
 }
+
 
 
 void MagDynDlg::ShowTableContextMenu(
@@ -744,10 +744,12 @@ void MagDynDlg::ShowTableContextMenu(
 }
 
 
+
 void MagDynDlg::mousePressEvent(QMouseEvent *evt)
 {
 	QDialog::mousePressEvent(evt);
 }
+
 
 
 /**
@@ -771,6 +773,7 @@ void MagDynDlg::closeEvent(QCloseEvent *)
 }
 
 
+
 /**
  * a file is being dragged over the window
  */
@@ -779,6 +782,7 @@ void MagDynDlg::dragEnterEvent(QDragEnterEvent *evt)
 	if(evt)
 		evt->accept();
 }
+
 
 
 /**
@@ -802,6 +806,7 @@ void MagDynDlg::dropEvent(QDropEvent *evt)
 }
 
 
+
 /**
  * refresh and calculate everything
  */
@@ -817,6 +822,7 @@ void MagDynDlg::CalcAll()
 }
 
 
+
 /**
  * enable GUI inputs after calculation threads have finished
  */
@@ -827,6 +833,7 @@ void MagDynDlg::EnableInput()
 	m_menu->setEnabled(true);
 	m_btnStart->setEnabled(true);
 }
+
 
 
 /**
