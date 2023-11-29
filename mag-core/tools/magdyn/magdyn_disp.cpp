@@ -200,16 +200,16 @@ void MagDynDlg::CalcDispersion()
 
 	t_real Q_start[]
 	{
-		m_q_start[0]->value(),
-		m_q_start[1]->value(),
-		m_q_start[2]->value(),
+		(t_real)m_q_start[0]->value(),
+		(t_real)m_q_start[1]->value(),
+		(t_real)m_q_start[2]->value(),
 	};
 
 	t_real Q_end[]
 	{
-		m_q_end[0]->value(),
-		m_q_end[1]->value(),
-		m_q_end[2]->value(),
+		(t_real)m_q_end[0]->value(),
+		(t_real)m_q_end[1]->value(),
+		(t_real)m_q_end[2]->value(),
 	};
 
 	const t_real Q_range[]
@@ -372,14 +372,14 @@ void MagDynDlg::CalcDispersion()
 	else
 		m_status->setText("Calculation finished.");
 
-	auto sort_data = [](QVector<t_real>& qvec, QVector<t_real>& Evec, QVector<t_real>& wvec)
+	auto sort_data = [](QVector<qreal>& qvec, QVector<qreal>& Evec, QVector<qreal>& wvec)
 	{
 		// sort vectors by q component
 		std::vector<std::size_t> perm = tl2::get_perm(qvec.size(),
 			[&qvec, &Evec](std::size_t idx1, std::size_t idx2) -> bool
 		{
 			// if q components are equal, sort by E
-			if(tl2::equals(qvec[idx1], qvec[idx2], g_eps))
+			if(tl2::equals(qvec[idx1], qvec[idx2], (qreal)g_eps))
 				return Evec[idx1] < Evec[idx2];
 			return qvec[idx1] < qvec[idx2];
 		});
@@ -419,9 +419,9 @@ void MagDynDlg::CalcHamiltonian()
 
 	const t_vec_real Q = tl2::create<t_vec_real>(
 	{
-		m_q[0]->value(),
-		m_q[1]->value(),
-		m_q[2]->value(),
+		(t_real)m_q[0]->value(),
+		(t_real)m_q[1]->value(),
+		(t_real)m_q[2]->value(),
 	});
 
 	std::ostringstream ostr;
@@ -460,9 +460,9 @@ void MagDynDlg::CalcHamiltonian()
 	{
 		const t_vec_real O = tl2::create<t_vec_real>(
 		{
-			m_ordering[0]->value(),
-			m_ordering[1]->value(),
-			m_ordering[2]->value(),
+			(t_real)m_ordering[0]->value(),
+			(t_real)m_ordering[1]->value(),
+			(t_real)m_ordering[2]->value(),
 		});
 
 		if(!tl2::equals_0<t_vec_real>(O, g_eps))

@@ -231,13 +231,17 @@ load_cif(const std::string& filename, t_real eps=1e-6)
 {
 	auto ifstr = std::ifstream(filename);
 	if(!ifstr)
-		return std::make_tuple("Cannot open CIF.", std::vector<t_vec>{}, std::vector<std::vector<t_vec>>{}, std::vector<std::string>{}, Lattice{}, std::vector<t_mat>{});
+		return std::make_tuple("Cannot open CIF.",
+			std::vector<t_vec>{}, std::vector<std::vector<t_vec>>{},
+			std::vector<std::string>{}, Lattice<t_real>{}, std::vector<t_mat>{});
 
 	// load CIF
 	auto cif = gemmi::cif::read_istream(ifstr, 4096, filename.c_str());
 
 	if(!cif.blocks.size())
-		return std::make_tuple("No blocks in CIF.", std::vector<t_vec>{}, std::vector<std::vector<t_vec>>{}, std::vector<std::string>{}, Lattice{}, std::vector<t_mat>{});
+		return std::make_tuple("No blocks in CIF.",
+			std::vector<t_vec>{}, std::vector<std::vector<t_vec>>{},
+			std::vector<std::string>{}, Lattice<t_real>{}, std::vector<t_mat>{});
 
 	// get the block
 	/*const*/ auto& block = cif.sole_block();
@@ -317,10 +321,17 @@ get_sgs(bool bAddNr=true, bool bAddHall=true)
 			auto M = op.float_seitz();
 
 			t_mat mat = tl2::create<t_mat>({
-				std::get<0>(std::get<0>(M)), std::get<1>(std::get<0>(M)), std::get<2>(std::get<0>(M)), std::get<3>(std::get<0>(M)),
-				std::get<0>(std::get<1>(M)), std::get<1>(std::get<1>(M)), std::get<2>(std::get<1>(M)), std::get<3>(std::get<1>(M)),
-				std::get<0>(std::get<2>(M)), std::get<1>(std::get<2>(M)), std::get<2>(std::get<2>(M)), std::get<3>(std::get<2>(M)),
-				std::get<0>(std::get<3>(M)), std::get<1>(std::get<3>(M)), std::get<2>(std::get<3>(M)), std::get<3>(std::get<3>(M)) });
+				(t_real)std::get<0>(std::get<0>(M)), (t_real)std::get<1>(std::get<0>(M)),
+				(t_real)std::get<2>(std::get<0>(M)), (t_real)std::get<3>(std::get<0>(M)),
+
+				(t_real)std::get<0>(std::get<1>(M)), (t_real)std::get<1>(std::get<1>(M)),
+				(t_real)std::get<2>(std::get<1>(M)), (t_real)std::get<3>(std::get<1>(M)),
+
+				(t_real)std::get<0>(std::get<2>(M)), (t_real)std::get<1>(std::get<2>(M)),
+				(t_real)std::get<2>(std::get<2>(M)), (t_real)std::get<3>(std::get<2>(M)),
+
+				(t_real)std::get<0>(std::get<3>(M)), (t_real)std::get<1>(std::get<3>(M)),
+				(t_real)std::get<2>(std::get<3>(M)), (t_real)std::get<3>(std::get<3>(M)) });
 
 			ops.emplace_back(std::move(mat));
 		}

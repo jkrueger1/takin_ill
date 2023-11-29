@@ -503,8 +503,8 @@ private:
 	bool m_stopRequested = false;
 
 	// data for dispersion plot
-	QVector<t_real> m_qs_data{}, m_Es_data{}, m_ws_data{};
-	QVector<t_real> m_qs_data_channel[3]{}, m_Es_data_channel[3]{}, m_ws_data_channel[3]{};
+	QVector<qreal> m_qs_data{}, m_Es_data{}, m_ws_data{};
+	QVector<qreal> m_qs_data_channel[3]{}, m_Es_data_channel[3]{}, m_ws_data_channel[3]{};
 	t_size m_Q_idx{};                 // plot x axis
 	t_real m_Q_start{}, m_Q_end{};    // plot x axis range
 

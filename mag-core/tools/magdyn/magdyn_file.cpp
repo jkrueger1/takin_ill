@@ -737,16 +737,16 @@ void MagDynDlg::SaveDispersion()
 
 	const t_real Q_start[]
 	{
-		m_q_start[0]->value(),
-		m_q_start[1]->value(),
-		m_q_start[2]->value(),
+		(t_real)m_q_start[0]->value(),
+		(t_real)m_q_start[1]->value(),
+		(t_real)m_q_start[2]->value(),
 	};
 
 	const t_real Q_end[]
 	{
-		m_q_end[0]->value(),
-		m_q_end[1]->value(),
-		m_q_end[2]->value(),
+		(t_real)m_q_end[0]->value(),
+		(t_real)m_q_end[1]->value(),
+		(t_real)m_q_end[2]->value(),
 	};
 
 	const t_size num_pts = m_num_points->value();
@@ -823,13 +823,13 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 	}
 
 	const t_vec_real Qstart = tl2::create<t_vec_real>({
-		m_exportStartQ[0]->value(),
-		m_exportStartQ[1]->value(),
-		m_exportStartQ[2]->value() });
+		(t_real)m_exportStartQ[0]->value(),
+		(t_real)m_exportStartQ[1]->value(),
+		(t_real)m_exportStartQ[2]->value() });
 	const t_vec_real Qend = tl2::create<t_vec_real>({
-		m_exportEndQ[0]->value(),
-		m_exportEndQ[1]->value(),
-		m_exportEndQ[2]->value() });
+		(t_real)m_exportEndQ[0]->value(),
+		(t_real)m_exportEndQ[1]->value(),
+		(t_real)m_exportEndQ[2]->value() });
 
 	const t_size num_pts_h = m_exportNumPoints[0]->value();
 	const t_size num_pts_k = m_exportNumPoints[1]->value();

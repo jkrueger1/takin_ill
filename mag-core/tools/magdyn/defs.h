@@ -45,7 +45,7 @@
 // type definitions
 // ----------------------------------------------------------------------------
 using t_size = std::size_t;
-using t_real = double;
+using t_real = /*float*/ double;
 using t_cplx = std::complex<t_real>;
 
 using t_vec_real = tl2::vec<t_real, std::vector>;

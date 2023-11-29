@@ -80,16 +80,16 @@ void MagDynDlg::RotateField(bool ccw)
 {
 	t_vec_real axis = tl2::create<t_vec_real>(
 	{
-		m_rot_axis[0]->value(),
-		m_rot_axis[1]->value(),
-		m_rot_axis[2]->value(),
+		(t_real)m_rot_axis[0]->value(),
+		(t_real)m_rot_axis[1]->value(),
+		(t_real)m_rot_axis[2]->value(),
 	});
 
 	t_vec_real B = tl2::create<t_vec_real>(
 	{
-		m_field_dir[0]->value(),
-		m_field_dir[1]->value(),
-		m_field_dir[2]->value(),
+		(t_real)m_field_dir[0]->value(),
+		(t_real)m_field_dir[1]->value(),
+		(t_real)m_field_dir[2]->value(),
 	});
 
 	t_real angle = m_rot_angle->value() / 180.*tl2::pi<t_real>;
@@ -740,16 +740,16 @@ void MagDynDlg::SyncSitesAndTerms()
 	{
 		t_vec_real ordering = tl2::create<t_vec_real>(
 		{
-			m_ordering[0]->value(),
-			m_ordering[1]->value(),
-			m_ordering[2]->value(),
+			(t_real)m_ordering[0]->value(),
+			(t_real)m_ordering[1]->value(),
+			(t_real)m_ordering[2]->value(),
 		});
 
 		t_vec_real rotaxis = tl2::create<t_vec_real>(
 		{
-			m_normaxis[0]->value(),
-			m_normaxis[1]->value(),
-			m_normaxis[2]->value(),
+			(t_real)m_normaxis[0]->value(),
+			(t_real)m_normaxis[1]->value(),
+			(t_real)m_normaxis[2]->value(),
 		});
 
 		m_dyn.SetOrderingWavevector(ordering);
@@ -762,9 +762,9 @@ void MagDynDlg::SyncSitesAndTerms()
 		t_magdyn::ExternalField field;
 		field.dir = tl2::create<t_vec_real>(
 		{
-			m_field_dir[0]->value(),
-			m_field_dir[1]->value(),
-			m_field_dir[2]->value(),
+			(t_real)m_field_dir[0]->value(),
+			(t_real)m_field_dir[1]->value(),
+			(t_real)m_field_dir[2]->value(),
 		});
 
 		field.mag = m_field_mag->value();

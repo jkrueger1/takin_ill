@@ -141,14 +141,14 @@ void TrafoCalculator::CalculateRotation()
 		return;
 
 	t_vec_real axis = tl2::create<t_vec_real>({
-		m_spinAxis[0]->value(),
-		m_spinAxis[1]->value(),
-		m_spinAxis[2]->value() });
+		(t_real)m_spinAxis[0]->value(),
+		(t_real)m_spinAxis[1]->value(),
+		(t_real)m_spinAxis[2]->value() });
 	t_real angle = m_spinAngle->value() / 180. * tl2::pi<t_real>;
 	t_vec_real vec = tl2::create<t_vec_real>({
-		m_spinVecToRotate[0]->value(),
-		m_spinVecToRotate[1]->value(),
-		m_spinVecToRotate[2]->value() });
+		(t_real)m_spinVecToRotate[0]->value(),
+		(t_real)m_spinVecToRotate[1]->value(),
+		(t_real)m_spinVecToRotate[2]->value() });
 
 	m_textRotation->clear();
 
