@@ -45,10 +45,6 @@ namespace asio = boost::asio;
 
 using namespace tl2_ops;
 
-extern t_real g_eps;
-extern int g_prec;
-extern int g_prec_gui;
-
 
 /**
  * clears the dispersion graph

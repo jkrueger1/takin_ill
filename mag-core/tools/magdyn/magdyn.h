@@ -70,12 +70,6 @@
 using namespace tl2_mag;
 
 
-// let the user explicitly specify the orthogonal spin
-//#define MAGDYN_ALLOW_SPIN_ORTHO_SETTABLE
-
-// make the general interaction matrix accessible
-#define MAGDYN_ALLOW_GENERAL_J
-
 
 // magnon calculation core
 using t_magdyn = MagDyn<t_mat, t_vec, t_mat_real, t_vec_real, t_cplx, t_real, t_size>;
@@ -98,14 +92,12 @@ enum : int
  */
 enum : int
 {
-	COL_SITE_NAME = 0,
-	COL_SITE_POS_X, COL_SITE_POS_Y, COL_SITE_POS_Z,
-	COL_SITE_SPIN_X, COL_SITE_SPIN_Y, COL_SITE_SPIN_Z,
-	COL_SITE_SPIN_MAG,
-	COL_SITE_RGB,
-#ifdef MAGDYN_ALLOW_SPIN_ORTHO_SETTABLE
+	COL_SITE_NAME = 0,                                 // label
+	COL_SITE_POS_X, COL_SITE_POS_Y, COL_SITE_POS_Z,    // site position
+	COL_SITE_SPIN_X, COL_SITE_SPIN_Y, COL_SITE_SPIN_Z, // spin direction
+	COL_SITE_SPIN_MAG,                                 // spin magnitude
+	COL_SITE_RGB,                                      // colour
 	COL_SITE_SPIN_ORTHO_X, COL_SITE_SPIN_ORTHO_Y, COL_SITE_SPIN_ORTHO_Z,
-#endif
 
 	NUM_SITE_COLS
 };
@@ -116,17 +108,15 @@ enum : int
  */
 enum : int
 {
-	COL_XCH_NAME = 0,
-	COL_XCH_ATOM1_IDX, COL_XCH_ATOM2_IDX,
-	COL_XCH_DIST_X, COL_XCH_DIST_Y, COL_XCH_DIST_Z,
+	COL_XCH_NAME = 0,                                // label
+	COL_XCH_ATOM1_IDX, COL_XCH_ATOM2_IDX,            // site indices
+	COL_XCH_DIST_X, COL_XCH_DIST_Y, COL_XCH_DIST_Z,  // unit cell distance
 	COL_XCH_INTERACTION,                             // isotropic exchange interaction
 	COL_XCH_DMI_X, COL_XCH_DMI_Y, COL_XCH_DMI_Z,     // antisymmetric DMI
-#ifdef MAGDYN_ALLOW_GENERAL_J
+	COL_XCH_RGB,                                     // colour
 	COL_XCH_GEN_XX, COL_XCH_GEN_XY, COL_XCH_GEN_XZ,  //
 	COL_XCH_GEN_YX, COL_XCH_GEN_YY, COL_XCH_GEN_YZ,  // general interaction matrix
 	COL_XCH_GEN_ZX, COL_XCH_GEN_ZY, COL_XCH_GEN_ZZ,  //
-#endif
-	COL_XCH_RGB,
 
 	NUM_XCH_COLS
 };
@@ -210,9 +200,7 @@ protected:
 
 	QAction *m_autocalc{};
 	QAction *m_use_dmi{};
-#ifdef MAGDYN_ALLOW_GENERAL_J
 	QAction *m_use_genJ{};
-#endif
 	QAction *m_use_field{};
 	QAction *m_use_temperature{};
 	QAction *m_use_weights{};
@@ -512,6 +500,10 @@ private:
 	std::size_t m_structplot_sphere = 0;
 	std::size_t m_structplot_arrow = 0;
 	std::size_t m_structplot_cyl = 0;
+
+	// optional features
+	bool m_allow_ortho_spin = false;
+	bool m_allow_general_J = false;
 };
 
 

@@ -52,9 +52,9 @@ MagDynDlg::MagDynDlg(QWidget* pParent) : QDialog{pParent},
 
 	InitSettingsDlg();
 
-	// calculator settings
-	m_dyn.SetEpsilon(g_eps);
-	m_dyn.SetPrecision(g_prec);
+	// read settings that require a restart
+	m_allow_ortho_spin = (g_allow_ortho_spin != 0);
+	m_allow_general_J = (g_allow_general_J != 0);
 
 	// create gui
 	CreateMainWindow();
@@ -74,7 +74,7 @@ MagDynDlg::MagDynDlg(QWidget* pParent) : QDialog{pParent},
 	CreateCoordinatesPanel();
 	CreateExportPanel();
 
-	m_recent.SetMaxRecentFiles(g_maxnum_recents);
+	InitSettings();
 
 	// restore settings
 	if(m_sett)
@@ -196,14 +196,15 @@ void MagDynDlg::AddSiteTabItem(int row,
 		m_sitestab->setItem(row, COL_SITE_SPIN_MAG,
 			new tl2::NumericTableWidgetItem<t_real>(S));
 		m_sitestab->setItem(row, COL_SITE_RGB, new QTableWidgetItem(rgb.c_str()));
-#ifdef MAGDYN_ALLOW_SPIN_ORTHO_SETTABLE
-		m_sitestab->setItem(row, COL_SITE_SPIN_ORTHO_X,
-			new tl2::NumericTableWidgetItem<t_real>(sox));
-		m_sitestab->setItem(row, COL_SITE_SPIN_ORTHO_Y,
-			new tl2::NumericTableWidgetItem<t_real>(soy));
-		m_sitestab->setItem(row, COL_SITE_SPIN_ORTHO_Z,
-			new tl2::NumericTableWidgetItem<t_real>(soz));
-#endif
+		if(m_allow_ortho_spin)
+		{
+			m_sitestab->setItem(row, COL_SITE_SPIN_ORTHO_X,
+				new tl2::NumericTableWidgetItem<t_real>(sox));
+			m_sitestab->setItem(row, COL_SITE_SPIN_ORTHO_Y,
+				new tl2::NumericTableWidgetItem<t_real>(soy));
+			m_sitestab->setItem(row, COL_SITE_SPIN_ORTHO_Z,
+				new tl2::NumericTableWidgetItem<t_real>(soz));
+		}
 	}
 
 	m_sitestab->scrollToItem(m_sitestab->item(row, 0));
@@ -299,26 +300,27 @@ void MagDynDlg::AddTermTabItem(int row,
 		m_termstab->setItem(row, COL_XCH_DMI_Z,
 			new tl2::NumericTableWidgetItem<t_real>(dmi_z));
 		m_termstab->setItem(row, COL_XCH_RGB, new QTableWidgetItem(rgb.c_str()));
-#ifdef MAGDYN_ALLOW_GENERAL_J
-		m_termstab->setItem(row, COL_XCH_GEN_XX,
-			new tl2::NumericTableWidgetItem<t_real>(gen_xx));
-		m_termstab->setItem(row, COL_XCH_GEN_XY,
-			new tl2::NumericTableWidgetItem<t_real>(gen_xy));
-		m_termstab->setItem(row, COL_XCH_GEN_XZ,
-			new tl2::NumericTableWidgetItem<t_real>(gen_xz));
-		m_termstab->setItem(row, COL_XCH_GEN_YX,
-			new tl2::NumericTableWidgetItem<t_real>(gen_yx));
-		m_termstab->setItem(row, COL_XCH_GEN_YY,
-			new tl2::NumericTableWidgetItem<t_real>(gen_yy));
-		m_termstab->setItem(row, COL_XCH_GEN_YZ,
-			new tl2::NumericTableWidgetItem<t_real>(gen_yz));
-		m_termstab->setItem(row, COL_XCH_GEN_ZX,
-			new tl2::NumericTableWidgetItem<t_real>(gen_zx));
-		m_termstab->setItem(row, COL_XCH_GEN_ZY,
-			new tl2::NumericTableWidgetItem<t_real>(gen_zy));
-		m_termstab->setItem(row, COL_XCH_GEN_ZZ,
-			new tl2::NumericTableWidgetItem<t_real>(gen_zz));
-#endif
+		if(m_allow_general_J)
+		{
+			m_termstab->setItem(row, COL_XCH_GEN_XX,
+				new tl2::NumericTableWidgetItem<t_real>(gen_xx));
+			m_termstab->setItem(row, COL_XCH_GEN_XY,
+				new tl2::NumericTableWidgetItem<t_real>(gen_xy));
+			m_termstab->setItem(row, COL_XCH_GEN_XZ,
+				new tl2::NumericTableWidgetItem<t_real>(gen_xz));
+			m_termstab->setItem(row, COL_XCH_GEN_YX,
+				new tl2::NumericTableWidgetItem<t_real>(gen_yx));
+			m_termstab->setItem(row, COL_XCH_GEN_YY,
+				new tl2::NumericTableWidgetItem<t_real>(gen_yy));
+			m_termstab->setItem(row, COL_XCH_GEN_YZ,
+				new tl2::NumericTableWidgetItem<t_real>(gen_yz));
+			m_termstab->setItem(row, COL_XCH_GEN_ZX,
+				new tl2::NumericTableWidgetItem<t_real>(gen_zx));
+			m_termstab->setItem(row, COL_XCH_GEN_ZY,
+				new tl2::NumericTableWidgetItem<t_real>(gen_zy));
+			m_termstab->setItem(row, COL_XCH_GEN_ZZ,
+				new tl2::NumericTableWidgetItem<t_real>(gen_zz));
+		}
 	}
 
 	m_termstab->scrollToItem(m_termstab->item(row, 0));

@@ -75,6 +75,9 @@ extern int g_prec, g_prec_gui;
 // epsilons
 extern t_real g_eps;
 
+// optional features
+extern int g_allow_ortho_spin, g_allow_general_J;
+
 // gui theme and font
 extern QString g_theme, g_font;
 
@@ -92,7 +95,7 @@ void get_settings_from_takin_core();
 // ----------------------------------------------------------------------------
 #include "settings.h"
 
-constexpr std::array<SettingsVariable, 4> g_settingsvariables
+constexpr std::array<SettingsVariable, 6> g_settingsvariables
 {{
 	// epsilons and precisions
 	{
@@ -116,6 +119,20 @@ constexpr std::array<SettingsVariable, 4> g_settingsvariables
 		.description = "Maximum number of recent files.",
 		.key = "maxnum_recents",
 		.value = &g_maxnum_recents,
+	},
+
+	// optional features
+	{
+		.description = "Allow setting of orthogonal spins.",
+		.key = "ortho_spins",
+		.value = &g_allow_ortho_spin,
+		.editor = SettingsVariableEditor::YESNO,
+	},
+	{
+		.description = "Allow setting of general exchange matrix J.",
+		.key = "allow_gen_J",
+		.value = &g_allow_general_J,
+		.editor = SettingsVariableEditor::YESNO,
 	},
 }};
 // ----------------------------------------------------------------------------

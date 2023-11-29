@@ -7219,7 +7219,7 @@ requires is_vec<t_vec> && is_mat<t_mat>
 template<class t_mat, class t_real = typename t_mat::value_type,
 template<class...> class t_cont = std::vector>
 t_cont<t_mat> apply_ops_hom(const t_mat& _mat, const t_cont<t_mat>& ops,
-	t_real eps=std::numeric_limits<t_real>::epsilon(), bool ret_hom = false)
+	bool ret_hom = false)
 requires is_mat<t_mat>
 {
 	// convert matrix to homogeneous coordinates

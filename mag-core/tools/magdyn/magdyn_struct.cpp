@@ -228,15 +228,15 @@ void MagDynDlg::GenerateSitesFromSG()
 			std::string sy = m_sitestab->item(row, COL_SITE_SPIN_Y)->text().toStdString();
 			std::string sz = m_sitestab->item(row, COL_SITE_SPIN_Z)->text().toStdString();
 
-#ifdef MAGDYN_ALLOW_SPIN_ORTHO_SETTABLE
-			std::string sox = m_sitestab->item(row, COL_SITE_SPIN_ORTHO_X)->text().toStdString();
-			std::string soy = m_sitestab->item(row, COL_SITE_SPIN_ORTHO_Y)->text().toStdString();
-			std::string soz = m_sitestab->item(row, COL_SITE_SPIN_ORTHO_Z)->text().toStdString();
-#else
 			std::string sox = "auto";
 			std::string soy = "auto";
 			std::string soz = "auto";
-#endif
+			if(m_allow_ortho_spin)
+			{
+				sox = m_sitestab->item(row, COL_SITE_SPIN_ORTHO_X)->text().toStdString();
+				soy = m_sitestab->item(row, COL_SITE_SPIN_ORTHO_Y)->text().toStdString();
+				soz = m_sitestab->item(row, COL_SITE_SPIN_ORTHO_Z)->text().toStdString();
+			}
 
 			t_real S = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
 				m_sitestab->item(row, COL_SITE_SPIN_MAG))->GetValue();
@@ -387,40 +387,42 @@ void MagDynDlg::GenerateCouplingsFromSG()
 			t_real genJ_xx = 0, genJ_xy = 0, genJ_xz = 0;
 			t_real genJ_yx = 0, genJ_yy = 0, genJ_yz = 0;
 			t_real genJ_zx = 0, genJ_zy = 0, genJ_zz = 0;
-#ifdef MAGDYN_ALLOW_GENERAL_J
-			bool genJ_xx_ok = parser.parse(
-				m_termstab->item(row, COL_XCH_GEN_XX)->text().toStdString());
-			genJ_xx = parser.eval().real();
-			bool genJ_xy_ok = parser.parse(
-				m_termstab->item(row, COL_XCH_GEN_XY)->text().toStdString());
-			genJ_xy = parser.eval().real();
-			bool genJ_xz_ok = parser.parse(
-				m_termstab->item(row, COL_XCH_GEN_XZ)->text().toStdString());
-			genJ_xz = parser.eval().real();
-			bool genJ_yx_ok = parser.parse(
-				m_termstab->item(row, COL_XCH_GEN_YX)->text().toStdString());
-			genJ_yx = parser.eval().real();
-			bool genJ_yy_ok = parser.parse(
-				m_termstab->item(row, COL_XCH_GEN_YY)->text().toStdString());
-			genJ_yy = parser.eval().real();
-			bool genJ_yz_ok = parser.parse(
-				m_termstab->item(row, COL_XCH_GEN_YZ)->text().toStdString());
-			genJ_yz = parser.eval().real();
-			bool genJ_zx_ok = parser.parse(
-				m_termstab->item(row, COL_XCH_GEN_ZX)->text().toStdString());
-			genJ_zx = parser.eval().real();
-			bool genJ_zy_ok = parser.parse(
-				m_termstab->item(row, COL_XCH_GEN_ZY)->text().toStdString());
-			genJ_zy = parser.eval().real();
-			bool genJ_zz_ok = parser.parse(
-				m_termstab->item(row, COL_XCH_GEN_ZZ)->text().toStdString());
-			genJ_zz = parser.eval().real();
+			if(m_allow_general_J)
+			{
+				bool genJ_xx_ok = parser.parse(
+					m_termstab->item(row, COL_XCH_GEN_XX)->text().toStdString());
+				genJ_xx = parser.eval().real();
+				bool genJ_xy_ok = parser.parse(
+					m_termstab->item(row, COL_XCH_GEN_XY)->text().toStdString());
+				genJ_xy = parser.eval().real();
+				bool genJ_xz_ok = parser.parse(
+					m_termstab->item(row, COL_XCH_GEN_XZ)->text().toStdString());
+				genJ_xz = parser.eval().real();
+				bool genJ_yx_ok = parser.parse(
+					m_termstab->item(row, COL_XCH_GEN_YX)->text().toStdString());
+				genJ_yx = parser.eval().real();
+				bool genJ_yy_ok = parser.parse(
+					m_termstab->item(row, COL_XCH_GEN_YY)->text().toStdString());
+				genJ_yy = parser.eval().real();
+				bool genJ_yz_ok = parser.parse(
+					m_termstab->item(row, COL_XCH_GEN_YZ)->text().toStdString());
+				genJ_yz = parser.eval().real();
+				bool genJ_zx_ok = parser.parse(
+					m_termstab->item(row, COL_XCH_GEN_ZX)->text().toStdString());
+				genJ_zx = parser.eval().real();
+				bool genJ_zy_ok = parser.parse(
+					m_termstab->item(row, COL_XCH_GEN_ZY)->text().toStdString());
+				genJ_zy = parser.eval().real();
+				bool genJ_zz_ok = parser.parse(
+					m_termstab->item(row, COL_XCH_GEN_ZZ)->text().toStdString());
+				genJ_zz = parser.eval().real();
 
-			if(!genJ_xx_ok || !genJ_xy_ok || !genJ_xz_ok ||
-				!genJ_yx_ok || !genJ_yy_ok || !genJ_yz_ok ||
-				!genJ_zx_ok || !genJ_zy_ok || !genJ_zz_ok)
-				std::cerr << "Could not parse general interaction matrix expression." << std::endl;
-#endif
+				if(!genJ_xx_ok || !genJ_xy_ok || !genJ_xz_ok ||
+					!genJ_yx_ok || !genJ_yy_ok || !genJ_yz_ok ||
+					!genJ_zx_ok || !genJ_zy_ok || !genJ_zz_ok)
+					std::cerr << "Could not parse general interaction matrix expression."
+						<< std::endl;
+			}
 
 			std::string rgb = m_termstab->item(row, COL_XCH_RGB)->text().toStdString();
 			std::string oldJ = m_termstab->item(row, COL_XCH_INTERACTION)->text().toStdString();
@@ -466,7 +468,7 @@ void MagDynDlg::GenerateCouplingsFromSG()
 				genJ_zx, genJ_zy, genJ_zz,  0,
 				0,             0,       0,  0
 			});
-			auto newJgens = tl2::apply_ops_hom<t_mat_real, t_real>(Jgen, ops, g_eps);
+			auto newJgens = tl2::apply_ops_hom<t_mat_real, t_real>(Jgen, ops);
 
 			for(t_size op_idx=0; op_idx<sites1_sc.size(); ++op_idx)
 			{
@@ -821,14 +823,19 @@ void MagDynDlg::SyncSitesAndTerms()
 			m_sitestab->item(row, COL_SITE_SPIN_Z));
 		auto *spin_mag = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
 			m_sitestab->item(row, COL_SITE_SPIN_MAG));
-#ifdef MAGDYN_ALLOW_SPIN_ORTHO_SETTABLE
-		auto *spin_ortho_x = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_sitestab->item(row, COL_SITE_SPIN_ORTHO_X));
-		auto *spin_ortho_y = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_sitestab->item(row, COL_SITE_SPIN_ORTHO_Y));
-		auto *spin_ortho_z = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_sitestab->item(row, COL_SITE_SPIN_ORTHO_Z));
-#endif
+
+		tl2::NumericTableWidgetItem<t_real> *spin_ortho_x = nullptr;
+		tl2::NumericTableWidgetItem<t_real> *spin_ortho_y = nullptr;
+		tl2::NumericTableWidgetItem<t_real> *spin_ortho_z = nullptr;
+		if(m_allow_ortho_spin)
+		{
+			spin_ortho_x = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_sitestab->item(row, COL_SITE_SPIN_ORTHO_X));
+			spin_ortho_y = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_sitestab->item(row, COL_SITE_SPIN_ORTHO_Y));
+			spin_ortho_z = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_sitestab->item(row, COL_SITE_SPIN_ORTHO_Z));
+		}
 
 		if(!name || !pos_x || !pos_y || !pos_z ||
 			!spin_x || !spin_y || !spin_z || !spin_mag)
@@ -857,14 +864,15 @@ void MagDynDlg::SyncSitesAndTerms()
 		site.spin_ortho[1] = "";
 		site.spin_ortho[2] = "";
 
-#ifdef MAGDYN_ALLOW_SPIN_ORTHO_SETTABLE
-		if(spin_ortho_x && spin_ortho_x->text() != "" && spin_ortho_x->text() != "auto")
-			site.spin_ortho[0] = spin_ortho_x->text().toStdString();
-		if(spin_ortho_y && spin_ortho_y->text() != "" && spin_ortho_y->text() != "auto")
-			site.spin_ortho[1] = spin_ortho_y->text().toStdString();
-		if(spin_ortho_z && spin_ortho_z->text() != "" && spin_ortho_z->text() != "auto")
-			site.spin_ortho[2] = spin_ortho_z->text().toStdString();
-#endif
+		if(m_allow_ortho_spin)
+		{
+			if(spin_ortho_x && spin_ortho_x->text() != "" && spin_ortho_x->text() != "auto")
+				site.spin_ortho[0] = spin_ortho_x->text().toStdString();
+			if(spin_ortho_y && spin_ortho_y->text() != "" && spin_ortho_y->text() != "auto")
+				site.spin_ortho[1] = spin_ortho_y->text().toStdString();
+			if(spin_ortho_z && spin_ortho_z->text() != "" && spin_ortho_z->text() != "auto")
+				site.spin_ortho[2] = spin_ortho_z->text().toStdString();
+		}
 
 		m_dyn.AddMagneticSite(std::move(site));
 	}
@@ -889,26 +897,37 @@ void MagDynDlg::SyncSitesAndTerms()
 			m_termstab->item(row, COL_XCH_DMI_Y));
 		auto *dmi_z = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
 			m_termstab->item(row, COL_XCH_DMI_Z));
-#ifdef MAGDYN_ALLOW_GENERAL_J
-		auto *gen_xx = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_termstab->item(row, COL_XCH_GEN_XX));
-		auto *gen_xy = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_termstab->item(row, COL_XCH_GEN_XY));
-		auto *gen_xz = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_termstab->item(row, COL_XCH_GEN_XZ));
-		auto *gen_yx = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_termstab->item(row, COL_XCH_GEN_YX));
-		auto *gen_yy = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_termstab->item(row, COL_XCH_GEN_YY));
-		auto *gen_yz = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_termstab->item(row, COL_XCH_GEN_YZ));
-		auto *gen_zx = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_termstab->item(row, COL_XCH_GEN_ZX));
-		auto *gen_zy = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_termstab->item(row, COL_XCH_GEN_ZY));
-		auto *gen_zz = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_termstab->item(row, COL_XCH_GEN_ZZ));
-#endif
+
+		tl2::NumericTableWidgetItem<t_real>* gen_xx = nullptr;
+		tl2::NumericTableWidgetItem<t_real>* gen_xy = nullptr;
+		tl2::NumericTableWidgetItem<t_real>* gen_xz = nullptr;
+		tl2::NumericTableWidgetItem<t_real>* gen_yx = nullptr;
+		tl2::NumericTableWidgetItem<t_real>* gen_yy = nullptr;
+		tl2::NumericTableWidgetItem<t_real>* gen_yz = nullptr;
+		tl2::NumericTableWidgetItem<t_real>* gen_zx = nullptr;
+		tl2::NumericTableWidgetItem<t_real>* gen_zy = nullptr;
+		tl2::NumericTableWidgetItem<t_real>* gen_zz = nullptr;
+		if(m_allow_general_J)
+		{
+			gen_xx = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_termstab->item(row, COL_XCH_GEN_XX));
+			gen_xy = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_termstab->item(row, COL_XCH_GEN_XY));
+			gen_xz = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_termstab->item(row, COL_XCH_GEN_XZ));
+			gen_yx = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_termstab->item(row, COL_XCH_GEN_YX));
+			gen_yy = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_termstab->item(row, COL_XCH_GEN_YY));
+			gen_yz = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_termstab->item(row, COL_XCH_GEN_YZ));
+			gen_zx = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_termstab->item(row, COL_XCH_GEN_ZX));
+			gen_zy = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_termstab->item(row, COL_XCH_GEN_ZY));
+			gen_zz = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_termstab->item(row, COL_XCH_GEN_ZZ));
+		}
 
 		auto atom_1_idx = GetTermAtomIndex(row, 0);
 		auto atom_2_idx = GetTermAtomIndex(row, 1);
@@ -943,8 +962,7 @@ void MagDynDlg::SyncSitesAndTerms()
 			term.dmi[2] = dmi_z->text().toStdString();
 		}
 
-#ifdef MAGDYN_ALLOW_GENERAL_J
-		if(m_use_genJ->isChecked())
+		if(m_allow_general_J && m_use_genJ->isChecked())
 		{
 			term.Jgen[0][0] = gen_xx->text().toStdString();
 			term.Jgen[0][1] = gen_xy->text().toStdString();
@@ -956,7 +974,6 @@ void MagDynDlg::SyncSitesAndTerms()
 			term.Jgen[2][1] = gen_zy->text().toStdString();
 			term.Jgen[2][2] = gen_zz->text().toStdString();
 		}
-#endif
 
 		m_dyn.AddExchangeTerm(std::move(term));
 	}

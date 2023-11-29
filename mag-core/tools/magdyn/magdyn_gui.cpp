@@ -70,6 +70,10 @@ void MagDynDlg::InitSettingsDlg()
  */
 void MagDynDlg::InitSettings()
 {
+	// calculator settings
+	m_dyn.SetEpsilon(g_eps);
+	m_dyn.SetPrecision(g_prec);
+
 	m_recent.SetMaxRecentFiles(g_maxnum_recents);
 }
 
@@ -151,6 +155,7 @@ void MagDynDlg::CreateSitesPanel()
 	m_sitestab->verticalHeader()->setVisible(true);
 
 	m_sitestab->setColumnCount(NUM_SITE_COLS);
+
 	m_sitestab->setHorizontalHeaderItem(COL_SITE_NAME,
 		new QTableWidgetItem{"Name"});
 	m_sitestab->setHorizontalHeaderItem(COL_SITE_POS_X,
@@ -169,14 +174,20 @@ void MagDynDlg::CreateSitesPanel()
 		new QTableWidgetItem{"Spin |S|"});
 	m_sitestab->setHorizontalHeaderItem(COL_SITE_RGB,
 		new QTableWidgetItem{"Colour"});
-#ifdef MAGDYN_ALLOW_SPIN_ORTHO_SETTABLE
-	m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_ORTHO_X,
-		new QTableWidgetItem{"Spin u x"});
-	m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_ORTHO_Y,
-		new QTableWidgetItem{"Spin u y"});
-	m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_ORTHO_Z,
-		new QTableWidgetItem{"Spin u z"});
-#endif
+
+	if(m_allow_ortho_spin)
+	{
+		m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_ORTHO_X,
+			new QTableWidgetItem{"Spin u x"});
+		m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_ORTHO_Y,
+			new QTableWidgetItem{"Spin u y"});
+		m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_ORTHO_Z,
+			new QTableWidgetItem{"Spin u z"});
+	}
+	else
+	{
+		m_sitestab->setColumnCount(NUM_SITE_COLS - 3);
+	}
 
 	m_sitestab->setColumnWidth(COL_SITE_NAME, 90);
 	m_sitestab->setColumnWidth(COL_SITE_POS_X, 80);
@@ -187,11 +198,13 @@ void MagDynDlg::CreateSitesPanel()
 	m_sitestab->setColumnWidth(COL_SITE_SPIN_Z, 80);
 	m_sitestab->setColumnWidth(COL_SITE_SPIN_MAG, 80);
 	m_sitestab->setColumnWidth(COL_SITE_RGB, 80);
-#ifdef MAGDYN_ALLOW_SPIN_ORTHO_SETTABLE
-	m_sitestab->setColumnWidth(COL_SITE_SPIN_ORTHO_X, 80);
-	m_sitestab->setColumnWidth(COL_SITE_SPIN_ORTHO_Y, 80);
-	m_sitestab->setColumnWidth(COL_SITE_SPIN_ORTHO_Z, 80);
-#endif
+
+	if(m_allow_ortho_spin)
+	{
+		m_sitestab->setColumnWidth(COL_SITE_SPIN_ORTHO_X, 80);
+		m_sitestab->setColumnWidth(COL_SITE_SPIN_ORTHO_Y, 80);
+		m_sitestab->setColumnWidth(COL_SITE_SPIN_ORTHO_Z, 80);
+	}
 
 	m_sitestab->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Expanding});
@@ -450,28 +463,34 @@ void MagDynDlg::CreateExchangeTermsPanel()
 		COL_XCH_DMI_Y, new QTableWidgetItem{"DMI y"});
 	m_termstab->setHorizontalHeaderItem(
 		COL_XCH_DMI_Z, new QTableWidgetItem{"DMI z"});
-#ifdef MAGDYN_ALLOW_GENERAL_J
-	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_GEN_XX, new QTableWidgetItem{"J xx"});
-	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_GEN_XY, new QTableWidgetItem{"J xy"});
-	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_GEN_XZ, new QTableWidgetItem{"J xz"});
-	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_GEN_YX, new QTableWidgetItem{"J yx"});
-	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_GEN_YY, new QTableWidgetItem{"J yy"});
-	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_GEN_YZ, new QTableWidgetItem{"J yz"});
-	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_GEN_ZX, new QTableWidgetItem{"J zx"});
-	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_GEN_ZY, new QTableWidgetItem{"J zy"});
-	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_GEN_ZZ, new QTableWidgetItem{"J zz"});
-#endif
 	m_termstab->setHorizontalHeaderItem(
 		COL_XCH_RGB, new QTableWidgetItem{"Colour"});
+
+	if(m_allow_general_J)
+	{
+		m_termstab->setHorizontalHeaderItem(
+			COL_XCH_GEN_XX, new QTableWidgetItem{"J xx"});
+		m_termstab->setHorizontalHeaderItem(
+			COL_XCH_GEN_XY, new QTableWidgetItem{"J xy"});
+		m_termstab->setHorizontalHeaderItem(
+			COL_XCH_GEN_XZ, new QTableWidgetItem{"J xz"});
+		m_termstab->setHorizontalHeaderItem(
+			COL_XCH_GEN_YX, new QTableWidgetItem{"J yx"});
+		m_termstab->setHorizontalHeaderItem(
+			COL_XCH_GEN_YY, new QTableWidgetItem{"J yy"});
+		m_termstab->setHorizontalHeaderItem(
+			COL_XCH_GEN_YZ, new QTableWidgetItem{"J yz"});
+		m_termstab->setHorizontalHeaderItem(
+			COL_XCH_GEN_ZX, new QTableWidgetItem{"J zx"});
+		m_termstab->setHorizontalHeaderItem(
+			COL_XCH_GEN_ZY, new QTableWidgetItem{"J zy"});
+		m_termstab->setHorizontalHeaderItem(
+			COL_XCH_GEN_ZZ, new QTableWidgetItem{"J zz"});
+	}
+	else
+	{
+		m_termstab->setColumnCount(NUM_XCH_COLS - 9);
+	}
 
 	m_termstab->setColumnWidth(COL_XCH_NAME, 90);
 	m_termstab->setColumnWidth(COL_XCH_ATOM1_IDX, 80);
@@ -483,18 +502,21 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	m_termstab->setColumnWidth(COL_XCH_DMI_X, 80);
 	m_termstab->setColumnWidth(COL_XCH_DMI_Y, 80);
 	m_termstab->setColumnWidth(COL_XCH_DMI_Z, 80);
-#ifdef MAGDYN_ALLOW_GENERAL_J
-	m_termstab->setColumnWidth(COL_XCH_GEN_XX, 80);
-	m_termstab->setColumnWidth(COL_XCH_GEN_XY, 80);
-	m_termstab->setColumnWidth(COL_XCH_GEN_XZ, 80);
-	m_termstab->setColumnWidth(COL_XCH_GEN_YX, 80);
-	m_termstab->setColumnWidth(COL_XCH_GEN_YY, 80);
-	m_termstab->setColumnWidth(COL_XCH_GEN_YZ, 80);
-	m_termstab->setColumnWidth(COL_XCH_GEN_ZX, 80);
-	m_termstab->setColumnWidth(COL_XCH_GEN_ZY, 80);
-	m_termstab->setColumnWidth(COL_XCH_GEN_ZZ, 80);
-#endif
 	m_termstab->setColumnWidth(COL_XCH_RGB, 80);
+
+	if(m_allow_general_J)
+	{
+		m_termstab->setColumnWidth(COL_XCH_GEN_XX, 80);
+		m_termstab->setColumnWidth(COL_XCH_GEN_XY, 80);
+		m_termstab->setColumnWidth(COL_XCH_GEN_XZ, 80);
+		m_termstab->setColumnWidth(COL_XCH_GEN_YX, 80);
+		m_termstab->setColumnWidth(COL_XCH_GEN_YY, 80);
+		m_termstab->setColumnWidth(COL_XCH_GEN_YZ, 80);
+		m_termstab->setColumnWidth(COL_XCH_GEN_ZX, 80);
+		m_termstab->setColumnWidth(COL_XCH_GEN_ZY, 80);
+		m_termstab->setColumnWidth(COL_XCH_GEN_ZZ, 80);
+	}
+
 	m_termstab->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Expanding});
 
@@ -1934,7 +1956,6 @@ void MagDynDlg::CreateInfoDlg()
 void MagDynDlg::CreateMenuBar()
 {
 	m_menu = new QMenuBar(this);
-	m_menu->setNativeMenuBar(m_sett ? m_sett->value("native_gui", false).toBool() : false);
 
 	// file menu
 	auto menuFile = new QMenu("File", m_menu);
@@ -2022,12 +2043,14 @@ void MagDynDlg::CreateMenuBar()
 	m_use_dmi->setToolTip("Enables the Dzyaloshinskij-Moriya interaction.");
 	m_use_dmi->setCheckable(true);
 	m_use_dmi->setChecked(true);
-#ifdef MAGDYN_ALLOW_GENERAL_J
-	m_use_genJ = new QAction("Use General J", menuCalc);
-	m_use_genJ->setToolTip("Enables the general interaction matrix.");
-	m_use_genJ->setCheckable(true);
-	m_use_genJ->setChecked(true);
-#endif
+
+	if(m_allow_general_J)
+	{
+		m_use_genJ = new QAction("Use General J", menuCalc);
+		m_use_genJ->setToolTip("Enables the general interaction matrix.");
+		m_use_genJ->setCheckable(true);
+		m_use_genJ->setChecked(true);
+	}
 	m_use_field = new QAction("Use External Field", menuCalc);
 	m_use_field->setToolTip("Enables an external field.");
 	m_use_field->setCheckable(true);
@@ -2121,9 +2144,8 @@ void MagDynDlg::CreateMenuBar()
 	menuCalc->addAction(acCalc);
 	menuCalc->addSeparator();
 	menuCalc->addAction(m_use_dmi);
-#ifdef MAGDYN_ALLOW_GENERAL_J
-	menuCalc->addAction(m_use_genJ);
-#endif
+	if(m_allow_general_J)
+		menuCalc->addAction(m_use_genJ);
 	menuCalc->addAction(m_use_field);
 	menuCalc->addAction(m_use_temperature);
 	menuCalc->addSeparator();
@@ -2182,9 +2204,8 @@ void MagDynDlg::CreateMenuBar()
 	connect(acStructView, &QAction::triggered, this, &MagDynDlg::ShowStructurePlot);
 	connect(acStructImport, &QAction::triggered, this, &MagDynDlg::ShowTableImporter);
 	connect(m_use_dmi, &QAction::toggled, calc_all);
-#ifdef MAGDYN_ALLOW_GENERAL_J
-	connect(m_use_genJ, &QAction::toggled, calc_all);
-#endif
+	if(m_allow_general_J)
+		connect(m_use_genJ, &QAction::toggled, calc_all);
 	connect(m_use_field, &QAction::toggled, calc_all);
 	connect(m_use_temperature, &QAction::toggled, calc_all);
 	connect(m_use_weights, &QAction::toggled, calc_all_dyn);

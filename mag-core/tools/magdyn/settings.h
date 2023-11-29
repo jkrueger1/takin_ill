@@ -304,6 +304,15 @@ public:
 		tab->addTab(panelGui, "GUI");
 		grid->addWidget(tab, y++,0,1,1);
 
+		QLabel *labelRestart = new QLabel(
+			"Important: Applying all settings requires a program restart.",
+			this);
+		labelRestart->setWordWrap(true);
+		QFont fontRestart = labelRestart->font();
+		fontRestart.setBold(true);
+		labelRestart->setFont(fontRestart);
+		grid->addWidget(labelRestart, y++,0,1,1);
+
 		QDialogButtonBox *buttons = new QDialogButtonBox(this);
 		buttons->setStandardButtons(
 			QDialogButtonBox::Ok |
@@ -595,13 +604,19 @@ protected:
 				QApplication::setFont(font);
 		}
 
-		// set native menubar and dialogs
+		// set native menubar
 		if(s_use_native_menubar)
+		{
 			QApplication::setAttribute(
 				Qt::AA_DontUseNativeMenuBar, !*s_use_native_menubar);
+		}
+
+		// set native dialogs
 		if(s_use_native_dialogs)
+		{
 			QApplication::setAttribute(
 				Qt::AA_DontUseNativeDialogs, !*s_use_native_dialogs);
+		}
 	}
 
 

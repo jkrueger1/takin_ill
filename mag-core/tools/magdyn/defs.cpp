@@ -43,6 +43,10 @@ int g_prec = 6;
 int g_prec_gui = 3;
 t_real g_eps = 1e-6;
 
+// optional features
+int g_allow_ortho_spin = 0;
+int g_allow_general_J = 1;
+
 // gui theme
 QString g_theme = "Fusion";
 
