@@ -145,7 +145,7 @@ void MagDynDlg::CreateSitesPanel()
 
 	m_sitestab = new QTableWidget(m_sitespanel);
 	m_sitestab->setShowGrid(true);
-	m_sitestab->setSortingEnabled(true);
+	m_sitestab->setSortingEnabled(g_allow_sorting_sites != 0);  // warning: the site index depends on the order
 	m_sitestab->setMouseTracking(true);
 	m_sitestab->setSelectionBehavior(QTableWidget::SelectRows);
 	m_sitestab->setSelectionMode(QTableWidget::ContiguousSelection);
@@ -178,11 +178,11 @@ void MagDynDlg::CreateSitesPanel()
 	if(m_allow_ortho_spin)
 	{
 		m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_ORTHO_X,
-			new QTableWidgetItem{"Spin u x"});
+			new QTableWidgetItem{"Spin ux"});
 		m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_ORTHO_Y,
-			new QTableWidgetItem{"Spin u y"});
+			new QTableWidgetItem{"Spin uy"});
 		m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_ORTHO_Z,
-			new QTableWidgetItem{"Spin u z"});
+			new QTableWidgetItem{"Spin uz"});
 	}
 	else
 	{
@@ -456,7 +456,7 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	m_termstab->setHorizontalHeaderItem(
 		COL_XCH_DIST_Z, new QTableWidgetItem{"Cell Δz"});
 	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_INTERACTION, new QTableWidgetItem{"Bond J"});
+		COL_XCH_INTERACTION, new QTableWidgetItem{"Exch. J"});
 	m_termstab->setHorizontalHeaderItem(
 		COL_XCH_DMI_X, new QTableWidgetItem{"DMI x"});
 	m_termstab->setHorizontalHeaderItem(

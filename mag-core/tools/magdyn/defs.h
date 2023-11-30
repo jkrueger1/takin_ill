@@ -84,6 +84,9 @@ extern QString g_theme, g_font;
 // use native menubar and dialogs?
 extern int g_use_native_menubar, g_use_native_dialogs;
 
+// sorting of sites
+extern int g_allow_sorting_sites;
+
 // transfer the setting from the takin core program
 void get_settings_from_takin_core();
 // ----------------------------------------------------------------------------
@@ -95,7 +98,7 @@ void get_settings_from_takin_core();
 // ----------------------------------------------------------------------------
 #include "settings.h"
 
-constexpr std::array<SettingsVariable, 6> g_settingsvariables
+constexpr std::array<SettingsVariable, 7> g_settingsvariables
 {{
 	// epsilons and precisions
 	{
@@ -132,6 +135,14 @@ constexpr std::array<SettingsVariable, 6> g_settingsvariables
 		.description = "Allow setting of general exchange matrix J.",
 		.key = "allow_gen_J",
 		.value = &g_allow_general_J,
+		.editor = SettingsVariableEditor::YESNO,
+	},
+
+	// sorting of sites
+	{
+		.description = "Allow sorting of sites (careful: index depends on order!).",
+		.key = "allow_sorting_sites",
+		.value = &g_allow_sorting_sites,
 		.editor = SettingsVariableEditor::YESNO,
 	},
 }};

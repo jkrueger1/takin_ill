@@ -209,7 +209,7 @@ void MagDynDlg::AddSiteTabItem(int row,
 
 	m_sitestab->scrollToItem(m_sitestab->item(row, 0));
 	m_sitestab->setCurrentCell(row, 0);
-	m_sitestab->setSortingEnabled(true);
+	m_sitestab->setSortingEnabled(g_allow_sorting_sites != 0);  // warning: the site index depends on the order
 
 	UpdateVerticalHeader(m_sitestab);
 }
