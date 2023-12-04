@@ -216,15 +216,24 @@ protected:
 	QAction *m_hamiltonian_comp[3]{};
 
 	// recently opened files
-	tl2::RecentFiles m_recent{};
-	QMenu *m_menuOpenRecent{};
-	// function to call for the recent file menu items
+	tl2::RecentFiles m_recent{}, m_recent_struct{};
+	QMenu *m_menuOpenRecent{}, *m_menuImportStructRecent{};
+
+	// function to call for the recent file->open menu items
 	std::function<bool(const QString& filename)> m_open_func
 		= [this](const QString& filename) -> bool
 	{
 		this->Clear();
 		this->SetCurrentFile(filename);
 		return this->Load(filename);
+	};
+
+	// function to call for the recent file->import menu items
+	std::function<bool(const QString& filename)> m_import_struct_func
+		= [this](const QString& filename) -> bool
+	{
+		this->Clear();
+		return this->ImportStructure(filename);
 	};
 
 	QGridLayout *m_maingrid{};
@@ -408,6 +417,7 @@ protected:
 	void ClearDispersion(bool replot = false);
 	void Clear();
 	void Load();
+	void ImportStructure();
 	void Save();
 	void SaveAs();
 	void ExportSQE();
@@ -463,6 +473,8 @@ protected:
 public:
 	bool Load(const QString& filename, bool calc_dynamics = true);
 	bool Save(const QString& filename);
+
+	bool ImportStructure(const QString& filename);
 
 	bool ExportSQE(const QString& filename);
 

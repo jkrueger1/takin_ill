@@ -145,6 +145,7 @@ void MagDynDlg::SetCurrentFileAndDir(const QString& filename)
 }
 
 
+// --------------------------------------------------------------------------------
 /**
  * load magnetic structure configuration
  */
@@ -477,6 +478,130 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 
 	return true;
 }
+// --------------------------------------------------------------------------------
+
+
+// --------------------------------------------------------------------------------
+/**
+ * import magnetic structure configuration
+ */
+void MagDynDlg::ImportStructure()
+{
+	QString dirLast = m_sett->value("dir_struct", "").toString();
+	QString filename = QFileDialog::getOpenFileName(
+		this, "Import File", dirLast, "Magnetic Structure Files (*.xml)");
+	if(filename == "" || !QFile::exists(filename))
+		return;
+
+	Clear();
+
+	if(ImportStructure(filename))
+	{
+		m_sett->setValue("dir_struct", QFileInfo(filename).path());
+		m_recent_struct.AddRecentFile(filename);
+	}
+}
+
+
+/**
+ * import magnetic structure configuration
+ */
+bool MagDynDlg::ImportStructure(const QString& filename)
+{
+	try
+	{
+		BOOST_SCOPE_EXIT(this_)
+		{
+			this_->m_ignoreCalc = false;
+			if(this_->m_autocalc->isChecked())
+			{
+				this_->SyncSitesAndTerms();
+			}
+		} BOOST_SCOPE_EXIT_END
+		m_ignoreCalc = true;
+
+		// properties tree
+		pt::ptree node;
+
+		// load from file
+		std::ifstream ifstr{filename.toStdString()};
+		pt::read_xml(ifstr, node);
+
+		// check signature
+		if(auto optInfo = node.get_optional<std::string>("sfact.meta.info");
+		   !optInfo || !(*optInfo==std::string{"magsfact_tool"} || *optInfo==std::string{"sfact_tool"}))
+		{
+			QMessageBox::critical(this, "Magnetic Structure", "Unrecognised structure file format.");
+			return false;
+		}
+
+		const auto &sfact = node.get_child("sfact");
+
+		if(auto optVal = sfact.get_optional<t_real>("xtal.a"))
+			m_xtallattice[0]->setValue(*optVal);
+		if(auto optVal = sfact.get_optional<t_real>("xtal.b"))
+			m_xtallattice[1]->setValue(*optVal);
+		if(auto optVal = sfact.get_optional<t_real>("xtal.c"))
+			m_xtallattice[2]->setValue(*optVal);
+		if(auto optVal = sfact.get_optional<t_real>("xtal.alpha"))
+			m_xtalangles[0]->setValue(*optVal);
+		if(auto optVal = sfact.get_optional<t_real>("xtal.beta"))
+			m_xtalangles[1]->setValue(*optVal);
+		if(auto optVal = sfact.get_optional<t_real>("xtal.gamma"))
+			m_xtalangles[2]->setValue(*optVal);
+		if(auto optVal = sfact.get_optional<int>("sg_idx"))
+			m_comboSG->setCurrentIndex(*optVal);
+
+		// spin structure
+		if(auto nuclei = sfact.get_child_optional("nuclei"); nuclei)
+		{
+			for(const auto &nucl : *nuclei)
+			{
+				std::string name = nucl.second.get<std::string>("name", "n/a");
+				t_real x = nucl.second.get<t_real>("x", 0.);
+				t_real y = nucl.second.get<t_real>("y", 0.);
+				t_real z = nucl.second.get<t_real>("z", 0.);
+				t_real M_mag = nucl.second.get<t_real>("M_mag", 1.);
+				std::string ReMx = nucl.second.get<std::string>("ReMx", "0");
+				std::string ReMy = nucl.second.get<std::string>("ReMy", "0");
+				std::string ReMz = nucl.second.get<std::string>("ReMz", "1");
+				std::string rgb = nucl.second.get<std::string>("col", "auto");
+
+				AddSiteTabItem(-1, name, x, y, z,
+				   ReMx, ReMy, ReMz, M_mag,
+				   "auto", "auto", "auto",
+				   rgb);
+			}
+		}
+
+		// propagation vectors
+		if(auto propvecs = sfact.get_child_optional("propvecs"); propvecs)
+		{
+			if(propvecs->size() >= 1)
+			{
+				// use first propagation vector
+				t_real x = propvecs->begin()->second.get<t_real>("x", 0.);
+				t_real y = propvecs->begin()->second.get<t_real>("y", 0.);
+				t_real z = propvecs->begin()->second.get<t_real>("z", 0.);
+
+				m_ordering[0]->setValue(x);
+				m_ordering[1]->setValue(y);
+				m_ordering[2]->setValue(z);
+			}
+
+			if(propvecs->size() > 1)
+				QMessageBox::warning(this, "Magnetic Structure", "Only one propagation vector is supported.");
+		}
+	}
+	catch(const std::exception& ex)
+	{
+		QMessageBox::critical(this, "Magnetic Structure", ex.what());
+		return false;
+	}
+
+	return true;
+}
+// --------------------------------------------------------------------------------
 
 
 /**

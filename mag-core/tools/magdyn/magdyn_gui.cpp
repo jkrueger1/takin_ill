@@ -75,6 +75,7 @@ void MagDynDlg::InitSettings()
 	m_dyn.SetPrecision(g_prec);
 
 	m_recent.SetMaxRecentFiles(g_maxnum_recents);
+	m_recent_struct.SetMaxRecentFiles(g_maxnum_recents);
 }
 
 
@@ -1961,6 +1962,7 @@ void MagDynDlg::CreateMenuBar()
 	auto menuFile = new QMenu("File", m_menu);
 	auto acNew = new QAction("New", menuFile);
 	auto acLoad = new QAction("Open...", menuFile);
+	auto acImportStructure = new QAction("Import Structure...", menuFile);
 	auto acSave = new QAction("Save", menuFile);
 	auto acSaveAs = new QAction("Save As...", menuFile);
 	auto acExit = new QAction("Quit", menuFile);
@@ -2006,12 +2008,19 @@ void MagDynDlg::CreateMenuBar()
 	menuWeights->addAction(m_plot_weights_pointsize);
 	menuWeights->addAction(m_plot_weights_alpha);
 
-	// recent files menu
+	// recent files menus
 	m_menuOpenRecent = new QMenu("Open Recent", menuFile);
+	m_menuImportStructRecent = new QMenu("Import Recent", menuFile);
 
+	// recently opened files
 	m_recent.SetRecentFilesMenu(m_menuOpenRecent);
-	m_recent.SetMaxRecentFiles(16);
+	m_recent.SetMaxRecentFiles(g_maxnum_recents);
 	m_recent.SetOpenFunc(&m_open_func);
+
+	// recently imported structure files
+	m_recent_struct.SetRecentFilesMenu(m_menuImportStructRecent);
+	m_recent_struct.SetMaxRecentFiles(g_maxnum_recents);
+	m_recent_struct.SetOpenFunc(&m_import_struct_func);
 
 	// shortcuts
 	acNew->setShortcut(QKeySequence::New);
@@ -2125,6 +2134,9 @@ void MagDynDlg::CreateMenuBar()
 	menuFile->addAction(acSave);
 	menuFile->addAction(acSaveAs);
 	menuFile->addSeparator();
+	menuFile->addAction(acImportStructure);
+	menuFile->addMenu(m_menuImportStructRecent);
+	menuFile->addSeparator();
 	menuFile->addAction(acExit);
 
 	menuStruct->addAction(acStructImport);
@@ -2168,8 +2180,10 @@ void MagDynDlg::CreateMenuBar()
 	connect(acNew, &QAction::triggered, this, &MagDynDlg::Clear);
 	connect(acLoad, &QAction::triggered,
 		this, static_cast<void (MagDynDlg::*)()>(&MagDynDlg::Load));
+	connect(acImportStructure, &QAction::triggered,
+		this, static_cast<void (MagDynDlg::*)()>(&MagDynDlg::ImportStructure));
 	connect(acSave, &QAction::triggered,
-			this, static_cast<void (MagDynDlg::*)()>(&MagDynDlg::Save));
+		this, static_cast<void (MagDynDlg::*)()>(&MagDynDlg::Save));
 	connect(acSaveAs, &QAction::triggered,
 		this, static_cast<void (MagDynDlg::*)()>(&MagDynDlg::SaveAs));
 	connect(acExit, &QAction::triggered, this, &QDialog::close);

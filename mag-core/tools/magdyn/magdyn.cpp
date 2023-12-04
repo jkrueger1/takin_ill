@@ -88,6 +88,9 @@ MagDynDlg::MagDynDlg(QWidget* pParent) : QDialog{pParent},
 		if(m_sett->contains("recent_files"))
 			m_recent.SetRecentFiles(m_sett->value("recent_files").toStringList());
 
+		if(m_sett->contains("recent_struct_files"))
+			m_recent_struct.SetRecentFiles(m_sett->value("recent_struct_files").toStringList());
+
 		if(m_sett->contains("splitter"))
 			m_split_inout->restoreState(m_sett->value("splitter").toByteArray());
 	}
@@ -764,6 +767,9 @@ void MagDynDlg::closeEvent(QCloseEvent *)
 
 	m_recent.TrimEntries();
 	m_sett->setValue("recent_files", m_recent.GetRecentFiles());
+
+	m_recent_struct.TrimEntries();
+	m_sett->setValue("recent_struct_files", m_recent_struct.GetRecentFiles());
 
 	m_sett->setValue("geo", saveGeometry());
 
