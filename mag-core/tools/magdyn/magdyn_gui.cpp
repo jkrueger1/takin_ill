@@ -53,7 +53,7 @@ using t_SettingsDlg = SettingsDlg<g_settingsvariables.size(), &g_settingsvariabl
  */
 void MagDynDlg::InitSettingsDlg()
 {
-	// set-up common gui variables
+	// set-up common gui settings variables
 	t_SettingsDlg::SetGuiTheme(&g_theme);
 	t_SettingsDlg::SetGuiFont(&g_font);
 	t_SettingsDlg::SetGuiUseNativeMenubar(&g_use_native_menubar);
@@ -76,6 +76,13 @@ void MagDynDlg::InitSettings()
 
 	m_recent.SetMaxRecentFiles(g_maxnum_recents);
 	m_recent_struct.SetMaxRecentFiles(g_maxnum_recents);
+
+	if(g_font != "")
+	{
+		QFont font = this->font();
+		if(font.fromString(g_font))
+			setFont(font);
+	}
 }
 
 

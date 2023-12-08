@@ -42,7 +42,6 @@ MagDynDlg::MagDynDlg(QWidget* pParent) : QDialog{pParent},
 {
 	// restore settings done from takin main settings dialog
 	get_settings_from_takin_core();
-
 	if(g_font != "")
 	{
 		QFont font = this->font();
