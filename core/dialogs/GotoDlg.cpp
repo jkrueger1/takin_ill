@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -112,7 +112,7 @@ GotoDlg::~GotoDlg()
 
 void GotoDlg::CalcSample()
 {
-	m_bSampleOk = 0;
+	m_bSampleOk = false;
 
 	std::vector<QLineEdit*> vecEdits{editThetaS, edit2ThetaS};
 	for(QLineEdit* pEdit : vecEdits)
@@ -146,7 +146,6 @@ void GotoDlg::CalcSample()
 		editThetaS->setText("invalid");
 		edit2ThetaS->setText("invalid");
 
-		//log_err(ex.what());
 		labelStatus->setText((std::string("Error (sample): ") + ex.what()).c_str());
 		bFailed = true;
 	}
@@ -180,7 +179,7 @@ void GotoDlg::CalcSample()
 	editThetaS->setText(tl::var_to_str(tl::r2d(m_dSampleTheta), g_iPrec).c_str());
 	edit2ThetaS->setText(tl::var_to_str(tl::r2d(m_dSample2Theta), g_iPrec).c_str());
 
-	m_bSampleOk = 1;
+	m_bSampleOk = true;
 
 	if(m_bMonoAnaOk && m_bSampleOk)
 		labelStatus->setText("Position OK.");
@@ -189,7 +188,7 @@ void GotoDlg::CalcSample()
 
 void GotoDlg::CalcMonoAna()
 {
-	m_bMonoAnaOk = 0;
+	m_bMonoAnaOk = false;
 
 	std::vector<QLineEdit*> vecEdits{editThetaM, edit2ThetaM, editThetaA, edit2ThetaA};
 	for(QLineEdit* pEdit : vecEdits)
@@ -257,7 +256,7 @@ void GotoDlg::CalcMonoAna()
 	}
 
 	if(bMonoOk && bAnaOk)
-		m_bMonoAnaOk = 1;
+		m_bMonoAnaOk = true;
 	if(m_bMonoAnaOk && m_bSampleOk)
 		labelStatus->setText("Position OK.");
 }
@@ -271,7 +270,7 @@ void GotoDlg::EditedKiKf()
 	tl::t_energy_si<t_real> Ei = tl::k2E(dKi / angs);
 	tl::t_energy_si<t_real> Ef = tl::k2E(dKf / angs);
 
-	tl::t_energy_si<t_real> E = Ei-Ef;
+	tl::t_energy_si<t_real> E = Ei - Ef;
 	t_real dE = E/meV;
 	tl::set_eps_0(dE, g_dEps);
 
@@ -363,7 +362,6 @@ void GotoDlg::EditedAngles()
 	}
 	catch(const std::exception& ex)
 	{
-		//log_err(ex.what());
 		labelStatus->setText((std::string("Error (hkl): ") + ex.what()).c_str());
 		bFailed = true;
 	}
@@ -426,7 +424,7 @@ void GotoDlg::GetCurPos()
 
 void GotoDlg::RecipParamsChanged(const RecipParams& params)
 {
-	m_bHasParamsRecip = 1;
+	m_bHasParamsRecip = true;
 	m_paramsRecip = params;
 }
 
@@ -653,6 +651,7 @@ void GotoDlg::LoadList()
 	if(m_pSettings)
 		m_pSettings->setValue("goto_pos/last_dir", QString(strDir.c_str()));
 }
+
 
 void GotoDlg::SaveList()
 {

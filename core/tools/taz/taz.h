@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -52,6 +52,7 @@
 #include "tas_layout.h"
 #include "tof_layout.h"
 
+// dialogs
 #include "dialogs/RecipParamDlg.h"
 #include "dialogs/RealParamDlg.h"
 #include "dialogs/EllipseDlg.h"
@@ -60,10 +61,13 @@
 #include "tools/scanviewer/scanviewer.h"
 #include "tools/scanpos/ScanPosDlg.h"
 #include "tools/powderfit/PowderFitDlg.h"
+#include "tools/sglist/SgListDlg.h"
+#include "tools/ffact/FormfactorDlg.h"
 #include "dialogs/SpurionDlg.h"
 #include "dialogs/NeutronDlg.h"
 #include "dialogs/TOFDlg.h"
 #include "dialogs/GotoDlg.h"
+#include "dialogs/ElasticDlg.h"
 #include "dialogs/PowderDlg.h"
 #include "dialogs/SettingsDlg.h"
 #include "dialogs/ScatteringFactorsDlg.h"
@@ -72,6 +76,7 @@
 #include "dialogs/DarkAnglesDlg.h"
 #include "dialogs/LogDlg.h"
 #include "dialogs/AboutDlg.h"
+
 #include "dialogs/ctrl_sys.h"
 
 #if !defined NO_3D
@@ -81,9 +86,7 @@
 	#include "dialogs/EllipseDlg3D.h"
 #endif
 
-#include "tools/sglist/SgListDlg.h"
-#include "tools/ffact/FormfactorDlg.h"
-
+// libs
 #include "libs/spacegroups/spacegroup.h"
 #include "libs/spacegroups/latticehelper.h"
 #include "libs/globals.h"
@@ -179,6 +182,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		NeutronDlg *m_pNeutronDlg = nullptr;
 		TOFDlg *m_pTofDlg = nullptr;
 		GotoDlg *m_pGotoDlg = nullptr;
+		ElasticDlg *m_pElasticDlg = nullptr;
 		PowderDlg *m_pPowderDlg = nullptr;
 		ScatteringFactorsDlg *m_pScatteringFactorsDlg = nullptr;
 		DynPlaneDlg* m_pDynPlaneDlg = nullptr;
@@ -305,6 +309,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void ShowNeutronDlg();
 		void ShowTofDlg();
 		void ShowGotoDlg();
+		void ShowElasticDlg();
 		void ShowPowderDlg();
 		void ShowSettingsDlg();
 		void ShowScatteringFactorsDlg();
@@ -324,7 +329,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void ShowDarkAnglesDlg();
 		void ApplyDarkAngles(const std::vector<DarkAngle<t_real_glob>>& vecAngles);
 
-		void ShowSpurions();
+		void ShowSpurionDlg();
 		void spurionInfo(const tl::ElasticSpurion& spuris,
 			const std::vector<tl::InelasticSpurion<t_real_glob>>& vecInelCKI,
 			const std::vector<tl::InelasticSpurion<t_real_glob>>& vecInelCKF);

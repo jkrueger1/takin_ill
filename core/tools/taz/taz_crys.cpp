@@ -227,7 +227,7 @@ void TazDlg::CalcPeaks()
 
 		// display up vector
 		ublas::matrix<t_real> matGCovR = lattice.GetMetricCov();
-		ublas::vector<t_real> vecPlaneZR = 
+		ublas::vector<t_real> vecPlaneZR =
 			tl::cross_prod_contra(matGCovR, vecPlaneXR, vecPlaneYR, false);
 		vecPlaneZR /= tl::veclen(vecPlaneZR);
 		tl::set_eps_0(vecPlaneZR, g_dEpsGfx);
@@ -251,6 +251,13 @@ void TazDlg::CalcPeaks()
 			m_pGotoDlg->SetLattice(lattice);
 			m_pGotoDlg->SetScatteringPlane(tl::make_vec({dX0, dX1, dX2}), tl::make_vec({dY0, dY1, dY2}));
 			m_pGotoDlg->CalcSample();
+		}
+
+		if(m_pElasticDlg)
+		{
+			m_pElasticDlg->SetLattice(lattice);
+			m_pElasticDlg->SetScatteringPlane(tl::make_vec({dX0, dX1, dX2}), tl::make_vec({dY0, dY1, dY2}));
+			m_pElasticDlg->CalcElasticPositions();
 		}
 
 		emitSampleParams();
@@ -604,7 +611,7 @@ void TazDlg::RepopulateSpaceGroups()
 //--------------------------------------------------------------------------------
 // spurion stuff
 
-void TazDlg::ShowSpurions()
+void TazDlg::ShowSpurionDlg()
 {
 	if(!m_pSpuri)
 	{
@@ -655,7 +662,7 @@ void TazDlg::spurionInfo(const tl::ElasticSpurion& spuri,
 	if(vecInelCKI.size())
 	{
 		ostrMsg << "Spurious inelastic CKI scattering at "
-				<< strDelta << "E = ";
+			<< strDelta << "E = ";
 		for(unsigned int iInel=0; iInel<vecInelCKI.size(); ++iInel)
 		{
 			ostrMsg << vecInelCKI[iInel].dE_meV << " meV";
@@ -671,7 +678,7 @@ void TazDlg::spurionInfo(const tl::ElasticSpurion& spuri,
 	if(vecInelCKF.size())
 	{
 		ostrMsg << "Spurious inelastic CKF scattering at "
-				<< strDelta << "E = ";
+			<< strDelta << "E = ";
 		for(unsigned int iInel=0; iInel<vecInelCKF.size(); ++iInel)
 		{
 			ostrMsg << vecInelCKF[iInel].dE_meV << " meV";

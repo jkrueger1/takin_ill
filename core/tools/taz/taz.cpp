@@ -588,6 +588,9 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 	QAction *pSpuri = new QAction("Spurious Scattering...", this);
 	pMenuCalc->addAction(pSpuri);
 
+	QAction *pElast = new QAction("Elastic Positions...", this);
+	pMenuCalc->addAction(pElast);
+
 
 #if !defined NO_NET
 	// --------------------------------------------------------------------------------
@@ -865,7 +868,8 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 	QObject::connect(pCompProps, &QAction::triggered, this, &TazDlg::ShowTofDlg);
 	QObject::connect(m_pGoto, &QAction::triggered, this, &TazDlg::ShowGotoDlg);
 	QObject::connect(pPowder, &QAction::triggered, this, &TazDlg::ShowPowderDlg);
-	QObject::connect(pSpuri, &QAction::triggered, this, &TazDlg::ShowSpurions);
+	QObject::connect(pElast, &QAction::triggered, this, &TazDlg::ShowElasticDlg);
+	QObject::connect(pSpuri, &QAction::triggered, this, &TazDlg::ShowSpurionDlg);
 	QObject::connect(pScatteringFactors, &QAction::triggered, this, &TazDlg::ShowScatteringFactorsDlg);
 	QObject::connect(pDynPlane, &QAction::triggered, this, &TazDlg::ShowDynPlaneDlg);
 	QObject::connect(pDarkAngles, &QAction::triggered, this, &TazDlg::ShowDarkAnglesDlg);
@@ -1048,6 +1052,7 @@ void TazDlg::DeleteDialogs()
 	if(m_pAtomsDlg) { delete m_pAtomsDlg; m_pAtomsDlg = nullptr; }
 	if(m_pDarkAnglesDlg) { delete m_pDarkAnglesDlg; m_pDarkAnglesDlg = nullptr; }
 	if(m_pPowderDlg) { delete m_pPowderDlg; m_pPowderDlg = nullptr; }
+	if(m_pElasticDlg) { delete m_pElasticDlg; m_pElasticDlg = nullptr; }
 
 #if !defined NO_3D
 	if(m_pRecip3d) { delete m_pRecip3d; m_pRecip3d = nullptr; }
@@ -1197,7 +1202,13 @@ void TazDlg::ShowTofDlg()
 void TazDlg::InitGoto()
 {
 	if(!m_pGotoDlg)
+	{
 		m_pGotoDlg = new GotoDlg(this, &m_settings);
+		m_pGotoDlg->SetD(editMonoD->text().toDouble(), editAnaD->text().toDouble());
+		m_pGotoDlg->SetSenses(checkSenseM->isChecked(), checkSenseS->isChecked(), checkSenseA->isChecked());
+		m_pGotoDlg->SetLattice(m_latticecommon.lattice);
+		m_pGotoDlg->SetScatteringPlane(m_latticecommon.dir0RLU, m_latticecommon.dir1RLU);
+	}
 }
 
 
@@ -1205,6 +1216,21 @@ void TazDlg::ShowGotoDlg()
 {
 	InitGoto();
 	focus_dlg(m_pGotoDlg);
+}
+
+
+void TazDlg::ShowElasticDlg()
+{
+	if(!m_pElasticDlg)
+	{
+		m_pElasticDlg = new ElasticDlg(this, &m_settings);
+		m_pElasticDlg->SetD(editMonoD->text().toDouble(), editAnaD->text().toDouble());
+		m_pElasticDlg->SetSenses(checkSenseM->isChecked(), checkSenseS->isChecked(), checkSenseA->isChecked());
+		m_pElasticDlg->SetLattice(m_latticecommon.lattice);
+		m_pElasticDlg->SetScatteringPlane(m_latticecommon.dir0RLU, m_latticecommon.dir1RLU);
+	}
+
+	focus_dlg(m_pElasticDlg);
 }
 
 
@@ -1274,6 +1300,12 @@ void TazDlg::UpdateDs()
 		m_pGotoDlg->CalcSample();
 	}
 
+	if(m_pElasticDlg)
+	{
+		m_pElasticDlg->SetD(editMonoD->text().toDouble(), editAnaD->text().toDouble());
+		m_pElasticDlg->CalcElasticPositions();
+	}
+
 	emit ResoParamsChanged(resoparams);
 }
 
@@ -1289,6 +1321,12 @@ void TazDlg::UpdateSampleSense()
 	{
 		m_pGotoDlg->SetSampleSense(bSense);
 		m_pGotoDlg->CalcSample();
+	}
+
+	if(m_pElasticDlg)
+	{
+		m_pElasticDlg->SetSampleSense(bSense);
+		m_pElasticDlg->CalcElasticPositions();
 	}
 
 	m_dlgRealParam.SetSampleSense(bSense);
@@ -1313,6 +1351,12 @@ void TazDlg::UpdateMonoSense()
 		m_pGotoDlg->CalcMonoAna();
 	}
 
+	if(m_pElasticDlg)
+	{
+		m_pElasticDlg->SetMonoSense(bSense);
+		m_pElasticDlg->CalcElasticPositions();
+	}
+
 	ResoParams params;
 	params.bSensesChanged[0] = true;
 	params.bScatterSenses[0] = bSense;
@@ -1329,6 +1373,12 @@ void TazDlg::UpdateAnaSense()
 	{
 		m_pGotoDlg->SetAnaSense(bSense);
 		m_pGotoDlg->CalcMonoAna();
+	}
+
+	if(m_pElasticDlg)
+	{
+		m_pElasticDlg->SetAnaSense(bSense);
+		m_pElasticDlg->CalcElasticPositions();
 	}
 
 	ResoParams params;

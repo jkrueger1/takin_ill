@@ -428,7 +428,7 @@ add_executable(takin
 	tools/taz/nicos.cpp tools/taz/sics.cpp tools/taz/taz_net.cpp
 
 	dialogs/SettingsDlg.cpp dialogs/FilePreviewDlg.cpp
-	dialogs/GotoDlg.cpp
+	dialogs/GotoDlg.cpp dialogs/ElasticDlg.cpp
 	dialogs/ScatteringFactorsDlg.cpp dialogs/DynPlaneDlg.cpp
 	dialogs/NeutronDlg.cpp dialogs/TOFDlg.cpp
 	dialogs/SpurionDlg.cpp dialogs/PowderDlg.cpp

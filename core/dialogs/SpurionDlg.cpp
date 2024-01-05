@@ -149,6 +149,9 @@ void SpurionDlg::ChangedKiKfMode()
 }
 
 
+/**
+ * calculate all supported spurion types
+ */
 void SpurionDlg::Calc()
 {
 	const bool bFixedEi = radioFixedEi->isChecked();
@@ -164,6 +167,9 @@ void SpurionDlg::Calc()
 }
 
 
+/**
+ * calculate higher-order inelastic spurions
+ */
 void SpurionDlg::CalcInel()
 {
 	const bool bFixedEi = radioFixedEi->isChecked();
@@ -225,6 +231,9 @@ void SpurionDlg::CalcInel()
 }
 
 
+/**
+ * calculate bragg tail
+ */
 void SpurionDlg::CalcBragg()
 {
 	const bool bFixedEi = radioFixedEi->isChecked();

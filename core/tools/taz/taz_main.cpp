@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -343,7 +343,7 @@ int main(int argc, char** argv)
 
 		tl::log_info("--------------------------------------------------------------------------------");
 		tl::log_info("This is Takin version " TAKIN_VER " (built on " __DATE__ ").");
-		tl::log_info("Author: Tobias Weber <tweber@ill.fr>, 2014 - 2023.");
+		tl::log_info("Author: Tobias Weber <tweber@ill.fr>, 2014 - 2024.");
 		tl::log_info("Core program licensed under GPLv2, see the about dialog.");
 		tl::log_info("--------------------------------------------------------------------------------");
 

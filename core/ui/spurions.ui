@@ -30,7 +30,7 @@
      </property>
      <widget class="QWidget" name="tab1">
       <attribute name="title">
-       <string>Inelastic</string>
+       <string>Higher-Order Inelastic</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_4">
        <item row="0" column="0">

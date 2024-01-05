@@ -1,12 +1,12 @@
 /**
- * Goto Dialog
+ * Elastic Positions Dialog
  * @author Tobias Weber <tobias.weber@tum.de>
- * @date 15-oct-2014
+ * @date 5-jan-2024
  * @license GPLv2
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -26,12 +26,12 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef __GOTO_DLG_H__
-#define __GOTO_DLG_H__
+#ifndef __ELASTIC_DLG_H__
+#define __ELASTIC_DLG_H__
 
 #include <QDialog>
 #include <QSettings>
-#include "ui/ui_goto.h"
+#include "ui/ui_elastic.h"
 
 #include "tlibs/phys/lattice.h"
 #include "tlibs/math/linalg.h"
@@ -39,63 +39,22 @@
 #include "libs/globals.h"
 #include "libs/globals_qt.h"
 #include "tools/taz/tasoptions.h"
-#include "RecipParamDlg.h"
 
 
-class GotoDlg : public QDialog, Ui::GotoDlg
+class ElasticDlg : public QDialog, Ui::ElasticDlg
 { Q_OBJECT
-	private:
-		bool m_bMonoAnaOk = false;
-		bool m_bSampleOk = false;
-
 	public:
-		GotoDlg(QWidget* pParent = nullptr, QSettings* pSett = nullptr);
-		virtual ~GotoDlg();
+		ElasticDlg(QWidget* pParent = nullptr, QSettings* pSett = nullptr);
+		virtual ~ElasticDlg();
 
 	protected:
 		QSettings *m_pSettings = nullptr;
 
 		ublas::vector<t_real_glob> m_vec1, m_vec2;
 		tl::Lattice<t_real_glob> m_lattice;
-		RecipParams m_paramsRecip;
-		bool m_bHasParamsRecip = false;
 
-		t_real_glob m_dMono2Theta = 0.;
-		t_real_glob m_dSample2Theta = 0.;
-		t_real_glob m_dSampleTheta = 0.;
-		t_real_glob m_dAna2Theta = 0.;
-
-		t_real_glob m_dAna = 3.355;
-		t_real_glob m_dMono = 3.355;
-
-		bool m_bSenseM = false, m_bSenseS = true, m_bSenseA = false;
-
-	public:
-		void ClearList();
-
-	protected:
-		bool GotoPos(QListWidgetItem* pItem, bool bApply);
-		bool ApplyCurPos();
-
-	protected slots:
-		void EditedKiKf();
-		void EditedE();
-		void EditedAngles();
-		void GetCurPos();
-
-		// list
-		void AddPosToList();
-		void RemPosFromList();
-		void LoadList();
-		void SaveList();
-		void ListItemSelected();
-		void ListItemDoubleClicked(QListWidgetItem*);
-
-	public slots:
-		void CalcMonoAna();
-		void CalcSample();
-
-		void AddPosToList(t_real_glob dh, t_real_glob dk, t_real_glob dl, t_real_glob dki, t_real_glob dkf);
+		t_real_glob m_dAna = 3.355, m_dMono = 3.355;
+		bool m_bSenses [3] = { false, true, false };
 
 	public:
 		void SetLattice(const tl::Lattice<t_real_glob>& lattice)
@@ -105,24 +64,22 @@ class GotoDlg : public QDialog, Ui::GotoDlg
 
 		void SetD(t_real_glob dMono, t_real_glob dAna)
 		{ m_dMono = dMono; m_dAna = dAna; }
+
+		void SetMonoSense(bool bSense) { m_bSenses[0] = bSense; }
+		void SetSampleSense(bool bSense) { m_bSenses[1] = bSense; }
+		void SetAnaSense(bool bSense) { m_bSenses[2] = bSense; }
 		void SetSenses(bool bM, bool bS, bool bA)
-		{ m_bSenseM = bM; m_bSenseS = bS; m_bSenseA = bA; }
+		{ m_bSenses[0] = bM; m_bSenses[1] = bS; m_bSenses[2] = bA; }
 
-		void SetMonoSense(bool bSense) { m_bSenseM = bSense; }
-		void SetSampleSense(bool bSense) { m_bSenseS = bSense; }
-		void SetAnaSense(bool bSense) { m_bSenseA = bSense; }
-
-		bool GotoPos(unsigned int iItem);
+	public slots:
+		void CalcElasticPositions();
 
 	protected slots:
 		void ButtonBoxClicked(QAbstractButton* pBtn);
-	public slots:
-		void RecipParamsChanged(const RecipParams&);
-
-	signals:
-		void vars_changed(const CrystalOptions& crys, const TriangleOptions& triag);
 
 	protected:
+		void AddPosition();
+		void DelPosition();
 		virtual void showEvent(QShowEvent *pEvt) override;
 
 	public:
