@@ -43,6 +43,9 @@
 
 
 using t_real = t_real_glob;
+using t_mat = ublas::matrix<t_real>;
+using t_vec = ublas::vector<t_real>;
+
 static const tl::t_length_si<t_real> angs = tl::get_one_angstrom<t_real>();
 static const tl::t_energy_si<t_real> meV = tl::get_one_meV<t_real>();
 static const tl::t_angle_si<t_real> rads = tl::get_one_radian<t_real>();
@@ -93,7 +96,30 @@ ElasticDlg::~ElasticDlg()
  */
 void ElasticDlg::CalcElasticPositions()
 {
+	t_mat matB = tl::get_B(m_lattice, 1);
+	t_mat matBinv;
+	bool B_ok = tl::inverse(matB, matBinv);
+
+	const std::wstring strAA = tl::get_spec_char_utf16("AA") +
+		tl::get_spec_char_utf16("sup-") + tl::get_spec_char_utf16("sup1");
+
 	std::wostringstream ostrResults;
+	ostrResults.precision(g_iPrec);
+	ostrResults << "<html><body>";
+
+	ostrResults << "<center><table border=\"1\" cellpadding=\"0\" width=\"95%\">";
+	ostrResults << "<tr>";
+	ostrResults << "<th><bf>No.</bf></th>";
+	if(B_ok)
+		ostrResults << "<th><bf>Q (rlu)</bf></th>";
+	ostrResults << "<th><bf>Q (" << strAA << ")</bf></th>";
+	ostrResults << "<th><bf>|Q| (" << strAA << ")</bf></th>";
+	ostrResults << "<th><bf>E (meV)</bf></th>";
+	if(B_ok)
+		ostrResults << "<th><bf>Q' (rlu)</bf></th>";
+	ostrResults << "<th><bf>Q' (" << strAA << ")</bf></th>";
+	ostrResults << "<th><bf>|Q'| (" << strAA << ")</bf></th>";
+	ostrResults << "</tr>";
 
 	// iterate positions
 	for(int row = 0; row < tablePositions->rowCount(); ++row)
@@ -106,8 +132,6 @@ void ElasticDlg::CalcElasticPositions()
 
 		if(!item_h || !item_k || !item_l || !item_ki || !item_kf)
 			continue;
-
-		std::cout << row << ": " << item_kf->text().toStdString() << std::endl;
 
 		// get coordinates
 		t_real dH = tl::str_to_var_parse<t_real>(item_h->text().toStdString());
@@ -139,48 +163,66 @@ void ElasticDlg::CalcElasticPositions()
 			continue;
 
 		t_real dE = (tl::k2E(dKi / angs) - tl::k2E(dKf / angs)) / meV;
+		t_vec vecQrlu = tl::prod_mv(matBinv, vecQ);
 
 		tl::set_eps_0(dE, g_dEps);
 		tl::set_eps_0(vecQ, g_dEps);
+		tl::set_eps_0(vecQrlu, g_dEps);
 		tl::set_eps_0(dSample2Theta, g_dEps);
 		tl::set_eps_0(dSampleTheta, g_dEps);
 
-		const std::wstring strAA = tl::get_spec_char_utf16("AA") +
-			tl::get_spec_char_utf16("sup-") + tl::get_spec_char_utf16("sup1");
-
-		// print inelastic position
-		ostrResults << "Q_org = " << vecQ << " " << strAA << ", |Q| = "
-			<< ublas::norm_2(vecQ) << " " << strAA
-			<< ", E = " << dE << "\n";
 
 		// get elastic analyser angle corresponding for kf' = ki
 		t_real dAna2Theta_elast = tl::get_mono_twotheta(dKi/angs, m_dAna*angs, m_bSenses[2]) / rads;
 
 		// find Q position for kf' = ki elastic position
+		ublas::vector<t_real> vecQ1;
+		t_real dH1 = dH, dK1 = dK, dL1 = dL;
+		t_real dE1 = 0.;
+		t_real dKi1 = dKi, dKf1 = dKi;
 		tl::get_hkl_from_tas_angles<t_real>(m_lattice,
 			m_vec1, m_vec2,
 			m_dMono, m_dAna,
 			dMono2Theta*0.5, dAna2Theta_elast*0.5, dSampleTheta, dSample2Theta,
 			m_bSenses[0], m_bSenses[2], m_bSenses[1],
-			&dH, &dK, &dL,
-			&dKi, &dKf, &dE, 0,
-			&vecQ);
+			&dH1, &dK1, &dL1,
+			&dKi1, &dKf1, &dE1, 0,
+			&vecQ1);
 
-		if(tl::is_nan_or_inf<t_real>(dH)
-			|| tl::is_nan_or_inf<t_real>(dK)
-			|| tl::is_nan_or_inf<t_real>(dL))
+		if(tl::is_nan_or_inf<t_real>(dH1)
+			|| tl::is_nan_or_inf<t_real>(dK1)
+			|| tl::is_nan_or_inf<t_real>(dL1))
 			continue;
 
-		for(t_real* d : { &dH, &dK, &dL, &dKi, &dKf, &dE })
+		t_vec vecQ1rlu = tl::prod_mv(matBinv, vecQ1);
+
+		tl::set_eps_0(vecQ1, g_dEps);
+		tl::set_eps_0(vecQ1rlu, g_dEps);
+
+		for(t_real* d : { &dH1, &dK1, &dL1, &dKi1, &dKf1, &dE1 })
 			tl::set_eps_0(*d, g_dEps);
 
+
+		// print inelastic position
+		ostrResults << "<tr>";
+		ostrResults << "<td>" << row+1 << "</td>";
+		if(B_ok)
+			ostrResults << "<td>" << vecQrlu[0] << ", " << vecQrlu[1] << ", " << vecQrlu[2] << "</td>";
+		ostrResults << "<td>" << vecQ[0] << ", " << vecQ[1] << ", " << vecQ[2] << "</td>";
+		ostrResults << "<td>" << ublas::norm_2(vecQ) << "</td>";
+		ostrResults << "<td>" << dE << "</td>";
+
 		// print results for elastic kf' = ki position
-		ostrResults << "Q_new = " << vecQ << " " << strAA
-			<< ", |Q| = " << ublas::norm_2(vecQ) << " " << strAA
-			<< ", E = " << dE << "\n";
+		if(B_ok)
+			ostrResults << "<td>" << vecQ1rlu[0] << ", " << vecQ1rlu[1] << ", " << vecQ1rlu[2] << "</td>";
+		ostrResults << "<td>" << vecQ1[0] << ", " << vecQ1[1] << ", " << vecQ1[2] << "</td>";
+		ostrResults << "<td>" << ublas::norm_2(vecQ1) << "</td>";
+		ostrResults << "</tr>";
 	}
 
-	textResults->setText(QString::fromWCharArray(ostrResults.str().c_str()));
+	ostrResults << "</table></center>";
+	ostrResults << "</body></html>";
+	textResults->setHtml(QString::fromWCharArray(ostrResults.str().c_str()));
 }
 
 
