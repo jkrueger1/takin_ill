@@ -1,7 +1,7 @@
 /**
- * Scan Position Plotter Dialog
+ * Generate Scan Positions
  * @author Tobias Weber <tobias.weber@tum.de>
- * @date Feb-2017
+ * @date 8-jan-2024
  * @license GPLv2
  *
  * ----------------------------------------------------------------------------
@@ -26,38 +26,25 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef __SCANPOS_DLG_H__
-#define __SCANPOS_DLG_H__
+#ifndef __GENPOS_DLG_H__
+#define __GENPOS_DLG_H__
 
 #include <QDialog>
 #include <QSettings>
-
-#include "ui/ui_scanpos.h"
-#include "tlibs/helper/proc.h"
+#include "ui/ui_genpos.h"
 
 
-class ScanPosDlg : public QDialog, Ui::ScanPosDlg
+class GenPosDlg : public QDialog, Ui::GenPosDlg
 { Q_OBJECT
+	public:
+		GenPosDlg(QWidget* pParent = nullptr, QSettings* pSett = nullptr);
+		virtual ~GenPosDlg();
+
 	protected:
 		QSettings *m_pSettings = nullptr;
-		std::unique_ptr<tl::PipeProc<char>> m_pPlotProc;
-
-	public:
-		ScanPosDlg(QWidget* pParent = nullptr, QSettings *pSett = nullptr);
-		virtual ~ScanPosDlg() = default;
-
-	protected:
-		std::vector<std::string> GetFiles(bool bMultiple);
-		virtual void accept() override;
 
 	protected slots:
-		void LoadPlaneFromFile();
-		void LoadPosFromFile();
-
-		void Plot();
-		void UpdatePlot();
-		void SavePlot();
-
+		void GeneratePositions();
 		void ButtonBoxClicked(QAbstractButton* pBtn);
 };
 

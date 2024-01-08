@@ -36,9 +36,12 @@
 #include "tlibs/phys/lattice.h"
 #include "tlibs/math/linalg.h"
 #include "tlibs/file/prop.h"
+
 #include "libs/globals.h"
 #include "libs/globals_qt.h"
 #include "tools/taz/tasoptions.h"
+
+#include "GenPosDlg.h"
 
 
 class ElasticDlg : public QDialog, Ui::ElasticDlg
@@ -55,21 +58,18 @@ class ElasticDlg : public QDialog, Ui::ElasticDlg
 
 		t_real_glob m_dAna = 3.355, m_dMono = 3.355;
 		bool m_bSenses [3] = { false, true, false };
+		bool m_bAllowCalculation = true;
+
+		GenPosDlg *m_pGenPosDlg = nullptr;
 
 	public:
-		void SetLattice(const tl::Lattice<t_real_glob>& lattice)
-		{ m_lattice = lattice; }
-		void SetScatteringPlane(const ublas::vector<t_real_glob>& vec1, const ublas::vector<t_real_glob>& vec2)
-		{ m_vec1 = vec1; m_vec2 = vec2; }
-
-		void SetD(t_real_glob dMono, t_real_glob dAna)
-		{ m_dMono = dMono; m_dAna = dAna; }
-
-		void SetMonoSense(bool bSense) { m_bSenses[0] = bSense; }
-		void SetSampleSense(bool bSense) { m_bSenses[1] = bSense; }
-		void SetAnaSense(bool bSense) { m_bSenses[2] = bSense; }
-		void SetSenses(bool bM, bool bS, bool bA)
-		{ m_bSenses[0] = bM; m_bSenses[1] = bS; m_bSenses[2] = bA; }
+		void SetLattice(const tl::Lattice<t_real_glob>& lattice);
+		void SetScatteringPlane(const ublas::vector<t_real_glob>& vec1, const ublas::vector<t_real_glob>& vec2);
+		void SetD(t_real_glob dMono, t_real_glob dAna);
+		void SetMonoSense(bool bSense);
+		void SetSampleSense(bool bSense);
+		void SetAnaSense(bool bSense);
+		void SetSenses(bool bM, bool bS, bool bA);
 
 	public slots:
 		void CalcElasticPositions();
@@ -77,9 +77,15 @@ class ElasticDlg : public QDialog, Ui::ElasticDlg
 	protected slots:
 		void ButtonBoxClicked(QAbstractButton* pBtn);
 
+		void GeneratePositions();
+		void ImportPositions();
+
 	protected:
 		void AddPosition();
 		void DelPosition();
+
+		std::vector<std::string> GetFiles();
+
 		virtual void showEvent(QShowEvent *pEvt) override;
 
 	public:

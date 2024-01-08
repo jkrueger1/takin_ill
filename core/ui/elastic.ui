@@ -96,7 +96,7 @@
     </widget>
    </item>
    <item row="2" column="2">
-    <widget class="QPushButton" name="btnGenPosition">
+    <widget class="QPushButton" name="btnGenPositions">
      <property name="text">
       <string>Generate Positions...</string>
      </property>
@@ -138,7 +138,7 @@
   <tabstop>tablePositions</tabstop>
   <tabstop>btnAddPosition</tabstop>
   <tabstop>btnDelPosition</tabstop>
-  <tabstop>btnGenPosition</tabstop>
+  <tabstop>btnGenPositions</tabstop>
   <tabstop>textResults</tabstop>
  </tabstops>
  <resources/>

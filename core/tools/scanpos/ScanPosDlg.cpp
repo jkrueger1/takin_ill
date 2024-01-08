@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -68,20 +68,20 @@ ScanPosDlg::ScanPosDlg(QWidget* pParent, QSettings *pSett)
 
 
 /**
- * opens a file selection dialog
+ * opens a file selection dialog to select scan files
  */
 std::vector<std::string> ScanPosDlg::GetFiles(bool bMultiple)
 {
 	std::vector<std::string> vecFiles;
 
 	QFileDialog::Option fileopt = QFileDialog::Option(0);
-	bool bShowPreview = 1;
+	bool bShowPreview = true;
 	QString strDirLast;
 	if(m_pSettings)
 	{
 		bShowPreview = m_pSettings->value("main/dlg_previews", true).toBool();
 		strDirLast = m_pSettings->value("scanpos/last_import_dir", ".").toString();
-		if(!m_pSettings->value("main/native_dialogs", 1).toBool())
+		if(!m_pSettings->value("main/native_dialogs", true).toBool())
 			fileopt = QFileDialog::DontUseNativeDialog;
 	}
 

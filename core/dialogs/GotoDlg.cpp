@@ -137,9 +137,9 @@ void GotoDlg::CalcSample()
 			&vecQ);
 
 		if(tl::is_nan_or_inf<t_real>(m_dSample2Theta))
-			throw tl::Err("Invalid sample 2theta.");
+			throw tl::Err("Invalid sample 2theta angle.");
 		if(tl::is_nan_or_inf<t_real>(m_dSampleTheta))
-			throw tl::Err("Invalid sample theta.");
+			throw tl::Err("Invalid sample theta angle.");
 	}
 	catch(const std::exception& ex)
 	{
