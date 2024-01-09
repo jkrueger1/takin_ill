@@ -113,25 +113,43 @@ void ElasticDlg::CalcElasticPositions()
 	const std::wstring strAA = tl::get_spec_char_utf16("AA") +
 		tl::get_spec_char_utf16("sup-") + tl::get_spec_char_utf16("sup1");
 
-	std::wostringstream ostrResults;
-	ostrResults.precision(g_iPrec);
-	ostrResults << "<html><body>";
+	std::wostringstream ostrResults1, ostrResults2;
+	ostrResults1.precision(g_iPrec);
+	ostrResults2.precision(g_iPrec);
 
-	ostrResults << "<center><table border=\"1\" cellpadding=\"0\" width=\"95%\">";
-	ostrResults << "<tr>";
-	ostrResults << "<th><b>No.</b></th>";
+	ostrResults1 << "<b>Elastic Positions Q' Corresponding to (Q, E) with kf' := ki:</b>";
+	ostrResults1 << "<center><table border=\"1\" cellpadding=\"0\" width=\"95%\">";
+	ostrResults1 << "<tr>";
+	ostrResults1 << "<th><b>No.</b></th>";
 	if(B_ok)
-		ostrResults << "<th><b>Q (rlu)</b></th>";
+		ostrResults1 << "<th><b>Q (rlu)</b></th>";
 	else
-		ostrResults << "<th><b>Q (" << strAA << ")</b></th>";
-	ostrResults << "<th><b>|Q| (" << strAA << ")</b></th>";
-	ostrResults << "<th><b>E (meV)</b></th>";
+		ostrResults1 << "<th><b>Q (" << strAA << ")</b></th>";
+	ostrResults1 << "<th><b>|Q| (" << strAA << ")</b></th>";
+	ostrResults1 << "<th><b>E (meV)</b></th>";
 	if(B_ok)
-		ostrResults << "<th><b>Q' (rlu)</b></th>";
+		ostrResults1 << "<th><b>Q' (rlu)</b></th>";
 	else
-		ostrResults << "<th><b>Q' (" << strAA << ")</b></th>";
-	ostrResults << "<th><b>|Q'| (" << strAA << ")</b></th>";
-	ostrResults << "</tr>";
+		ostrResults1 << "<th><b>Q' (" << strAA << ")</b></th>";
+	ostrResults1 << "<th><b>|Q'| (" << strAA << ")</b></th>";
+	ostrResults1 << "</tr>";
+
+	ostrResults2 << "<b>Elastic Positions Q'' Corresponding to (Q, E) with ki'' := kf:</b>";
+	ostrResults2 << "<center><table border=\"1\" cellpadding=\"0\" width=\"95%\">";
+	ostrResults2 << "<tr>";
+	ostrResults2 << "<th><b>No.</b></th>";
+	if(B_ok)
+		ostrResults2 << "<th><b>Q (rlu)</b></th>";
+	else
+		ostrResults2 << "<th><b>Q (" << strAA << ")</b></th>";
+	ostrResults2 << "<th><b>|Q| (" << strAA << ")</b></th>";
+	ostrResults2 << "<th><b>E (meV)</b></th>";
+	if(B_ok)
+		ostrResults2 << "<th><b>Q'' (rlu)</b></th>";
+	else
+		ostrResults2 << "<th><b>Q'' (" << strAA << ")</b></th>";
+	ostrResults2 << "<th><b>|Q''| (" << strAA << ")</b></th>";
+	ostrResults2 << "</tr>";
 
 	// iterate positions
 	for(int row = 0; row < tablePositions->rowCount(); ++row)
@@ -216,33 +234,40 @@ void ElasticDlg::CalcElasticPositions()
 
 
 			// print inelastic position
-			ostrResults << "<tr>";
-			ostrResults << "<td>" << row+1 << "</td>";
+			ostrResults1 << "<tr>";
+			ostrResults1 << "<td>" << row+1 << "</td>";
 			if(B_ok)
-				ostrResults << "<td>" << vecQrlu[0] << ", " << vecQrlu[1] << ", " << vecQrlu[2] << "</td>";
+				ostrResults1 << "<td>" << vecQrlu[0] << ", " << vecQrlu[1] << ", " << vecQrlu[2] << "</td>";
 			else
-				ostrResults << "<td>" << vecQ[0] << ", " << vecQ[1] << ", " << vecQ[2] << "</td>";
-			ostrResults << "<td>" << tl::veclen(vecQ) << "</td>";
-			ostrResults << "<td>" << dE << "</td>";
+				ostrResults1 << "<td>" << vecQ[0] << ", " << vecQ[1] << ", " << vecQ[2] << "</td>";
+			ostrResults1 << "<td>" << tl::veclen(vecQ) << "</td>";
+			ostrResults1 << "<td>" << dE << "</td>";
 
 			// print results for elastic kf' = ki position
 			if(B_ok)
-				ostrResults << "<td>" << vecQ1rlu[0] << ", " << vecQ1rlu[1] << ", " << vecQ1rlu[2] << "</td>";
+				ostrResults1 << "<td>" << vecQ1rlu[0] << ", " << vecQ1rlu[1] << ", " << vecQ1rlu[2] << "</td>";
 			else
-				ostrResults << "<td>" << vecQ1[0] << ", " << vecQ1[1] << ", " << vecQ1[2] << "</td>";
-			ostrResults << "<td>" << tl::veclen(vecQ1) << "</td>";
-			ostrResults << "</tr>";
+				ostrResults1 << "<td>" << vecQ1[0] << ", " << vecQ1[1] << ", " << vecQ1[2] << "</td>";
+			ostrResults1 << "<td>" << tl::veclen(vecQ1) << "</td>";
+			ostrResults1 << "</tr>";
 		}
 		catch(const std::exception& ex)
 		{
-			ostrResults << "<tr>";
-			ostrResults << "<td>" << row+1 << "</td>";
-			ostrResults << "<td><font color=\"#ff0000\"><b>" << ex.what() << "</b></font></td>";
-			ostrResults << "</tr>";
+			ostrResults1 << "<tr>";
+			ostrResults1 << "<td>" << row+1 << "</td>";
+			ostrResults1 << "<td><font color=\"#ff0000\"><b>" << ex.what() << "</b></font></td>";
+			ostrResults1 << "</tr>";
 		}
 	}
 
-	ostrResults << "</table></center>";
+	ostrResults1 << "</table></center>";
+	ostrResults2 << "</table></center>";
+
+	std::wostringstream ostrResults;
+	ostrResults << "<html><body>";
+	ostrResults << "<p>" << ostrResults1.str() << "</p>";
+	ostrResults << "<br>";
+	ostrResults << "<p>" << ostrResults2.str() << "</p>";
 	ostrResults << "</body></html>";
 	textResults->setHtml(QString::fromWCharArray(ostrResults.str().c_str()));
 }
