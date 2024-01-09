@@ -203,60 +203,132 @@ void ElasticDlg::CalcElasticPositions()
 			tl::set_eps_0(dSampleTheta, g_dEps);
 
 
-			// get elastic analyser angle corresponding for kf' = ki
-			t_real dAna2Theta_elast = tl::get_mono_twotheta(dKi/angs, m_dAna*angs, m_bSenses[2]) / rads;
+			try
+			{
+				// get corresponding elastic analyser angle for kf' = ki
+				t_real dAna2Theta_elast = tl::get_mono_twotheta(dKi/angs, m_dAna*angs, m_bSenses[2]) / rads;
 
-			// find Q position for kf' = ki elastic position
-			t_vec vecQ1;
-			t_real dH1 = dH, dK1 = dK, dL1 = dL, dE1 = 0.;
-			t_real dKi1 = dKi, dKf1 = dKi;
-			tl::get_hkl_from_tas_angles<t_real>(m_lattice,
-				m_vec1, m_vec2,
-				m_dMono, m_dAna,
-				dMono2Theta*0.5, dAna2Theta_elast*0.5, dSampleTheta, dSample2Theta,
-				m_bSenses[0], m_bSenses[2], m_bSenses[1],
-				&dH1, &dK1, &dL1,
-				&dKi1, &dKf1, &dE1, 0,
-				&vecQ1);
+				// find Q position for kf' = ki elastic position
+				t_vec vecQ1;
+				t_real dH1 = dH, dK1 = dK, dL1 = dL, dE1 = 0.;
+				t_real dKi1 = dKi, dKf1 = dKi;
+				tl::get_hkl_from_tas_angles<t_real>(m_lattice,
+					m_vec1, m_vec2,
+					m_dMono, m_dAna,
+					dMono2Theta*0.5, dAna2Theta_elast*0.5, dSampleTheta, dSample2Theta,
+					m_bSenses[0], m_bSenses[2], m_bSenses[1],
+					&dH1, &dK1, &dL1,
+					&dKi1, &dKf1, &dE1, 0,
+					&vecQ1);
 
-			if(tl::is_nan_or_inf<t_real>(dH1)
-				|| tl::is_nan_or_inf<t_real>(dK1)
-				|| tl::is_nan_or_inf<t_real>(dL1))
-				throw tl::Err("Invalid h' k' l'.");
+				if(tl::is_nan_or_inf<t_real>(dH1)
+					|| tl::is_nan_or_inf<t_real>(dK1)
+					|| tl::is_nan_or_inf<t_real>(dL1))
+					throw tl::Err("Invalid h' k' l'.");
 
-			t_vec vecQ1rlu = tl::prod_mv(matBinv, vecQ1);
+				t_vec vecQ1rlu = tl::prod_mv(matBinv, vecQ1);
 
-			tl::set_eps_0(vecQ1, g_dEps);
-			tl::set_eps_0(vecQ1rlu, g_dEps);
+				tl::set_eps_0(vecQ1, g_dEps);
+				tl::set_eps_0(vecQ1rlu, g_dEps);
 
-			for(t_real* d : { &dH1, &dK1, &dL1, &dKi1, &dKf1, &dE1 })
-				tl::set_eps_0(*d, g_dEps);
+				for(t_real* d : { &dH1, &dK1, &dL1, &dKi1, &dKf1, &dE1 })
+					tl::set_eps_0(*d, g_dEps);
 
 
-			// print inelastic position
-			ostrResults1 << "<tr>";
-			ostrResults1 << "<td>" << row+1 << "</td>";
-			if(B_ok)
-				ostrResults1 << "<td>" << vecQrlu[0] << ", " << vecQrlu[1] << ", " << vecQrlu[2] << "</td>";
-			else
-				ostrResults1 << "<td>" << vecQ[0] << ", " << vecQ[1] << ", " << vecQ[2] << "</td>";
-			ostrResults1 << "<td>" << tl::veclen(vecQ) << "</td>";
-			ostrResults1 << "<td>" << dE << "</td>";
+				// print inelastic position
+				ostrResults1 << "<tr>";
+				ostrResults1 << "<td>" << row+1 << "</td>";
+				if(B_ok)
+					ostrResults1 << "<td>" << vecQrlu[0] << ", " << vecQrlu[1] << ", " << vecQrlu[2] << "</td>";
+				else
+					ostrResults1 << "<td>" << vecQ[0] << ", " << vecQ[1] << ", " << vecQ[2] << "</td>";
+				ostrResults1 << "<td>" << tl::veclen(vecQ) << "</td>";
+				ostrResults1 << "<td>" << dE << "</td>";
 
-			// print results for elastic kf' = ki position
-			if(B_ok)
-				ostrResults1 << "<td>" << vecQ1rlu[0] << ", " << vecQ1rlu[1] << ", " << vecQ1rlu[2] << "</td>";
-			else
-				ostrResults1 << "<td>" << vecQ1[0] << ", " << vecQ1[1] << ", " << vecQ1[2] << "</td>";
-			ostrResults1 << "<td>" << tl::veclen(vecQ1) << "</td>";
-			ostrResults1 << "</tr>";
+				// print results for elastic kf' = ki position
+				if(B_ok)
+					ostrResults1 << "<td>" << vecQ1rlu[0] << ", " << vecQ1rlu[1] << ", " << vecQ1rlu[2] << "</td>";
+				else
+					ostrResults1 << "<td>" << vecQ1[0] << ", " << vecQ1[1] << ", " << vecQ1[2] << "</td>";
+				ostrResults1 << "<td>" << tl::veclen(vecQ1) << "</td>";
+				ostrResults1 << "</tr>";
+			}
+			catch(const std::exception& ex)
+			{
+				ostrResults1 << "<tr>";
+				ostrResults1 << "<td>" << row+1 << "</td>";
+				ostrResults1 << "<td><font color=\"#ff0000\"><b>" << ex.what() << "</b></font></td>";
+				ostrResults1 << "</tr>";
+			}
+
+
+			try
+			{
+				// get corresponding elastic monochromator angle for ki'' = kf
+				t_real dMono2Theta_elast = tl::get_mono_twotheta(dKf/angs, m_dMono*angs, m_bSenses[0]) / rads;
+
+				// find Q position for kf' = ki elastic position
+				t_vec vecQ2;
+				t_real dH2 = dH, dK2 = dK, dL2 = dL, dE2 = 0.;
+				t_real dKi2 = dKf, dKf2 = dKf;
+				tl::get_hkl_from_tas_angles<t_real>(m_lattice,
+					m_vec1, m_vec2,
+					m_dMono, m_dAna,
+					dMono2Theta_elast*0.5, dAna2Theta*0.5, dSampleTheta, dSample2Theta,
+					m_bSenses[0], m_bSenses[2], m_bSenses[1],
+					&dH2, &dK2, &dL2,
+					&dKi2, &dKf2, &dE2, 0,
+					&vecQ2);
+
+				if(tl::is_nan_or_inf<t_real>(dH2)
+					|| tl::is_nan_or_inf<t_real>(dK2)
+					|| tl::is_nan_or_inf<t_real>(dL2))
+					throw tl::Err("Invalid h'' k'' l''.");
+
+				t_vec vecQ2rlu = tl::prod_mv(matBinv, vecQ2);
+
+				tl::set_eps_0(vecQ2, g_dEps);
+				tl::set_eps_0(vecQ2rlu, g_dEps);
+
+				for(t_real* d : { &dH2, &dK2, &dL2, &dKi2, &dKf2, &dE2 })
+					tl::set_eps_0(*d, g_dEps);
+
+
+				// print inelastic position
+				ostrResults2 << "<tr>";
+				ostrResults2 << "<td>" << row+1 << "</td>";
+				if(B_ok)
+					ostrResults2 << "<td>" << vecQrlu[0] << ", " << vecQrlu[1] << ", " << vecQrlu[2] << "</td>";
+				else
+					ostrResults2 << "<td>" << vecQ[0] << ", " << vecQ[1] << ", " << vecQ[2] << "</td>";
+				ostrResults2 << "<td>" << tl::veclen(vecQ) << "</td>";
+				ostrResults2 << "<td>" << dE << "</td>";
+
+				// print results for elastic ki'' = kf position
+				if(B_ok)
+					ostrResults2 << "<td>" << vecQ2rlu[0] << ", " << vecQ2rlu[1] << ", " << vecQ2rlu[2] << "</td>";
+				else
+					ostrResults2 << "<td>" << vecQ2[0] << ", " << vecQ2[1] << ", " << vecQ2[2] << "</td>";
+				ostrResults2 << "<td>" << tl::veclen(vecQ2) << "</td>";
+				ostrResults2 << "</tr>";
+			}
+			catch(const std::exception& ex)
+			{
+				ostrResults2 << "<tr>";
+				ostrResults2 << "<td>" << row+1 << "</td>";
+				ostrResults2 << "<td><font color=\"#ff0000\"><b>" << ex.what() << "</b></font></td>";
+				ostrResults2 << "</tr>";
+			}
 		}
 		catch(const std::exception& ex)
 		{
-			ostrResults1 << "<tr>";
-			ostrResults1 << "<td>" << row+1 << "</td>";
-			ostrResults1 << "<td><font color=\"#ff0000\"><b>" << ex.what() << "</b></font></td>";
-			ostrResults1 << "</tr>";
+			for(std::wostream* ostr : { &ostrResults1, &ostrResults2 })
+			{
+				(*ostr) << "<tr>";
+				(*ostr) << "<td>" << row+1 << "</td>";
+				(*ostr) << "<td><font color=\"#ff0000\"><b>" << ex.what() << "</b></font></td>";
+				(*ostr) << "</tr>";
+			}
 		}
 	}
 
@@ -306,6 +378,8 @@ void ElasticDlg::DelPosition()
 		tablePositions->clearContents();
 		tablePositions->setRowCount(0);
 	}
+
+	CalcElasticPositions();
 }
 
 
