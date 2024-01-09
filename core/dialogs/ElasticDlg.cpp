@@ -27,7 +27,9 @@
  */
 
 #include "ElasticDlg.h"
+
 #include "dialogs/FilePreviewDlg.h"
+
 #include "tlibs/phys/neutrons.h"
 #include "tlibs/file/loadinstr.h"
 #include "tlibs/string/string.h"
@@ -271,18 +273,63 @@ void ElasticDlg::DelPosition()
 {
 	int row = tablePositions->currentRow();
 	if(row >= 0)
+	{
 		tablePositions->removeRow(row);
+	}
 	else
-		tablePositions->clear();
+	{
+		tablePositions->clearContents();
+		tablePositions->setRowCount(0);
+	}
 }
 
 
+/**
+ * show dialog to generate positions
+ */
 void ElasticDlg::GeneratePositions()
 {
 	if(!m_pGenPosDlg)
+	{
 		m_pGenPosDlg = new GenPosDlg(this, m_pSettings);
+		QObject::connect(m_pGenPosDlg, &GenPosDlg::GeneratedPositions,
+			this, &ElasticDlg::GeneratedPositions);
+	}
 
 	focus_dlg(m_pGenPosDlg);
+}
+
+
+/**
+ * add received generated positions
+ */
+void ElasticDlg::GeneratedPositions(const std::vector<ScanPosition>& positions)
+{
+	m_bAllowCalculation = false;
+
+	// clear old positions
+	tablePositions->clearContents();
+	tablePositions->setRowCount(0);
+
+	for(const ScanPosition& pos : positions)
+	{
+		AddPosition();
+
+		tablePositions->item(tablePositions->rowCount() - 1, POSTAB_H)->setText(
+			tl::var_to_str(pos.h, g_iPrec).c_str());
+		tablePositions->item(tablePositions->rowCount() - 1, POSTAB_K)->setText(
+			tl::var_to_str(pos.k, g_iPrec).c_str());
+		tablePositions->item(tablePositions->rowCount() - 1, POSTAB_L)->setText(
+			tl::var_to_str(pos.l, g_iPrec).c_str());
+		tablePositions->item(tablePositions->rowCount() - 1, POSTAB_KI)->setText(
+			tl::var_to_str(pos.ki, g_iPrec).c_str());
+		tablePositions->item(tablePositions->rowCount() - 1, POSTAB_KF)->setText(
+			tl::var_to_str(pos.kf, g_iPrec).c_str());
+	}
+
+	// recalculate
+	m_bAllowCalculation = true;
+	CalcElasticPositions();
 }
 // ----------------------------------------------------------------------------
 
@@ -304,7 +351,8 @@ void ElasticDlg::ImportPositions()
 	m_bAllowCalculation = false;
 
 	// clear old positions
-	tablePositions->clear();
+	tablePositions->clearContents();
+	tablePositions->setRowCount(0);
 
 	// iterate scan files
 	for(const std::string& strFile : vecFiles)

@@ -28,6 +28,15 @@
 
 #include "GenPosDlg.h"
 
+#include "tlibs/phys/neutrons.h"
+#include "tlibs/string/string.h"
+
+
+using t_real = t_real_glob;
+
+static const tl::t_length_si<t_real> angs = tl::get_one_angstrom<t_real>();
+static const tl::t_energy_si<t_real> meV = tl::get_one_meV<t_real>();
+
 
 GenPosDlg::GenPosDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent), m_pSettings(pSett)
@@ -72,7 +81,46 @@ GenPosDlg::~GenPosDlg()
  */
 void GenPosDlg::GeneratePositions()
 {
-	// TODO
+	t_real hi = tl::str_to_var<t_real>(editHi->text().toStdString());
+	t_real ki = tl::str_to_var<t_real>(editKi->text().toStdString());
+	t_real li = tl::str_to_var<t_real>(editLi->text().toStdString());
+	t_real Ei = tl::str_to_var<t_real>(editEi->text().toStdString());
+	t_real hf = tl::str_to_var<t_real>(editHf->text().toStdString());
+	t_real kf = tl::str_to_var<t_real>(editKf->text().toStdString());
+	t_real lf = tl::str_to_var<t_real>(editLf->text().toStdString());
+	t_real Ef = tl::str_to_var<t_real>(editEf->text().toStdString());
+
+	t_real kfix = tl::str_to_var<t_real>(editKfix->text().toStdString());
+	bool kf_fixed = checkCKf->isChecked();
+
+	std::vector<ScanPosition> positions;
+	int steps = spinSteps->value();
+	positions.reserve(steps);
+
+	for(int step = 0; step < steps; ++step)
+	{
+		ScanPosition pos;
+
+		pos.h = tl::lerp(hi, hf, t_real(step)/t_real(steps-1));
+		pos.k = tl::lerp(ki, kf, t_real(step)/t_real(steps-1));
+		pos.l = tl::lerp(li, lf, t_real(step)/t_real(steps-1));
+		pos.E = tl::lerp(Ei, Ef, t_real(step)/t_real(steps-1));
+
+		if(kf_fixed)
+		{
+			pos.kf = kfix;
+			pos.ki = tl::get_other_k(pos.E*meV, kfix/angs, !kf_fixed) * angs;
+		}
+		else
+		{
+			pos.ki = kfix;
+			pos.kf = tl::get_other_k(pos.E*meV, kfix/angs, !kf_fixed) * angs;
+		}
+
+		positions.emplace_back(std::move(pos));
+	}
+
+	emit GeneratedPositions(positions);
 }
 
 

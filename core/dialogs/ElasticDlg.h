@@ -80,6 +80,8 @@ class ElasticDlg : public QDialog, Ui::ElasticDlg
 		void GeneratePositions();
 		void ImportPositions();
 
+		void GeneratedPositions(const std::vector<ScanPosition>& pos);
+
 	protected:
 		void AddPosition();
 		void DelPosition();

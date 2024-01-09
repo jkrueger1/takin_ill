@@ -29,9 +29,20 @@
 #ifndef __GENPOS_DLG_H__
 #define __GENPOS_DLG_H__
 
+#include <vector>
+
 #include <QDialog>
 #include <QSettings>
 #include "ui/ui_genpos.h"
+
+#include "tlibs/math/linalg.h"
+#include "libs/globals.h"
+
+
+struct ScanPosition
+{
+	t_real_glob h, k, l, E, ki, kf;
+};
 
 
 class GenPosDlg : public QDialog, Ui::GenPosDlg
@@ -46,6 +57,9 @@ class GenPosDlg : public QDialog, Ui::GenPosDlg
 	protected slots:
 		void GeneratePositions();
 		void ButtonBoxClicked(QAbstractButton* pBtn);
+
+	signals:
+		void GeneratedPositions(const std::vector<ScanPosition>& pos);
 };
 
 #endif
