@@ -35,6 +35,8 @@
 #include "tlibs/string/string.h"
 #include "tlibs/string/spec_char.h"
 
+#include <QMessageBox>
+
 
 // position table columns
 #define POSTAB_H     0
@@ -87,6 +89,12 @@ ElasticDlg::ElasticDlg(QWidget* pParent, QSettings* pSett)
 		this, &ElasticDlg::ImportPositions);
 	QObject::connect(btnSync, &QAbstractButton::toggled,
 		this, &ElasticDlg::SyncToggled);
+	QObject::connect(btnGotoInel, &QAbstractButton::clicked,
+		this, &ElasticDlg::GotoInelasticPosition);
+	QObject::connect(btnGotoElast1, &QAbstractButton::clicked,
+		this, &ElasticDlg::GotoElasticPosition1);
+	QObject::connect(btnGotoElast2, &QAbstractButton::clicked,
+		this, &ElasticDlg::GotoElasticPosition2);
 	QObject::connect(tablePositions, &QTableWidget::itemChanged,
 		this, &ElasticDlg::CalcElasticPositions);
 	QObject::connect(buttonBox, &QDialogButtonBox::clicked,
@@ -159,6 +167,9 @@ void ElasticDlg::CalcElasticPositions()
 		ostrResults2 << "<th><b>Q'' (" << strAA << ")</b></th>";
 	ostrResults2 << "<th><b>|Q''| (" << strAA << ")</b></th>";
 	ostrResults2 << "</tr>";
+
+	spinPosIdx->setMinimum(1);
+	spinPosIdx->setMaximum(tablePositions->rowCount());
 
 	// iterate positions
 	for(int row = 0; row < tablePositions->rowCount(); ++row)
@@ -350,6 +361,55 @@ void ElasticDlg::CalcElasticPositions()
 	ostrResults << "</body></html>";
 	textResults->setHtml(QString::fromWCharArray(ostrResults.str().c_str()));
 }
+
+
+/**
+ * set the scattering triangle to the given inelastic position
+ */
+void ElasticDlg::GotoInelasticPosition()
+{
+	if(!m_bSyncWithMainWindow)
+	{
+		QMessageBox::critical(this, "Error",
+			"Not synchronised with main sample / instrument parameters. Please click on \"Sync\" to do so.");
+		return;
+	}
+
+	// TODO
+}
+
+
+/**
+ * set the scattering triangle to the given elastic kf'=ki position
+ */
+void ElasticDlg::GotoElasticPosition1()
+{
+	if(!m_bSyncWithMainWindow)
+	{
+		QMessageBox::critical(this, "Error",
+			"Not synchronised with main sample / instrument parameters. Please click on \"Sync\" to do so.");
+		return;
+	}
+
+	// TODO
+}
+
+
+/**
+ * set the scattering triangle to the given elastic ki''=kf position
+ */
+void ElasticDlg::GotoElasticPosition2()
+{
+	if(!m_bSyncWithMainWindow)
+	{
+		QMessageBox::critical(this, "Error",
+			"Not synchronised with main sample / instrument parameters. Please click on \"Sync\" to do so.");
+		return;
+	}
+
+	// TODO
+}
+
 
 
 // ----------------------------------------------------------------------------

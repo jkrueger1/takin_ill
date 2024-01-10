@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Generate Positions</string>
   </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
+  </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="leftMargin">
     <number>4</number>

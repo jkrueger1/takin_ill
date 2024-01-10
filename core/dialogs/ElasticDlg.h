@@ -103,6 +103,10 @@ class ElasticDlg : public QDialog, Ui::ElasticDlg
 		void SyncToggled(bool sync);
 		void GeneratedPositions(const std::vector<ScanPosition>& pos);
 
+		void GotoInelasticPosition();
+		void GotoElasticPosition1();
+		void GotoElasticPosition2();
+
 	protected:
 		void AddPosition();
 		void DelPosition();
