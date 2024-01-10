@@ -44,6 +44,18 @@
 #include "GenPosDlg.h"
 
 
+/**
+ * needed sample and instrument configuration
+ */
+struct ElasticDlgCfg
+{
+	tl::Lattice<t_real_glob> m_lattice;
+	ublas::vector<t_real_glob> m_vec1, m_vec2;
+	t_real_glob m_dMono = 3.355, m_dAna = 3.355;
+	bool m_bSenses [3] = { false, true, false };
+};
+
+
 class ElasticDlg : public QDialog, Ui::ElasticDlg
 { Q_OBJECT
 	public:
@@ -51,18 +63,16 @@ class ElasticDlg : public QDialog, Ui::ElasticDlg
 		virtual ~ElasticDlg();
 
 	protected:
-		QSettings *m_pSettings = nullptr;
-
-		ublas::vector<t_real_glob> m_vec1, m_vec2;
-		tl::Lattice<t_real_glob> m_lattice;
-
-		t_real_glob m_dAna = 3.355, m_dMono = 3.355;
-		bool m_bSenses [3] = { false, true, false };
+		ElasticDlgCfg m_cfg;                 // configuration synced with Takin's main window
+		ElasticDlgCfg m_cfg_ext;             // external configuration, e.g. from a scan file
 		bool m_bAllowCalculation = true;
+		bool m_bSyncWithMainWindow = true;
 
+		QSettings *m_pSettings = nullptr;
 		GenPosDlg *m_pGenPosDlg = nullptr;
 
 	public:
+		// setter
 		void SetLattice(const tl::Lattice<t_real_glob>& lattice);
 		void SetScatteringPlane(const ublas::vector<t_real_glob>& vec1, const ublas::vector<t_real_glob>& vec2);
 		void SetD(t_real_glob dMono, t_real_glob dAna);
@@ -70,6 +80,16 @@ class ElasticDlg : public QDialog, Ui::ElasticDlg
 		void SetSampleSense(bool bSense);
 		void SetAnaSense(bool bSense);
 		void SetSenses(bool bM, bool bS, bool bA);
+
+		// getter
+		const tl::Lattice<t_real_glob>& GetLattice() const;
+		const ublas::vector<t_real_glob>& GetScatteringPlaneVec1() const;
+		const ublas::vector<t_real_glob>& GetScatteringPlaneVec2() const;
+		t_real_glob GetMonoD() const;
+		t_real_glob GetAnaD() const;
+		bool GetMonoSense() const;
+		bool GetSampleSense() const;
+		bool GetAnaSense() const;
 
 	public slots:
 		void CalcElasticPositions();
@@ -80,6 +100,7 @@ class ElasticDlg : public QDialog, Ui::ElasticDlg
 		void GeneratePositions();
 		void ImportPositions();
 
+		void SyncToggled(bool sync);
 		void GeneratedPositions(const std::vector<ScanPosition>& pos);
 
 	protected:

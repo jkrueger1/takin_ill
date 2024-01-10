@@ -83,9 +83,10 @@ ElasticDlg::ElasticDlg(QWidget* pParent, QSettings* pSett)
 		this, &ElasticDlg::DelPosition);
 	QObject::connect(btnGenPositions, &QAbstractButton::clicked,
 		this, &ElasticDlg::GeneratePositions);
-	// TODO: import scan files
-	//QObject::connect(btnImportPositions, &QAbstractButton::clicked,
-	//	this, &ElasticDlg::ImportPositions);
+	QObject::connect(btnLoadScan, &QAbstractButton::clicked,
+		this, &ElasticDlg::ImportPositions);
+	QObject::connect(btnSync, &QAbstractButton::toggled,
+		this, &ElasticDlg::SyncToggled);
 	QObject::connect(tablePositions, &QTableWidget::itemChanged,
 		this, &ElasticDlg::CalcElasticPositions);
 	QObject::connect(buttonBox, &QDialogButtonBox::clicked,
@@ -98,6 +99,14 @@ ElasticDlg::~ElasticDlg()
 }
 
 
+void ElasticDlg::SyncToggled(bool sync)
+{
+	m_bSyncWithMainWindow = sync;
+
+	CalcElasticPositions();
+}
+
+
 /**
  * calculate the elastic positions corresponding to the given inelastic ones
  */
@@ -106,7 +115,7 @@ void ElasticDlg::CalcElasticPositions()
 	if(!m_bAllowCalculation)
 		return;
 
-	t_mat matB = tl::get_B(m_lattice, 1);
+	t_mat matB = tl::get_B(GetLattice(), 1);
 	t_mat matBinv;
 	bool B_ok = tl::inverse(matB, matBinv);
 
@@ -172,8 +181,8 @@ void ElasticDlg::CalcElasticPositions()
 			t_real dKi = tl::str_to_var_parse<t_real>(item_ki->text().toStdString());
 			t_real dKf = tl::str_to_var_parse<t_real>(item_kf->text().toStdString());
 
-			t_real dMono2Theta = tl::get_mono_twotheta(dKi / angs, m_dMono*angs, m_bSenses[0]) / rads;
-			t_real dAna2Theta = tl::get_mono_twotheta(dKf / angs, m_dAna*angs, m_bSenses[2]) / rads;
+			t_real dMono2Theta = tl::get_mono_twotheta(dKi / angs, GetMonoD()*angs, GetMonoSense()) / rads;
+			t_real dAna2Theta = tl::get_mono_twotheta(dKf / angs, GetAnaD()*angs, GetAnaSense()) / rads;
 			t_real dSampleTheta, dSample2Theta;
 			t_vec vecQ;
 
@@ -181,11 +190,10 @@ void ElasticDlg::CalcElasticPositions()
 				throw tl::Err("Invalid monochromator or analyser angle.");
 
 			// get angles corresponding to given inelastic position
-			tl::get_tas_angles(m_lattice,
-				m_vec1, m_vec2,
-				dKi, dKf,
-				dH, dK, dL,
-				m_bSenses[1],
+			tl::get_tas_angles(GetLattice(),
+				GetScatteringPlaneVec1(), GetScatteringPlaneVec2(),
+				dKi, dKf, dH, dK, dL,
+				GetSampleSense(),
 				&dSampleTheta, &dSample2Theta,
 				&vecQ);
 
@@ -206,19 +214,18 @@ void ElasticDlg::CalcElasticPositions()
 			try
 			{
 				// get corresponding elastic analyser angle for kf' = ki
-				t_real dAna2Theta_elast = tl::get_mono_twotheta(dKi/angs, m_dAna*angs, m_bSenses[2]) / rads;
+				t_real dAna2Theta_elast = tl::get_mono_twotheta(dKi/angs, GetAnaD()*angs, GetAnaSense()) / rads;
 
 				// find Q position for kf' = ki elastic position
 				t_vec vecQ1;
 				t_real dH1 = dH, dK1 = dK, dL1 = dL, dE1 = 0.;
 				t_real dKi1 = dKi, dKf1 = dKi;
-				tl::get_hkl_from_tas_angles<t_real>(m_lattice,
-					m_vec1, m_vec2,
-					m_dMono, m_dAna,
+				tl::get_hkl_from_tas_angles<t_real>(GetLattice(),
+					GetScatteringPlaneVec1(), GetScatteringPlaneVec2(),
+					GetMonoD(), GetAnaD(),
 					dMono2Theta*0.5, dAna2Theta_elast*0.5, dSampleTheta, dSample2Theta,
-					m_bSenses[0], m_bSenses[2], m_bSenses[1],
-					&dH1, &dK1, &dL1,
-					&dKi1, &dKf1, &dE1, 0,
+					GetMonoSense(), GetAnaSense(), GetSampleSense(),
+					&dH1, &dK1, &dL1, &dKi1, &dKf1, &dE1, 0,
 					&vecQ1);
 
 				if(tl::is_nan_or_inf<t_real>(dH1)
@@ -265,17 +272,17 @@ void ElasticDlg::CalcElasticPositions()
 			try
 			{
 				// get corresponding elastic monochromator angle for ki'' = kf
-				t_real dMono2Theta_elast = tl::get_mono_twotheta(dKf/angs, m_dMono*angs, m_bSenses[0]) / rads;
+				t_real dMono2Theta_elast = tl::get_mono_twotheta(dKf/angs, GetMonoD()*angs, GetMonoSense()) / rads;
 
 				// find Q position for kf' = ki elastic position
 				t_vec vecQ2;
 				t_real dH2 = dH, dK2 = dK, dL2 = dL, dE2 = 0.;
 				t_real dKi2 = dKf, dKf2 = dKf;
-				tl::get_hkl_from_tas_angles<t_real>(m_lattice,
-					m_vec1, m_vec2,
-					m_dMono, m_dAna,
+				tl::get_hkl_from_tas_angles<t_real>(GetLattice(),
+					GetScatteringPlaneVec1(), GetScatteringPlaneVec2(),
+					GetMonoD(), GetAnaD(),
 					dMono2Theta_elast*0.5, dAna2Theta*0.5, dSampleTheta, dSample2Theta,
-					m_bSenses[0], m_bSenses[2], m_bSenses[1],
+					GetMonoSense(), GetAnaSense(), GetSampleSense(),
 					&dH2, &dK2, &dL2,
 					&dKi2, &dKf2, &dE2, 0,
 					&vecQ2);
@@ -434,12 +441,10 @@ void ElasticDlg::GeneratedPositions(const std::vector<ScanPosition>& positions)
 
 
 // ----------------------------------------------------------------------------
-// TODO: importing positions from scan files
+// importing positions from scan files
 // ----------------------------------------------------------------------------
 /**
  * import positions from a scan file
- * TODO: for importing positions, set the lattice and scattering plane from the scan file
- *       and disable the setting of these properties from the main window
  */
 void ElasticDlg::ImportPositions()
 {
@@ -452,24 +457,52 @@ void ElasticDlg::ImportPositions()
 	// clear old positions
 	tablePositions->clearContents();
 	tablePositions->setRowCount(0);
+	btnSync->setChecked(false);
 
 	// iterate scan files
+	bool first_file = true;
 	for(const std::string& strFile : vecFiles)
 	{
-		std::unique_ptr<tl::FileInstrBase<t_real>> ptrScan(
+		std::unique_ptr<tl::FileInstrBase<t_real>> pScan(
 			tl::FileInstrBase<t_real>::LoadInstr(strFile.c_str()));
-		if(!ptrScan)
+		if(!pScan)
 		{
 			tl::log_err("Invalid scan file: \"", strFile, "\".");
 			continue;
 		}
 
+		if(first_file)
+		{
+			// load external crystal and instrument configuration from first file
+			std::array<t_real, 3> latt = pScan->GetSampleLattice();
+			std::array<t_real, 3> angles = pScan->GetSampleAngles();
+			m_cfg_ext.m_lattice = tl::Lattice<t_real>(
+				latt[0], latt[1], latt[2],
+				angles[0], angles[1], angles[2]);
+
+			std::array<bool, 3> senses = pScan->GetScatterSenses();
+			m_cfg_ext.m_bSenses[0] = senses[0];
+			m_cfg_ext.m_bSenses[1] = senses[1];
+			m_cfg_ext.m_bSenses[2] = senses[2];
+
+			std::array<t_real, 3> vec1 = pScan->GetScatterPlane0();
+			std::array<t_real, 3> vec2 = pScan->GetScatterPlane1();
+			m_cfg_ext.m_vec1 = tl::make_vec<t_vec>({ vec1[0], vec1[1], vec1[2] });
+			m_cfg_ext.m_vec2 = tl::make_vec<t_vec>({ vec2[0], vec2[1], vec2[2] });
+
+			std::array<t_real, 2> ds = pScan->GetMonoAnaD();
+			m_cfg_ext.m_dMono = ds[0];
+			m_cfg_ext.m_dAna = ds[1];
+
+			first_file = false;
+		}
+
 		// iterate scan positions and add them to the table
-		for(std::size_t idx = 0; idx < ptrScan->GetScanCount(); ++idx)
+		for(std::size_t idx = 0; idx < pScan->GetScanCount(); ++idx)
 		{
 			AddPosition();
 
-			auto pos = ptrScan->GetScanHKLKiKf(idx);
+			auto pos = pScan->GetScanHKLKiKf(idx);
 			tablePositions->item(tablePositions->rowCount() - 1, POSTAB_H)->setText(
 				tl::var_to_str(std::get<0>(pos), g_iPrec).c_str());
 			tablePositions->item(tablePositions->rowCount() - 1, POSTAB_K)->setText(
@@ -594,51 +627,107 @@ void ElasticDlg::showEvent(QShowEvent *pEvt)
 
 
 // ----------------------------------------------------------------------------
-// setter
+// setter and getter
 // ----------------------------------------------------------------------------
-void ElasticDlg::SetLattice(const tl::Lattice<t_real_glob>& lattice)
+void ElasticDlg::SetLattice(const tl::Lattice<t_real>& lattice)
 {
-	m_lattice = lattice;
+	m_cfg.m_lattice = lattice;
 }
 
 
-void ElasticDlg::SetScatteringPlane(const ublas::vector<t_real_glob>& vec1, const ublas::vector<t_real_glob>& vec2)
+void ElasticDlg::SetScatteringPlane(const t_vec& vec1, const t_vec& vec2)
 {
-	m_vec1 = vec1;
-	m_vec2 = vec2;
+	m_cfg.m_vec1 = vec1;
+	m_cfg.m_vec2 = vec2;
 }
 
 
-void ElasticDlg::SetD(t_real_glob dMono, t_real_glob dAna)
+void ElasticDlg::SetD(t_real dMono, t_real dAna)
 {
-	m_dMono = dMono;
-	m_dAna = dAna;
+	m_cfg.m_dMono = dMono;
+	m_cfg.m_dAna = dAna;
 }
 
 
 void ElasticDlg::SetMonoSense(bool bSense)
 {
-	m_bSenses[0] = bSense;
+	m_cfg.m_bSenses[0] = bSense;
 }
 
 
 void ElasticDlg::SetSampleSense(bool bSense)
 {
-	m_bSenses[1] = bSense;
+	m_cfg.m_bSenses[1] = bSense;
 }
 
 
 void ElasticDlg::SetAnaSense(bool bSense)
 {
-	m_bSenses[2] = bSense;
+	m_cfg.m_bSenses[2] = bSense;
 }
 
 
 void ElasticDlg::SetSenses(bool bM, bool bS, bool bA)
 {
-	m_bSenses[0] = bM;
-	m_bSenses[1] = bS;
-	m_bSenses[2] = bA;
+	m_cfg.m_bSenses[0] = bM;
+	m_cfg.m_bSenses[1] = bS;
+	m_cfg.m_bSenses[2] = bA;
+}
+
+
+const tl::Lattice<t_real>& ElasticDlg::GetLattice() const
+{
+	const ElasticDlgCfg *cfg = m_bSyncWithMainWindow ? &m_cfg : &m_cfg_ext;
+	return cfg->m_lattice;
+}
+
+
+const t_vec& ElasticDlg::GetScatteringPlaneVec1() const
+{
+	const ElasticDlgCfg *cfg = m_bSyncWithMainWindow ? &m_cfg : &m_cfg_ext;
+	return cfg->m_vec1;
+}
+
+
+const t_vec& ElasticDlg::GetScatteringPlaneVec2() const
+{
+	const ElasticDlgCfg *cfg = m_bSyncWithMainWindow ? &m_cfg : &m_cfg_ext;
+	return cfg->m_vec2;
+}
+
+
+t_real ElasticDlg::GetMonoD() const
+{
+	const ElasticDlgCfg *cfg = m_bSyncWithMainWindow ? &m_cfg : &m_cfg_ext;
+	return cfg->m_dMono;
+}
+
+
+t_real ElasticDlg::GetAnaD() const
+{
+	const ElasticDlgCfg *cfg = m_bSyncWithMainWindow ? &m_cfg : &m_cfg_ext;
+	return cfg->m_dAna;
+}
+
+
+bool ElasticDlg::GetMonoSense() const
+{
+	const ElasticDlgCfg *cfg = m_bSyncWithMainWindow ? &m_cfg : &m_cfg_ext;
+	return cfg->m_bSenses[0];
+}
+
+
+bool ElasticDlg::GetSampleSense() const
+{
+	const ElasticDlgCfg *cfg = m_bSyncWithMainWindow ? &m_cfg : &m_cfg_ext;
+	return cfg->m_bSenses[1];
+}
+
+
+bool ElasticDlg::GetAnaSense() const
+{
+	const ElasticDlgCfg *cfg = m_bSyncWithMainWindow ? &m_cfg : &m_cfg_ext;
+	return cfg->m_bSenses[2];
 }
 // ----------------------------------------------------------------------------
 
