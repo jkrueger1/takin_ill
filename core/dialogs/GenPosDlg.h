@@ -36,6 +36,7 @@
 #include "ui/ui_genpos.h"
 
 #include "tlibs/math/linalg.h"
+#include "tlibs/file/prop.h"
 #include "libs/globals.h"
 
 
@@ -50,6 +51,9 @@ class GenPosDlg : public QDialog, Ui::GenPosDlg
 	public:
 		GenPosDlg(QWidget* pParent = nullptr, QSettings* pSett = nullptr);
 		virtual ~GenPosDlg();
+
+		void Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot);
+		void Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot);
 
 	protected:
 		QSettings *m_pSettings = nullptr;

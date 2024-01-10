@@ -591,6 +591,9 @@ std::vector<std::string> ElasticDlg::GetFiles()
 void ElasticDlg::Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
 {
 	// TODO
+
+	if(m_pGenPosDlg)
+		m_pGenPosDlg->Save(mapConf, strXmlRoot + "elastic_pos/");
 }
 
 
@@ -600,6 +603,9 @@ void ElasticDlg::Save(std::map<std::string, std::string>& mapConf, const std::st
 void ElasticDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 {
 	// TODO
+
+	if(m_pGenPosDlg)
+		m_pGenPosDlg->Load(xml, strXmlRoot + "elastic_pos/");
 }
 // ----------------------------------------------------------------------------
 

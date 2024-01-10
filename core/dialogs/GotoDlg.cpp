@@ -691,6 +691,9 @@ void GotoDlg::SaveList()
 }
 
 
+/**
+ * save configuration
+ */
 void GotoDlg::Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
 {
 	mapConf[strXmlRoot + "goto_pos/h"] = editH->text().toStdString();
@@ -721,6 +724,9 @@ void GotoDlg::Save(std::map<std::string, std::string>& mapConf, const std::strin
 }
 
 
+/**
+ * load configuration
+ */
 void GotoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 {
 	bool bOk = false;
@@ -730,13 +736,7 @@ void GotoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 	editL->setText(tl::var_to_str(xml.Query<t_real>(strXmlRoot + "goto_pos/l", 0., &bOk), g_iPrec).c_str());
 	editKi->setText(tl::var_to_str(xml.Query<t_real>(strXmlRoot + "goto_pos/ki", 1.4, &bOk), g_iPrec).c_str());
 	editKf->setText(tl::var_to_str(xml.Query<t_real>(strXmlRoot + "goto_pos/kf", 1.4, &bOk), g_iPrec).c_str());
-
-	bool cki = xml.Query<bool>(strXmlRoot + "goto_pos/cki", false, &bOk);
-
-	if(cki)
-		radioFixedKi->setChecked(true);
-	else
-		radioFixedKf->setChecked(true);
+	radioFixedKi->setChecked(xml.Query<bool>(strXmlRoot + "goto_pos/cki", false, &bOk));
 
 	// favlist
 	ClearList();

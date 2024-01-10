@@ -124,6 +124,45 @@ void GenPosDlg::GeneratePositions()
 }
 
 
+/**
+ * save configuration
+ */
+void GenPosDlg::Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
+{
+	mapConf[strXmlRoot + "gen_pos/hi"] = editHi->text().toStdString();
+	mapConf[strXmlRoot + "gen_pos/ki"] = editKi->text().toStdString();
+	mapConf[strXmlRoot + "gen_pos/li"] = editLi->text().toStdString();
+	mapConf[strXmlRoot + "gen_pos/Ei"] = editEi->text().toStdString();
+	mapConf[strXmlRoot + "gen_pos/hf"] = editHf->text().toStdString();
+	mapConf[strXmlRoot + "gen_pos/kf"] = editKf->text().toStdString();
+	mapConf[strXmlRoot + "gen_pos/lf"] = editLf->text().toStdString();
+	mapConf[strXmlRoot + "gen_pos/Ef"] = editEf->text().toStdString();
+	mapConf[strXmlRoot + "gen_pos/ckf"] = checkCKf->isChecked() ? "1" : "0";
+	mapConf[strXmlRoot + "gen_pos/kfix"] = editKfix->text().toStdString();
+	mapConf[strXmlRoot + "gen_pos/steps"] = tl::var_to_str(spinSteps->value()).c_str();
+}
+
+
+/**
+ * load configuration
+ */
+void GenPosDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
+{
+	bool bOk;
+	editHi->setText(tl::var_to_str(xml.Query<t_real>(strXmlRoot + "gen_pos/hi", 1., &bOk), g_iPrec).c_str());
+	editKi->setText(tl::var_to_str(xml.Query<t_real>(strXmlRoot + "gen_pos/ki", 0., &bOk), g_iPrec).c_str());
+	editLi->setText(tl::var_to_str(xml.Query<t_real>(strXmlRoot + "gen_pos/li", 0., &bOk), g_iPrec).c_str());
+	editEi->setText(tl::var_to_str(xml.Query<t_real>(strXmlRoot + "gen_pos/Ei", 0, &bOk), g_iPrec).c_str());
+	editHf->setText(tl::var_to_str(xml.Query<t_real>(strXmlRoot + "gen_pos/hf", 1., &bOk), g_iPrec).c_str());
+	editKf->setText(tl::var_to_str(xml.Query<t_real>(strXmlRoot + "gen_pos/kf", 0., &bOk), g_iPrec).c_str());
+	editLf->setText(tl::var_to_str(xml.Query<t_real>(strXmlRoot + "gen_pos/lf", 0., &bOk), g_iPrec).c_str());
+	editEf->setText(tl::var_to_str(xml.Query<t_real>(strXmlRoot + "gen_pos/Ef", 1, &bOk), g_iPrec).c_str());
+	checkCKf->setChecked(xml.Query<bool>(strXmlRoot + "gen_pos/ckf", true, &bOk));
+	editKfix->setText(tl::var_to_str(xml.Query<t_real>(strXmlRoot + "gen_pos/kfix", 1.4, &bOk), g_iPrec).c_str());
+	spinSteps->setValue(xml.Query<int>(strXmlRoot + "gen_pos/steps", 16, &bOk));
+}
+
+
 void GenPosDlg::ButtonBoxClicked(QAbstractButton* pBtn)
 {
 	if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::AcceptRole)
