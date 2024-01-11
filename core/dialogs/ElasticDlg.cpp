@@ -132,8 +132,13 @@ void ElasticDlg::CalcElasticPositions()
 	m_positions_elast2.reserve(tablePositions->rowCount());
 
 	t_mat matB = tl::get_B(GetLattice(), 1);
-	t_mat matBinv;
+	t_mat matU = tl::get_U(GetScatteringPlaneVec1(), GetScatteringPlaneVec2(), &matB);
+	t_mat matUB = ublas::prod(matU, matB);
+
+	t_mat matBinv, matUinv;
 	bool B_ok = tl::inverse(matB, matBinv);
+	bool U_ok = tl::inverse(matU, matUinv);
+	t_mat matUBinv = ublas::prod(matBinv, matUinv);
 
 	const std::wstring strAA = tl::get_spec_char_utf16("AA") +
 		tl::get_spec_char_utf16("sup-") + tl::get_spec_char_utf16("sup1");
@@ -146,13 +151,13 @@ void ElasticDlg::CalcElasticPositions()
 	ostrResults1 << "<center><table border=\"1\" cellpadding=\"0\" width=\"95%\">";
 	ostrResults1 << "<tr>";
 	ostrResults1 << "<th><b>No.</b></th>";
-	if(B_ok)
+	if(B_ok && U_ok)
 		ostrResults1 << "<th><b>Q (rlu)</b></th>";
 	else
 		ostrResults1 << "<th><b>Q (" << strAA << ")</b></th>";
 	ostrResults1 << "<th><b>|Q| (" << strAA << ")</b></th>";
 	ostrResults1 << "<th><b>E (meV)</b></th>";
-	if(B_ok)
+	if(B_ok && U_ok)
 		ostrResults1 << "<th><b>Q' (rlu)</b></th>";
 	else
 		ostrResults1 << "<th><b>Q' (" << strAA << ")</b></th>";
@@ -163,13 +168,13 @@ void ElasticDlg::CalcElasticPositions()
 	ostrResults2 << "<center><table border=\"1\" cellpadding=\"0\" width=\"95%\">";
 	ostrResults2 << "<tr>";
 	ostrResults2 << "<th><b>No.</b></th>";
-	if(B_ok)
+	if(B_ok && U_ok)
 		ostrResults2 << "<th><b>Q (rlu)</b></th>";
 	else
 		ostrResults2 << "<th><b>Q (" << strAA << ")</b></th>";
 	ostrResults2 << "<th><b>|Q| (" << strAA << ")</b></th>";
 	ostrResults2 << "<th><b>E (meV)</b></th>";
-	if(B_ok)
+	if(B_ok && U_ok)
 		ostrResults2 << "<th><b>Q'' (rlu)</b></th>";
 	else
 		ostrResults2 << "<th><b>Q'' (" << strAA << ")</b></th>";
@@ -221,7 +226,7 @@ void ElasticDlg::CalcElasticPositions()
 				throw tl::Err("Invalid sample 2theta angle.");
 
 			t_real dE = (tl::k2E(pos_inel.ki / angs) - tl::k2E(pos_inel.kf / angs)) / meV;
-			t_vec vecQrlu = tl::prod_mv(matBinv, vecQ);
+			t_vec vecQrlu = tl::prod_mv(matUBinv, vecQ);
 
 			tl::set_eps_0(dE, g_dEps);
 			tl::set_eps_0(vecQ, g_dEps);
@@ -255,7 +260,7 @@ void ElasticDlg::CalcElasticPositions()
 					|| tl::is_nan_or_inf<t_real>(pos_elast.l))
 					throw tl::Err("Invalid h' k' l'.");
 
-				t_vec vecQ1rlu = tl::prod_mv(matBinv, vecQ1);
+				t_vec vecQ1rlu = tl::prod_mv(matUBinv, vecQ1);
 
 				tl::set_eps_0(vecQ1, g_dEps);
 				tl::set_eps_0(vecQ1rlu, g_dEps);
@@ -268,7 +273,7 @@ void ElasticDlg::CalcElasticPositions()
 				// print inelastic position
 				ostrResults1 << "<tr>";
 				ostrResults1 << "<td>" << row+1 << "</td>";
-				if(B_ok)
+				if(B_ok && U_ok)
 					ostrResults1 << "<td>" << vecQrlu[0] << ", " << vecQrlu[1] << ", " << vecQrlu[2] << "</td>";
 				else
 					ostrResults1 << "<td>" << vecQ[0] << ", " << vecQ[1] << ", " << vecQ[2] << "</td>";
@@ -276,7 +281,7 @@ void ElasticDlg::CalcElasticPositions()
 				ostrResults1 << "<td>" << dE << "</td>";
 
 				// print results for elastic kf' = ki position
-				if(B_ok)
+				if(B_ok && U_ok)
 					ostrResults1 << "<td>" << vecQ1rlu[0] << ", " << vecQ1rlu[1] << ", " << vecQ1rlu[2] << "</td>";
 				else
 					ostrResults1 << "<td>" << vecQ1[0] << ", " << vecQ1[1] << ", " << vecQ1[2] << "</td>";
@@ -319,7 +324,7 @@ void ElasticDlg::CalcElasticPositions()
 					|| tl::is_nan_or_inf<t_real>(pos_elast.l))
 					throw tl::Err("Invalid h' k' l'.");
 
-				t_vec vecQ2rlu = tl::prod_mv(matBinv, vecQ2);
+				t_vec vecQ2rlu = tl::prod_mv(matUBinv, vecQ2);
 
 				tl::set_eps_0(vecQ2, g_dEps);
 				tl::set_eps_0(vecQ2rlu, g_dEps);
@@ -332,7 +337,7 @@ void ElasticDlg::CalcElasticPositions()
 				// print inelastic position
 				ostrResults2 << "<tr>";
 				ostrResults2 << "<td>" << row+1 << "</td>";
-				if(B_ok)
+				if(B_ok && U_ok)
 					ostrResults2 << "<td>" << vecQrlu[0] << ", " << vecQrlu[1] << ", " << vecQrlu[2] << "</td>";
 				else
 					ostrResults2 << "<td>" << vecQ[0] << ", " << vecQ[1] << ", " << vecQ[2] << "</td>";
@@ -340,7 +345,7 @@ void ElasticDlg::CalcElasticPositions()
 				ostrResults2 << "<td>" << dE << "</td>";
 
 				// print results for elastic ki'' = kf position
-				if(B_ok)
+				if(B_ok && U_ok)
 					ostrResults2 << "<td>" << vecQ2rlu[0] << ", " << vecQ2rlu[1] << ", " << vecQ2rlu[2] << "</td>";
 				else
 					ostrResults2 << "<td>" << vecQ2[0] << ", " << vecQ2[1] << ", " << vecQ2[2] << "</td>";
