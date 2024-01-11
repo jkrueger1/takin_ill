@@ -144,7 +144,7 @@
           <string>Get crystal and instrument configuration from Takin's main window.</string>
          </property>
          <property name="text">
-          <string>Sync</string>
+          <string>Sync.</string>
          </property>
          <property name="checkable">
           <bool>true</bool>
