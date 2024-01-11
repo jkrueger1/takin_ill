@@ -100,7 +100,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void DeleteDialogs();
 
 	private:
-		bool m_bUpdateRecipEdits = 1;
+		bool m_bUpdateRecipEdits = true;
 
 		QAction *m_pSmallq = nullptr, *m_pSnapSmallq = nullptr;
 		QAction *m_pCoordAxes = nullptr;
@@ -217,6 +217,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void InitDarkAngles();
 		void InitGoto();
 		void InitResoConv();
+		void InitElasticDlg();
 
 		void RotatePlane(unsigned iAxis, t_real_glob dAngle);
 

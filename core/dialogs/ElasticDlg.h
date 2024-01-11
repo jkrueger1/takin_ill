@@ -97,6 +97,7 @@ class ElasticDlg : public QDialog, Ui::ElasticDlg
 	protected slots:
 		void ButtonBoxClicked(QAbstractButton* pBtn);
 
+		void InitGeneratePositionsDlg();
 		void GeneratePositions();
 		void ImportPositions();
 
@@ -109,6 +110,7 @@ class ElasticDlg : public QDialog, Ui::ElasticDlg
 
 	protected:
 		void AddPosition();
+		void AddPosition(t_real_glob h, t_real_glob k, t_real_glob l, t_real_glob ki, t_real_glob kf);
 		void DelPosition();
 
 		std::vector<std::string> GetFiles();

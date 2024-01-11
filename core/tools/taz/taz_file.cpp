@@ -378,6 +378,14 @@ bool TazDlg::Load(const char* pcFile)
 	}
 
 
+	// elastic positions dialog
+	if(xml.Exists(strXmlRoot + "elastic_pos"))
+	{
+		InitElasticDlg();
+		m_pElasticDlg->Load(xml, strXmlRoot);
+	}
+
+
 	// reso dialog
 	if(xml.Exists(strXmlRoot + "reso"))
 	{
@@ -563,6 +571,7 @@ bool TazDlg::Save()
 	if(m_pReso) m_pReso->Save(mapConf, strXmlRoot);
 	if(m_pConvoDlg) m_pConvoDlg->Save(mapConf, strXmlRoot);
 	if(m_pGotoDlg) m_pGotoDlg->Save(mapConf, strXmlRoot);
+	if(m_pElasticDlg) m_pElasticDlg->Save(mapConf, strXmlRoot);
 	if(m_pDarkAnglesDlg) m_pDarkAnglesDlg->Save(mapConf, strXmlRoot);
 	//if(m_pPowderDlg) m_pPowderDlg->Save(mapConf, strXmlRoot);
 
@@ -915,7 +924,7 @@ bool TazDlg::ImportCIF(const char* pcFile)
 
 		if(strSpaceGroup == "")
 		{
-			QMessageBox::warning(this, "Warning", 
+			QMessageBox::warning(this, "Warning",
 				"No suitable space group could be found which matches the CIF, "
 				"using P1 instead and generating all atomic positions.");
 

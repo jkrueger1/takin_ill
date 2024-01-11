@@ -740,13 +740,14 @@ void GotoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 
 	// favlist
 	ClearList();
-	unsigned int iItem=0;
+	std::size_t iItem = 0;
 	while(true)
 	{
 		std::ostringstream ostrItemBase;
 		ostrItemBase << "goto_favlist/pos_" << iItem << "/";
 		std::string strItemBase = ostrItemBase.str();
 
+		// last position reached?
 		if(!xml.Exists(strXmlRoot + strItemBase))
 			break;
 

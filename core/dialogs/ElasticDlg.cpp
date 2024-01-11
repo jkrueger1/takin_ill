@@ -80,7 +80,7 @@ ElasticDlg::ElasticDlg(QWidget* pParent, QSettings* pSett)
 
 	// connections
 	QObject::connect(btnAddPosition, &QAbstractButton::clicked,
-		this, &ElasticDlg::AddPosition);
+		this, static_cast<void (ElasticDlg::*)()>(&ElasticDlg::AddPosition));
 	QObject::connect(btnDelPosition, &QAbstractButton::clicked,
 		this, &ElasticDlg::DelPosition);
 	QObject::connect(btnGenPositions, &QAbstractButton::clicked,
@@ -416,7 +416,7 @@ void ElasticDlg::GotoElasticPosition2()
 // positions table
 // ----------------------------------------------------------------------------
 /**
- * add an inelastic position to the table
+ * add an empty inelastic position to the table
  */
 void ElasticDlg::AddPosition()
 {
@@ -427,6 +427,26 @@ void ElasticDlg::AddPosition()
 	// insert items with default values
 	for(int col=0; col<POSTAB_COLS; ++col)
 		tablePositions->setItem(row, col, new QTableWidgetItem("0"));
+}
+
+
+/**
+ * add a given inelastic position to the table
+ */
+void ElasticDlg::AddPosition(t_real h, t_real k, t_real l, t_real ki, t_real kf)
+{
+	AddPosition();
+
+	tablePositions->item(tablePositions->rowCount() - 1, POSTAB_H)->setText(
+		tl::var_to_str(h, g_iPrec).c_str());
+	tablePositions->item(tablePositions->rowCount() - 1, POSTAB_K)->setText(
+		tl::var_to_str(k, g_iPrec).c_str());
+	tablePositions->item(tablePositions->rowCount() - 1, POSTAB_L)->setText(
+		tl::var_to_str(l, g_iPrec).c_str());
+	tablePositions->item(tablePositions->rowCount() - 1, POSTAB_KI)->setText(
+		tl::var_to_str(ki, g_iPrec).c_str());
+	tablePositions->item(tablePositions->rowCount() - 1, POSTAB_KF)->setText(
+		tl::var_to_str(kf, g_iPrec).c_str());
 }
 
 
@@ -451,9 +471,9 @@ void ElasticDlg::DelPosition()
 
 
 /**
- * show dialog to generate positions
+ * create the position generation dialog
  */
-void ElasticDlg::GeneratePositions()
+void ElasticDlg::InitGeneratePositionsDlg()
 {
 	if(!m_pGenPosDlg)
 	{
@@ -461,7 +481,15 @@ void ElasticDlg::GeneratePositions()
 		QObject::connect(m_pGenPosDlg, &GenPosDlg::GeneratedPositions,
 			this, &ElasticDlg::GeneratedPositions);
 	}
+}
 
+
+/**
+ * show dialog to generate positions
+ */
+void ElasticDlg::GeneratePositions()
+{
+	InitGeneratePositionsDlg();
 	focus_dlg(m_pGenPosDlg);
 }
 
@@ -560,19 +588,9 @@ void ElasticDlg::ImportPositions()
 		// iterate scan positions and add them to the table
 		for(std::size_t idx = 0; idx < pScan->GetScanCount(); ++idx)
 		{
-			AddPosition();
-
 			auto pos = pScan->GetScanHKLKiKf(idx);
-			tablePositions->item(tablePositions->rowCount() - 1, POSTAB_H)->setText(
-				tl::var_to_str(std::get<0>(pos), g_iPrec).c_str());
-			tablePositions->item(tablePositions->rowCount() - 1, POSTAB_K)->setText(
-				tl::var_to_str(std::get<1>(pos), g_iPrec).c_str());
-			tablePositions->item(tablePositions->rowCount() - 1, POSTAB_L)->setText(
-				tl::var_to_str(std::get<2>(pos), g_iPrec).c_str());
-			tablePositions->item(tablePositions->rowCount() - 1, POSTAB_KI)->setText(
-				tl::var_to_str(std::get<3>(pos), g_iPrec).c_str());
-			tablePositions->item(tablePositions->rowCount() - 1, POSTAB_KF)->setText(
-				tl::var_to_str(std::get<4>(pos), g_iPrec).c_str());
+			AddPosition(std::get<0>(pos), std::get<1>(pos), std::get<2>(pos),
+				std::get<3>(pos), std::get<4>(pos));
 		}
 	}
 
@@ -650,7 +668,30 @@ std::vector<std::string> ElasticDlg::GetFiles()
  */
 void ElasticDlg::Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
 {
-	// TODO
+	// save positions
+	for(int row = 0; row < tablePositions->rowCount(); ++row)
+	{
+		QTableWidgetItem *item_h = tablePositions->item(row, POSTAB_H);
+		QTableWidgetItem *item_k = tablePositions->item(row, POSTAB_K);
+		QTableWidgetItem *item_l = tablePositions->item(row, POSTAB_L);
+		QTableWidgetItem *item_ki = tablePositions->item(row, POSTAB_KI);
+		QTableWidgetItem *item_kf = tablePositions->item(row, POSTAB_KF);
+
+		if(!item_h || !item_k || !item_l || !item_ki || !item_kf)
+			continue;
+
+		std::ostringstream ostrPos;
+		ostrPos << "elastic_pos/pos_" << row << "/";
+		std::string strPos = ostrPos.str();
+
+		mapConf[strXmlRoot + strPos + "h"] = item_h->text().toStdString();
+		mapConf[strXmlRoot + strPos + "k"] = item_k->text().toStdString();
+		mapConf[strXmlRoot + strPos + "l"] = item_l->text().toStdString();
+		mapConf[strXmlRoot + strPos + "ki"] = item_ki->text().toStdString();
+		mapConf[strXmlRoot + strPos + "kf"] = item_kf->text().toStdString();
+	}
+
+	mapConf[strXmlRoot + "elastic_pos/pos_idx"] = tl::var_to_str(spinPosIdx->value()).c_str();
 
 	if(m_pGenPosDlg)
 		m_pGenPosDlg->Save(mapConf, strXmlRoot + "elastic_pos/");
@@ -662,10 +703,47 @@ void ElasticDlg::Save(std::map<std::string, std::string>& mapConf, const std::st
  */
 void ElasticDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 {
-	// TODO
+	m_bAllowCalculation = false;
+	bool bOk = false;
 
-	if(m_pGenPosDlg)
+	// clear old positions
+	tablePositions->clearContents();
+	tablePositions->setRowCount(0);
+	btnSync->setChecked(true);
+
+	// load positions
+	std::size_t row = 0;
+	while(true)
+	{
+		std::ostringstream ostrPos;
+		ostrPos << "elastic_pos/pos_" << row << "/";
+		std::string strPos = ostrPos.str();
+
+		// last position reached?
+		if(!xml.Exists(strXmlRoot + strPos))
+			break;
+
+		t_real dh = xml.Query<t_real>(strXmlRoot + strPos + "h", 0., &bOk);
+		t_real dk = xml.Query<t_real>(strXmlRoot + strPos + "k", 0., &bOk);
+		t_real dl = xml.Query<t_real>(strXmlRoot + strPos + "l", 0., &bOk);
+		t_real dki = xml.Query<t_real>(strXmlRoot + strPos + "ki", 0., &bOk);
+		t_real dkf = xml.Query<t_real>(strXmlRoot + strPos + "kf", 0., &bOk);
+
+		AddPosition(dh, dk, dl, dki, dkf);
+		++row;
+	}
+
+	spinPosIdx->setValue(xml.Query<int>(strXmlRoot + "elastic_pos/pos_idx", 1, &bOk));
+
+	// restore the settings from the position generation dialog
+	if(xml.Exists(strXmlRoot + "elastic_pos/gen_pos"))
+	{
+		InitGeneratePositionsDlg();
 		m_pGenPosDlg->Load(xml, strXmlRoot + "elastic_pos/");
+	}
+
+	m_bAllowCalculation = true;
+	CalcElasticPositions();
 }
 // ----------------------------------------------------------------------------
 

@@ -1219,7 +1219,7 @@ void TazDlg::ShowGotoDlg()
 }
 
 
-void TazDlg::ShowElasticDlg()
+void TazDlg::InitElasticDlg()
 {
 	if(!m_pElasticDlg)
 	{
@@ -1229,7 +1229,12 @@ void TazDlg::ShowElasticDlg()
 		m_pElasticDlg->SetLattice(m_latticecommon.lattice);
 		m_pElasticDlg->SetScatteringPlane(m_latticecommon.dir0RLU, m_latticecommon.dir1RLU);
 	}
+}
 
+
+void TazDlg::ShowElasticDlg()
+{
+	InitElasticDlg();
 	focus_dlg(m_pElasticDlg);
 }
 
