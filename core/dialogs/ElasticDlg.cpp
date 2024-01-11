@@ -90,11 +90,11 @@ ElasticDlg::ElasticDlg(QWidget* pParent, QSettings* pSett)
 	QObject::connect(btnSync, &QAbstractButton::toggled,
 		this, &ElasticDlg::SyncToggled);
 	QObject::connect(btnGotoInel, &QAbstractButton::clicked,
-		this, &ElasticDlg::GotoInelasticPosition);
+		[this]() { GotoPosition(0); });
 	QObject::connect(btnGotoElast1, &QAbstractButton::clicked,
-		this, &ElasticDlg::GotoElasticPosition1);
+		[this]() { GotoPosition(1); });
 	QObject::connect(btnGotoElast2, &QAbstractButton::clicked,
-		this, &ElasticDlg::GotoElasticPosition2);
+		[this]() { GotoPosition(2); });
 	QObject::connect(tablePositions, &QTableWidget::itemChanged,
 		this, &ElasticDlg::CalcElasticPositions);
 	QObject::connect(buttonBox, &QDialogButtonBox::clicked,
@@ -122,6 +122,14 @@ void ElasticDlg::CalcElasticPositions()
 {
 	if(!m_bAllowCalculation)
 		return;
+
+	// clear old cached positions
+	m_positions_inel.clear();
+	m_positions_elast1.clear();
+	m_positions_elast2.clear();
+	m_positions_inel.reserve(tablePositions->rowCount());
+	m_positions_elast1.reserve(tablePositions->rowCount());
+	m_positions_elast2.reserve(tablePositions->rowCount());
 
 	t_mat matB = tl::get_B(GetLattice(), 1);
 	t_mat matBinv;
@@ -186,62 +194,65 @@ void ElasticDlg::CalcElasticPositions()
 				throw tl::Err("Invalid hkl, ki or kf.");
 
 			// get coordinates
-			t_real dH = tl::str_to_var_parse<t_real>(item_h->text().toStdString());
-			t_real dK = tl::str_to_var_parse<t_real>(item_k->text().toStdString());
-			t_real dL = tl::str_to_var_parse<t_real>(item_l->text().toStdString());
-			t_real dKi = tl::str_to_var_parse<t_real>(item_ki->text().toStdString());
-			t_real dKf = tl::str_to_var_parse<t_real>(item_kf->text().toStdString());
+			ElasticDlgPos pos_inel;
+			pos_inel.h = tl::str_to_var_parse<t_real>(item_h->text().toStdString());
+			pos_inel.k = tl::str_to_var_parse<t_real>(item_k->text().toStdString());
+			pos_inel.l = tl::str_to_var_parse<t_real>(item_l->text().toStdString());
+			pos_inel.ki = tl::str_to_var_parse<t_real>(item_ki->text().toStdString());
+			pos_inel.kf = tl::str_to_var_parse<t_real>(item_kf->text().toStdString());
 
-			t_real dMono2Theta = tl::get_mono_twotheta(dKi / angs, GetMonoD()*angs, GetMonoSense()) / rads;
-			t_real dAna2Theta = tl::get_mono_twotheta(dKf / angs, GetAnaD()*angs, GetAnaSense()) / rads;
-			t_real dSampleTheta, dSample2Theta;
+			pos_inel.mono_2theta = tl::get_mono_twotheta(pos_inel.ki / angs, GetMonoD()*angs, GetMonoSense()) / rads;
+			pos_inel.ana_2theta = tl::get_mono_twotheta(pos_inel.kf / angs, GetAnaD()*angs, GetAnaSense()) / rads;
+
 			t_vec vecQ;
-
-			if(tl::is_nan_or_inf<t_real>(dMono2Theta) || tl::is_nan_or_inf<t_real>(dAna2Theta))
+			if(tl::is_nan_or_inf<t_real>(pos_inel.mono_2theta) || tl::is_nan_or_inf<t_real>(pos_inel.ana_2theta))
 				throw tl::Err("Invalid monochromator or analyser angle.");
 
 			// get angles corresponding to given inelastic position
 			tl::get_tas_angles(GetLattice(),
 				GetScatteringPlaneVec1(), GetScatteringPlaneVec2(),
-				dKi, dKf, dH, dK, dL,
+				pos_inel.ki, pos_inel.kf, pos_inel.h, pos_inel.k, pos_inel.l,
 				GetSampleSense(),
-				&dSampleTheta, &dSample2Theta,
+				&pos_inel.sample_theta, &pos_inel.sample_2theta,
 				&vecQ);
 
-			if(tl::is_nan_or_inf<t_real>(dSample2Theta)
-				|| tl::is_nan_or_inf<t_real>(dSampleTheta))
+			if(tl::is_nan_or_inf<t_real>(pos_inel.sample_2theta)
+				|| tl::is_nan_or_inf<t_real>(pos_inel.sample_theta))
 				throw tl::Err("Invalid sample 2theta angle.");
 
-			t_real dE = (tl::k2E(dKi / angs) - tl::k2E(dKf / angs)) / meV;
+			t_real dE = (tl::k2E(pos_inel.ki / angs) - tl::k2E(pos_inel.kf / angs)) / meV;
 			t_vec vecQrlu = tl::prod_mv(matBinv, vecQ);
 
 			tl::set_eps_0(dE, g_dEps);
 			tl::set_eps_0(vecQ, g_dEps);
 			tl::set_eps_0(vecQrlu, g_dEps);
-			tl::set_eps_0(dSample2Theta, g_dEps);
-			tl::set_eps_0(dSampleTheta, g_dEps);
+			tl::set_eps_0(pos_inel.sample_2theta, g_dEps);
+			tl::set_eps_0(pos_inel.sample_theta, g_dEps);
 
 
 			try
 			{
 				// get corresponding elastic analyser angle for kf' = ki
-				t_real dAna2Theta_elast = tl::get_mono_twotheta(dKi/angs, GetAnaD()*angs, GetAnaSense()) / rads;
+				ElasticDlgPos pos_elast = pos_inel;
+				pos_elast.E = 0;
+				pos_elast.kf = pos_inel.ki;
+				pos_elast.ana_2theta = tl::get_mono_twotheta(pos_elast.kf/angs, GetAnaD()*angs, GetAnaSense()) / rads;
 
 				// find Q position for kf' = ki elastic position
 				t_vec vecQ1;
-				t_real dH1 = dH, dK1 = dK, dL1 = dL, dE1 = 0.;
-				t_real dKi1 = dKi, dKf1 = dKi;
 				tl::get_hkl_from_tas_angles<t_real>(GetLattice(),
 					GetScatteringPlaneVec1(), GetScatteringPlaneVec2(),
 					GetMonoD(), GetAnaD(),
-					dMono2Theta*0.5, dAna2Theta_elast*0.5, dSampleTheta, dSample2Theta,
+					pos_elast.mono_2theta*0.5, pos_elast.ana_2theta*0.5,
+					pos_elast.sample_theta, pos_elast.sample_2theta,
 					GetMonoSense(), GetAnaSense(), GetSampleSense(),
-					&dH1, &dK1, &dL1, &dKi1, &dKf1, &dE1, 0,
+					&pos_elast.h, &pos_elast.k, &pos_elast.l,
+					&pos_elast.ki, &pos_elast.kf, &pos_elast.E, 0,
 					&vecQ1);
 
-				if(tl::is_nan_or_inf<t_real>(dH1)
-					|| tl::is_nan_or_inf<t_real>(dK1)
-					|| tl::is_nan_or_inf<t_real>(dL1))
+				if(tl::is_nan_or_inf<t_real>(pos_elast.h)
+					|| tl::is_nan_or_inf<t_real>(pos_elast.k)
+					|| tl::is_nan_or_inf<t_real>(pos_elast.l))
 					throw tl::Err("Invalid h' k' l'.");
 
 				t_vec vecQ1rlu = tl::prod_mv(matBinv, vecQ1);
@@ -249,7 +260,8 @@ void ElasticDlg::CalcElasticPositions()
 				tl::set_eps_0(vecQ1, g_dEps);
 				tl::set_eps_0(vecQ1rlu, g_dEps);
 
-				for(t_real* d : { &dH1, &dK1, &dL1, &dKi1, &dKf1, &dE1 })
+				for(t_real* d : { &pos_elast.h, &pos_elast.k, &pos_elast.l,
+					&pos_elast.ki, &pos_elast.kf, &pos_elast.E })
 					tl::set_eps_0(*d, g_dEps);
 
 
@@ -270,6 +282,8 @@ void ElasticDlg::CalcElasticPositions()
 					ostrResults1 << "<td>" << vecQ1[0] << ", " << vecQ1[1] << ", " << vecQ1[2] << "</td>";
 				ostrResults1 << "<td>" << tl::veclen(vecQ1) << "</td>";
 				ostrResults1 << "</tr>";
+
+				m_positions_elast1.emplace_back(std::move(pos_elast));
 			}
 			catch(const std::exception& ex)
 			{
@@ -283,32 +297,35 @@ void ElasticDlg::CalcElasticPositions()
 			try
 			{
 				// get corresponding elastic monochromator angle for ki'' = kf
-				t_real dMono2Theta_elast = tl::get_mono_twotheta(dKf/angs, GetMonoD()*angs, GetMonoSense()) / rads;
+				ElasticDlgPos pos_elast = pos_inel;
+				pos_elast.E = 0;
+				pos_elast.ki = pos_inel.kf;
+				pos_elast.mono_2theta = tl::get_mono_twotheta(pos_elast.ki/angs, GetMonoD()*angs, GetMonoSense()) / rads;
 
 				// find Q position for kf' = ki elastic position
 				t_vec vecQ2;
-				t_real dH2 = dH, dK2 = dK, dL2 = dL, dE2 = 0.;
-				t_real dKi2 = dKf, dKf2 = dKf;
 				tl::get_hkl_from_tas_angles<t_real>(GetLattice(),
 					GetScatteringPlaneVec1(), GetScatteringPlaneVec2(),
 					GetMonoD(), GetAnaD(),
-					dMono2Theta_elast*0.5, dAna2Theta*0.5, dSampleTheta, dSample2Theta,
+					pos_elast.mono_2theta*0.5, pos_elast.ana_2theta*0.5,
+					pos_elast.sample_theta, pos_elast.sample_2theta,
 					GetMonoSense(), GetAnaSense(), GetSampleSense(),
-					&dH2, &dK2, &dL2,
-					&dKi2, &dKf2, &dE2, 0,
+					&pos_elast.h, &pos_elast.k, &pos_elast.l,
+					&pos_elast.ki, &pos_elast.kf, &pos_elast.E, 0,
 					&vecQ2);
 
-				if(tl::is_nan_or_inf<t_real>(dH2)
-					|| tl::is_nan_or_inf<t_real>(dK2)
-					|| tl::is_nan_or_inf<t_real>(dL2))
-					throw tl::Err("Invalid h'' k'' l''.");
+				if(tl::is_nan_or_inf<t_real>(pos_elast.h)
+					|| tl::is_nan_or_inf<t_real>(pos_elast.k)
+					|| tl::is_nan_or_inf<t_real>(pos_elast.l))
+					throw tl::Err("Invalid h' k' l'.");
 
 				t_vec vecQ2rlu = tl::prod_mv(matBinv, vecQ2);
 
 				tl::set_eps_0(vecQ2, g_dEps);
 				tl::set_eps_0(vecQ2rlu, g_dEps);
 
-				for(t_real* d : { &dH2, &dK2, &dL2, &dKi2, &dKf2, &dE2 })
+				for(t_real* d : { &pos_elast.h, &pos_elast.k, &pos_elast.l,
+					&pos_elast.ki, &pos_elast.kf, &pos_elast.E })
 					tl::set_eps_0(*d, g_dEps);
 
 
@@ -329,6 +346,8 @@ void ElasticDlg::CalcElasticPositions()
 					ostrResults2 << "<td>" << vecQ2[0] << ", " << vecQ2[1] << ", " << vecQ2[2] << "</td>";
 				ostrResults2 << "<td>" << tl::veclen(vecQ2) << "</td>";
 				ostrResults2 << "</tr>";
+
+				m_positions_elast2.emplace_back(std::move(pos_elast));
 			}
 			catch(const std::exception& ex)
 			{
@@ -337,6 +356,9 @@ void ElasticDlg::CalcElasticPositions()
 				ostrResults2 << "<td><font color=\"#ff0000\"><b>" << ex.what() << "</b></font></td>";
 				ostrResults2 << "</tr>";
 			}
+
+
+			m_positions_inel.emplace_back(std::move(pos_inel));
 		}
 		catch(const std::exception& ex)
 		{
@@ -364,10 +386,19 @@ void ElasticDlg::CalcElasticPositions()
 
 
 /**
- * set the scattering triangle to the given inelastic position
+ * set the scattering triangle to the given inelastic (which == 0)
+ * or elastic position (which == 1,2)
  */
-void ElasticDlg::GotoInelasticPosition()
+void ElasticDlg::GotoPosition(int which)
 {
+	const std::vector<ElasticDlgPos>* positions = nullptr;
+	if(which == 1)
+		positions = &m_positions_elast1;
+	else if(which == 2)
+		positions = &m_positions_elast2;
+	else
+		positions = &m_positions_inel;
+
 	if(!m_bSyncWithMainWindow)
 	{
 		QMessageBox::critical(this, "Error",
@@ -375,39 +406,30 @@ void ElasticDlg::GotoInelasticPosition()
 		return;
 	}
 
-	// TODO
-}
-
-
-/**
- * set the scattering triangle to the given elastic kf'=ki position
- */
-void ElasticDlg::GotoElasticPosition1()
-{
-	if(!m_bSyncWithMainWindow)
+	int pos_idx = spinPosIdx->value() - 1;
+	if(pos_idx >= positions->size() || pos_idx < 0)
 	{
-		QMessageBox::critical(this, "Error",
-			"Not synchronised with main sample / instrument parameters. Please click on \"Sync\" to do so.");
+		QMessageBox::critical(this, "Error", "Invalid position index.");
 		return;
 	}
 
-	// TODO
-}
+	const ElasticDlgPos& pos = (*positions)[pos_idx];
 
+	CrystalOptions crys;
+	TriangleOptions triag;
 
-/**
- * set the scattering triangle to the given elastic ki''=kf position
- */
-void ElasticDlg::GotoElasticPosition2()
-{
-	if(!m_bSyncWithMainWindow)
-	{
-		QMessageBox::critical(this, "Error",
-			"Not synchronised with main sample / instrument parameters. Please click on \"Sync\" to do so.");
-		return;
-	}
+	triag.bChangedMonoTwoTheta = true;
+	triag.dMonoTwoTheta = pos.mono_2theta;
+	triag.bChangedAnaTwoTheta = true;
+	triag.dAnaTwoTheta = pos.ana_2theta;
+	triag.bChangedTheta = true;
+	triag.dTheta = pos.sample_theta;
+	triag.bChangedAngleKiVec0 = true;
+	triag.dAngleKiVec0 = tl::get_pi<t_real>()/2. - pos.sample_theta;
+	triag.bChangedTwoTheta = true;
+	triag.dTwoTheta = pos.sample_2theta;
 
-	// TODO
+	emit ChangedPosition(crys, triag);
 }
 
 

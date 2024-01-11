@@ -43,6 +43,8 @@
 
 #include "GenPosDlg.h"
 
+#include <vector>
+
 
 /**
  * needed sample and instrument configuration
@@ -53,6 +55,19 @@ struct ElasticDlgCfg
 	ublas::vector<t_real_glob> m_vec1, m_vec2;
 	t_real_glob m_dMono = 3.355, m_dAna = 3.355;
 	bool m_bSenses [3] = { false, true, false };
+};
+
+
+/**
+ * saved instrumental positions
+ */
+struct ElasticDlgPos
+{
+	t_real_glob h, k, l;
+	t_real_glob ki, kf, E;
+
+	t_real_glob mono_2theta, ana_2theta;
+	t_real_glob sample_2theta, sample_theta;
 };
 
 
@@ -70,6 +85,9 @@ class ElasticDlg : public QDialog, Ui::ElasticDlg
 
 		QSettings *m_pSettings = nullptr;
 		GenPosDlg *m_pGenPosDlg = nullptr;
+
+		// saved instrumental positions
+		std::vector<ElasticDlgPos> m_positions_inel, m_positions_elast1, m_positions_elast2;
 
 	public:
 		// setter
@@ -104,14 +122,11 @@ class ElasticDlg : public QDialog, Ui::ElasticDlg
 		void SyncToggled(bool sync);
 		void GeneratedPositions(const std::vector<ScanPosition>& pos);
 
-		void GotoInelasticPosition();
-		void GotoElasticPosition1();
-		void GotoElasticPosition2();
-
 	protected:
 		void AddPosition();
 		void AddPosition(t_real_glob h, t_real_glob k, t_real_glob l, t_real_glob ki, t_real_glob kf);
 		void DelPosition();
+		void GotoPosition(int which);
 
 		std::vector<std::string> GetFiles();
 
@@ -120,6 +135,9 @@ class ElasticDlg : public QDialog, Ui::ElasticDlg
 	public:
 		void Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot);
 		void Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot);
+
+	signals:
+		void ChangedPosition(const CrystalOptions& crys, const TriangleOptions& triag);
 };
 
 #endif

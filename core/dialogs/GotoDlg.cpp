@@ -483,19 +483,19 @@ bool GotoDlg::ApplyCurPos()
 	TriangleOptions triag;
 
 	triag.bChangedMonoTwoTheta = true;
-	triag.dMonoTwoTheta = this->m_dMono2Theta;
+	triag.dMonoTwoTheta = m_dMono2Theta;
 
 	triag.bChangedAnaTwoTheta = true;
-	triag.dAnaTwoTheta = this->m_dAna2Theta;
+	triag.dAnaTwoTheta = m_dAna2Theta;
 
 	triag.bChangedTheta = true;
-	triag.dTheta = this->m_dSampleTheta;
+	triag.dTheta = m_dSampleTheta;
 
 	triag.bChangedAngleKiVec0 = true;
 	triag.dAngleKiVec0 = tl::get_pi<t_real>()/2. - m_dSampleTheta;
 
 	triag.bChangedTwoTheta = true;
-	triag.dTwoTheta = this->m_dSample2Theta;
+	triag.dTwoTheta = m_dSample2Theta;
 
 	emit vars_changed(crys, triag);
 	return true;

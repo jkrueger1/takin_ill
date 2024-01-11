@@ -1224,6 +1224,8 @@ void TazDlg::InitElasticDlg()
 	if(!m_pElasticDlg)
 	{
 		m_pElasticDlg = new ElasticDlg(this, &m_settings);
+		QObject::connect(m_pElasticDlg, &ElasticDlg::ChangedPosition, this, &TazDlg::VarsChanged);
+
 		m_pElasticDlg->SetD(editMonoD->text().toDouble(), editAnaD->text().toDouble());
 		m_pElasticDlg->SetSenses(checkSenseM->isChecked(), checkSenseS->isChecked(), checkSenseA->isChecked());
 		m_pElasticDlg->SetLattice(m_latticecommon.lattice);
