@@ -27,6 +27,7 @@
  */
 
 #include "bz.h"
+#include "ops.h"
 
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QMessageBox>
@@ -39,72 +40,6 @@
 #include "tlibs2/libs/qt/helper.h"
 
 using namespace tl2_ops;
-
-
-/**
- * converts a symmetry operation matrix to a string
- */
-std::string BZDlg::OpToStr(const t_mat& op)
-{
-	std::ostringstream ostr;
-	ostr.precision(g_prec);
-
-	for(std::size_t row=0; row<op.size1(); ++row)
-	{
-		for(std::size_t col=0; col<op.size2(); ++col)
-		{
-			t_real elem = op(row, col);
-			tl2::set_eps_0(elem);
-
-			ostr << elem;
-			if(col != op.size2()-1)
-				ostr << " ";
-		}
-
-		if(row != op.size1()-1)
-			ostr << "\n";
-	}
-
-	return ostr.str();
-}
-
-
-/**
- * convert a string to a symmetry operation matrix
- */
-t_mat BZDlg::StrToOp(const std::string& str)
-{
-	t_mat op = tl2::unit<t_mat>(4);
-
-	std::istringstream istr(str);
-	for(std::size_t row=0; row<op.size1(); ++row)
-		for(std::size_t col=0; col<op.size2(); ++col)
-			istr >> op(row, col);
-
-	return op;
-}
-
-
-/**
- * get the properties of a symmetry operation
- */
-std::string BZDlg::GetOpProperties(const t_mat& op)
-{
-	std::string prop;
-
-	if(tl2::is_unit<t_mat>(op, g_eps))
-	{
-		if(prop.size()) prop += ", ";
-		prop += "identity";
-	}
-	if(tl2::hom_is_centring<t_mat>(op, g_eps))
-	{
-		if(prop.size()) prop += ", ";
-		prop += "centring";
-	}
-
-	return prop;
-}
 
 
 void BZDlg::AddSymOpTabItem(int row, const t_mat& op)
@@ -136,9 +71,9 @@ void BZDlg::AddSymOpTabItem(int row, const t_mat& op)
 	}
 	else
 	{
-		std::string prop = GetOpProperties(op);
+		std::string prop = get_op_properties<t_mat>(op);
 		m_symops->setItem(row, COL_OP,
-			new QTableWidgetItem(OpToStr(op).c_str()));
+			new QTableWidgetItem(op_to_str<t_mat>(op).c_str()));
 		m_symops->setItem(row, COL_PROP,
 			new QTableWidgetItem(prop.c_str()));
 	}
@@ -280,8 +215,8 @@ void BZDlg::SymOpTableItemChanged(QTableWidgetItem *item)
 	// update properties
 	if(item->column() == COL_OP)
 	{
-		t_mat op = StrToOp(item->text().toStdString());
-		std::string prop = GetOpProperties(op);
+		t_mat op = str_to_op<t_mat>(item->text().toStdString());
+		std::string prop = get_op_properties<t_mat>(op);
 		if(QTableWidgetItem *itemProp = m_symops->item(item->row(), COL_PROP); itemProp)
 			itemProp->setText(prop.c_str());
 		else
@@ -371,7 +306,7 @@ std::vector<t_mat> BZDlg::GetSymOps(bool only_centring) const
 			continue;
 		}
 
-		t_mat op = StrToOp(op_item->text().toStdString());
+		t_mat op = str_to_op<t_mat>(op_item->text().toStdString());
 
 		bool add_op = true;
 		if(only_centring)

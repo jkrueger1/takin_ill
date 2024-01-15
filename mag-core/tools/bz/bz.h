@@ -78,27 +78,6 @@ enum : int
 };
 
 
-/**
- * bz configuration for file loading
- */
-struct BZConfig
-{
-	boost::optional<t_real> xtal_a, xtal_b, xtal_c;
-	boost::optional<t_real> xtal_alpha, xtal_beta, xtal_gamma;
-
-	boost::optional<int> order, cut_order;
-
-	boost::optional<t_real> cut_x, cut_y, cut_z;
-	boost::optional<t_real> cut_nx, cut_ny, cut_nz;
-	boost::optional<t_real> cut_d;
-
-	boost::optional<int> sg_idx;
-
-	std::vector<t_mat> symops;
-	std::vector<std::string> formulas;
-};
-
-
 class BZDlg : public QDialog
 {
 public:
@@ -256,19 +235,10 @@ protected:
 	virtual void dragEnterEvent(QDragEnterEvent *evt) override;
 	virtual void dropEvent(QDropEvent *evt) override;
 
-	// conversion functions
-	static std::string OpToStr(const t_mat& rot);
-	static t_mat StrToOp(const std::string& str);
-
-	static std::string GetOpProperties(const t_mat& op);
-
 
 public:
 	bool Load(const QString& filename, bool use_stdin = false);
 	bool Save(const QString& filename);
-
-	//loads a configuration xml file
-	static BZConfig LoadBZConfig(const std::string& filename, bool use_stdin = false);
 
 
 private:

@@ -1,5 +1,5 @@
 /**
- * brillouin zone tool
+ * brillouin zone tool, configuration file
  * @author Tobias Weber <tweber@ill.fr>
  * @date Maz-2022
  * @license GPLv3, see 'LICENSE' file
@@ -25,36 +25,39 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef __BZTOOL_GLOBALS_H__
-#define __BZTOOL_GLOBALS_H__
+#ifndef __BZCONF_H__
+#define __BZCONF_H__
 
 
-#include <boost/math/quaternion.hpp>
-namespace math = boost::math;
+#include <vector>
+#include <string>
+#include <boost/optional.hpp>
 
-#include "tlibs2/libs/maths.h"
-
-
-using t_real = double;
-using t_vec = tl2::vec<t_real, std::vector>;
-using t_mat = tl2::mat<t_real, std::vector>;
-using t_quat = math::quaternion<t_real>;
-
-extern t_real g_eps;
-extern int g_prec;
-extern int g_prec_gui;
-
-extern void set_eps(t_real eps, int prec = -1);
+#include "globals.h"
 
 
-#ifndef DONT_USE_QT
-	#include "tlibs2/libs/qt/gl.h"
+/**
+ * bz configuration for file loading
+ */
+struct BZConfig
+{
+	boost::optional<t_real> xtal_a, xtal_b, xtal_c;
+	boost::optional<t_real> xtal_alpha, xtal_beta, xtal_gamma;
 
-	using t_real_gl = tl2::t_real_gl;
-	using t_vec2_gl = tl2::t_vec2_gl;
-	using t_vec3_gl = tl2::t_vec3_gl;
-	using t_vec_gl = tl2::t_vec_gl;
-	using t_mat_gl = tl2::t_mat_gl;
-#endif
+	boost::optional<int> order, cut_order;
+
+	boost::optional<t_real> cut_x, cut_y, cut_z;
+	boost::optional<t_real> cut_nx, cut_ny, cut_nz;
+	boost::optional<t_real> cut_d;
+
+	boost::optional<int> sg_idx;
+
+	std::vector<t_mat> symops;
+	std::vector<std::string> formulas;
+};
+
+
+extern BZConfig load_bz_config(const std::string& filename, bool use_stdin);
+
 
 #endif

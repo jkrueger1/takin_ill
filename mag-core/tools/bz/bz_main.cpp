@@ -25,12 +25,17 @@
  * ----------------------------------------------------------------------------
  */
 
-#include "bz.h"
-#include "bzlib.h"
-#include "tlibs2/libs/qt/helper.h"
 
-#include <QtCore/QDir>
-#include <QtWidgets/QApplication>
+#ifndef DONT_USE_QT
+	#include "bz.h"
+	#include "tlibs2/libs/qt/helper.h"
+
+	#include <QtCore/QDir>
+	#include <QtWidgets/QApplication>
+#endif
+
+#include "bzlib.h"
+#include "bz_conf.h"
 
 #include <iostream>
 #include <fstream>
@@ -46,7 +51,7 @@ static int cli_main(const std::string& cfg_file, const std::string& results_file
 {
 	try
 	{
-		BZConfig cfg = BZDlg::LoadBZConfig(cfg_file, use_stdin);
+		BZConfig cfg = load_bz_config(cfg_file, use_stdin);
 
 		BZCalc<t_mat, t_vec, t_real> bzcalc;
 		bzcalc.SetEps(g_eps);
@@ -61,7 +66,7 @@ static int cli_main(const std::string& cfg_file, const std::string& results_file
 
 		if(!bzcalc.CalcBZ())
 		{
-			std::cerr << "Error calculating brillouin zone." << std::endl;
+			std::cerr << "Error calculating Brillouin zone." << std::endl;
 			return -1;
 		}
 
@@ -90,6 +95,7 @@ static int cli_main(const std::string& cfg_file, const std::string& results_file
 }
 
 
+#ifndef DONT_USE_QT
 /**
  * starts the gui program
  */
@@ -111,6 +117,7 @@ static int gui_main(int argc, char** argv, const std::string& cfg_file, bool use
 
 	return app->exec();
 }
+#endif
 
 
 /**
@@ -118,10 +125,15 @@ static int gui_main(int argc, char** argv, const std::string& cfg_file, bool use
  */
 int main(int argc, char** argv)
 {
+#ifndef DONT_USE_QT
 	tl2::set_locales();
-
-	bool show_help = false;
 	bool use_cli = false;
+#else
+	std::ios_base::sync_with_stdio(false);
+	::setlocale(LC_ALL, "C");
+	std::locale::global(std::locale("C"));
+#endif
+	bool show_help = false;
 	bool use_stdin = false;
 	t_real eps = -1.;
 	std::string cfg_file, results_file;
@@ -129,7 +141,9 @@ int main(int argc, char** argv)
 	args::options_description arg_descr("Takin/BZ arguments");
 	arg_descr.add_options()
 		("help,h", args::bool_switch(&show_help), "show help")
+#ifndef DONT_USE_QT
 		("cli,c", args::bool_switch(&use_cli), "use command-line interface")
+#endif
 		("stdin,s", args::bool_switch(&use_stdin), "load configuration file from standard input")
 		("eps,e", args::value(&eps), "set epsilon value")
 		("input,i", args::value(&cfg_file), "input configuration file")
@@ -157,8 +171,18 @@ int main(int argc, char** argv)
 	if(eps >= 0.)
 		set_eps(eps);
 
+#ifndef DONT_USE_QT
 	// either start the cli or the gui program
 	if(use_cli)
 		return cli_main(cfg_file, results_file, use_stdin);
 	return gui_main(argc, argv, cfg_file, use_stdin);
+#else
+	// only start the cli program
+	if(argc <= 1)
+	{
+		std::cout << arg_descr << std::endl;
+		return 0;
+	}
+	return cli_main(cfg_file, results_file, use_stdin);
+#endif
 }

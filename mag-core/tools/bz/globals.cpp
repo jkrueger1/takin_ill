@@ -45,6 +45,4 @@ void set_eps(t_real eps, int prec)
 
 	g_eps = eps;
 	g_prec = prec;
-
-	//std::cout << "eps = " << g_eps << ", prec = " << g_prec << std::endl;
 }

@@ -26,8 +26,6 @@ cmake_minimum_required(VERSION 3.0)
 project(bz)
 enable_language(CXX)
 
-set(QT_VER 5)
-
 set(CMAKE_CXX_STANDARD 20)
 add_compile_options(-std=c++20)
 add_compile_options(-Wall -Wextra)
@@ -38,7 +36,12 @@ list(APPEND CMAKE_MODULE_PATH
 )
 
 set(CMAKE_VERBOSE_MAKEFILE TRUE)
+
+
+# options
+option(USE_QT "use Qt" TRUE)
 option(USE_SCRIPTING "use scripting" FALSE)
+
 
 # system specific settings
 message("Building for ${CMAKE_SYSTEM_NAME} systems.")
@@ -53,26 +56,6 @@ endif()
 find_package(Boost REQUIRED COMPONENTS program_options)
 add_compile_options(${Boost_CXX_FLAGS})
 
-find_package(Qhull REQUIRED)
-if(Qhull_FOUND)
-	add_definitions(-DUSE_QHULL)
-	include_directories("${Qhull_INCLUDE_DIRS}")
-endif()
-
-message("Trying to select Qt version ${QT_VER}.")
-if(QT_VER EQUAL 6)
-	find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets OpenGLWidgets Svg)
-	include_directories("${Qt6Core_INCLUDE_DIRS}/..")
-	list(APPEND QtLibraries Qt6::Core Qt6::Gui Qt6::Widgets Qt6::OpenGLWidgets Qt6::Svg)
-elseif(QT_VER EQUAL 5)
-	find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets Svg)
-	include_directories("${Qt5Core_INCLUDE_DIRS}/..")
-	list(APPEND QtLibraries Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg)
-else()
-	message(FATAL_ERROR "Tried to select non-supported Qt version ${QT_VER}.")
-endif()
-set(CMAKE_AUTOUIC TRUE)
-set(CMAKE_AUTOMOC TRUE)
 
 include_directories(
 	"${PROJECT_SOURCE_DIR}"
@@ -82,17 +65,68 @@ include_directories(
 )
 
 
-add_executable(takin_bz
-	bz.cpp bz_file.cpp bz_calc.cpp
-	bz_plot.cpp bz_main.cpp
-	bz_ops.cpp bz.h
-	globals.cpp globals.h
-	bz_formulas.cpp
-	plot_cut.cpp plot_cut.h
-	bzlib.h
-	../../tlibs2/libs/qt/recent.cpp ../../tlibs2/libs/qt/recent.h
-	../../tlibs2/libs/qt/gl.cpp ../../tlibs2/libs/qt/gl.h
-	../../tlibs2/libs/qt/glplot.cpp ../../tlibs2/libs/qt/glplot.h)
+find_package(Qhull REQUIRED)
+if(Qhull_FOUND)
+	add_definitions(-DUSE_QHULL)
+	include_directories("${Qhull_INCLUDE_DIRS}")
+endif()
+
+if(USE_QT)
+	set(QT_VER 5)
+
+	message("Trying to select Qt version ${QT_VER}.")
+	if(QT_VER EQUAL 6)
+		find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets OpenGLWidgets Svg)
+		include_directories("${Qt6Core_INCLUDE_DIRS}/..")
+		list(APPEND QtLibraries Qt6::Core Qt6::Gui Qt6::Widgets Qt6::OpenGLWidgets Qt6::Svg)
+	elseif(QT_VER EQUAL 5)
+		find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets Svg)
+		include_directories("${Qt5Core_INCLUDE_DIRS}/..")
+		list(APPEND QtLibraries Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg)
+	else()
+		message(FATAL_ERROR "Tried to select non-supported Qt version ${QT_VER}.")
+	endif()
+
+	set(CMAKE_AUTOUIC TRUE)
+	set(CMAKE_AUTOMOC TRUE)
+
+
+	add_executable(takin_bz
+		bz.cpp bz_file.cpp bz_calc.cpp
+		bz_plot.cpp bz_main.cpp
+		bz_ops.cpp bz.h ops.h
+		bz_conf.cpp bz_conf.h
+		globals.cpp globals.h
+		bz_formulas.cpp
+		plot_cut.cpp plot_cut.h
+		bzlib.h
+		../../tlibs2/libs/qt/recent.cpp ../../tlibs2/libs/qt/recent.h
+		../../tlibs2/libs/qt/gl.cpp ../../tlibs2/libs/qt/gl.h
+		../../tlibs2/libs/qt/glplot.cpp ../../tlibs2/libs/qt/glplot.h)
+
+	target_link_libraries(takin_bz
+		${Boost_LIBRARIES}
+		${Qhull_LIBRARIES}
+		${QtLibraries}
+	)
+else()
+		message("Compiling without Qt.")
+
+		add_definitions(-DDONT_USE_QT)
+
+	add_executable(takin_bz
+		bz_main.cpp bzlib.h
+		bz_conf.cpp bz_conf.h
+		globals.cpp globals.h
+		ops.h
+	)
+
+	target_link_libraries(takin_bz
+		${Boost_LIBRARIES}
+		${Qhull_LIBRARIES}
+	)
+endif()
+
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 	target_link_options(takin_bz
@@ -100,12 +134,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 		PRIVATE LINKER:-sectcreate,__TEXT,__info_plist,${PROJECT_SOURCE_DIR}/../../setup_mac/InfoBZ.plist
 	)
 endif()
-
-target_link_libraries(takin_bz
-	${Boost_LIBRARIES}
-	${Qhull_LIBRARIES}
-	${QtLibraries}
-)
 
 
 if(USE_SCRIPTING)
