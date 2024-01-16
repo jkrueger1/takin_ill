@@ -40,8 +40,25 @@
 #include <iostream>
 #include <fstream>
 
-#include <boost/program_options.hpp>
-namespace args = boost::program_options;
+
+#ifndef DONT_USE_BOOTS_PROGOPTS
+	#include <boost/program_options.hpp>
+	namespace args = boost::program_options;
+#endif
+
+
+
+static inline void set_locales()
+{
+#ifndef DONT_USE_QT
+	tl2::set_locales();
+#else
+	std::ios_base::sync_with_stdio(false);
+	::setlocale(LC_ALL, "C");
+	std::locale::global(std::locale("C"));
+#endif
+}
+
 
 
 /**
@@ -95,6 +112,7 @@ static int cli_main(const std::string& cfg_file, const std::string& results_file
 }
 
 
+
 #ifndef DONT_USE_QT
 /**
  * starts the gui program
@@ -120,18 +138,17 @@ static int gui_main(int argc, char** argv, const std::string& cfg_file, bool use
 #endif
 
 
+
+#ifndef DONT_USE_BOOTS_PROGOPTS
 /**
  * starts the cli or the gui program
  */
 int main(int argc, char** argv)
 {
+	set_locales();
+
 #ifndef DONT_USE_QT
-	tl2::set_locales();
 	bool use_cli = false;
-#else
-	std::ios_base::sync_with_stdio(false);
-	::setlocale(LC_ALL, "C");
-	std::locale::global(std::locale("C"));
 #endif
 	bool show_help = false;
 	bool use_stdin = false;
@@ -181,8 +198,49 @@ int main(int argc, char** argv)
 	if(argc <= 1)
 	{
 		std::cout << arg_descr << std::endl;
-		return 0;
+		return -1;
 	}
 	return cli_main(cfg_file, results_file, use_stdin);
 #endif
 }
+
+
+
+#else   // DONT_USE_BOOTS_PROGOPTS
+/**
+ * starts the cli program using a minimal interface
+ */
+int main(int argc, char** argv)
+{
+	set_locales();
+	std::string cfg_file, results_file;
+	bool has_cfg_file = false;
+
+	// find input and output file names
+	for(int arg=1; arg<argc; ++arg)
+	{
+		// ignore switches
+		if(argv[arg][0] == '-')
+			continue;
+
+		if(!has_cfg_file)
+		{
+			cfg_file = argv[arg];
+			has_cfg_file = true;
+		}
+		else
+		{
+			results_file = argv[arg];
+			break;
+		}
+	}
+
+	if(argc < 2 || !has_cfg_file)
+	{
+		std::cout << "Usage: " << argv[0] << "<input.xml> [output.json]" << std::endl;
+		return -1;
+	}
+
+	return cli_main(cfg_file, results_file, false);
+}
+#endif  // DONT_USE_BOOTS_PROGOPTS

@@ -40,6 +40,7 @@ set(CMAKE_VERBOSE_MAKEFILE TRUE)
 
 # options
 option(USE_QT "use Qt" TRUE)
+option(USE_BOOST_PROGOPTS "use Boost.program_options" TRUE)
 option(USE_SCRIPTING "use scripting" FALSE)
 
 
@@ -53,7 +54,15 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 	add_compile_options(-mmacosx-version-min=10.15)
 endif()
 
-find_package(Boost REQUIRED COMPONENTS program_options)
+
+if(USE_BOOST_PROGOPTS)
+	find_package(Boost REQUIRED COMPONENTS program_options)
+else()
+	find_package(Boost)
+
+	message("Compiling without Boost.program_options.")
+	add_definitions(-DDONT_USE_BOOTS_PROGOPTS)
+endif()
 add_compile_options(${Boost_CXX_FLAGS})
 
 
@@ -110,9 +119,8 @@ if(USE_QT)
 		${QtLibraries}
 	)
 else()
-		message("Compiling without Qt.")
-
-		add_definitions(-DDONT_USE_QT)
+	message("Compiling without Qt.")
+	add_definitions(-DDONT_USE_QT)
 
 	add_executable(takin_bz
 		bz_main.cpp bzlib.h
@@ -137,6 +145,8 @@ endif()
 
 
 if(USE_SCRIPTING)
+	set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+
 	find_package(Python3 COMPONENTS Interpreter Development)
 	find_package(SWIG COMPONENTS python)
 	#find_package(SWIG COMPONENTS javascript)
