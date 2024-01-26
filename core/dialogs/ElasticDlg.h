@@ -87,7 +87,9 @@ class ElasticDlg : public QDialog, Ui::ElasticDlg
 		GenPosDlg *m_pGenPosDlg = nullptr;
 
 		// saved instrumental positions
-		std::vector<ElasticDlgPos> m_positions_inel, m_positions_elast1, m_positions_elast2;
+		std::vector<ElasticDlgPos> m_positions_inel;
+		std::vector<ElasticDlgPos> m_positions_elast_kfki, m_positions_elast_kikf;
+		std::vector<ElasticDlgPos> m_positions_inel_ki2kf, m_positions_inel_kf2ki;
 
 	public:
 		// setter

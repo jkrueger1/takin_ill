@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>564</width>
-    <height>561</height>
+    <width>567</width>
+    <height>618</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Elastic Positions</string>
+   <string>Spurious Elastic and Inelastic Positions</string>
   </property>
   <property name="sizeGripEnabled">
    <bool>true</bool>
@@ -32,7 +32,7 @@
    <property name="spacing">
     <number>2</number>
    </property>
-   <item row="0" column="0" colspan="6">
+   <item row="0" column="0" colspan="5">
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -226,22 +226,6 @@
     </widget>
    </item>
    <item row="1" column="2">
-    <widget class="QPushButton" name="btnGotoInel">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="toolTip">
-      <string>Go to inelastic position with given index.</string>
-     </property>
-     <property name="text">
-      <string>Inel.</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="3">
     <widget class="QPushButton" name="btnGotoElast1">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -253,11 +237,11 @@
       <string>Go to elastic position for kf'=ki with given index.</string>
      </property>
      <property name="text">
-      <string>kf'=ki</string>
+      <string>kf' = ki</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="4">
+   <item row="1" column="3">
     <widget class="QPushButton" name="btnGotoElast2">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -266,14 +250,50 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>Go to elastic position for ki''=kf with given index.</string>
+      <string>Go to elastic position for ki'=kf with given index.</string>
      </property>
      <property name="text">
-      <string>ki''=kf</string>
+      <string>ki' = kf</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="5">
+   <item row="2" column="0" colspan="2">
+    <widget class="QPushButton" name="btnGotoInel">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>Go to inelastic position with given index.</string>
+     </property>
+     <property name="text">
+      <string>Original Position</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QPushButton" name="btnGotoInel1">
+     <property name="toolTip">
+      <string>Go to inelastic position for kf'=2ki with given index.</string>
+     </property>
+     <property name="text">
+      <string>kf' = 2ki</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="3">
+    <widget class="QPushButton" name="btnGotoInel2">
+     <property name="toolTip">
+      <string>Go to inelastic position for ki'=2kf with given index.</string>
+     </property>
+     <property name="text">
+      <string>ki' = 2kf</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="4">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -306,6 +326,8 @@
   <tabstop>btnGotoInel</tabstop>
   <tabstop>btnGotoElast1</tabstop>
   <tabstop>btnGotoElast2</tabstop>
+  <tabstop>btnGotoInel1</tabstop>
+  <tabstop>btnGotoInel2</tabstop>
  </tabstops>
  <resources/>
  <connections>

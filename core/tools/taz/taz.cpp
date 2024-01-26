@@ -588,7 +588,7 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 	QAction *pSpuri = new QAction("Spurious Scattering...", this);
 	pMenuCalc->addAction(pSpuri);
 
-	QAction *pElast = new QAction("Spurious Elastic Positions...", this);
+	QAction *pElast = new QAction("Spurious Elastic && Inelastic Positions...", this);
 	pMenuCalc->addAction(pElast);
 
 
