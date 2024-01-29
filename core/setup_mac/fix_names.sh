@@ -67,8 +67,8 @@ declare -a filestochange=(
 	"${PRG}/Contents/MacOS/takin_convofit"
 	"${PRG}/Contents/MacOS/takin_convoseries"
 	"${PRG}/Contents/MacOS/takin_polextract"
+	"${PRG}/Contents/PlugIns/libmagnonmod.dylib"
 )
-#	"${PRG}/Contents/PlugIns/libmagnonmod.dylib"
 
 
 # original symbols, pattern-matched
@@ -90,7 +90,7 @@ declare -a changefrom=(
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libboost_atomic-mt.dylib\""
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libboost_iostreams-mt.dylib\""
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libboost_program_options-mt.dylib\""
-	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libboost_python311-mt.dylib\""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libboost_python312-mt.dylib\""
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libMinuit2.0.dylib\""
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libjpeg.9.dylib\""
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libpng16.16.dylib\""
@@ -138,7 +138,7 @@ declare -a changeto=(
 	"@executable_path/../Libraries/libboost_atomic-mt.dylib"
 	"@executable_path/../Libraries/libboost_iostreams-mt.dylib"
 	"@executable_path/../Libraries/libboost_program_options-mt.dylib"
-	"@executable_path/../Libraries/libboost_python311-mt.dylib"
+	"@executable_path/../Libraries/libboost_python312-mt.dylib"
 	"@executable_path/../Libraries/libMinuit2.0.dylib"
 	"@executable_path/../Libraries/libjpeg.9.dylib"
 	"@executable_path/../Libraries/libpng16.16.dylib"

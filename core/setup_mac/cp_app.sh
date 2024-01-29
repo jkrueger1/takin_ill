@@ -67,7 +67,7 @@ declare -a SRC_LIBS=(
 	"/usr/local/opt/boost/lib/libboost_atomic-mt.dylib"
 	"/usr/local/opt/boost/lib/libboost_iostreams-mt.dylib"
 	"/usr/local/opt/boost/lib/libboost_program_options-mt.dylib"
-	"/usr/local/opt/boost-python3/lib/libboost_python311-mt.dylib"
+	"/usr/local/opt/boost-python3/lib/libboost_python312-mt.dylib"
 	"/usr/local/opt/freetype/lib/libfreetype.6.dylib"
 	"/usr/local/opt/libpng/lib/libpng16.16.dylib"
 	"/usr/local/opt/libjpeg/lib/libjpeg.9.dylib"
@@ -160,6 +160,11 @@ for srclib in ${SRC_PLUGINS[@]}; do
 	cp -v "${PLUGIN_DIR}${srclib}" "${DST_PLUGIN_DIR}${srclib}"
 	chmod a+rx "${DST_PLUGIN_DIR}${srclib}"
 done
+
+
+# copy convo plugins
+cp -v plugins/*.dylib ${DST_PLUGIN_DIR}
+chmod a+rx plugins/*.dylib
 
 
 # copy binaries
