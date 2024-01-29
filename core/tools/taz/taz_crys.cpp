@@ -257,7 +257,7 @@ void TazDlg::CalcPeaks()
 		{
 			m_pElasticDlg->SetLattice(lattice);
 			m_pElasticDlg->SetScatteringPlane(tl::make_vec({dX0, dX1, dX2}), tl::make_vec({dY0, dY1, dY2}));
-			m_pElasticDlg->CalcElasticPositions();
+			m_pElasticDlg->CalcSpuriousPositions();
 		}
 
 		emitSampleParams();

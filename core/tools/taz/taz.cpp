@@ -1310,7 +1310,7 @@ void TazDlg::UpdateDs()
 	if(m_pElasticDlg)
 	{
 		m_pElasticDlg->SetD(editMonoD->text().toDouble(), editAnaD->text().toDouble());
-		m_pElasticDlg->CalcElasticPositions();
+		m_pElasticDlg->CalcSpuriousPositions();
 	}
 
 	emit ResoParamsChanged(resoparams);
@@ -1333,7 +1333,7 @@ void TazDlg::UpdateSampleSense()
 	if(m_pElasticDlg)
 	{
 		m_pElasticDlg->SetSampleSense(bSense);
-		m_pElasticDlg->CalcElasticPositions();
+		m_pElasticDlg->CalcSpuriousPositions();
 	}
 
 	m_dlgRealParam.SetSampleSense(bSense);
@@ -1361,7 +1361,7 @@ void TazDlg::UpdateMonoSense()
 	if(m_pElasticDlg)
 	{
 		m_pElasticDlg->SetMonoSense(bSense);
-		m_pElasticDlg->CalcElasticPositions();
+		m_pElasticDlg->CalcSpuriousPositions();
 	}
 
 	ResoParams params;
@@ -1385,7 +1385,7 @@ void TazDlg::UpdateAnaSense()
 	if(m_pElasticDlg)
 	{
 		m_pElasticDlg->SetAnaSense(bSense);
-		m_pElasticDlg->CalcElasticPositions();
+		m_pElasticDlg->CalcSpuriousPositions();
 	}
 
 	ResoParams params;

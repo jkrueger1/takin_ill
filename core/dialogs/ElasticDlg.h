@@ -1,6 +1,6 @@
 /**
- * Elastic Positions Dialog
- * @author Tobias Weber <tobias.weber@tum.de>
+ * Elastic (and Inelastic) Positions Dialog
+ * @author Tobias Weber <tweber@ill.fr>
  * @date 5-jan-2024
  * @license GPLv2
  *
@@ -71,6 +71,16 @@ struct ElasticDlgPos
 };
 
 
+enum class ElasticDlgGoto
+{
+	INEL_ORIG,
+	ELAST_KFKI,
+	ELAST_KIKF,
+	INEL_nKFmKI,
+	INEL_nKImKF,
+};
+
+
 class ElasticDlg : public QDialog, Ui::ElasticDlg
 { Q_OBJECT
 	public:
@@ -89,7 +99,10 @@ class ElasticDlg : public QDialog, Ui::ElasticDlg
 		// saved instrumental positions
 		std::vector<ElasticDlgPos> m_positions_inel;
 		std::vector<ElasticDlgPos> m_positions_elast_kfki, m_positions_elast_kikf;
-		std::vector<ElasticDlgPos> m_positions_inel_ki2kf, m_positions_inel_kf2ki;
+		std::vector<ElasticDlgPos> m_positions_inel_nkimkf, m_positions_inel_nkfmki;
+
+		// inelastic positions ratio
+		t_real_glob m_n = 1., m_m = 1.;
 
 	public:
 		// setter
@@ -112,7 +125,7 @@ class ElasticDlg : public QDialog, Ui::ElasticDlg
 		bool GetAnaSense() const;
 
 	public slots:
-		void CalcElasticPositions();
+		void CalcSpuriousPositions();
 
 	protected slots:
 		void ButtonBoxClicked(QAbstractButton* pBtn);
@@ -128,9 +141,10 @@ class ElasticDlg : public QDialog, Ui::ElasticDlg
 		void AddPosition();
 		void AddPosition(t_real_glob h, t_real_glob k, t_real_glob l, t_real_glob ki, t_real_glob kf);
 		void DelPosition();
-		void GotoPosition(int which);
+		void GotoPosition(ElasticDlgGoto which);
 
 		std::vector<std::string> GetFiles();
+		void SetNM();
 
 		virtual void showEvent(QShowEvent *pEvt) override;
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>567</width>
-    <height>618</height>
+    <width>603</width>
+    <height>657</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,20 +18,138 @@
   </property>
   <layout class="QGridLayout" name="gridLayout_3">
    <property name="leftMargin">
-    <number>4</number>
+    <number>6</number>
    </property>
    <property name="topMargin">
-    <number>4</number>
+    <number>6</number>
    </property>
    <property name="rightMargin">
-    <number>4</number>
+    <number>6</number>
    </property>
    <property name="bottomMargin">
-    <number>4</number>
+    <number>6</number>
    </property>
    <property name="spacing">
-    <number>2</number>
+    <number>4</number>
    </property>
+   <item row="2" column="4">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Ok</set>
+     </property>
+     <property name="centerButtons">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="3">
+    <widget class="QPushButton" name="btnGotoElastKiKf">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>Go to elastic position for ki' := kf with given index.</string>
+     </property>
+     <property name="text">
+      <string>ki' := kf</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <widget class="QPushButton" name="btnGotoInel">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>Go to inelastic position with given index.</string>
+     </property>
+     <property name="text">
+      <string>Original Position</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QPushButton" name="btnGotoElastKfKi">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>Go to elastic position for kf' := ki with given index.</string>
+     </property>
+     <property name="text">
+      <string>kf' := ki</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Go to Pos.:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QPushButton" name="btnGotoInelnKfmKi">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>Go to inelastic position for n*kf' := m*ki with given index.</string>
+     </property>
+     <property name="text">
+      <string>n*kf' := m*ki</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QSpinBox" name="spinPosIdx">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>Index of the scan position.</string>
+     </property>
+     <property name="prefix">
+      <string/>
+     </property>
+     <property name="minimum">
+      <number>1</number>
+     </property>
+     <property name="value">
+      <number>1</number>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="0" colspan="5">
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
@@ -39,7 +157,7 @@
      </property>
      <widget class="QGroupBox" name="groupBox">
       <property name="title">
-       <string>Inelastic Scan Positions</string>
+       <string>Original Inelastic Scan Positions</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
        <property name="leftMargin">
@@ -59,31 +177,17 @@
        </property>
        <item row="1" column="2">
         <widget class="QPushButton" name="btnGenPositions">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="toolTip">
           <string>Generate scan positions.</string>
          </property>
          <property name="text">
           <string>Generate Positions...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QPushButton" name="btnDelPosition">
-         <property name="toolTip">
-          <string>Remove selected scan position.</string>
-         </property>
-         <property name="text">
-          <string>Delete Position</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QPushButton" name="btnAddPosition">
-         <property name="toolTip">
-          <string>Add a new scan position.</string>
-         </property>
-         <property name="text">
-          <string>Add Position</string>
          </property>
         </widget>
        </item>
@@ -128,8 +232,30 @@
          </column>
         </widget>
        </item>
+       <item row="1" column="0">
+        <widget class="QPushButton" name="btnAddPosition">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>Add a new scan position.</string>
+         </property>
+         <property name="text">
+          <string>Add Position</string>
+         </property>
+        </widget>
+       </item>
        <item row="2" column="2">
         <widget class="QPushButton" name="btnLoadScan">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="toolTip">
           <string>Load the scan positions from a data file.</string>
          </property>
@@ -140,6 +266,12 @@
        </item>
        <item row="2" column="1">
         <widget class="QPushButton" name="btnSync">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="toolTip">
           <string>Get crystal and instrument configuration from Takin's main window.</string>
          </property>
@@ -154,11 +286,84 @@
          </property>
         </widget>
        </item>
+       <item row="1" column="1">
+        <widget class="QPushButton" name="btnDelPosition">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>Remove selected scan position.</string>
+         </property>
+         <property name="text">
+          <string>Delete Position</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QDoubleSpinBox" name="spinN">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>Determines the inelastic ration in, e.g. n*ki' := m*kf.</string>
+         </property>
+         <property name="prefix">
+          <string>n = </string>
+         </property>
+         <property name="minimum">
+          <double>1.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>1.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="2">
+        <widget class="QDoubleSpinBox" name="spinM">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>Determines the inelastic ration in, e.g. n*ki' := m*kf.</string>
+         </property>
+         <property name="prefix">
+          <string>m = </string>
+         </property>
+         <property name="minimum">
+          <double>1.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>2.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Inelastic Ratio:</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
      <widget class="QGroupBox" name="groupBox_2">
       <property name="title">
-       <string>Corresponding Elastic Positions</string>
+       <string>Corresponding Elastic and Inelastic Positions</string>
       </property>
       <layout class="QGridLayout" name="gridLayout">
        <property name="leftMargin">
@@ -190,125 +395,19 @@
      </widget>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Go to Pos.:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QSpinBox" name="spinPosIdx">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="toolTip">
-      <string>Index of the scan position.</string>
-     </property>
-     <property name="prefix">
-      <string/>
-     </property>
-     <property name="minimum">
-      <number>1</number>
-     </property>
-     <property name="value">
-      <number>1</number>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="2">
-    <widget class="QPushButton" name="btnGotoElast1">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="toolTip">
-      <string>Go to elastic position for kf'=ki with given index.</string>
-     </property>
-     <property name="text">
-      <string>kf' = ki</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="3">
-    <widget class="QPushButton" name="btnGotoElast2">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="toolTip">
-      <string>Go to elastic position for ki'=kf with given index.</string>
-     </property>
-     <property name="text">
-      <string>ki' = kf</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="2">
-    <widget class="QPushButton" name="btnGotoInel">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="toolTip">
-      <string>Go to inelastic position with given index.</string>
-     </property>
-     <property name="text">
-      <string>Original Position</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="2">
-    <widget class="QPushButton" name="btnGotoInel1">
-     <property name="toolTip">
-      <string>Go to inelastic position for kf'=2ki with given index.</string>
-     </property>
-     <property name="text">
-      <string>kf' = 2ki</string>
-     </property>
-    </widget>
-   </item>
    <item row="2" column="3">
-    <widget class="QPushButton" name="btnGotoInel2">
-     <property name="toolTip">
-      <string>Go to inelastic position for ki'=2kf with given index.</string>
-     </property>
-     <property name="text">
-      <string>ki' = 2kf</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="4">
-    <widget class="QDialogButtonBox" name="buttonBox">
+    <widget class="QPushButton" name="btnGotoInelnKimKf">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+     <property name="toolTip">
+      <string>Go to inelastic position for n*ki' := m*kf with given index.</string>
      </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Ok</set>
-     </property>
-     <property name="centerButtons">
-      <bool>false</bool>
+     <property name="text">
+      <string>n*ki' := m*kf</string>
      </property>
     </widget>
    </item>
@@ -321,13 +420,15 @@
   <tabstop>btnGenPositions</tabstop>
   <tabstop>btnSync</tabstop>
   <tabstop>btnLoadScan</tabstop>
+  <tabstop>spinN</tabstop>
+  <tabstop>spinM</tabstop>
   <tabstop>textResults</tabstop>
   <tabstop>spinPosIdx</tabstop>
   <tabstop>btnGotoInel</tabstop>
-  <tabstop>btnGotoElast1</tabstop>
-  <tabstop>btnGotoElast2</tabstop>
-  <tabstop>btnGotoInel1</tabstop>
-  <tabstop>btnGotoInel2</tabstop>
+  <tabstop>btnGotoElastKfKi</tabstop>
+  <tabstop>btnGotoElastKiKf</tabstop>
+  <tabstop>btnGotoInelnKfmKi</tabstop>
+  <tabstop>btnGotoInelnKimKf</tabstop>
  </tabstops>
  <resources/>
  <connections>

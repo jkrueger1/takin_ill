@@ -1,6 +1,6 @@
 /**
  * Generate Scan Positions
- * @author Tobias Weber <tobias.weber@tum.de>
+ * @author Tobias Weber <tweber@ill.fr>
  * @date 8-jan-2024
  * @license GPLv2
  *

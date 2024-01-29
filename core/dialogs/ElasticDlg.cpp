@@ -1,6 +1,6 @@
 /**
- * Elastic Positions Dialog
- * @author Tobias Weber <tobias.weber@tum.de>
+ * Elastic (and Inelastic) Positions Dialog
+ * @author Tobias Weber <tweber@ill.fr>
  * @date 5-jan-2024
  * @license GPLv2
  *
@@ -34,6 +34,8 @@
 #include "tlibs/file/loadinstr.h"
 #include "tlibs/string/string.h"
 #include "tlibs/string/spec_char.h"
+
+#include <boost/scope_exit.hpp>
 
 #include <QMessageBox>
 
@@ -90,19 +92,33 @@ ElasticDlg::ElasticDlg(QWidget* pParent, QSettings* pSett)
 	QObject::connect(btnSync, &QAbstractButton::toggled,
 		this, &ElasticDlg::SyncToggled);
 	QObject::connect(btnGotoInel, &QAbstractButton::clicked,
-		[this]() { GotoPosition(0); });
-	QObject::connect(btnGotoElast1, &QAbstractButton::clicked,
-		[this]() { GotoPosition(1); });
-	QObject::connect(btnGotoElast2, &QAbstractButton::clicked,
-		[this]() { GotoPosition(2); });
-	QObject::connect(btnGotoInel1, &QAbstractButton::clicked,
-		[this]() { GotoPosition(3); });
-	QObject::connect(btnGotoInel2, &QAbstractButton::clicked,
-		[this]() { GotoPosition(4); });
+		[this]() { GotoPosition(ElasticDlgGoto::INEL_ORIG); });
+	QObject::connect(btnGotoElastKfKi, &QAbstractButton::clicked,
+		[this]() { GotoPosition(ElasticDlgGoto::ELAST_KFKI); });
+	QObject::connect(btnGotoElastKiKf, &QAbstractButton::clicked,
+		[this]() { GotoPosition(ElasticDlgGoto::ELAST_KIKF); });
+	QObject::connect(btnGotoInelnKfmKi, &QAbstractButton::clicked,
+		[this]() { GotoPosition(ElasticDlgGoto::INEL_nKFmKI); });
+	QObject::connect(btnGotoInelnKimKf, &QAbstractButton::clicked,
+		[this]() { GotoPosition(ElasticDlgGoto::INEL_nKImKF); });
 	QObject::connect(tablePositions, &QTableWidget::itemChanged,
-		this, &ElasticDlg::CalcElasticPositions);
+		this, &ElasticDlg::CalcSpuriousPositions);
+	QObject::connect(spinN, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+	[this]()
+	{
+		SetNM();
+		CalcSpuriousPositions();
+	});
+	QObject::connect(spinM, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+	[this]()
+	{
+		SetNM();
+		CalcSpuriousPositions();
+	});
 	QObject::connect(buttonBox, &QDialogButtonBox::clicked,
 		this, &ElasticDlg::ButtonBoxClicked);
+
+	SetNM();
 }
 
 
@@ -111,18 +127,40 @@ ElasticDlg::~ElasticDlg()
 }
 
 
+/**
+ * set the n and m variables and labels*
+ */
+void ElasticDlg::SetNM()
+{
+	m_n = spinN->value();
+	m_m = spinM->value();
+	tl::set_eps_0(m_n, g_dEps);
+	tl::set_eps_0(m_m, g_dEps);
+
+	std::ostringstream ostrnKfmKi, ostrnKimKf;
+	ostrnKfmKi.precision(g_iPrec);
+	ostrnKimKf.precision(g_iPrec);
+	ostrnKfmKi << m_n << "*kf' = m*" << m_m << "*ki";
+	ostrnKimKf << m_n << "*ki' = m*" << m_m << "*kf";
+
+	btnGotoInelnKfmKi->setText(ostrnKfmKi.str().c_str());
+	btnGotoInelnKimKf->setText(ostrnKimKf.str().c_str());
+}
+
+
 void ElasticDlg::SyncToggled(bool sync)
 {
 	m_bSyncWithMainWindow = sync;
 
-	CalcElasticPositions();
+	CalcSpuriousPositions();
 }
 
 
 /**
- * calculate the elastic positions corresponding to the given inelastic ones
+ * calculate the elastic and inelastic positions corresponding
+ * to the given original inelastic ones
  */
-void ElasticDlg::CalcElasticPositions()
+void ElasticDlg::CalcSpuriousPositions()
 {
 	if(!m_bAllowCalculation)
 		return;
@@ -130,7 +168,7 @@ void ElasticDlg::CalcElasticPositions()
 	// clear old cached positions
 	for(std::vector<ElasticDlgPos>* pos : { &m_positions_inel,
 		&m_positions_elast_kfki, &m_positions_elast_kikf,
-		&m_positions_inel_ki2kf, &m_positions_inel_kf2ki })
+		&m_positions_inel_nkimkf, &m_positions_inel_nkfmki })
 	{
 		pos->clear();
 		pos->reserve(tablePositions->rowCount());
@@ -149,11 +187,11 @@ void ElasticDlg::CalcElasticPositions()
 		tl::get_spec_char_utf16("sup-") + tl::get_spec_char_utf16("sup1");
 
 	std::wostringstream ostrResultsKfKi, ostrResultsKiKf;
-	std::wostringstream ostrResultsKi2Kf, ostrResultsKf2Ki;
+	std::wostringstream ostrResultsnKimKf, ostrResultsnKfmKi;
 	ostrResultsKfKi.precision(g_iPrec);
 	ostrResultsKiKf.precision(g_iPrec);
-	ostrResultsKi2Kf.precision(g_iPrec);
-	ostrResultsKf2Ki.precision(g_iPrec);
+	ostrResultsnKimKf.precision(g_iPrec);
+	ostrResultsnKfmKi.precision(g_iPrec);
 
 	ostrResultsKfKi << "<b>Elastic Positions Q' Corresponding to (Q, E) with kf' := ki:</b>";
 	ostrResultsKfKi << "<center><table border=\"1\" cellpadding=\"0\" width=\"95%\">";
@@ -189,41 +227,43 @@ void ElasticDlg::CalcElasticPositions()
 	ostrResultsKiKf << "<th><b>|Q'| (" << strAA << ")</b></th>";
 	ostrResultsKiKf << "</tr>";
 
-	ostrResultsKi2Kf << "<b>Inelastic Positions Q' Corresponding to (Q, E) with ki' := 2kf:</b>";
-	ostrResultsKi2Kf << "<center><table border=\"1\" cellpadding=\"0\" width=\"95%\">";
-	ostrResultsKi2Kf << "<tr>";
-	ostrResultsKi2Kf << "<th><b>No.</b></th>";
+	ostrResultsnKimKf << "<b>Inelastic Positions Q' Corresponding to (Q, E) with "
+		<< m_n << " * ki' := " << m_m << " * kf:</b>";
+	ostrResultsnKimKf << "<center><table border=\"1\" cellpadding=\"0\" width=\"95%\">";
+	ostrResultsnKimKf << "<tr>";
+	ostrResultsnKimKf << "<th><b>No.</b></th>";
 	if(B_ok && U_ok)
-		ostrResultsKi2Kf << "<th><b>Q (rlu)</b></th>";
+		ostrResultsnKimKf << "<th><b>Q (rlu)</b></th>";
 	else
-		ostrResultsKi2Kf << "<th><b>Q (" << strAA << ")</b></th>";
-	ostrResultsKi2Kf << "<th><b>|Q| (" << strAA << ")</b></th>";
-	ostrResultsKi2Kf << "<th><b>E (meV)</b></th>";
+		ostrResultsnKimKf << "<th><b>Q (" << strAA << ")</b></th>";
+	ostrResultsnKimKf << "<th><b>|Q| (" << strAA << ")</b></th>";
+	ostrResultsnKimKf << "<th><b>E (meV)</b></th>";
 	if(B_ok && U_ok)
-		ostrResultsKi2Kf << "<th><b>Q' (rlu)</b></th>";
+		ostrResultsnKimKf << "<th><b>Q' (rlu)</b></th>";
 	else
-		ostrResultsKi2Kf << "<th><b>Q' (" << strAA << ")</b></th>";
-	ostrResultsKi2Kf << "<th><b>|Q'| (" << strAA << ")</b></th>";
-	ostrResultsKi2Kf << "<th><b>E' (meV)</b></th>";
-	ostrResultsKi2Kf << "</tr>";
+		ostrResultsnKimKf << "<th><b>Q' (" << strAA << ")</b></th>";
+	ostrResultsnKimKf << "<th><b>|Q'| (" << strAA << ")</b></th>";
+	ostrResultsnKimKf << "<th><b>E' (meV)</b></th>";
+	ostrResultsnKimKf << "</tr>";
 
-	ostrResultsKf2Ki << "<b>Inelastic Positions Q' Corresponding to (Q, E) with kf' := 2ki:</b>";
-	ostrResultsKf2Ki << "<center><table border=\"1\" cellpadding=\"0\" width=\"95%\">";
-	ostrResultsKf2Ki << "<tr>";
-	ostrResultsKf2Ki << "<th><b>No.</b></th>";
+	ostrResultsnKfmKi << "<b>Inelastic Positions Q' Corresponding to (Q, E) with "
+		<< m_n << " * kf' := " << m_m << " * ki:</b>";
+	ostrResultsnKfmKi << "<center><table border=\"1\" cellpadding=\"0\" width=\"95%\">";
+	ostrResultsnKfmKi << "<tr>";
+	ostrResultsnKfmKi << "<th><b>No.</b></th>";
 	if(B_ok && U_ok)
-		ostrResultsKf2Ki << "<th><b>Q (rlu)</b></th>";
+		ostrResultsnKfmKi << "<th><b>Q (rlu)</b></th>";
 	else
-		ostrResultsKf2Ki << "<th><b>Q (" << strAA << ")</b></th>";
-	ostrResultsKf2Ki << "<th><b>|Q| (" << strAA << ")</b></th>";
-	ostrResultsKf2Ki << "<th><b>E (meV)</b></th>";
+		ostrResultsnKfmKi << "<th><b>Q (" << strAA << ")</b></th>";
+	ostrResultsnKfmKi << "<th><b>|Q| (" << strAA << ")</b></th>";
+	ostrResultsnKfmKi << "<th><b>E (meV)</b></th>";
 	if(B_ok && U_ok)
-		ostrResultsKf2Ki << "<th><b>Q' (rlu)</b></th>";
+		ostrResultsnKfmKi << "<th><b>Q' (rlu)</b></th>";
 	else
-		ostrResultsKf2Ki << "<th><b>Q' (" << strAA << ")</b></th>";
-	ostrResultsKf2Ki << "<th><b>|Q'| (" << strAA << ")</b></th>";
-	ostrResultsKf2Ki << "<th><b>E' (meV)</b></th>";
-	ostrResultsKf2Ki << "</tr>";
+		ostrResultsnKfmKi << "<th><b>Q' (" << strAA << ")</b></th>";
+	ostrResultsnKfmKi << "<th><b>|Q'| (" << strAA << ")</b></th>";
+	ostrResultsnKfmKi << "<th><b>E' (meV)</b></th>";
+	ostrResultsnKfmKi << "</tr>";
 
 	spinPosIdx->setMinimum(1);
 	spinPosIdx->setMaximum(tablePositions->rowCount());
@@ -409,13 +449,13 @@ void ElasticDlg::CalcElasticPositions()
 
 			try
 			{
-				// get corresponding monochromator angle for ki' = 2kf
+				// get corresponding monochromator angle for n*ki' = m*kf
 				ElasticDlgPos pos = pos_inel;
 				pos.E = 0;
-				pos.ki = 2. * pos_inel.kf;
+				pos.ki = m_m/m_n * pos_inel.kf;
 				pos.mono_2theta = tl::get_mono_twotheta(pos.ki/angs, GetMonoD()*angs, GetMonoSense()) / rads;
 
-				// find Q position for ki' = 2kf position
+				// find Q position for n*ki' = m*kf position
 				t_vec vecQ2;
 				tl::get_hkl_from_tas_angles<t_real>(GetLattice(),
 					GetScatteringPlaneVec1(), GetScatteringPlaneVec2(),
@@ -443,44 +483,44 @@ void ElasticDlg::CalcElasticPositions()
 
 
 				// print inelastic position
-				ostrResultsKi2Kf << "<tr>";
-				ostrResultsKi2Kf << "<td>" << row+1 << "</td>";
+				ostrResultsnKimKf << "<tr>";
+				ostrResultsnKimKf << "<td>" << row+1 << "</td>";
 				if(B_ok && U_ok)
-					ostrResultsKi2Kf << "<td>" << vecQrlu[0] << ", " << vecQrlu[1] << ", " << vecQrlu[2] << "</td>";
+					ostrResultsnKimKf << "<td>" << vecQrlu[0] << ", " << vecQrlu[1] << ", " << vecQrlu[2] << "</td>";
 				else
-					ostrResultsKi2Kf << "<td>" << vecQ[0] << ", " << vecQ[1] << ", " << vecQ[2] << "</td>";
-				ostrResultsKi2Kf << "<td>" << tl::veclen(vecQ) << "</td>";
-				ostrResultsKi2Kf << "<td>" << dE << "</td>";
+					ostrResultsnKimKf << "<td>" << vecQ[0] << ", " << vecQ[1] << ", " << vecQ[2] << "</td>";
+				ostrResultsnKimKf << "<td>" << tl::veclen(vecQ) << "</td>";
+				ostrResultsnKimKf << "<td>" << dE << "</td>";
 
-				// print results for ki' = 2kf position
+				// print results for n*ki' = m*kf position
 				if(B_ok && U_ok)
-					ostrResultsKi2Kf << "<td>" << vecQ2rlu[0] << ", " << vecQ2rlu[1] << ", " << vecQ2rlu[2] << "</td>";
+					ostrResultsnKimKf << "<td>" << vecQ2rlu[0] << ", " << vecQ2rlu[1] << ", " << vecQ2rlu[2] << "</td>";
 				else
-					ostrResultsKi2Kf << "<td>" << vecQ2[0] << ", " << vecQ2[1] << ", " << vecQ2[2] << "</td>";
-				ostrResultsKi2Kf << "<td>" << tl::veclen(vecQ2) << "</td>";
-				ostrResultsKi2Kf << "<td>" << pos.E << "</td>";
-				ostrResultsKi2Kf << "</tr>";
+					ostrResultsnKimKf << "<td>" << vecQ2[0] << ", " << vecQ2[1] << ", " << vecQ2[2] << "</td>";
+				ostrResultsnKimKf << "<td>" << tl::veclen(vecQ2) << "</td>";
+				ostrResultsnKimKf << "<td>" << pos.E << "</td>";
+				ostrResultsnKimKf << "</tr>";
 
-				m_positions_inel_ki2kf.emplace_back(std::move(pos));
+				m_positions_inel_nkimkf.emplace_back(std::move(pos));
 			}
 			catch(const std::exception& ex)
 			{
-				ostrResultsKi2Kf << "<tr>";
-				ostrResultsKi2Kf << "<td>" << row+1 << "</td>";
-				ostrResultsKi2Kf << "<td><font color=\"#ff0000\"><b>" << ex.what() << "</b></font></td>";
-				ostrResultsKi2Kf << "</tr>";
+				ostrResultsnKimKf << "<tr>";
+				ostrResultsnKimKf << "<td>" << row+1 << "</td>";
+				ostrResultsnKimKf << "<td><font color=\"#ff0000\"><b>" << ex.what() << "</b></font></td>";
+				ostrResultsnKimKf << "</tr>";
 			}
 
 
 			try
 			{
-				// get corresponding analyser angle for kf' = 2ki
+				// get corresponding analyser angle for n*kf' = m*ki
 				ElasticDlgPos pos = pos_inel;
 				pos.E = 0;
-				pos.kf = 2. * pos_inel.ki;
+				pos.kf = m_m/m_n * pos_inel.ki;
 				pos.ana_2theta = tl::get_mono_twotheta(pos.kf/angs, GetAnaD()*angs, GetAnaSense()) / rads;
 
-				// find Q position for kf' = 2ki position
+				// find Q position for n*kf' = m*ki position
 				t_vec vecQ1;
 				tl::get_hkl_from_tas_angles<t_real>(GetLattice(),
 					GetScatteringPlaneVec1(), GetScatteringPlaneVec2(),
@@ -508,32 +548,32 @@ void ElasticDlg::CalcElasticPositions()
 
 
 				// print inelastic position
-				ostrResultsKf2Ki << "<tr>";
-				ostrResultsKf2Ki << "<td>" << row+1 << "</td>";
+				ostrResultsnKfmKi << "<tr>";
+				ostrResultsnKfmKi << "<td>" << row+1 << "</td>";
 				if(B_ok && U_ok)
-					ostrResultsKf2Ki << "<td>" << vecQrlu[0] << ", " << vecQrlu[1] << ", " << vecQrlu[2] << "</td>";
+					ostrResultsnKfmKi << "<td>" << vecQrlu[0] << ", " << vecQrlu[1] << ", " << vecQrlu[2] << "</td>";
 				else
-					ostrResultsKf2Ki << "<td>" << vecQ[0] << ", " << vecQ[1] << ", " << vecQ[2] << "</td>";
-				ostrResultsKf2Ki << "<td>" << tl::veclen(vecQ) << "</td>";
-				ostrResultsKf2Ki << "<td>" << dE << "</td>";
+					ostrResultsnKfmKi << "<td>" << vecQ[0] << ", " << vecQ[1] << ", " << vecQ[2] << "</td>";
+				ostrResultsnKfmKi << "<td>" << tl::veclen(vecQ) << "</td>";
+				ostrResultsnKfmKi << "<td>" << dE << "</td>";
 
-				// print results for kf' = 2ki position
+				// print results for n*kf' = m*ki position
 				if(B_ok && U_ok)
-					ostrResultsKf2Ki << "<td>" << vecQ1rlu[0] << ", " << vecQ1rlu[1] << ", " << vecQ1rlu[2] << "</td>";
+					ostrResultsnKfmKi << "<td>" << vecQ1rlu[0] << ", " << vecQ1rlu[1] << ", " << vecQ1rlu[2] << "</td>";
 				else
-					ostrResultsKf2Ki << "<td>" << vecQ1[0] << ", " << vecQ1[1] << ", " << vecQ1[2] << "</td>";
-				ostrResultsKf2Ki << "<td>" << tl::veclen(vecQ1) << "</td>";
-				ostrResultsKf2Ki << "<td>" << pos.E << "</td>";
-				ostrResultsKf2Ki << "</tr>";
+					ostrResultsnKfmKi << "<td>" << vecQ1[0] << ", " << vecQ1[1] << ", " << vecQ1[2] << "</td>";
+				ostrResultsnKfmKi << "<td>" << tl::veclen(vecQ1) << "</td>";
+				ostrResultsnKfmKi << "<td>" << pos.E << "</td>";
+				ostrResultsnKfmKi << "</tr>";
 
-				m_positions_inel_kf2ki.emplace_back(std::move(pos));
+				m_positions_inel_nkfmki.emplace_back(std::move(pos));
 			}
 			catch(const std::exception& ex)
 			{
-				ostrResultsKf2Ki << "<tr>";
-				ostrResultsKf2Ki << "<td>" << row+1 << "</td>";
-				ostrResultsKf2Ki << "<td><font color=\"#ff0000\"><b>" << ex.what() << "</b></font></td>";
-				ostrResultsKf2Ki << "</tr>";
+				ostrResultsnKfmKi << "<tr>";
+				ostrResultsnKfmKi << "<td>" << row+1 << "</td>";
+				ostrResultsnKfmKi << "<td><font color=\"#ff0000\"><b>" << ex.what() << "</b></font></td>";
+				ostrResultsnKfmKi << "</tr>";
 			}
 
 
@@ -542,7 +582,7 @@ void ElasticDlg::CalcElasticPositions()
 		catch(const std::exception& ex)
 		{
 			for(std::wostream* ostr : { &ostrResultsKfKi, &ostrResultsKiKf,
-				&ostrResultsKi2Kf, &ostrResultsKf2Ki })
+				&ostrResultsnKimKf, &ostrResultsnKfmKi })
 			{
 				(*ostr) << "<tr>";
 				(*ostr) << "<td>" << row+1 << "</td>";
@@ -554,8 +594,8 @@ void ElasticDlg::CalcElasticPositions()
 
 	ostrResultsKfKi << "</table></center>";
 	ostrResultsKiKf << "</table></center>";
-	ostrResultsKi2Kf << "</table></center>";
-	ostrResultsKf2Ki << "</table></center>";
+	ostrResultsnKimKf << "</table></center>";
+	ostrResultsnKfmKi << "</table></center>";
 
 	std::wostringstream ostrResults;
 	ostrResults << "<html><body>";
@@ -563,31 +603,39 @@ void ElasticDlg::CalcElasticPositions()
 	ostrResults << "<br>";
 	ostrResults << "<p>" << ostrResultsKiKf.str() << "</p>";
 	ostrResults << "<br>";
-	ostrResults << "<p>" << ostrResultsKi2Kf.str() << "</p>";
+	ostrResults << "<p>" << ostrResultsnKimKf.str() << "</p>";
 	ostrResults << "<br>";
-	ostrResults << "<p>" << ostrResultsKf2Ki.str() << "</p>";
+	ostrResults << "<p>" << ostrResultsnKfmKi.str() << "</p>";
 	ostrResults << "</body></html>";
 	textResults->setHtml(QString::fromWCharArray(ostrResults.str().c_str()));
 }
 
 
 /**
- * set the scattering triangle to the given inelastic (which == 0)
- * or elastic position (which == 1,2)
+ * set the scattering triangle to the given inelastic or elastic position
  */
-void ElasticDlg::GotoPosition(int which)
+void ElasticDlg::GotoPosition(ElasticDlgGoto which)
 {
 	const std::vector<ElasticDlgPos>* positions = nullptr;
-	if(which == 1)
-		positions = &m_positions_elast_kfki;
-	else if(which == 2)
-		positions = &m_positions_elast_kikf;
-	else if(which == 3)
-		positions = &m_positions_inel_kf2ki;
-	else if(which == 4)
-		positions = &m_positions_inel_ki2kf;
-	else
-		positions = &m_positions_inel;
+	switch(which)
+	{
+		case ElasticDlgGoto::ELAST_KFKI:
+			positions = &m_positions_elast_kfki;
+			break;
+		case ElasticDlgGoto::ELAST_KIKF:
+			positions = &m_positions_elast_kikf;
+			break;
+		case ElasticDlgGoto::INEL_nKFmKI:
+			positions = &m_positions_inel_nkfmki;
+			break;
+		case ElasticDlgGoto::INEL_nKImKF:
+			positions = &m_positions_inel_nkimkf;
+			break;
+		case ElasticDlgGoto::INEL_ORIG:
+		default:
+			positions = &m_positions_inel;
+			break;
+	}
 
 	if(!m_bSyncWithMainWindow)
 	{
@@ -678,7 +726,7 @@ void ElasticDlg::DelPosition()
 		tablePositions->setRowCount(0);
 	}
 
-	CalcElasticPositions();
+	CalcSpuriousPositions();
 }
 
 
@@ -712,6 +760,12 @@ void ElasticDlg::GeneratePositions()
 void ElasticDlg::GeneratedPositions(const std::vector<ScanPosition>& positions)
 {
 	m_bAllowCalculation = false;
+	BOOST_SCOPE_EXIT(this_, &m_bAllowCalculation)
+	{
+		// recalculate
+		m_bAllowCalculation = true;
+		this_->CalcSpuriousPositions();
+	} BOOST_SCOPE_EXIT_END
 
 	// clear old positions
 	tablePositions->clearContents();
@@ -732,10 +786,6 @@ void ElasticDlg::GeneratedPositions(const std::vector<ScanPosition>& positions)
 		tablePositions->item(tablePositions->rowCount() - 1, POSTAB_KF)->setText(
 			tl::var_to_str(pos.kf, g_iPrec).c_str());
 	}
-
-	// recalculate
-	m_bAllowCalculation = true;
-	CalcElasticPositions();
 }
 // ----------------------------------------------------------------------------
 
@@ -753,6 +803,12 @@ void ElasticDlg::ImportPositions()
 		return;
 
 	m_bAllowCalculation = false;
+	BOOST_SCOPE_EXIT(this_, &m_bAllowCalculation)
+	{
+		// recalculate
+		m_bAllowCalculation = true;
+		this_->CalcSpuriousPositions();
+	} BOOST_SCOPE_EXIT_END
 
 	// clear old positions
 	tablePositions->clearContents();
@@ -805,10 +861,6 @@ void ElasticDlg::ImportPositions()
 				std::get<3>(pos), std::get<4>(pos));
 		}
 	}
-
-	// recalculate
-	m_bAllowCalculation = true;
-	CalcElasticPositions();
 }
 
 
@@ -903,6 +955,8 @@ void ElasticDlg::Save(std::map<std::string, std::string>& mapConf, const std::st
 		mapConf[strXmlRoot + strPos + "kf"] = item_kf->text().toStdString();
 	}
 
+	mapConf[strXmlRoot + "elastic_pos/inel_n"] = tl::var_to_str(spinN->value(), g_iPrec).c_str();
+	mapConf[strXmlRoot + "elastic_pos/inel_m"] = tl::var_to_str(spinM->value(), g_iPrec).c_str();
 	mapConf[strXmlRoot + "elastic_pos/pos_idx"] = tl::var_to_str(spinPosIdx->value()).c_str();
 
 	if(m_pGenPosDlg)
@@ -916,6 +970,13 @@ void ElasticDlg::Save(std::map<std::string, std::string>& mapConf, const std::st
 void ElasticDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 {
 	m_bAllowCalculation = false;
+	BOOST_SCOPE_EXIT(this_, &m_bAllowCalculation)
+	{
+		// recalculate
+		m_bAllowCalculation = true;
+		this_->CalcSpuriousPositions();
+	} BOOST_SCOPE_EXIT_END
+
 	bool bOk = false;
 
 	// clear old positions
@@ -945,6 +1006,8 @@ void ElasticDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 		++row;
 	}
 
+	spinN->setValue(xml.Query<double>(strXmlRoot + "elastic_pos/inel_n", 1., &bOk));
+	spinM->setValue(xml.Query<double>(strXmlRoot + "elastic_pos/inel_m", 2., &bOk));
 	spinPosIdx->setValue(xml.Query<int>(strXmlRoot + "elastic_pos/pos_idx", 1, &bOk));
 
 	// restore the settings from the position generation dialog
@@ -953,9 +1016,6 @@ void ElasticDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 		InitGeneratePositionsDlg();
 		m_pGenPosDlg->Load(xml, strXmlRoot + "elastic_pos/");
 	}
-
-	m_bAllowCalculation = true;
-	CalcElasticPositions();
 }
 // ----------------------------------------------------------------------------
 
