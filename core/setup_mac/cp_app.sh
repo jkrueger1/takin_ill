@@ -164,7 +164,7 @@ done
 
 # copy convo plugins
 cp -v plugins/*.dylib ${DST_PLUGIN_DIR}
-chmod a+rx plugins/*.dylib
+chmod a+rx ${DST_PLUGIN_DIR}/*.dylib
 
 
 # copy binaries
