@@ -120,7 +120,7 @@ if ! wget https://raw.githubusercontent.com/project-gemmi/gemmi/master/LICENSE.t
 fi
 
 # qcustomplot
-if ! wget https://gitlab.com/DerManu/QCustomPlot/-/raw/master/GPL.txt -O ${LICDIR}/qcustomplot_license.txt; then
+if ! wget https://gitlab.com/ecme2/QCustomPlot/-/raw/master/GPL.txt -O ${LICDIR}/qcustomplot_license.txt; then
 	echo -e "Error: Cannot download QCustomPlot license.";
 fi
 
