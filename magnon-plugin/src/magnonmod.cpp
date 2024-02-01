@@ -296,15 +296,15 @@ SqwBase* MagnonMod::shallow_copy() const
 // ----------------------------------------------------------------------------
 // SO interface
 
-#ifndef __MINGW32__
-
-#include <boost/dll/alias.hpp>
-
 static const char* g_help = R"RAWSTR(Magnon Dynamics Module.
 
 This module serves as an interface between the magnon dynamics calculator and the resolution-convolution simulator and fitter.
 
 Please refer to the Takin help for more information and tutorials.)RAWSTR";
+
+#ifndef __MINGW32__
+
+#include <boost/dll/alias.hpp>
 
 std::tuple<std::string, std::string, std::string, std::string> sqw_info()
 {

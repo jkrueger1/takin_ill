@@ -29,6 +29,7 @@ $loc << ENDDATA
 01/2022    62955    32113    14282     21951      3761      26628
 05/2022    63487    32186    16634     24224      5212      26787
 01/2023    65379    32871    21102     25193      6525      27647
+01/2024    68828    33806    25031     25771      6673      28708
 ENDDATA
 
 
@@ -48,7 +49,7 @@ set xdata time
 set xlabel "Date"
 set ylabel "Lines of code"
 
-set xrange [ "03/2014" : "03/2023" ]
+set xrange [ "03/2014" : "03/2024" ]
 set yrange [0 : ymax]
 
 # Version 1
@@ -71,8 +72,8 @@ set key top left
 
 
 plot \
-    "$loc" u 1:($2) w filledcurve y1=0 fc rgb col_tak title "takin", \
-    "$loc" u 1:($2+$4):($2) w filledcurve fc rgb col_tak2 title "takin-mag", \
+    "$loc" u 1:($2) w filledcurve y1=0 fc rgb col_tak title "core", \
+    "$loc" u 1:($2+$4):($2) w filledcurve fc rgb col_tak2 title "mag-core", \
     "$loc" u 1:($2+$4 + $3):($2 + $4) w filledcurve lw 2 fc rgb col_tl title "tlibs", \
     "$loc" u 1:($2+$4 + $3+$5):($2+$4 + $3) w filledcurve lw 2 fc rgb col_tl2 title "tlibs2", \
     "$loc" u 1:($2+$4 + $3+$5 +$6):($2+$4 + $3+$5) w filledcurve lw 2 fc rgb col_plug title "plugins", \
