@@ -56,9 +56,8 @@ echo -e "Depends: libstdc++6, libboost-system1.65.1 (>=1.65.1), libboost-filesys
 
 # copy program files
 cp -v bin/takin			${INSTDIR}/usr/local/bin
-cp -v bin/convofit		${INSTDIR}/usr/local/bin
-cp -v bin/convoseries		${INSTDIR}/usr/local/bin
-cp -v bin/sfact			${INSTDIR}/usr/local/bin
+#cp -v bin/takin_convofit	${INSTDIR}/usr/local/bin
+#cp -v bin/takin_convoseries	${INSTDIR}/usr/local/bin
 cp -v bin/takinmod_py		${INSTDIR}/usr/local/bin
 cp -v bin/takinmod_jl		${INSTDIR}/usr/local/bin
 

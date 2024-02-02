@@ -594,7 +594,7 @@ if(BUILD_EXT_TOOLS)
 	# -----------------------------------------------------------------------------
 	# convofit, convoseries
 	# -----------------------------------------------------------------------------
-	add_executable(convofit
+	add_executable(takin_convofit
 		tools/res/cn.cpp tools/res/pop.cpp tools/res/pop_cn.cpp
 		tools/res/eck.cpp tools/res/vio.cpp
 		#tools/res/simple.cpp
@@ -619,9 +619,9 @@ if(BUILD_EXT_TOOLS)
 		libs/globals.cpp
 	)
 
-	set_target_properties(convofit PROPERTIES COMPILE_FLAGS "-DNO_QT")
+	set_target_properties(takin_convofit PROPERTIES COMPILE_FLAGS "-DNO_QT")
 
-	target_link_libraries(convofit
+	target_link_libraries(takin_convofit
 		${LIBS_FIT} ${SOCK2}
 		Threads::Threads ${Mp_LIBRARIES} ${Rt_LIBRARIES} ${Dl_LIBRARIES}
 		Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX} Boost::filesystem${BOOST_SUFFIX} Boost::program_options${BOOST_SUFFIX}
@@ -629,32 +629,32 @@ if(BUILD_EXT_TOOLS)
 	)
 
 	if(CMAKE_BUILD_TYPE STREQUAL "Release" AND USE_STRIP)
-		add_custom_command(TARGET convofit POST_BUILD
-			COMMAND strip -v $<TARGET_FILE:convofit>
-			MAIN_DEPENDENCY convofit
+		add_custom_command(TARGET takin_convofit POST_BUILD
+			COMMAND strip -v $<TARGET_FILE:takin_convofit>
+			MAIN_DEPENDENCY takin_convofit
 		)
 	endif()
 
 	# -----------------------------------------------------------------------------
 
-	add_executable(convoseries
+	add_executable(takin_convoseries
 		tools/convofit/scanseries.cpp
 
 		# statically link tlibs externals
 		tlibs/log/log.cpp
 	)
 
-	set_target_properties(convoseries PROPERTIES COMPILE_FLAGS "-DNO_QT")
+	set_target_properties(takin_convoseries PROPERTIES COMPILE_FLAGS "-DNO_QT")
 
-	target_link_libraries(convoseries
+	target_link_libraries(takin_convoseries
 		Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX} Boost::filesystem${BOOST_SUFFIX} Boost::program_options${BOOST_SUFFIX}
 		${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES}
 	)
 
 	if(CMAKE_BUILD_TYPE STREQUAL "Release" AND USE_STRIP)
-		add_custom_command(TARGET convoseries POST_BUILD
-			COMMAND strip -v $<TARGET_FILE:convoseries>
-			MAIN_DEPENDENCY convoseries
+		add_custom_command(TARGET takin_convoseries POST_BUILD
+			COMMAND strip -v $<TARGET_FILE:takin_convoseries>
+			MAIN_DEPENDENCY takin_convoseries
 	)
 	endif()
 	# -----------------------------------------------------------------------------
@@ -699,7 +699,7 @@ install(FILES ${PROJECT_SOURCE_DIR}/setup_lin/takin.desktop DESTINATION share/ap
 
 
 if(BUILD_EXT_TOOLS)
-	install(TARGETS convofit convoseries DESTINATION bin COMPONENT appconvofit)
+	install(TARGETS takin_convofit takin_convoseries DESTINATION bin COMPONENT appconvofit)
 endif()
 # -----------------------------------------------------------------------------
 
