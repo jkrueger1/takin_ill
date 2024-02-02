@@ -117,6 +117,9 @@ cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/lib/qt5/plugins/iconengines/qsvgico
 cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/lib/qt5/plugins/imageformats/qsvg.dll	${INSTDIR}/lib/plugins/imageformats/
 
 
+# convo plugins
+cp -v plugins/*.dll ${INSTDIR}/lib/plugins/
+
 
 # stripping
 strip -v ${INSTDIR}/*.exe
