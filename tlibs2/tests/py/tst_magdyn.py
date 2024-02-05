@@ -42,7 +42,7 @@ only_positive_energies = True
 num_Q_points = 256
 
 # files
-modelfile = "../../../data/demos/magnon_Cu2OSeO3/model.magdyn"
+modelfile = "../../data/demos/magnon_Cu2OSeO3/model.magdyn"
 dispfile = "disp.dat"
 
 
@@ -62,10 +62,12 @@ else:
 	print("Failed loading {}.".format(modelfile))
 	exit(-1)
 
+# minimum energy
+print("Energy minimum at Q=(000): {:.4f} meV".format(mag.CalcMinimumEnergy()))
+
 
 if save_dispersion:
 	# directly calculate a dispersion and write it to a file
-	#print("Goldstone Energy: {:.4f} meV".format(mag.CalcGoldstoneEnergy()))
 	print("\nSaving dispersion to {}...".format(dispfile))
 	mag.SaveDispersion(dispfile,  0, 0, 0.5,  1, 1, 0.5,  num_Q_points)
 

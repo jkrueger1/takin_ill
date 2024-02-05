@@ -589,11 +589,10 @@ public:
 
 		tl2::ExprParser parser = GetExprParser();
 
-		for(t_size site_idx=0; site_idx<m_sites.size(); ++site_idx)
+		for(const MagneticSite& site : m_sites)
 		{
 			try
 			{
-				const MagneticSite& site = m_sites[site_idx];
 				MagneticSiteCalc site_calc{};
 				bool has_explicit_uv = true;
 
@@ -616,7 +615,7 @@ public:
 						{
 							std::cerr << "Error parsing spin direction \""
 								<< site.spin_dir[dir_idx] << "\""
-								<< " for site " << site_idx
+								<< " for site " << site.index
 								<< " and component " << dir_idx
 								<< "." << std::endl;
 						}
@@ -636,7 +635,7 @@ public:
 
 							std::cerr << "Error parsing spin orthogonal plane \""
 								<< site.spin_ortho[dir_idx] << "\""
-								<< " for site " << site_idx
+								<< " for site " << site.index
 								<< " and component " << dir_idx
 								<< "." << std::endl;
 						}
@@ -666,8 +665,12 @@ public:
 					// in case they are explicitly given
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
-					std::cout << "Site " << site_idx << " u = " << site_calc.u[0] << " " << site_calc.u[1] << " " << site_calc.u[2] << std::endl;
-					std::cout << "Site " << site_idx << " v = " << site_calc.v[0] << " " << site_calc.v[1] << " " << site_calc.v[2] << std::endl;
+					std::cout << "Site " << site.index << " u = "
+						<< site_calc.u[0] << " " << site_calc.u[1] << " " << site_calc.u[2]
+						<< std::endl;
+					std::cout << "Site " << site.index << " v = "
+						<< site_calc.v[0] << " " << site_calc.v[1] << " " << site_calc.v[2]
+						<< std::endl;
 #endif
 				}
 
@@ -687,18 +690,16 @@ public:
 	 */
 	void CalcExchangeTerms()
 	{
-		const t_size num_terms = m_exchange_terms.size();
-		if(num_terms == 0)
+		if(m_exchange_terms.size() == 0)
 			return;
 
 		tl2::ExprParser parser = GetExprParser();
 
 		m_exchange_terms_calc.clear();
-		m_exchange_terms_calc.reserve(num_terms);
+		m_exchange_terms_calc.reserve(m_exchange_terms.size());
 
-		for(t_size term_idx=0; term_idx<num_terms; ++term_idx)
+		for(const ExchangeTerm& term : m_exchange_terms)
 		{
-			const ExchangeTerm& term = m_exchange_terms[term_idx];
 			ExchangeTermCalc calc;
 
 			try
@@ -815,15 +816,14 @@ public:
 		t_Jmap J_Q, J_Q0;
 
 		// iterate couplings to precalculate corresponding J matrices
-		for(t_size term_idx=0; term_idx<num_terms; ++term_idx)
+		for(const ExchangeTerm& term : m_exchange_terms)
 		{
-			const ExchangeTerm& term = m_exchange_terms[term_idx];
-			const ExchangeTermCalc& term_calc = m_exchange_terms_calc[term_idx];
+			const ExchangeTermCalc& term_calc = m_exchange_terms_calc[term.index];
 
 			if(term.site1 >= num_sites || term.site2 >= num_sites)
 			{
 				std::cerr << "Error: Site index out of bounds for coupling term "
-					<< term_idx << "." << std::endl;
+					<< term.index << "." << std::endl;
 				continue;
 			}
 
@@ -853,7 +853,7 @@ public:
 					J = J * rot_UC;
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
-					std::cout << "Coupling rot_UC = " << term_idx << ":\n";
+					std::cout << "Coupling rot_UC = " << term.index << ":\n";
 					tl2::niceprint(std::cout, rot_UC, 1e-4, 4);
 #endif
 				}
@@ -1394,10 +1394,10 @@ public:
 
 
 	/**
-	 * get the energy of the goldstone mode
+	 * get the energy minimum
 	 * @note a first version for a simplified ferromagnetic dispersion was based on (Heinsdorf 2021)
 	 */
-	t_real CalcGoldstoneEnergy() const
+	t_real CalcMinimumEnergy() const
 	{
 		auto energies_and_correlations = CalcEnergies(0., 0., 0., true);
 		auto min_iter = std::min_element(
@@ -1407,10 +1407,9 @@ public:
 			return std::abs(E_and_S_1.E) < std::abs(E_and_S_2.E);
 		});
 
-		if(min_iter != energies_and_correlations.end())
-			return min_iter->E;
-
-		return 0.;
+		if(min_iter == energies_and_correlations.end())
+			return 0.;
+		return min_iter->E;
 	}
 	// --------------------------------------------------------------------
 

@@ -240,14 +240,14 @@ void MagDynDlg::CalcDispersion()
 
 	// options
 	const bool is_comm = !m_dyn.IsIncommensurate();
-	const bool use_goldstone = false;
+	const bool use_min_E = false;
 	const bool unite_degeneracies = m_unite_degeneracies->isChecked();
 	const bool ignore_annihilation = m_ignore_annihilation->isChecked();
 	const bool use_weights = m_use_weights->isChecked();
 	const bool use_projector = m_use_projector->isChecked();
 	const bool force_incommensurate = m_force_incommensurate->isChecked();
 
-	t_real E0 = use_goldstone ? m_dyn.CalcGoldstoneEnergy() : 0.;
+	t_real E0 = use_min_E ? m_dyn.CalcMinimumEnergy() : 0.;
 	m_dyn.SetUniteDegenerateEnergies(unite_degeneracies);
 	m_dyn.SetForceIncommensurate(force_incommensurate);
 	m_dyn.SetCalcHamiltonian(
