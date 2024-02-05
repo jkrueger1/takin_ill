@@ -35,7 +35,7 @@ setup_externals2=1
 build_externals=1
 build_takin=1
 build_takin2=1
-build_plugins=0
+build_plugins=1
 build_package=1
 
 

@@ -27,13 +27,13 @@
 # ----------------------------------------------------------------------------
 #
 
-
 # individual building steps
 setup_buildenv=1
 setup_externals=1
 setup_externals2=1
 build_takin=1
 build_takin2=1
+build_plugins=1
 build_package=1
 
 use_syspy=0
@@ -126,6 +126,24 @@ if [ $build_takin2 -ne 0 ]; then
 		cp -v tools/scanbrowser/takin_scanbrowser "${TAKIN_ROOT}"/core/bin/
 		cp -v tools/magsgbrowser/takin_magsgbrowser "${TAKIN_ROOT}"/core/bin/
 		cp -v tools/moldyn/takin_moldyn "${TAKIN_ROOT}"/core/bin/
+	popd
+fi
+
+
+if [ $build_plugins -ne 0 ]; then
+	echo -e "\n================================================================================"
+	echo -e "Building Takin plugins..."
+	echo -e "================================================================================\n"
+
+	pushd "${TAKIN_ROOT}/magnon-plugin"
+		rm -rf build
+		mkdir -p build
+		cd build
+		cmake -DCMAKE_BUILD_TYPE=Release ..
+		make -j${NUM_CORES}
+
+		# copy plugin to Takin main dir
+		cp -v libmagnonmod.dylib "${TAKIN_ROOT}"/core/plugins/
 	popd
 fi
 
