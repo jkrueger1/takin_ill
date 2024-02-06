@@ -127,17 +127,17 @@ t_mat get_polarisation(int channel = 0, bool in_chiral_basis = true)
 		switch(channel)
 		{
 			case 0: return tl2::create<t_mat>({
-				{   half, +halfi, 0 },
-				{ -halfi,   half, 0 },
-				{      0,      0, 0 } });
+				{   half, +halfi,  0 },
+				{ -halfi,   half,  0 },
+				{      0,      0,  0 } });
 			case 1: return tl2::create<t_mat>({
-				{   half, -halfi, 0 },
-				{ +halfi,   half, 0 },
-				{      0,      0, 0 } });
+				{   half, -halfi,  0 },
+				{ +halfi,   half,  0 },
+				{      0,      0,  0 } });
 			case 2: return tl2::create<t_mat>({
-				{      0,      0, 0 },
-				{      0,      0, 0 },
-				{      0,      0, 1 } });
+				{      0,      0,  0 },
+				{      0,      0,  0 },
+				{      0,      0,  1 } });
 		}
 	}
 
@@ -277,7 +277,7 @@ class MagDyn
 {
 public:
 	// --------------------------------------------------------------------
-	// structs
+	// structs and types
 	// --------------------------------------------------------------------
 	using MagneticSite = t_MagneticSite<t_vec_real, t_mat, t_real, t_size>;
 	using MagneticSiteCalc = t_MagneticSiteCalc<t_vec>;
@@ -286,6 +286,9 @@ public:
 	using ExternalField = t_ExternalField<t_vec_real, t_real>;
 	using EnergyAndWeight = t_EnergyAndWeight<t_mat, t_real>;
 	using Variable = t_Variable<t_cplx>;
+
+	using t_indices = std::pair<t_size, t_size>;
+	using t_Jmap = std::unordered_map<t_indices, t_mat, boost::hash<t_indices>>;
 	// --------------------------------------------------------------------
 
 
@@ -649,8 +652,7 @@ public:
 				// spin rotation of equation (9) from (Toth 2015)
 				if(m_field.align_spins)
 				{
-					std::tie(site_calc.u, site_calc.v) =
-						R_to_uv(m_rot_field);
+					std::tie(site_calc.u, site_calc.v) = R_to_uv(m_rot_field);
 				}
 				else
 				{
@@ -794,71 +796,76 @@ public:
 
 
 	/**
-	 * get the hamiltonian at the given momentum
-	 * (CalcMagneticSites() needs to be called once before this function)
-	 * @note implements the formalism given by (Toth 2015)
-	 * @note a first version for a simplified ferromagnetic dispersion was based on (Heinsdorf 2021)
+	 * calculate the real-space interaction matrix J of
+	 * equations (10) - (13) from (Toth 2015)
 	 */
-	t_mat CalcHamiltonian(const t_vec_real& Qvec) const
+	t_mat CalcRealJ(const ExchangeTerm& term) const
 	{
-		const t_size num_sites = m_sites.size();
-		const t_size num_terms = m_exchange_terms.size();
-
-		if(num_sites == 0 || num_terms == 0)
-			return {};
-		if(num_sites != m_sites_calc.size() || num_terms != m_exchange_terms_calc.size())
-			return {};
-
-		// build the interaction matrices J(Q) and J(-Q) of
-		// equations (12) and (14) from (Toth 2015)
-		using t_indices = std::pair<t_size, t_size>;
-		using t_Jmap = std::unordered_map<t_indices, t_mat, boost::hash<t_indices>>;
-		t_Jmap J_Q, J_Q0;
-
-		// iterate couplings to precalculate corresponding J matrices
-		for(const ExchangeTerm& term : m_exchange_terms)
+		if(term.index >= m_exchange_terms_calc.size())
 		{
-			const ExchangeTermCalc& term_calc = m_exchange_terms_calc[term.index];
+			std::cerr << "Error: Coupling terms not yet calculated." << std::endl;
+			return t_mat{};
+		}
 
-			if(term.site1 >= num_sites || term.site2 >= num_sites)
+		const ExchangeTermCalc& term_calc = m_exchange_terms_calc[term.index];
+
+		// symmetric part of the exchange interaction matrix, see (Toth 2015) p. 2
+		t_mat J = tl2::diag<t_mat>(
+			tl2::create<t_vec>({ term_calc.J, term_calc.J, term_calc.J }));
+
+		// dmi as anti-symmetric part of interaction matrix
+		// using a cross product matrix, see (Toth 2015) p. 2
+		if(term_calc.dmi.size() == 3)
+			J += tl2::skewsymmetric<t_mat, t_vec>(-term_calc.dmi);
+
+		// general J matrix
+		if(term_calc.Jgen.size1() == 3 && term_calc.Jgen.size2() == 3)
+			J += term_calc.Jgen;
+
+		// incommensurate case: rotation wrt magnetic unit cell
+		// equations (21), (6), (2) as well as section 10 from (Toth 2015)
+		if(IsIncommensurate())
+		{
+			t_real rot_UC_angle = s_twopi * tl2::inner<t_vec_real>(m_ordering, term.dist);
+			if(!tl2::equals_0<t_real>(rot_UC_angle, m_eps))
 			{
-				std::cerr << "Error: Site index out of bounds for coupling term "
-					<< term.index << "." << std::endl;
-				continue;
-			}
-
-			// symmetric part of the exchange interaction matrix, see (Toth 2015) p. 2
-			t_mat J = tl2::diag<t_mat>(
-				tl2::create<t_vec>({term_calc.J, term_calc.J, term_calc.J}));
-
-			// dmi as anti-symmetric part of interaction matrix
-			// using a cross product matrix, see (Toth 2015) p. 2
-			if(term_calc.dmi.size() == 3)
-				J += tl2::skewsymmetric<t_mat, t_vec>(-term_calc.dmi);
-
-			// general J matrix
-			if(term_calc.Jgen.size1() == 3 && term_calc.Jgen.size2() == 3)
-				J += term_calc.Jgen;
-
-			// incommensurate case: rotation wrt magnetic unit cell
-			// equations (21), (6), (2) as well as section 10 from (Toth 2015)
-			if(IsIncommensurate())
-			{
-				t_real rot_UC_angle = s_twopi * tl2::inner<t_vec_real>(m_ordering, term.dist);
-				if(!tl2::equals_0<t_real>(rot_UC_angle, m_eps))
-				{
-					t_mat rot_UC = tl2::convert<t_mat>(
-						tl2::rotation<t_mat_real, t_vec_real>(
-							m_rotaxis, rot_UC_angle));
-					J = J * rot_UC;
+				t_mat rot_UC = tl2::convert<t_mat>(
+					tl2::rotation<t_mat_real, t_vec_real>(
+						m_rotaxis, rot_UC_angle));
+				J = J * rot_UC;
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
-					std::cout << "Coupling rot_UC = " << term.index << ":\n";
-					tl2::niceprint(std::cout, rot_UC, 1e-4, 4);
+				std::cout << "Coupling rot_UC = " << term.index << ":\n";
+				tl2::niceprint(std::cout, rot_UC, 1e-4, 4);
 #endif
-				}
 			}
+		}
 
+		return J;
+	}
+
+
+	/**
+	 * calculate the reciprocal interaction matrices J(Q) and J(-Q) of
+	 * equations (12) and (14) from (Toth 2015)
+	 */
+	std::tuple<t_Jmap, t_Jmap> CalcReciprocalJs(const t_vec_real& Qvec) const
+	{
+		t_Jmap J_Q, J_Q0;
+
+		// no exchange terms given
+		if(m_exchange_terms.size() == 0)
+			return std::make_tuple(J_Q, J_Q0);
+
+		if(m_exchange_terms.size() != m_exchange_terms_calc.size())
+		{
+			std::cerr << "Error: Coupling terms not yet calculated." << std::endl;
+			return std::make_tuple(J_Q, J_Q0);
+		}
+
+		// iterate couplings to pre-calculate corresponding J matrices
+		for(const ExchangeTerm& term : m_exchange_terms)
+		{
 			// insert or add an exchange matrix at the given site indices
 			auto insert_or_add = [](t_Jmap& J, const t_indices& indices, const t_mat& J33)
 			{
@@ -868,15 +875,27 @@ public:
 					J.emplace(std::move(std::make_pair(indices, J33)));
 			};
 
+			if(term.site1 >= m_sites.size() || term.site2 >= m_sites.size())
+			{
+				std::cerr << "Error: Site index out of bounds for coupling term "
+					<< term.index << "." << std::endl;
+				continue;
+			}
+
 			const t_indices indices = std::make_pair(term.site1, term.site2);
 			const t_indices indices_t = std::make_pair(term.site2, term.site1);
 
-			t_mat J_T = tl2::trans(J);
+			t_mat J = CalcRealJ(term);
+			if(J.size1() == 0 || J.size2() == 0)
+				continue;
 
+			// get J in reciprocal space by fourier trafo
 			// equations (14), (12), (11), and (52) from (Toth 2015)
 			insert_or_add(J_Q, indices, J *
 				std::exp(m_phase_sign * s_imag * s_twopi *
 					tl2::inner<t_vec_real>(term.dist, Qvec)));
+
+			t_mat J_T = tl2::trans(J);
 			insert_or_add(J_Q, indices_t, J_T *
 				std::exp(m_phase_sign * s_imag * s_twopi *
 					tl2::inner<t_vec_real>(term.dist, -Qvec)));
@@ -884,6 +903,34 @@ public:
 			insert_or_add(J_Q0, indices, J);
 			insert_or_add(J_Q0, indices_t, J_T);
 		}  // end of iteration over couplings
+
+		return std::make_tuple(J_Q, J_Q0);
+	}
+
+
+	/**
+	 * get the hamiltonian at the given momentum
+	 * (CalcMagneticSites() needs to be called once before this function)
+	 * @note implements the formalism given by (Toth 2015)
+	 * @note a first version for a simplified ferromagnetic dispersion was based on (Heinsdorf 2021)
+	 */
+	t_mat CalcHamiltonian(const t_vec_real& Qvec) const
+	{
+		const t_size num_sites = m_sites.size();
+
+		// no sites given
+		if(num_sites == 0)
+			return t_mat{};
+
+		if(num_sites != m_sites_calc.size())
+		{
+			std::cerr << "Error: Sites not yet calculated." << std::endl;
+			return t_mat{};
+		}
+
+		// build the interaction matrices J(Q) and J(-Q) of
+		// equations (12) and (14) from (Toth 2015)
+		auto [J_Q, J_Q0] = CalcReciprocalJs(Qvec);
 
 		// create the hamiltonian of equation (25) and (26) from (Toth 2015)
 		t_mat A = tl2::create<t_mat>(num_sites, num_sites);
@@ -897,7 +944,7 @@ public:
 		// iterate magnetic sites
 		for(t_size i=0; i<num_sites; ++i)
 		{
-			// get the precalculated u and v vectors for the commensurate case
+			// get the pre-calculated u and v vectors for the commensurate case
 			const t_vec& u_i = m_sites_calc[i].u;
 			const t_vec& u_conj_i = m_sites_calc[i].u_conj;
 			const t_vec& v_i = m_sites_calc[i].v;
@@ -905,7 +952,7 @@ public:
 
 			for(t_size j=0; j<num_sites; ++j)
 			{
-				// get the precalculated u and v vectors for the commensurate case
+				// get the pre-calculated u and v vectors for the commensurate case
 				const t_vec& u_j = m_sites_calc[j].u;
 				const t_vec& u_conj_j = m_sites_calc[j].u_conj;
 				const t_vec& v_j = m_sites_calc[j].v;
@@ -1152,7 +1199,7 @@ public:
 						t_real S_i = m_sites[i].spin_mag;
 						t_real S_j = m_sites[j].spin_mag;
 
-						// get the precalculated u vectors
+						// get the pre-calculated u vectors
 						const t_vec& u_i = m_sites_calc[i].u;
 						const t_vec& u_j = m_sites_calc[j].u;
 						const t_vec& u_conj_i = m_sites_calc[i].u_conj;
@@ -1161,7 +1208,7 @@ public:
 						// pre-factors of equation (44) from (Toth 2015)
 						t_real SiSj = 4. * std::sqrt(S_i*S_j);
 						t_cplx phase = std::exp(-m_phase_sign * s_imag * s_twopi *
-						tl2::inner<t_vec_real>(pos_j - pos_i, Qvec));
+							tl2::inner<t_vec_real>(pos_j - pos_i, Qvec));
 
 						// matrix elements of equation (44) from (Toth 2015)
 						Y(i, j) = phase * SiSj * u_i[x_idx] * u_conj_j[y_idx];
@@ -1410,6 +1457,29 @@ public:
 		if(min_iter == energies_and_correlations.end())
 			return 0.;
 		return min_iter->E;
+	}
+
+
+	/**
+	 * get the ground-state energy
+	 * @note zero-operator term in expansion of equation (20) in (Toth 2015)
+	 */
+	t_real CalcGroundStateEnergy() const
+	{
+		t_real E = 0.;
+
+		for(const ExchangeTerm& term : m_exchange_terms)
+		{
+			t_mat J = CalcRealJ(term);
+			// TODO: check if rotation is correct
+
+			t_vec Si = m_sites[term.site1].spin_mag * m_sites_calc[term.site1].v;
+			t_vec Sj = m_sites[term.site2].spin_mag * m_sites_calc[term.site2].v;
+
+			E += tl2::inner<t_vec>(Si, J * Sj).real();
+		}
+
+		return E;
 	}
 	// --------------------------------------------------------------------
 
@@ -1838,11 +1908,10 @@ protected:
 	 */
 	std::tuple<t_vec, t_vec> spin_to_uv(const t_vec& spin_dir)
 	{
-		auto [spin_re, spin_im] =
-			tl2::split_cplx<t_vec, t_vec_real>(spin_dir);
+		auto [spin_re, spin_im] = tl2::split_cplx<t_vec, t_vec_real>(spin_dir);
 
 		if(!tl2::equals_0<t_vec_real>(spin_im, m_eps))
-			std::cerr << "Spin vector should be purely real." << std::endl;
+			std::cerr << "Warning: Spin vector should be purely real." << std::endl;
 
 		// only use real part, imaginary part should be zero
 		//spin_re /= tl2::norm<t_vec_real>(spin_re);
