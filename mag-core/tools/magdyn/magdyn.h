@@ -7,7 +7,7 @@
  *
  * ----------------------------------------------------------------------------
  * mag-core (part of the Takin software suite)
- * Copyright (C) 2018-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2018-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * "misc" project
  * Copyright (C) 2017-2022  Tobias WEBER (privately developed).
@@ -194,17 +194,14 @@ protected:
 	QSettings *m_sett{};
 	QMenuBar *m_menu{};
 	QSplitter *m_split_inout{};
-	QLabel *m_status{};
+	QLabel *m_statusFixed{}, *m_status{};
 	QProgressBar *m_progress{};
 	QPushButton* m_btnStart{};
 
 	QAction *m_autocalc{};
-	QAction *m_use_dmi{};
-	QAction *m_use_genJ{};
-	QAction *m_use_field{};
-	QAction *m_use_temperature{};
-	QAction *m_use_weights{};
-	QAction *m_use_projector{};
+	QAction *m_use_dmi{}, *m_use_genJ{};
+	QAction *m_use_field{}, *m_use_temperature{};
+	QAction *m_use_weights{}, *m_use_projector{};
 	QAction *m_unite_degeneracies{};
 	QAction *m_ignore_annihilation{};
 	QAction *m_force_incommensurate{};
@@ -242,14 +239,10 @@ protected:
 	QTabWidget *m_tabs_in{}, *m_tabs_out{};
 
 	// panels
-	QWidget *m_sitespanel{};
-	QWidget *m_termspanel{};
-	QWidget *m_sampleenviropanel{};
-	QWidget *m_varspanel{};
-	QWidget *m_notespanel{};
-	QWidget *m_disppanel{};
-	QWidget *m_hamiltonianpanel{};
-	QWidget *m_coordinatespanel{};
+	QWidget *m_sitespanel{}, *m_termspanel{};
+	QWidget *m_sampleenviropanel{}, *m_varspanel{};
+	QWidget *m_disppanel{}, *m_hamiltonianpanel{};
+	QWidget *m_notespanel{}, *m_coordinatespanel{};
 	QWidget *m_exportpanel{};
 
 	// sites

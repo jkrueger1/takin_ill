@@ -7,7 +7,7 @@
  *
  * ----------------------------------------------------------------------------
  * mag-core (part of the Takin software suite)
- * Copyright (C) 2018-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2018-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * TAS-Paths
  * Copyright (C) 2021  Tobias WEBER (Institut Laue-Langevin (ILL),

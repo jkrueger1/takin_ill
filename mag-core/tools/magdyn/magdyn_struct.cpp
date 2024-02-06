@@ -7,7 +7,7 @@
  *
  * ----------------------------------------------------------------------------
  * mag-core (part of the Takin software suite)
- * Copyright (C) 2018-2022  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2018-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * "misc" project
  * Copyright (C) 2017-2022  Tobias WEBER (privately developed).
@@ -980,6 +980,12 @@ void MagDynDlg::SyncSitesAndTerms()
 
 	m_dyn.CalcExchangeTerms();
 	//m_dyn.CalcIndices();
+
+	// ground state energy
+	std::ostringstream ostrGS;
+	ostrGS.precision(g_prec_gui);
+	ostrGS << "E0 = " << m_dyn.CalcGroundStateEnergy() << " meV";
+	m_statusFixed->setText(ostrGS.str().c_str());
 }
 
 

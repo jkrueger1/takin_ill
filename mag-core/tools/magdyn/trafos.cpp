@@ -1,9 +1,29 @@
 /**
- * transformation calculator
+ * magnon dynamics -- transformation calculator
  * @author Tobias Weber <tweber@ill.fr>
  * @date 29-dec-2022
  * @license GPLv3, see 'LICENSE' file
- * @note Forked on 7-sep-2023 from my privately developed "gl" project: https://github.com/t-weber/gl .
+ * @desc Forked on 7-sep-2023 from my privately developed "gl" project: https://github.com/t-weber/gl .
+ *
+ * ----------------------------------------------------------------------------
+ * mag-core (part of the Takin software suite)
+ * Copyright (C) 2018-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
+ *                          Grenoble, France).
+ * "gl" project
+ * Copyright (C) 2021-2023  Tobias WEBER (privately developed).
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * ----------------------------------------------------------------------------
  */
 
 #include "trafos.h"

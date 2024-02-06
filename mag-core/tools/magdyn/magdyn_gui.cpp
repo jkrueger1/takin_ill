@@ -7,7 +7,7 @@
  *
  * ----------------------------------------------------------------------------
  * mag-core (part of the Takin software suite)
- * Copyright (C) 2018-2022  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2018-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * "misc" project
  * Copyright (C) 2017-2022  Tobias WEBER (privately developed).
@@ -95,10 +95,20 @@ void MagDynDlg::CreateMainWindow()
 	m_tabs_in = new QTabWidget(this);
 	m_tabs_out = new QTabWidget(this);
 
-	// status
+	// fixed status
+	m_statusFixed = new QLabel(this);
+	m_statusFixed->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+	m_statusFixed->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+	m_statusFixed->setFrameShape(QFrame::Panel);
+	m_statusFixed->setFrameShadow(QFrame::Sunken);
+	m_statusFixed->setText("Ready.");
+
+	// expanding status
 	m_status = new QLabel(this);
 	m_status->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
 	m_status->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	m_status->setFrameShape(QFrame::Panel);
+	m_status->setFrameShadow(QFrame::Sunken);
 
 	// progress bar
 	m_progress = new QProgressBar(this);
@@ -129,12 +139,13 @@ void MagDynDlg::CreateMainWindow()
 	m_maingrid = new QGridLayout(this);
 	m_maingrid->setSpacing(4);
 	m_maingrid->setContentsMargins(6, 6, 6, 6);
-	m_maingrid->addWidget(m_split_inout, 0,0, 1,8);
-	m_maingrid->addWidget(m_status, 1,0, 1,3);
-	m_maingrid->addWidget(m_progress, 1,3, 1,2);
-	m_maingrid->addWidget(m_btnStart, 1,5, 1,1);
-	m_maingrid->addWidget(btnStop, 1,6, 1,1);
-	m_maingrid->addWidget(btnShowStruct, 1,7, 1,1);
+	m_maingrid->addWidget(m_split_inout, 0,0, 1,9);
+	m_maingrid->addWidget(m_statusFixed, 1,0, 1,1);
+	m_maingrid->addWidget(m_status, 1,1, 1,3);
+	m_maingrid->addWidget(m_progress, 1,4, 1,2);
+	m_maingrid->addWidget(m_btnStart, 1,6, 1,1);
+	m_maingrid->addWidget(btnStop, 1,7, 1,1);
+	m_maingrid->addWidget(btnShowStruct, 1,8, 1,1);
 
 	// signals
 	connect(m_btnStart, &QAbstractButton::clicked, [this]() { this->CalcAll(); });
@@ -1875,7 +1886,7 @@ void MagDynDlg::CreateInfoDlg()
 	auto labelAuthor = new QLabel("Written by Tobias Weber <tweber@ill.fr>.", infopanel);
 	labelAuthor->setAlignment(Qt::AlignHCenter);
 
-	auto labelDate = new QLabel("2022 - 2023.", infopanel);
+	auto labelDate = new QLabel("2022 - 2024.", infopanel);
 	labelDate->setAlignment(Qt::AlignHCenter);
 
 	auto labelPaper = new QLabel(

@@ -7,7 +7,7 @@
  *
  * ----------------------------------------------------------------------------
  * mag-core (part of the Takin software suite)
- * Copyright (C) 2018-2022  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2018-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * "misc" project
  * Copyright (C) 2017-2022  Tobias WEBER (privately developed).
@@ -114,6 +114,9 @@ void MagDynDlg::Clear()
 		m_hamiltonian_comp[i]->setChecked(true);
 		m_plot_channel[i]->setChecked(true);
 	}
+
+	m_statusFixed->setText("Ready.");
+	m_status->setText("");
 }
 
 
