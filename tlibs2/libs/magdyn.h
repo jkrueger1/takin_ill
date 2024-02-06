@@ -1008,7 +1008,7 @@ public:
 
 
 	/**
-	 * get the energies and the dynamical structure factor from a hamiltonian
+	 * get the energies from a hamiltonian
 	 * @note implements the formalism given by (Toth 2015)
 	 */
 	std::vector<EnergyAndWeight> CalcEnergiesFromHamiltonian(
@@ -1097,178 +1097,190 @@ public:
 			energies_and_correlations.emplace_back(std::move(EandS));
 		}
 
-
 		// weight factors
 		if(!only_energies)
 		{
-			// get the sorting of the energies
-			std::vector<t_size> sorting = tl2::get_perm(
-				energies_and_correlations.size(),
-				[&energies_and_correlations](t_size idx1, t_size idx2) -> bool
+			CalcCorrelationsFromHamiltonian(energies_and_correlations,
+				H_mat, C_mat, g_sign, Qvec, evecs);
+		}
+
+		return energies_and_correlations;
+	}
+
+
+	/**
+	 * get the dynamical structure factor from a hamiltonian
+	 * @note implements the formalism given by (Toth 2015)
+	 */
+	void CalcCorrelationsFromHamiltonian(std::vector<EnergyAndWeight>& energies_and_correlations,
+		const t_mat& H_mat, const t_mat& C_mat, const t_mat& g_sign,
+		const t_vec_real& Qvec, const std::vector<t_vec>& evecs) const
+	{
+		const t_size num_sites = m_sites.size();
+		if(num_sites == 0)
+			return;
+
+		// get the sorting of the energies
+		std::vector<t_size> sorting = tl2::get_perm(
+			energies_and_correlations.size(),
+			[&energies_and_correlations](t_size idx1, t_size idx2) -> bool
+		{
+			return energies_and_correlations[idx1].E >=
+				energies_and_correlations[idx2].E;
+		});
+
+		t_mat evec_mat = tl2::create<t_mat>(tl2::reorder(evecs, sorting));
+		t_mat evec_mat_herm = tl2::herm(evec_mat);
+
+		// equation (32) from (Toth 2015)
+		t_mat L_mat = evec_mat_herm * H_mat * evec_mat; // energies
+		t_mat E_sqrt = g_sign * L_mat;                  // abs. energies
+		for(t_size i=0; i<E_sqrt.size1(); ++i)
+			E_sqrt(i, i) = std::sqrt(E_sqrt/*L_mat*/(i, i)); // sqrt. of abs. energies
+
+		// re-create energies, to be consistent with the weights
+		energies_and_correlations.clear();
+		for(t_size i=0; i<L_mat.size1(); ++i)
+		{
+			EnergyAndWeight EandS
 			{
-				return energies_and_correlations[idx1].E >=
-					energies_and_correlations[idx2].E;
-			});
+				.E = L_mat(i, i).real(),
+				.S = tl2::zero<t_mat>(3, 3),
+				.S_perp = tl2::zero<t_mat>(3, 3),
+			};
 
-			//energies_and_correlations = tl2::reorder(energies_and_correlations, sorting);
-			evecs = tl2::reorder(evecs, sorting);
-			evals = tl2::reorder(evals, sorting);
+			energies_and_correlations.emplace_back(std::move(EandS));
+		}
 
-			t_mat evec_mat = tl2::create<t_mat>(evecs);
-			t_mat evec_mat_herm = tl2::herm(evec_mat);
+		auto [C_inv, inv_ok] = tl2::inv(C_mat);
+		if(!inv_ok)
+		{
+			using namespace tl2_ops;
+			std::cerr << "Warning: Inversion failed for Q = "
+				<< Qvec << "." << std::endl;
+		}
 
-			// equation (32) from (Toth 2015)
-			t_mat L_mat = evec_mat_herm * H_mat * evec_mat; // energies
-			t_mat E_sqrt = g_sign * L_mat;                  // abs. energies
-			for(t_size i=0; i<E_sqrt.size1(); ++i)
-				E_sqrt(i, i) = std::sqrt(E_sqrt/*L_mat*/(i, i)); // sqrt. of abs. energies
-
-			// re-create energies, to be consistent with the weights
-			energies_and_correlations.clear();
-			for(t_size i=0; i<L_mat.size1(); ++i)
-			{
-				EnergyAndWeight EandS
-				{
-					.E = L_mat(i, i).real(),
-					.S = tl2::zero<t_mat>(3, 3),
-					.S_perp = tl2::zero<t_mat>(3, 3),
-				};
-
-				energies_and_correlations.emplace_back(std::move(EandS));
-			}
-
-			auto [C_inv, inv_ok] = tl2::inv(C_mat);
-			if(!inv_ok)
-			{
-				using namespace tl2_ops;
-				std::cerr << "Warning: Inversion failed for Q = "
-					<< Qvec << "." << std::endl;
-			}
-
-			// equation (34) from (Toth 2015)
-			t_mat trafo = C_inv * evec_mat * E_sqrt;
-			t_mat trafo_herm = tl2::herm(trafo);
+		// equation (34) from (Toth 2015)
+		t_mat trafo = C_inv * evec_mat * E_sqrt;
+		t_mat trafo_herm = tl2::herm(trafo);
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
-			t_mat D_mat = trafo_herm * H_mat * trafo;
-			std::cout << "D = \n";
-			tl2::niceprint(std::cout, D_mat, 1e-4, 4);
-			std::cout << "\nE = \n";
-			tl2::niceprint(std::cout, E_sqrt, 1e-4, 4);
-			std::cout << "\nL = \n";
-			tl2::niceprint(std::cout, L_mat, 1e-4, 4);
-			std::cout << std::endl;
+		t_mat D_mat = trafo_herm * H_mat * trafo;
+		std::cout << "D = \n";
+		tl2::niceprint(std::cout, D_mat, 1e-4, 4);
+		std::cout << "\nE = \n";
+		tl2::niceprint(std::cout, E_sqrt, 1e-4, 4);
+		std::cout << "\nL = \n";
+		tl2::niceprint(std::cout, L_mat, 1e-4, 4);
+		std::cout << std::endl;
 #endif
+
+#ifdef __TLIBS2_MAGDYN_DEBUG_PY_OUTPUT__
+		std::cout
+			<< "# --------------------------------------------------------------------------------\n";
+		std::cout << "Y = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
+		std::cout << "V = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
+		std::cout << "Z = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
+		std::cout << "W = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
+#endif
+
+		// building the spin correlation functions of equation (47) from (Toth 2015)
+		for(int x_idx=0; x_idx<3; ++x_idx)
+		for(int y_idx=0; y_idx<3; ++y_idx)
+		{
+			// equations (44) from (Toth 2015)
+			auto create_matrices = [num_sites](
+				t_mat& V, t_mat& W, t_mat& Y, t_mat& Z)
+			{
+				V = tl2::create<t_mat>(num_sites, num_sites);
+				W = tl2::create<t_mat>(num_sites, num_sites);
+				Y = tl2::create<t_mat>(num_sites, num_sites);
+				Z = tl2::create<t_mat>(num_sites, num_sites);
+			};
+
+			t_mat V, W, Y, Z;
+			create_matrices(V, W, Y, Z);
+
+			for(t_size i=0; i<num_sites; ++i)
+			for(t_size j=0; j<num_sites; ++j)
+			{
+				auto calc_mat_elems = [this, i, j, x_idx, y_idx](
+					const t_vec_real& Qvec,
+					t_mat& Y, t_mat& V, t_mat& Z, t_mat& W)
+				{
+					// get the sites and spins
+					const t_vec_real& pos_i = m_sites[i].pos;
+					const t_vec_real& pos_j = m_sites[j].pos;
+					t_real S_i = m_sites[i].spin_mag;
+					t_real S_j = m_sites[j].spin_mag;
+
+					// get the pre-calculated u vectors
+					const t_vec& u_i = m_sites_calc[i].u;
+					const t_vec& u_j = m_sites_calc[j].u;
+					const t_vec& u_conj_i = m_sites_calc[i].u_conj;
+					const t_vec& u_conj_j = m_sites_calc[j].u_conj;
+
+					// pre-factors of equation (44) from (Toth 2015)
+					t_real SiSj = 4. * std::sqrt(S_i*S_j);
+					t_cplx phase = std::exp(-m_phase_sign * s_imag * s_twopi *
+						tl2::inner<t_vec_real>(pos_j - pos_i, Qvec));
+
+					// matrix elements of equation (44) from (Toth 2015)
+					Y(i, j) = phase * SiSj * u_i[x_idx] * u_conj_j[y_idx];
+					V(i, j) = phase * SiSj * u_conj_i[x_idx] * u_conj_j[y_idx];
+					Z(i, j) = phase * SiSj * u_i[x_idx] * u_j[y_idx];
+					W(i, j) = phase * SiSj * u_conj_i[x_idx] * u_j[y_idx];
+
+#ifdef __TLIBS2_MAGDYN_DEBUG_PY_OUTPUT__
+					std::cout << "Y[" << i << ", " << j << ", "
+						<< x_idx << ", " << y_idx << "] = "
+						<< Y(i, j).real() << " + " << Y(i, j).imag() << "j\n"
+						<< "V[" << i << ", " << j << ", "
+						<< x_idx << ", " << y_idx << "] = "
+						<< V(i, j).real() << " + " << V(i, j).imag() << "j\n"
+						<< "Z[" << i << ", " << j << ", "
+						<< x_idx << ", " << y_idx << "] = "
+						<< Z(i, j).real() << " + " << Z(i, j).imag() << "j\n"
+						<< "W[" << i << ", " << j << ", "
+						<< x_idx << ", " << y_idx << "] = "
+						<< W(i, j).real() << " + " << W(i, j).imag() << "j"
+						<< std::endl;
+#endif
+				};
+
+				calc_mat_elems(Qvec, Y, V, Z, W);
+			} // end of iteration over sites
+
+			auto calc_S = [num_sites, x_idx, y_idx, &trafo, &trafo_herm, &energies_and_correlations]
+				(t_mat EnergyAndWeight::*S, const t_mat& Y, const t_mat& V, const t_mat& Z, const t_mat& W)
+			{
+				// equation (47) from (Toth 2015)
+				t_mat M = tl2::create<t_mat>(num_sites*2, num_sites*2);
+				tl2::set_submat(M, Y, 0, 0);
+				tl2::set_submat(M, V, num_sites, 0);
+				tl2::set_submat(M, Z, 0, num_sites);
+				tl2::set_submat(M, W, num_sites, num_sites);
+
+				t_mat M_trafo = trafo_herm * M * trafo;
+
+#ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
+				std::cout << "M_trafo for x=" << x_idx << ", y=" << y_idx << ":\n";
+				tl2::niceprint(std::cout, M_trafo, 1e-4, 4);
+				std::cout << std::endl;
+#endif
+
+				for(t_size i=0; i<energies_and_correlations.size(); ++i)
+					(energies_and_correlations[i].*S)(x_idx, y_idx) += M_trafo(i, i) / t_real(2*num_sites);
+			};
+
+			calc_S(&EnergyAndWeight::S, Y, V, Z, W);
+		} // end of coordinate iteration
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_PY_OUTPUT__
 			std::cout
-				<< "# --------------------------------------------------------------------------------\n";
-			std::cout << "Y = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
-			std::cout << "V = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
-			std::cout << "Z = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
-			std::cout << "W = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
+				<< "# --------------------------------------------------------------------------------\n"
+				<< std::endl;
 #endif
-
-			// building the spin correlation functions of equation (47) from (Toth 2015)
-			for(int x_idx=0; x_idx<3; ++x_idx)
-			for(int y_idx=0; y_idx<3; ++y_idx)
-			{
-				// equations (44) from (Toth 2015)
-				auto create_matrices = [num_sites](
-					t_mat& V, t_mat& W, t_mat& Y, t_mat& Z)
-				{
-					V = tl2::create<t_mat>(num_sites, num_sites);
-					W = tl2::create<t_mat>(num_sites, num_sites);
-					Y = tl2::create<t_mat>(num_sites, num_sites);
-					Z = tl2::create<t_mat>(num_sites, num_sites);
-				};
-
-				t_mat V, W, Y, Z;
-				create_matrices(V, W, Y, Z);
-
-				for(t_size i=0; i<num_sites; ++i)
-				for(t_size j=0; j<num_sites; ++j)
-				{
-					auto calc_mat_elems = [this, i, j, x_idx, y_idx](
-						const t_vec_real& Qvec,
-						t_mat& Y, t_mat& V, t_mat& Z, t_mat& W)
-					{
-						// get the sites and spins
-						const t_vec_real& pos_i = m_sites[i].pos;
-						const t_vec_real& pos_j = m_sites[j].pos;
-						t_real S_i = m_sites[i].spin_mag;
-						t_real S_j = m_sites[j].spin_mag;
-
-						// get the pre-calculated u vectors
-						const t_vec& u_i = m_sites_calc[i].u;
-						const t_vec& u_j = m_sites_calc[j].u;
-						const t_vec& u_conj_i = m_sites_calc[i].u_conj;
-						const t_vec& u_conj_j = m_sites_calc[j].u_conj;
-
-						// pre-factors of equation (44) from (Toth 2015)
-						t_real SiSj = 4. * std::sqrt(S_i*S_j);
-						t_cplx phase = std::exp(-m_phase_sign * s_imag * s_twopi *
-							tl2::inner<t_vec_real>(pos_j - pos_i, Qvec));
-
-						// matrix elements of equation (44) from (Toth 2015)
-						Y(i, j) = phase * SiSj * u_i[x_idx] * u_conj_j[y_idx];
-						V(i, j) = phase * SiSj * u_conj_i[x_idx] * u_conj_j[y_idx];
-						Z(i, j) = phase * SiSj * u_i[x_idx] * u_j[y_idx];
-						W(i, j) = phase * SiSj * u_conj_i[x_idx] * u_j[y_idx];
-
-#ifdef __TLIBS2_MAGDYN_DEBUG_PY_OUTPUT__
-						std::cout << "Y[" << i << ", " << j << ", "
-							<< x_idx << ", " << y_idx << "] = "
-							<< Y(i, j).real() << " + " << Y(i, j).imag() << "j\n"
-							<< "V[" << i << ", " << j << ", "
-							<< x_idx << ", " << y_idx << "] = "
-							<< V(i, j).real() << " + " << V(i, j).imag() << "j\n"
-							<< "Z[" << i << ", " << j << ", "
-							<< x_idx << ", " << y_idx << "] = "
-							<< Z(i, j).real() << " + " << Z(i, j).imag() << "j\n"
-							<< "W[" << i << ", " << j << ", "
-							<< x_idx << ", " << y_idx << "] = "
-							<< W(i, j).real() << " + " << W(i, j).imag() << "j"
-							<< std::endl;
-#endif
-					};
-
-					calc_mat_elems(Qvec, Y, V, Z, W);
-				} // end of iteration over sites
-
-				auto calc_S = [num_sites, x_idx, y_idx, &trafo, &trafo_herm, &energies_and_correlations]
-					(t_mat EnergyAndWeight::*S, const t_mat& Y, const t_mat& V, const t_mat& Z, const t_mat& W)
-				{
-					// equation (47) from (Toth 2015)
-					t_mat M = tl2::create<t_mat>(num_sites*2, num_sites*2);
-					tl2::set_submat(M, Y, 0, 0);
-					tl2::set_submat(M, V, num_sites, 0);
-					tl2::set_submat(M, Z, 0, num_sites);
-					tl2::set_submat(M, W, num_sites, num_sites);
-
-					t_mat M_trafo = trafo_herm * M * trafo;
-
-#ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
-					std::cout << "M_trafo for x=" << x_idx << ", y=" << y_idx << ":\n";
-					tl2::niceprint(std::cout, M_trafo, 1e-4, 4);
-					std::cout << std::endl;
-#endif
-
-					for(t_size i=0; i<energies_and_correlations.size(); ++i)
-						(energies_and_correlations[i].*S)(x_idx, y_idx) += M_trafo(i, i) / t_real(2*num_sites);
-				};
-
-				calc_S(&EnergyAndWeight::S, Y, V, Z, W);
-			} // end of coordinate iteration
-
-#ifdef __TLIBS2_MAGDYN_DEBUG_PY_OUTPUT__
-				std::cout
-					<< "# --------------------------------------------------------------------------------\n"
-					<< std::endl;
-#endif
-		} // end of weight calculation
-
-		return energies_and_correlations;
 	}
 
 
@@ -1476,7 +1488,7 @@ public:
 			t_vec Si = m_sites[term.site1].spin_mag * m_sites_calc[term.site1].v;
 			t_vec Sj = m_sites[term.site2].spin_mag * m_sites_calc[term.site2].v;
 
-			E += tl2::inner<t_vec>(Si, J * Sj).real();
+			E += tl2::inner_noconj<t_vec>(Si, J * Sj).real();
 		}
 
 		return E;
