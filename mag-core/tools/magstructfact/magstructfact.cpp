@@ -58,7 +58,7 @@ int g_prec = 6;
 
 
 MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
-	m_sett{new QSettings{"takin", "magstructfact"}}
+	m_sett{new QSettings{"takin", "magstructfact", this}}
 {
 	setWindowTitle("Magnetic Structure Factors");
 	setSizeGripEnabled(true);

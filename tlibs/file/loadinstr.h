@@ -85,7 +85,7 @@ class FileInstrBase
 
 		virtual std::size_t GetScanCount() const = 0;
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const = 0;
-		virtual bool MergeWith(const FileInstrBase<t_real>* pDat);
+		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false);
 		virtual void SmoothData(const std::string& strCol, t_real dEps, bool bIterate=1);
 
 		virtual std::string GetTitle() const = 0;
@@ -200,7 +200,7 @@ class FilePsi : public FileInstrBase<_t_real>
 
 		virtual std::size_t GetScanCount() const override;
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
-		virtual bool MergeWith(const FileInstrBase<t_real>* pDat) override;
+		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 
 		virtual std::string GetTitle() const override;
 		virtual std::string GetUser() const override;
@@ -279,7 +279,7 @@ class FileFrm : public FileInstrBase<_t_real>
 
 		virtual std::size_t GetScanCount() const override;
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
-		virtual bool MergeWith(const FileInstrBase<t_real>* pDat) override;
+		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 
 		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) const override;
 		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) override;
@@ -349,7 +349,7 @@ class FileMacs : public FileInstrBase<_t_real>
 
 		virtual std::size_t GetScanCount() const override;
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
-		virtual bool MergeWith(const FileInstrBase<t_real>* pDat) override;
+		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 
 		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) const override;
 		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) override;
@@ -419,7 +419,7 @@ class FileTrisp : public FileInstrBase<_t_real>
 
 		virtual std::size_t GetScanCount() const override;
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
-		virtual bool MergeWith(const FileInstrBase<t_real>* pDat) override;
+		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 
 		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) const override;
 		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) override;
@@ -487,7 +487,7 @@ class FileTax : public FileInstrBase<_t_real>
 
 		virtual std::size_t GetScanCount() const override;
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
-		virtual bool MergeWith(const FileInstrBase<t_real>* pDat) override;
+		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 
 		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) const override;
 		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) override;
@@ -552,7 +552,7 @@ class FileRaw : public FileInstrBase<_t_real>
 
 		virtual std::size_t GetScanCount() const override;
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
-		virtual bool MergeWith(const FileInstrBase<t_real>* pDat) override;
+		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 
 		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) const override;
 		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) override;
@@ -653,7 +653,7 @@ class FileH5 : public FileInstrBase<_t_real>
 
 		virtual std::size_t GetScanCount() const override;
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
-		virtual bool MergeWith(const FileInstrBase<t_real>* pDat) override;
+		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 
 		std::size_t GetColCount() const { return m_vecCols.size(); }
 		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) const override;

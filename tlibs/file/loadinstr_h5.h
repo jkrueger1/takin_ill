@@ -548,9 +548,9 @@ template<class t_real> std::vector<std::string> FileH5<t_real>::GetScannedVars()
 
 
 template<class t_real>
-bool FileH5<t_real>::MergeWith(const FileInstrBase<t_real>* pDat)
+bool FileH5<t_real>::MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch)
 {
-	return FileInstrBase<t_real>::MergeWith(pDat);
+	return FileInstrBase<t_real>::MergeWith(pDat, allow_col_mismatch);
 }
 
 

@@ -679,11 +679,13 @@ void ConvoDlg::ChangeHK()
 	SwapSpin(spinStartH, spinStartK);
 	SwapSpin(spinStopH, spinStopK);
 }
+
 void ConvoDlg::ChangeHL()
 {
 	SwapSpin(spinStartH, spinStartL);
 	SwapSpin(spinStopH, spinStopL);
 }
+
 void ConvoDlg::ChangeKL()
 {
 	SwapSpin(spinStartK, spinStartL);
@@ -692,6 +694,7 @@ void ConvoDlg::ChangeKL()
 
 
 // -----------------------------------------------------------------------------
+
 
 void ConvoDlg::scanCheckToggled(bool bChecked)
 {
@@ -726,7 +729,12 @@ void ConvoDlg::scanFileChanged(const QString& qstrFile)
 	m_scan.strCntCol = editCounter->text().toStdString();
 	m_scan.strMonCol = editMonitor->text().toStdString();
 
-	if(!load_scan_file(qstrFile.toStdString(), m_scan, checkFlip->isChecked(), filter))
+	bool allow_scan_merging = false;
+	if(m_pSett)
+		allow_scan_merging = m_pSett->value("main/allow_scan_merging", 0).toBool();
+
+	if(!load_scan_file(qstrFile.toStdString(), m_scan,
+		checkFlip->isChecked(), allow_scan_merging, filter))
 	{
 		tl::log_err("Cannot load scan(s).");
 		return;

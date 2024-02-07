@@ -433,9 +433,9 @@ template<class t_real> std::string FileTax<t_real>::GetMonVar() const
 
 
 template<class t_real>
-bool FileTax<t_real>::MergeWith(const FileInstrBase<t_real>* pDat)
+bool FileTax<t_real>::MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch)
 {
-	return FileInstrBase<t_real>::MergeWith(pDat);
+	return FileInstrBase<t_real>::MergeWith(pDat, allow_col_mismatch);
 }
 
 

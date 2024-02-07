@@ -123,12 +123,14 @@ struct Scan
 
 extern bool load_file(const std::vector<std::string>& vecFiles, Scan& scan,
 	bool bNormToMon = true, const Filter& filter = Filter(),
-	bool bFlipCoords = false, bool bUseFirstAndLastPoints = false,
+	bool bFlipCoords = false, bool bAllowScanMerging = false,
+	bool bUseFirstAndLastPoints = false,
 	unsigned iScanAxis = 0, bool bVerbose = true);
 
 extern bool load_file(const char* pcFile, Scan& scan,
 	bool bNormToMon = true, const Filter& filter = Filter(),
-	bool bFlipCoords = false, bool bUseFirstAndLastPoints = false);
+	bool bFlipCoords = false, bool bAllowScanMerging = false,
+	bool bUseFirstAndLastPoints = false);
 
 extern bool save_file(const char* pcFile, const Scan& sc);
 

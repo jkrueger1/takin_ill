@@ -67,9 +67,10 @@ using t_vec = tl::ublas::vector<t_real>;
 namespace fs = boost::filesystem;
 
 
-ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
+ScanViewerDlg::ScanViewerDlg(QWidget* pParent, QSettings* core_settings)
 	: QDialog(pParent, Qt::WindowTitleHint|Qt::WindowCloseButtonHint|Qt::WindowMinMaxButtonsHint),
-		m_settings("takin", "scanviewer"),
+		m_settings("takin", "scanviewer", this),
+		m_core_settings{core_settings},
 		m_vecExts({ ".dat", ".DAT", ".scn", ".SCN", ".ng0", ".NG0", ".log", ".LOG", ".nxs", ".NXS", ".hdf", ".HDF", "" }),
 		m_pFitParamDlg(new FitParamDlg(this, &m_settings))
 {
@@ -77,8 +78,13 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent)
 	this->setFocusPolicy(Qt::StrongFocus);
 	SetAbout();
 
+	// also load takin's core settings if not explicitly given
+	if(!m_core_settings)
+		m_core_settings = new QSettings("takin", "core", this);
+
 	QFont font;
-	if(m_settings.contains("main/font_gen") && font.fromString(m_settings.value("main/font_gen", "").toString()))
+	if(m_core_settings && m_core_settings->contains("main/font_gen") &&
+		font.fromString(m_core_settings->value("main/font_gen", "").toString()))
 		setFont(font);
 
 	splitter->setStretchFactor(0, 1);
@@ -377,7 +383,7 @@ void ScanViewerDlg::SelectDir(const QString& path)
 void ScanViewerDlg::SelectDir()
 {
 	QFileDialog::Option fileopt = QFileDialog::Option(0);
-	if(!m_settings.value("main/native_dialogs", 1).toBool())
+	if(m_core_settings && !m_core_settings->value("main/native_dialogs", 1).toBool())
 		fileopt = QFileDialog::DontUseNativeDialog;
 
 	QString strCurDir = (m_strCurDir=="" ? "~" : m_strCurDir.c_str());
@@ -435,13 +441,17 @@ void ScanViewerDlg::FileSelected()
 	if(!m_pInstr) return;
 
 	// merge with other selected files
+	bool allow_merging = false;
+	if(m_core_settings)
+		allow_merging = m_core_settings->value("main/allow_scan_merging", 0).toBool();
 	for(const std::string& strOtherFile : vecSelectedFilesRest)
 	{
 		std::unique_ptr<tl::FileInstrBase<t_real>> pToMerge(
 			tl::FileInstrBase<t_real>::LoadInstr(strOtherFile.c_str()));
-		if(!pToMerge) continue;
+		if(!pToMerge)
+			continue;
 
-		m_pInstr->MergeWith(pToMerge.get());
+		m_pInstr->MergeWith(pToMerge.get(), allow_merging);
 	}
 
 	std::vector<std::string> vecScanVars = m_pInstr->GetScannedVars();

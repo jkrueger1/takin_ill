@@ -86,6 +86,7 @@ struct ConvoConfig
 	bool recycle_neutrons{true};
 	bool normalise{true};
 	bool flip_coords{false};
+	bool allow_scan_merging{false};
 	bool has_scanfile{false};
 
 	ResoAlgo algo{ResoAlgo::POP};
@@ -144,6 +145,7 @@ static ConvoConfig load_config(const tl::Prop<std::string>& xml)
 	obVal = xml.QueryOpt<int>(g_strXmlRoot+"convofit/recycle_neutrons"); if(obVal) cfg.recycle_neutrons = *obVal != 0;
 	obVal = xml.QueryOpt<int>(g_strXmlRoot+"convofit/normalise"); if(obVal) cfg.normalise = *obVal != 0;
 	obVal = xml.QueryOpt<int>(g_strXmlRoot+"convofit/flip_coords"); if(obVal) cfg.flip_coords = *obVal != 0;
+	obVal = xml.QueryOpt<int>(g_strXmlRoot+"monteconvo/allow_scan_merging"); if(obVal) cfg.allow_scan_merging = *obVal != 0;
 	obVal = xml.QueryOpt<int>(g_strXmlRoot+"monteconvo/has_scanfile"); if(obVal) cfg.has_scanfile = *obVal != 0;
 
 	// index values
@@ -260,7 +262,8 @@ static bool start_convo_1d(const ConvoConfig& cfg, const tl::Prop<std::string>& 
 		if(optMon)
 			scan.strMonCol = *optMon;
 
-		if(!load_scan_file(cfg.scanfile, scan, cfg.flip_coords, filter))
+		if(!load_scan_file(cfg.scanfile, scan,
+			cfg.flip_coords, cfg.allow_scan_merging, filter))
 		{
 			tl::log_err("Cannot load scan(s) \"", cfg.scanfile, "\".");
 			return false;

@@ -93,10 +93,11 @@ bool save_file(const char* pcFile, const Scan& sc)
  * loading multiple scan files
  */
 bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormToMon,
-	const Filter& filter, bool bFlipCoords, bool bUseFirstAndLastPoints,
-	unsigned iScanAxis, bool bVerbose)
+	const Filter& filter, bool bFlipCoords, bool bAllowScanMerging,
+	bool bUseFirstAndLastPoints, unsigned iScanAxis, bool bVerbose)
 {
-	if(!vecFiles.size()) return 0;
+	if(!vecFiles.size())
+		return 0;
 	tl::log_info("Loading \"", vecFiles[0], "\".");
 
 	std::unique_ptr<tl::FileInstrBase<t_real_sc>>
@@ -118,7 +119,7 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 			continue;
 		}
 
-		pInstr->MergeWith(pInstrM.get());
+		pInstr->MergeWith(pInstrM.get(), bAllowScanMerging);
 	}
 
 
@@ -463,8 +464,8 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
  * loading a scan file
  */
 bool load_file(const char* pcFile, Scan& scan, bool bNormToMon, const Filter& filter,
-	bool bFlip, bool bUseFirstAndLastPoints)
+	bool bFlip, bool bAllowScanMerging, bool bUseFirstAndLastPoints)
 {
 	std::vector<std::string> vec{pcFile};
-	return load_file(vec, scan, bNormToMon, filter, bFlip, bUseFirstAndLastPoints);
+	return load_file(vec, scan, bNormToMon, filter, bFlip, bAllowScanMerging, bUseFirstAndLastPoints);
 }

@@ -58,7 +58,7 @@ int g_prec = 6;
 
 // ----------------------------------------------------------------------------
 StructFactDlg::StructFactDlg(QWidget* pParent) : QDialog{pParent},
-	m_sett{new QSettings{"takin", "structfact"}}
+	m_sett{new QSettings{"takin", "structfact", this}}
 {
 	setWindowTitle("Nuclear Structure Factors");
 	setSizeGripEnabled(true);

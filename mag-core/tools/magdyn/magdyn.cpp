@@ -38,7 +38,7 @@
 
 
 MagDynDlg::MagDynDlg(QWidget* pParent) : QDialog{pParent},
-	m_sett{new QSettings{"takin", "magdyn"}}
+	m_sett{new QSettings{"takin", "magdyn", this}}
 {
 	// restore settings done from takin main settings dialog
 	get_settings_from_takin_core();

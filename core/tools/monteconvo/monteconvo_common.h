@@ -96,7 +96,8 @@ extern ResoFocus get_reso_focus(int iFocMono, int iFocAna);
 
 
 extern bool load_scan_file(const std::string& _strFile, Scan& scan,
-	bool bFlipAxis=false, const Filter& filter=Filter());
+	bool bFlipAxis = false, bool bAllowScanMerging = false,
+	const Filter& filter=Filter());
 
 
 #endif

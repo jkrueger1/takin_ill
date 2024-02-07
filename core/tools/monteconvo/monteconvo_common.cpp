@@ -29,9 +29,6 @@
 #include "monteconvo_common.h"
 
 
-#define EPS_RLU 1e-3
-
-
 
 ResoFocus get_reso_focus(int iFocMono, int iFocAna)
 {
@@ -49,8 +46,9 @@ ResoFocus get_reso_focus(int iFocMono, int iFocAna)
 }
 
 
-
-bool load_scan_file(const std::string& _strFile, Scan& scan, bool bFlipAxis, const Filter& filter)
+bool load_scan_file(const std::string& _strFile, Scan& scan,
+	bool bFlipAxis, bool bAllowScanMerging,
+	const Filter& filter)
 {
 	std::string strFile = _strFile;
 	tl::trim(strFile);
@@ -61,7 +59,7 @@ bool load_scan_file(const std::string& _strFile, Scan& scan, bool bFlipAxis, con
 	tl::get_tokens<std::string, std::string>(strFile, ";", vecFiles);
 	std::for_each(vecFiles.begin(), vecFiles.end(), [](std::string& str){ tl::trim(str); });
 
-	bool bLoaded = ::load_file(vecFiles, scan, true, filter, bFlipAxis);
+	bool bLoaded = ::load_file(vecFiles, scan, true, filter, bFlipAxis, bAllowScanMerging);
 
 	// if file was not found, alternatively look in global paths
 	if(!bLoaded)
@@ -73,7 +71,7 @@ bool load_scan_file(const std::string& _strFile, Scan& scan, bool bFlipAxis, con
 			for(const std::string& _strFile : vecFiles)
 				_vecFiles.push_back(strGlobPath + "/" + _strFile);
 
-			if((bLoaded = ::load_file(_vecFiles, scan, true, filter, bFlipAxis)))
+			if((bLoaded = ::load_file(_vecFiles, scan, true, filter, bFlipAxis, bAllowScanMerging)))
 				break;
 		}
 	}

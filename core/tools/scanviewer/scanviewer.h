@@ -49,14 +49,14 @@
 class ScanViewerDlg : public QDialog, Ui::ScanViewerDlg
 { Q_OBJECT
 public:
-	ScanViewerDlg(QWidget* pParent = nullptr);
+	ScanViewerDlg(QWidget* pParent = nullptr, QSettings *core_settings = nullptr);
 	virtual ~ScanViewerDlg();
 
 	void SelectDir(const QString& path);
 
 
 private:
-	QSettings m_settings;
+	QSettings m_settings, *m_core_settings{nullptr};
 
 	std::unique_ptr<QFileSystemWatcher> m_pWatcher;
 	std::string m_strCurDir, m_strCurFile;

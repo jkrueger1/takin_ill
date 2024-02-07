@@ -47,7 +47,7 @@ namespace algo = boost::algorithm;
 
 
 BZDlg::BZDlg(QWidget* pParent) : QDialog{pParent},
-	m_sett{new QSettings{"takin", "bz"}}
+	m_sett{new QSettings{"takin", "bz", this}}
 {
 	setWindowTitle("Brillouin Zones");
 	setSizeGripEnabled(true);

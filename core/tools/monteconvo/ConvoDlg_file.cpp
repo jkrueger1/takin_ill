@@ -319,6 +319,11 @@ void ConvoDlg::Save(std::map<std::string, std::string>& mapConf, const std::stri
 		algo_name = "vio";
 	mapConf[strXmlRoot + "monteconvo/algo"] = algo_name;
 
+	bool allow_scan_merging = false;
+	if(m_pSett)
+		allow_scan_merging = m_pSett->value("main/allow_scan_merging", 0).toBool();
+	mapConf[strXmlRoot + "monteconvo/allow_scan_merging"] = allow_scan_merging ? "1" : "0";
+
 	const char* pcUser = std::getenv("USER");
 	if(!pcUser) pcUser = "";
 	mapConf[strXmlRoot + "meta/timestamp"] = tl::var_to_str<t_real>(tl::epoch<t_real>());

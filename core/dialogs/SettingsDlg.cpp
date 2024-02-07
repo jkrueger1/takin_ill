@@ -145,6 +145,7 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 		t_tupCheck("net/flip_orient2", 1, checkFlipOrient2),
 		t_tupCheck("net/sth_stt_corr", 0, checkSthSttCorr),
 		t_tupCheck("main/ignore_xtal_restrictions", 0, checkIgnoreXtalRestrictions),
+		t_tupCheck("main/allow_scan_merging", 0, checkAllowScanMerging),
 	};
 
 	m_vecSpins =

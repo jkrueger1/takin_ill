@@ -1006,33 +1006,3 @@ bool TazDlg::ImportCIF(const char* pcFile)
 
 	return true;
 }
-
-
-//--------------------------------------------------------------------------------
-
-
-void TazDlg::ShowScanViewer()
-{
-	if(!m_pScanViewer)
-		m_pScanViewer = new ScanViewerDlg(this);
-
-	focus_dlg(m_pScanViewer);
-}
-
-
-void TazDlg::ShowScanPos()
-{
-	if(!m_pScanPos)
-		m_pScanPos = new ScanPosDlg(this, &m_settings);
-
-	focus_dlg(m_pScanPos);
-}
-
-
-void TazDlg::ShowPowderFit()
-{
-	if(!m_pPowderFit)
-		m_pPowderFit = new PowderFitDlg(this, &m_settings);
-
-	focus_dlg(m_pPowderFit);
-}

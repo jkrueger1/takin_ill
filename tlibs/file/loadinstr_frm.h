@@ -409,9 +409,9 @@ std::array<t_real, 5> FileFrm<t_real>::GetScanHKLKiKf(std::size_t i) const
 
 
 template<class t_real>
-bool FileFrm<t_real>::MergeWith(const FileInstrBase<t_real>* pDat)
+bool FileFrm<t_real>::MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch)
 {
-	if(!FileInstrBase<t_real>::MergeWith(pDat))
+	if(!FileInstrBase<t_real>::MergeWith(pDat, allow_col_mismatch))
 		return false;
 
 	std::string strNr = pDat->GetScanNumber();

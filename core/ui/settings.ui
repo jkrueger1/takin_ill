@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>509</width>
-    <height>591</height>
+    <width>555</width>
+    <height>642</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,189 +27,37 @@
        <string>General</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_4">
-       <property name="margin">
+       <property name="leftMargin">
+        <number>4</number>
+       </property>
+       <property name="topMargin">
+        <number>4</number>
+       </property>
+       <property name="rightMargin">
+        <number>4</number>
+       </property>
+       <property name="bottomMargin">
         <number>4</number>
        </property>
        <property name="spacing">
         <number>2</number>
        </property>
-       <item row="0" column="0">
-        <widget class="QGroupBox" name="groupBox_6">
-         <property name="title">
-          <string>Precisions and Limits</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_5">
-          <property name="margin">
-           <number>4</number>
-          </property>
-          <property name="spacing">
-           <number>2</number>
-          </property>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_20">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Graphical Views:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QSpinBox" name="spinPrecGen">
-            <property name="toolTip">
-             <string>General number precision.</string>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>16</number>
-            </property>
-            <property name="value">
-             <number>6</number>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_17">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Max. Points:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QSpinBox" name="spinPtsGfx">
-            <property name="toolTip">
-             <string>Number of points to draw in graphs.</string>
-            </property>
-            <property name="maximum">
-             <number>99999</number>
-            </property>
-            <property name="value">
-             <number>512</number>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0" colspan="2">
-           <spacer name="verticalSpacer_3">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="1" column="1">
-           <widget class="QSpinBox" name="spinPrecGfx">
-            <property name="toolTip">
-             <string>Number precision in graphs.</string>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>16</number>
-            </property>
-            <property name="value">
-             <number>4</number>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_19">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>General:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_threads">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Max. Threads:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_procs">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Max. Processes:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QSpinBox" name="spinThreads">
-            <property name="toolTip">
-             <string>Maximum number of concurrently executed threads.</string>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>4</number>
-            </property>
-            <property name="value">
-             <number>4</number>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QSpinBox" name="spinProcesses">
-            <property name="toolTip">
-             <string>Maximum number of concurrently executed child processes.</string>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>4</number>
-            </property>
-            <property name="value">
-             <number>4</number>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="3" column="0" colspan="2">
+       <item row="4" column="0" colspan="2">
         <widget class="QGroupBox" name="groupBox_8">
          <property name="title">
           <string>Fonts</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_8">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>4</number>
+          </property>
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="rightMargin">
+           <number>4</number>
+          </property>
+          <property name="bottomMargin">
            <number>4</number>
           </property>
           <property name="spacing">
@@ -225,6 +73,9 @@
             </property>
             <property name="text">
              <string>General:</string>
+            </property>
+            <property name="buddy">
+             <cstring>editGenFont</cstring>
             </property>
            </widget>
           </item>
@@ -271,6 +122,9 @@
             <property name="text">
              <string>2D Views:</string>
             </property>
+            <property name="buddy">
+             <cstring>editGfxFont</cstring>
+            </property>
            </widget>
           </item>
           <item row="1" column="1" colspan="2">
@@ -315,6 +169,9 @@
             </property>
             <property name="text">
              <string>3D Views:</string>
+            </property>
+            <property name="buddy">
+             <cstring>editGLFont</cstring>
             </property>
            </widget>
           </item>
@@ -375,24 +232,89 @@
          </layout>
         </widget>
        </item>
-       <item row="5" column="0" colspan="2">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
+       <item row="2" column="1">
+        <widget class="QGroupBox" name="groupBox_7">
+         <property name="title">
+          <string>Miscellaneous</string>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="6" column="0" colspan="2">
-        <widget class="QLabel" name="label_42">
-         <property name="text">
-          <string>&lt;b&gt;Note&lt;/b&gt;: Some changes require restarting Takin.</string>
-         </property>
+         <layout class="QGridLayout" name="gridLayout_6">
+          <property name="leftMargin">
+           <number>4</number>
+          </property>
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="rightMargin">
+           <number>4</number>
+          </property>
+          <property name="bottomMargin">
+           <number>4</number>
+          </property>
+          <property name="spacing">
+           <number>2</number>
+          </property>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="spinNetPoll">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="suffix">
+             <string> ms</string>
+            </property>
+            <property name="maximum">
+             <number>100000</number>
+            </property>
+            <property name="singleStep">
+             <number>50</number>
+            </property>
+            <property name="value">
+             <number>750</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="QCheckBox" name="checkAllowScanMerging">
+            <property name="toolTip">
+             <string>Allow the merging of scan files even when the columns are incompatible.</string>
+            </property>
+            <property name="text">
+             <string>Always Allow Scan Merging</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_21">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Net Polling Interval:</string>
+            </property>
+            <property name="buddy">
+             <cstring>spinNetPoll</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <spacer name="verticalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </widget>
        </item>
        <item row="0" column="1">
@@ -401,7 +323,16 @@
           <string>Reciprocal Space</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_7">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>4</number>
+          </property>
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="rightMargin">
+           <number>4</number>
+          </property>
+          <property name="bottomMargin">
            <number>4</number>
           </property>
           <property name="spacing">
@@ -417,6 +348,9 @@
             </property>
             <property name="text">
              <string>Max. Peak Order:</string>
+            </property>
+            <property name="buddy">
+             <cstring>spinBragg</cstring>
             </property>
            </widget>
           </item>
@@ -481,6 +415,9 @@
             <property name="text">
              <string>Neighbours:</string>
             </property>
+            <property name="buddy">
+             <cstring>spinMaxNN</cstring>
+            </property>
            </widget>
           </item>
           <item row="1" column="1">
@@ -525,13 +462,236 @@
          </layout>
         </widget>
        </item>
-       <item row="2" column="0">
+       <item row="6" column="0" colspan="2">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="0">
+        <widget class="QGroupBox" name="groupBox_6">
+         <property name="title">
+          <string>Precisions and Limits</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_5">
+          <property name="leftMargin">
+           <number>4</number>
+          </property>
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="rightMargin">
+           <number>4</number>
+          </property>
+          <property name="bottomMargin">
+           <number>4</number>
+          </property>
+          <property name="spacing">
+           <number>2</number>
+          </property>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_20">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Graphical Views:</string>
+            </property>
+            <property name="buddy">
+             <cstring>spinPrecGfx</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="spinPrecGen">
+            <property name="toolTip">
+             <string>General number precision.</string>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>16</number>
+            </property>
+            <property name="value">
+             <number>6</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_17">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Max. Points:</string>
+            </property>
+            <property name="buddy">
+             <cstring>spinPtsGfx</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QSpinBox" name="spinPtsGfx">
+            <property name="toolTip">
+             <string>Number of points to draw in graphs.</string>
+            </property>
+            <property name="maximum">
+             <number>99999</number>
+            </property>
+            <property name="value">
+             <number>512</number>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0" colspan="2">
+           <spacer name="verticalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="spinPrecGfx">
+            <property name="toolTip">
+             <string>Number precision in graphs.</string>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>16</number>
+            </property>
+            <property name="value">
+             <number>4</number>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_19">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>General:</string>
+            </property>
+            <property name="buddy">
+             <cstring>spinPrecGen</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_threads">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Max. Threads:</string>
+            </property>
+            <property name="buddy">
+             <cstring>spinThreads</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_procs">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Max. Processes:</string>
+            </property>
+            <property name="buddy">
+             <cstring>spinProcesses</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QSpinBox" name="spinThreads">
+            <property name="toolTip">
+             <string>Maximum number of concurrently executed threads.</string>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>4</number>
+            </property>
+            <property name="value">
+             <number>4</number>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QSpinBox" name="spinProcesses">
+            <property name="toolTip">
+             <string>Maximum number of concurrently executed child processes.</string>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>4</number>
+            </property>
+            <property name="value">
+             <number>4</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="7" column="0" colspan="2">
+        <widget class="QLabel" name="label_42">
+         <property name="text">
+          <string>&lt;b&gt;Note&lt;/b&gt;: Some changes require restarting Takin.</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" rowspan="2">
         <widget class="QGroupBox" name="groupBox_5">
          <property name="title">
           <string>GUI</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_3">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>4</number>
+          </property>
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="rightMargin">
+           <number>4</number>
+          </property>
+          <property name="bottomMargin">
            <number>4</number>
           </property>
           <property name="spacing">
@@ -580,69 +740,6 @@
          </layout>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="QGroupBox" name="groupBox_7">
-         <property name="title">
-          <string>Network</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_6">
-          <property name="margin">
-           <number>4</number>
-          </property>
-          <property name="spacing">
-           <number>2</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_21">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Polling Interval:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QSpinBox" name="spinNetPoll">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="suffix">
-             <string> ms</string>
-            </property>
-            <property name="maximum">
-             <number>100000</number>
-            </property>
-            <property name="singleStep">
-             <number>50</number>
-            </property>
-            <property name="value">
-             <number>750</number>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0" colspan="2">
-           <spacer name="verticalSpacer_4">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </widget>
-       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tab_2">
@@ -650,7 +747,16 @@
        <string>Tools</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_11">
-       <property name="margin">
+       <property name="leftMargin">
+        <number>4</number>
+       </property>
+       <property name="topMargin">
+        <number>4</number>
+       </property>
+       <property name="rightMargin">
+        <number>4</number>
+       </property>
+       <property name="bottomMargin">
         <number>4</number>
        </property>
        <property name="spacing">
@@ -662,7 +768,16 @@
           <string>External Programs</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_12">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>4</number>
+          </property>
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="rightMargin">
+           <number>4</number>
+          </property>
+          <property name="bottomMargin">
            <number>4</number>
           </property>
           <property name="spacing">
@@ -693,6 +808,9 @@
             <property name="text">
              <string>Gnuplot:</string>
             </property>
+            <property name="buddy">
+             <cstring>editGpl</cstring>
+            </property>
            </widget>
           </item>
           <item row="1" column="0" colspan="3">
@@ -718,7 +836,16 @@
        <string>Nicos Devices</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_2">
-       <property name="margin">
+       <property name="leftMargin">
+        <number>4</number>
+       </property>
+       <property name="topMargin">
+        <number>4</number>
+       </property>
+       <property name="rightMargin">
+        <number>4</number>
+       </property>
+       <property name="bottomMargin">
         <number>4</number>
        </property>
        <property name="spacing">
@@ -736,7 +863,16 @@
           <property name="verticalSpacing">
            <number>2</number>
           </property>
-          <property name="margin">
+          <property name="leftMargin">
+           <number>4</number>
+          </property>
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="rightMargin">
+           <number>4</number>
+          </property>
+          <property name="bottomMargin">
            <number>4</number>
           </property>
           <item row="0" column="0">
@@ -749,6 +885,9 @@
             </property>
             <property name="text">
              <string>Theta:</string>
+            </property>
+            <property name="buddy">
+             <cstring>editAnaTheta</cstring>
             </property>
            </widget>
           </item>
@@ -770,6 +909,9 @@
             <property name="text">
              <string>2Theta:</string>
             </property>
+            <property name="buddy">
+             <cstring>editAna2Theta</cstring>
+            </property>
            </widget>
           </item>
           <item row="1" column="1">
@@ -789,6 +931,9 @@
             </property>
             <property name="text">
              <string>d-Spacing:</string>
+            </property>
+            <property name="buddy">
+             <cstring>editAnaD</cstring>
             </property>
            </widget>
           </item>
@@ -814,7 +959,16 @@
           <property name="verticalSpacing">
            <number>2</number>
           </property>
-          <property name="margin">
+          <property name="leftMargin">
+           <number>4</number>
+          </property>
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="rightMargin">
+           <number>4</number>
+          </property>
+          <property name="bottomMargin">
            <number>4</number>
           </property>
           <item row="0" column="0">
@@ -827,6 +981,9 @@
             </property>
             <property name="text">
              <string>Theta:</string>
+            </property>
+            <property name="buddy">
+             <cstring>editMonoTheta</cstring>
             </property>
            </widget>
           </item>
@@ -848,6 +1005,9 @@
             <property name="text">
              <string>2Theta:</string>
             </property>
+            <property name="buddy">
+             <cstring>editMono2Theta</cstring>
+            </property>
            </widget>
           </item>
           <item row="1" column="1">
@@ -867,6 +1027,9 @@
             </property>
             <property name="text">
              <string>d-Spacing:</string>
+            </property>
+            <property name="buddy">
+             <cstring>editMonoD</cstring>
             </property>
            </widget>
           </item>
@@ -895,7 +1058,16 @@
           <property name="verticalSpacing">
            <number>2</number>
           </property>
-          <property name="margin">
+          <property name="leftMargin">
+           <number>4</number>
+          </property>
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="rightMargin">
+           <number>4</number>
+          </property>
+          <property name="bottomMargin">
            <number>4</number>
           </property>
           <item row="0" column="0">
@@ -908,6 +1080,9 @@
             </property>
             <property name="text">
              <string>Name:</string>
+            </property>
+            <property name="buddy">
+             <cstring>editSampleName</cstring>
             </property>
            </widget>
           </item>
@@ -924,6 +1099,9 @@
             </property>
             <property name="text">
              <string>Lattice:</string>
+            </property>
+            <property name="buddy">
+             <cstring>editSampleLattice</cstring>
             </property>
            </widget>
           </item>
@@ -945,6 +1123,9 @@
             <property name="text">
              <string>Angles:</string>
             </property>
+            <property name="buddy">
+             <cstring>editSampleAngles</cstring>
+            </property>
            </widget>
           </item>
           <item row="2" column="1">
@@ -964,6 +1145,9 @@
             </property>
             <property name="text">
              <string>Orient. 1:</string>
+            </property>
+            <property name="buddy">
+             <cstring>editSampleOrient1</cstring>
             </property>
            </widget>
           </item>
@@ -985,6 +1169,9 @@
             <property name="text">
              <string>Orient. 2:</string>
             </property>
+            <property name="buddy">
+             <cstring>editSampleOrient2</cstring>
+            </property>
            </widget>
           </item>
           <item row="4" column="1">
@@ -1004,6 +1191,9 @@
             </property>
             <property name="text">
              <string>Spacegroup:</string>
+            </property>
+            <property name="buddy">
+             <cstring>editSampleSG</cstring>
             </property>
            </widget>
           </item>
@@ -1025,6 +1215,9 @@
             <property name="text">
              <string>Theta:</string>
             </property>
+            <property name="buddy">
+             <cstring>editSampleTheta</cstring>
+            </property>
            </widget>
           </item>
           <item row="6" column="1">
@@ -1045,6 +1238,9 @@
             <property name="text">
              <string>2Theta:</string>
             </property>
+            <property name="buddy">
+             <cstring>editSample2Theta</cstring>
+            </property>
            </widget>
           </item>
           <item row="7" column="1">
@@ -1064,6 +1260,9 @@
             </property>
             <property name="text">
              <string>Psi0:</string>
+            </property>
+            <property name="buddy">
+             <cstring>editSamplePsi0</cstring>
             </property>
            </widget>
           </item>
@@ -1109,7 +1308,16 @@
           <property name="verticalSpacing">
            <number>2</number>
           </property>
-          <property name="margin">
+          <property name="leftMargin">
+           <number>4</number>
+          </property>
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="rightMargin">
+           <number>4</number>
+          </property>
+          <property name="bottomMargin">
            <number>4</number>
           </property>
           <item row="0" column="0">
@@ -1122,6 +1330,9 @@
             </property>
             <property name="text">
              <string>Monitor/Timer:</string>
+            </property>
+            <property name="buddy">
+             <cstring>editCurTime</cstring>
             </property>
            </widget>
           </item>
@@ -1139,6 +1350,9 @@
             <property name="text">
              <string>Preset:</string>
             </property>
+            <property name="buddy">
+             <cstring>editPreset</cstring>
+            </property>
            </widget>
           </item>
           <item row="1" column="1">
@@ -1155,6 +1369,9 @@
             <property name="text">
              <string>Counter:</string>
             </property>
+            <property name="buddy">
+             <cstring>editCounter</cstring>
+            </property>
            </widget>
           </item>
           <item row="2" column="1">
@@ -1170,7 +1387,16 @@
        <string>Sics Devices</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_10">
-       <property name="margin">
+       <property name="leftMargin">
+        <number>4</number>
+       </property>
+       <property name="topMargin">
+        <number>4</number>
+       </property>
+       <property name="rightMargin">
+        <number>4</number>
+       </property>
+       <property name="bottomMargin">
         <number>4</number>
        </property>
        <property name="spacing">
@@ -1188,7 +1414,16 @@
           <string>Sample</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_9">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>4</number>
+          </property>
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="rightMargin">
+           <number>4</number>
+          </property>
+          <property name="bottomMargin">
            <number>4</number>
           </property>
           <property name="spacing">
@@ -1341,6 +1576,9 @@
             <property name="text">
              <string>Theta:</string>
             </property>
+            <property name="buddy">
+             <cstring>edit6_A3</cstring>
+            </property>
            </widget>
           </item>
           <item row="4" column="1" colspan="3">
@@ -1360,6 +1598,9 @@
             </property>
             <property name="text">
              <string>2Theta:</string>
+            </property>
+            <property name="buddy">
+             <cstring>edit6_A4</cstring>
             </property>
            </widget>
           </item>
@@ -1391,7 +1632,16 @@
           <property name="verticalSpacing">
            <number>2</number>
           </property>
-          <property name="margin">
+          <property name="leftMargin">
+           <number>4</number>
+          </property>
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="rightMargin">
+           <number>4</number>
+          </property>
+          <property name="bottomMargin">
            <number>4</number>
           </property>
           <item row="0" column="0">
@@ -1404,6 +1654,9 @@
             </property>
             <property name="text">
              <string>Theta:</string>
+            </property>
+            <property name="buddy">
+             <cstring>edit6_A1</cstring>
             </property>
            </widget>
           </item>
@@ -1425,6 +1678,9 @@
             <property name="text">
              <string>2Theta:</string>
             </property>
+            <property name="buddy">
+             <cstring>edit6_A2</cstring>
+            </property>
            </widget>
           </item>
           <item row="1" column="1">
@@ -1444,6 +1700,9 @@
             </property>
             <property name="text">
              <string>d-Spacing:</string>
+            </property>
+            <property name="buddy">
+             <cstring>edit6_DM</cstring>
             </property>
            </widget>
           </item>
@@ -1475,7 +1734,16 @@
           <property name="verticalSpacing">
            <number>2</number>
           </property>
-          <property name="margin">
+          <property name="leftMargin">
+           <number>4</number>
+          </property>
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="rightMargin">
+           <number>4</number>
+          </property>
+          <property name="bottomMargin">
            <number>4</number>
           </property>
           <item row="0" column="0">
@@ -1488,6 +1756,9 @@
             </property>
             <property name="text">
              <string>Theta:</string>
+            </property>
+            <property name="buddy">
+             <cstring>edit6_A5</cstring>
             </property>
            </widget>
           </item>
@@ -1509,6 +1780,9 @@
             <property name="text">
              <string>2Theta:</string>
             </property>
+            <property name="buddy">
+             <cstring>edit6_A6</cstring>
+            </property>
            </widget>
           </item>
           <item row="1" column="1">
@@ -1528,6 +1802,9 @@
             </property>
             <property name="text">
              <string>d-Spacing:</string>
+            </property>
+            <property name="buddy">
+             <cstring>edit6_DA</cstring>
             </property>
            </widget>
           </item>
@@ -1559,7 +1836,16 @@
           <property name="verticalSpacing">
            <number>2</number>
           </property>
-          <property name="margin">
+          <property name="leftMargin">
+           <number>4</number>
+          </property>
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="rightMargin">
+           <number>4</number>
+          </property>
+          <property name="bottomMargin">
            <number>4</number>
           </property>
           <item row="0" column="0">
@@ -1572,6 +1858,9 @@
             </property>
             <property name="text">
              <string>Monitor/Timer:</string>
+            </property>
+            <property name="buddy">
+             <cstring>edit6_CurTime</cstring>
             </property>
            </widget>
           </item>
@@ -1593,6 +1882,9 @@
             <property name="text">
              <string>Preset:</string>
             </property>
+            <property name="buddy">
+             <cstring>edit6_Preset</cstring>
+            </property>
            </widget>
           </item>
           <item row="1" column="1">
@@ -1612,6 +1904,9 @@
             </property>
             <property name="text">
              <string>Counter:</string>
+            </property>
+            <property name="buddy">
+             <cstring>edit6_Counter</cstring>
             </property>
            </widget>
           </item>
@@ -1639,6 +1934,9 @@
             <property name="text">
              <string>x Data:</string>
             </property>
+            <property name="buddy">
+             <cstring>edit6_xDat</cstring>
+            </property>
            </widget>
           </item>
           <item row="4" column="0">
@@ -1651,6 +1949,9 @@
             </property>
             <property name="text">
              <string>y Data:</string>
+            </property>
+            <property name="buddy">
+             <cstring>edit6_yDat</cstring>
             </property>
            </widget>
           </item>
@@ -1702,6 +2003,7 @@
   <tabstop>checkPreview</tabstop>
   <tabstop>comboGUI</tabstop>
   <tabstop>spinNetPoll</tabstop>
+  <tabstop>checkAllowScanMerging</tabstop>
   <tabstop>editGenFont</tabstop>
   <tabstop>btnGenFont</tabstop>
   <tabstop>editGfxFont</tabstop>

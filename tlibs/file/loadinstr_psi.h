@@ -709,9 +709,9 @@ std::array<t_real, 4> FilePsi<t_real>::GetDeltaHKLE() const
 
 
 template<class t_real>
-bool FilePsi<t_real>::MergeWith(const FileInstrBase<t_real>* pDat)
+bool FilePsi<t_real>::MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch)
 {
-	if(!FileInstrBase<t_real>::MergeWith(pDat))
+	if(!FileInstrBase<t_real>::MergeWith(pDat, allow_col_mismatch))
 		return false;
 
 	std::string strNr = pDat->GetScanNumber();

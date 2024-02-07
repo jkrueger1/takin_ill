@@ -104,7 +104,7 @@ class MolDynFileDlg : public QFileDialog
 
 // ----------------------------------------------------------------------------
 MolDynDlg::MolDynDlg(QWidget* pParent) : QMainWindow{pParent},
-	m_sett{new QSettings{"takin", "moldyn"}}
+	m_sett{new QSettings{"takin", "moldyn", this}}
 {
 	setWindowTitle(QString(PROG_NAME) + QString(" Version ") + QString(PROG_VER));
 	this->setObjectName("moldyn");

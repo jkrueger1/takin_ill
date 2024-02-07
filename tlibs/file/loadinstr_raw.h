@@ -468,9 +468,9 @@ template<class t_real> std::string FileRaw<t_real>::GetMonErr() const
 
 
 template<class t_real>
-bool FileRaw<t_real>::MergeWith(const FileInstrBase<t_real>* pDat)
+bool FileRaw<t_real>::MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch)
 {
-	return FileInstrBase<t_real>::MergeWith(pDat);
+	return FileInstrBase<t_real>::MergeWith(pDat, allow_col_mismatch);
 }
 
 

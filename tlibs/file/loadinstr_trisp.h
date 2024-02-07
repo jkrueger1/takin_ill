@@ -372,9 +372,9 @@ std::array<t_real, 5> FileTrisp<t_real>::GetScanHKLKiKf(std::size_t i) const
 
 
 template<class t_real>
-bool FileTrisp<t_real>::MergeWith(const FileInstrBase<t_real>* pDat)
+bool FileTrisp<t_real>::MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch)
 {
-	return FileInstrBase<t_real>::MergeWith(pDat);
+	return FileInstrBase<t_real>::MergeWith(pDat, allow_col_mismatch);
 }
 
 template<class t_real> std::string FileTrisp<t_real>::GetTitle() const { return ""; }

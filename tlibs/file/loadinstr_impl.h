@@ -265,9 +265,9 @@ bool FileInstrBase<t_real>::MatchColumn(const std::string& strRegex,
 
 
 template<class t_real>
-bool FileInstrBase<t_real>::MergeWith(const FileInstrBase<t_real>* pDat)
+bool FileInstrBase<t_real>::MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch)
 {
-	if(this->GetColNames().size() != pDat->GetColNames().size())
+	if(!allow_col_mismatch && this->GetColNames().size() != pDat->GetColNames().size())
 	{
 		log_err("Cannot merge: Mismatching number of columns.");
 		return false;
@@ -278,13 +278,20 @@ bool FileInstrBase<t_real>::MergeWith(const FileInstrBase<t_real>* pDat)
 		t_vecVals& col1 = this->GetCol(strCol);
 		const t_vecVals& col2 = pDat->GetCol(strCol);
 
-		if(col1.size() == 0 || col2.size() == 0)
+		if(!allow_col_mismatch && (col1.size() == 0 || col2.size() == 0))
 		{
 			log_err("Cannot merge: Column \"", strCol, "\" is empty.");
 			return false;
 		}
 
 		col1.insert(col1.end(), col2.begin(), col2.end());
+
+		if(allow_col_mismatch)
+		{
+			// fill up to match number of rows
+			for(std::size_t i = col2.size(); i < pDat->GetScanCount(); ++i)
+				col1.push_back(0.);
+		}
 	}
 
 	return true;

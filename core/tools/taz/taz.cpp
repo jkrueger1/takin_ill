@@ -1176,117 +1176,6 @@ void TazDlg::closeEvent(QCloseEvent* pEvt)
 }
 
 
-void TazDlg::ShowNeutronDlg()
-{
-	if(!m_pNeutronDlg)
-	{
-		m_pNeutronDlg = new NeutronDlg(this, &m_settings);
-		QObject::connect(&m_sceneRecip, &ScatteringTriangleScene::paramsChanged,
-			m_pNeutronDlg, &NeutronDlg::paramsChanged);
-		m_sceneRecip.emitAllParams();
-	}
-
-	focus_dlg(m_pNeutronDlg);
-}
-
-
-void TazDlg::ShowTofDlg()
-{
-	if(!m_pTofDlg)
-		m_pTofDlg = new TOFDlg(this, &m_settings);
-
-	focus_dlg(m_pTofDlg);
-}
-
-
-void TazDlg::InitGoto()
-{
-	if(!m_pGotoDlg)
-	{
-		m_pGotoDlg = new GotoDlg(this, &m_settings);
-		m_pGotoDlg->SetD(editMonoD->text().toDouble(), editAnaD->text().toDouble());
-		m_pGotoDlg->SetSenses(checkSenseM->isChecked(), checkSenseS->isChecked(), checkSenseA->isChecked());
-		m_pGotoDlg->SetLattice(m_latticecommon.lattice);
-		m_pGotoDlg->SetScatteringPlane(m_latticecommon.dir0RLU, m_latticecommon.dir1RLU);
-	}
-}
-
-
-void TazDlg::ShowGotoDlg()
-{
-	InitGoto();
-	focus_dlg(m_pGotoDlg);
-}
-
-
-void TazDlg::InitElasticDlg()
-{
-	if(!m_pElasticDlg)
-	{
-		m_pElasticDlg = new ElasticDlg(this, &m_settings);
-		QObject::connect(m_pElasticDlg, &ElasticDlg::ChangedPosition, this, &TazDlg::VarsChanged);
-
-		m_pElasticDlg->SetD(editMonoD->text().toDouble(), editAnaD->text().toDouble());
-		m_pElasticDlg->SetSenses(checkSenseM->isChecked(), checkSenseS->isChecked(), checkSenseA->isChecked());
-		m_pElasticDlg->SetLattice(m_latticecommon.lattice);
-		m_pElasticDlg->SetScatteringPlane(m_latticecommon.dir0RLU, m_latticecommon.dir1RLU);
-	}
-}
-
-
-void TazDlg::ShowElasticDlg()
-{
-	InitElasticDlg();
-	focus_dlg(m_pElasticDlg);
-}
-
-
-void TazDlg::ShowPowderDlg()
-{
-	if(!m_pPowderDlg)
-	{
-		m_pPowderDlg = new PowderDlg(this, &m_settings);
-		QObject::connect(&m_sceneRecip, &ScatteringTriangleScene::paramsChanged,
-			m_pPowderDlg, &PowderDlg::paramsChanged);
-		m_sceneRecip.emitAllParams();
-	}
-
-	focus_dlg(m_pPowderDlg);
-}
-
-
-void TazDlg::ShowSettingsDlg()
-{
-	if(!m_pSettingsDlg)
-		m_pSettingsDlg = new SettingsDlg(this, &m_settings);
-
-	focus_dlg(m_pSettingsDlg);
-}
-
-
-void TazDlg::ShowScatteringFactorsDlg()
-{
-	if(!m_pScatteringFactorsDlg)
-		m_pScatteringFactorsDlg = new ScatteringFactorsDlg(this, &m_settings);
-
-	focus_dlg(m_pScatteringFactorsDlg);
-}
-
-
-void TazDlg::ShowDynPlaneDlg()
-{
-	if(!m_pDynPlaneDlg)
-	{
-		m_pDynPlaneDlg = new DynPlaneDlg(this, &m_settings);
-		QObject::connect(&m_sceneRecip, &ScatteringTriangleScene::paramsChanged,
-			m_pDynPlaneDlg, &DynPlaneDlg::RecipParamsChanged);
-		m_sceneRecip.emitAllParams();
-	}
-
-	focus_dlg(m_pDynPlaneDlg);
-}
-
-
 void TazDlg::UpdateDs()
 {
 	t_real dMonoD = editMonoD->text().toDouble();
@@ -1638,6 +1527,146 @@ void TazDlg::ShowRealParams()
 	focus_dlg(&m_dlgRealParam);
 }
 
+
+//--------------------------------------------------------------------------------
+// dialogs
+
+void TazDlg::ShowNeutronDlg()
+{
+	if(!m_pNeutronDlg)
+	{
+		m_pNeutronDlg = new NeutronDlg(this, &m_settings);
+		QObject::connect(&m_sceneRecip, &ScatteringTriangleScene::paramsChanged,
+						 m_pNeutronDlg, &NeutronDlg::paramsChanged);
+		m_sceneRecip.emitAllParams();
+	}
+
+	focus_dlg(m_pNeutronDlg);
+}
+
+
+void TazDlg::ShowTofDlg()
+{
+	if(!m_pTofDlg)
+		m_pTofDlg = new TOFDlg(this, &m_settings);
+
+	focus_dlg(m_pTofDlg);
+}
+
+
+void TazDlg::InitGoto()
+{
+	if(!m_pGotoDlg)
+	{
+		m_pGotoDlg = new GotoDlg(this, &m_settings);
+		m_pGotoDlg->SetD(editMonoD->text().toDouble(), editAnaD->text().toDouble());
+		m_pGotoDlg->SetSenses(checkSenseM->isChecked(), checkSenseS->isChecked(), checkSenseA->isChecked());
+		m_pGotoDlg->SetLattice(m_latticecommon.lattice);
+		m_pGotoDlg->SetScatteringPlane(m_latticecommon.dir0RLU, m_latticecommon.dir1RLU);
+	}
+}
+
+
+void TazDlg::ShowGotoDlg()
+{
+	InitGoto();
+	focus_dlg(m_pGotoDlg);
+}
+
+
+void TazDlg::InitElasticDlg()
+{
+	if(!m_pElasticDlg)
+	{
+		m_pElasticDlg = new ElasticDlg(this, &m_settings);
+		QObject::connect(m_pElasticDlg, &ElasticDlg::ChangedPosition, this, &TazDlg::VarsChanged);
+
+		m_pElasticDlg->SetD(editMonoD->text().toDouble(), editAnaD->text().toDouble());
+		m_pElasticDlg->SetSenses(checkSenseM->isChecked(), checkSenseS->isChecked(), checkSenseA->isChecked());
+		m_pElasticDlg->SetLattice(m_latticecommon.lattice);
+		m_pElasticDlg->SetScatteringPlane(m_latticecommon.dir0RLU, m_latticecommon.dir1RLU);
+	}
+}
+
+
+void TazDlg::ShowElasticDlg()
+{
+	InitElasticDlg();
+	focus_dlg(m_pElasticDlg);
+}
+
+
+void TazDlg::ShowPowderDlg()
+{
+	if(!m_pPowderDlg)
+	{
+		m_pPowderDlg = new PowderDlg(this, &m_settings);
+		QObject::connect(&m_sceneRecip, &ScatteringTriangleScene::paramsChanged,
+						 m_pPowderDlg, &PowderDlg::paramsChanged);
+		m_sceneRecip.emitAllParams();
+	}
+
+	focus_dlg(m_pPowderDlg);
+}
+
+
+void TazDlg::ShowSettingsDlg()
+{
+	if(!m_pSettingsDlg)
+		m_pSettingsDlg = new SettingsDlg(this, &m_settings);
+
+	focus_dlg(m_pSettingsDlg);
+}
+
+
+void TazDlg::ShowScatteringFactorsDlg()
+{
+	if(!m_pScatteringFactorsDlg)
+		m_pScatteringFactorsDlg = new ScatteringFactorsDlg(this, &m_settings);
+
+	focus_dlg(m_pScatteringFactorsDlg);
+}
+
+
+void TazDlg::ShowDynPlaneDlg()
+{
+	if(!m_pDynPlaneDlg)
+	{
+		m_pDynPlaneDlg = new DynPlaneDlg(this, &m_settings);
+		QObject::connect(&m_sceneRecip, &ScatteringTriangleScene::paramsChanged,
+						 m_pDynPlaneDlg, &DynPlaneDlg::RecipParamsChanged);
+		m_sceneRecip.emitAllParams();
+	}
+
+	focus_dlg(m_pDynPlaneDlg);
+}
+
+
+void TazDlg::ShowScanViewer()
+{
+	if(!m_pScanViewer)
+		m_pScanViewer = new ScanViewerDlg(this, &m_settings);
+
+	focus_dlg(m_pScanViewer);
+}
+
+
+void TazDlg::ShowScanPos()
+{
+	if(!m_pScanPos)
+		m_pScanPos = new ScanPosDlg(this, &m_settings);
+
+	focus_dlg(m_pScanPos);
+}
+
+
+void TazDlg::ShowPowderFit()
+{
+	if(!m_pPowderFit)
+		m_pPowderFit = new PowderFitDlg(this, &m_settings);
+
+	focus_dlg(m_pPowderFit);
+}
 
 
 //--------------------------------------------------------------------------------
