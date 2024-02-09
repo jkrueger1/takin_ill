@@ -1482,8 +1482,7 @@ public:
 
 		for(const ExchangeTerm& term : m_exchange_terms)
 		{
-			t_mat J = CalcRealJ(term);
-			// TODO: check if rotation is correct
+			t_mat J = CalcRealJ(term);  // Q=0 -> no rotation needed
 
 			t_vec Si = m_sites[term.site1].spin_mag * m_sites_calc[term.site1].v;
 			t_vec Sj = m_sites[term.site2].spin_mag * m_sites_calc[term.site2].v;
