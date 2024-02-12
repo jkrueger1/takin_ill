@@ -44,6 +44,8 @@ namespace pt = boost::property_tree;
 #include <boost/algorithm/string/replace.hpp>
 namespace algo = boost::algorithm;
 
+#include <boost/scope_exit.hpp>
+
 #include "../structfact/loadcif.h"
 #include "tlibs2/libs/algos.h"
 
@@ -52,7 +54,12 @@ using namespace tl2_ops;
 
 void BZDlg::NewFile()
 {
-	m_ignoreCalc = 1;
+	m_ignoreCalc = true;
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_ignoreCalc = false;
+		this_->CalcB(true);
+	} BOOST_SCOPE_EXIT_END
 
 	// clear old tables
 	DelSymOpTabItem(-1);
@@ -76,15 +83,17 @@ void BZDlg::NewFile()
 	m_cutD->setValue(0);
 	m_BZDrawOrder->setValue(4);
 	m_BZCalcOrder->setValue(4);
-
-	m_ignoreCalc = 0;
-	CalcB(true);
 }
 
 
 bool BZDlg::Load(const QString& filename, bool use_stdin)
 {
-	m_ignoreCalc = 1;
+	m_ignoreCalc = true;
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_ignoreCalc = false;
+		this_->CalcB(true);
+	} BOOST_SCOPE_EXIT_END
 
 	try
 	{
@@ -138,13 +147,10 @@ bool BZDlg::Load(const QString& filename, bool use_stdin)
 	catch(const std::exception& ex)
 	{
 		QMessageBox::critical(this, "Brillouin Zones", ex.what());
-		m_ignoreCalc = 0;
+		m_ignoreCalc = false;
 		return false;
 	}
 
-
-	m_ignoreCalc = 0;
-	CalcB(true);
 
 	return true;
 }
@@ -259,7 +265,12 @@ void BZDlg::Save()
  */
 void BZDlg::ImportCIF()
 {
-	m_ignoreCalc = 1;
+	m_ignoreCalc = true;
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_ignoreCalc = false;
+		this_->CalcB(true);
+	} BOOST_SCOPE_EXIT_END
 
 	try
 	{
@@ -301,10 +312,6 @@ void BZDlg::ImportCIF()
 	{
 		QMessageBox::critical(this, "Brillouin Zones", ex.what());
 	}
-
-
-	m_ignoreCalc = 0;
-	CalcB(true);
 }
 
 

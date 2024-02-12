@@ -1,5 +1,5 @@
 /**
- * brillouin zone tool
+ * brillouin zone tool -- 2d plot
  * @author Tobias Weber <tweber@ill.fr>
  * @date May-2022
  * @license GPLv3, see 'LICENSE' file
@@ -58,6 +58,8 @@ public:
 	void ClearCut();
 	void ClearCurves();
 
+	QPointF GetCentre() const;
+
 
 protected:
 	t_real m_scale = 100.;
@@ -73,6 +75,8 @@ class BZCutView : public QGraphicsView
 public:
 	BZCutView(BZCutScene* scene);
 	virtual ~BZCutView();
+
+	void Centre();
 
 
 protected:

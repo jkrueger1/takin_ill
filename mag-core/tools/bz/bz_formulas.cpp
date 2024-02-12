@@ -34,6 +34,8 @@
 #include <iostream>
 #include <tuple>
 
+#include <boost/scope_exit.hpp>
+
 #include "tlibs2/libs/phys.h"
 #include "tlibs2/libs/algos.h"
 #include "tlibs2/libs/qt/helper.h"
@@ -43,8 +45,14 @@ using namespace tl2_ops;
 
 void BZDlg::AddFormulaTabItem(int row, const std::string& formula)
 {
-	bool bclone = 0;
-	m_formulaIgnoreChanges = 1;
+	m_formulaIgnoreChanges = true;
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_formulaIgnoreChanges = false;
+		this_->CalcFormulas();
+	} BOOST_SCOPE_EXIT_END
+
+	bool bclone = false;
 
 	if(row == -1)	// append to end of table
 		row = m_formulas->rowCount();
@@ -55,7 +63,7 @@ void BZDlg::AddFormulaTabItem(int row, const std::string& formula)
 	else if(row == -4 && m_formulaCursorRow >= 0)	// use row from member variable +1
 	{
 		row = m_formulaCursorRow + 1;
-		bclone = 1;
+		bclone = true;
 	}
 
 	//bool sorting = m_formulas->isSortingEnabled();
@@ -78,15 +86,17 @@ void BZDlg::AddFormulaTabItem(int row, const std::string& formula)
 	m_formulas->setCurrentCell(row, 0);
 
 	m_formulas->setSortingEnabled(/*sorting*/ true);
-
-	m_formulaIgnoreChanges = 0;
-	CalcFormulas();
 }
 
 
 void BZDlg::DelFormulaTabItem(int begin, int end)
 {
-	m_formulaIgnoreChanges = 1;
+	m_formulaIgnoreChanges = true;
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_formulaIgnoreChanges = false;
+		this_->CalcFormulas();
+	} BOOST_SCOPE_EXIT_END
 
 	// if nothing is selected, clear all items
 	if(begin == -1 || m_formulas->selectedItems().count() == 0)
@@ -104,15 +114,17 @@ void BZDlg::DelFormulaTabItem(int begin, int end)
 		for(int row=end-1; row>=begin; --row)
 			m_formulas->removeRow(row);
 	}
-
-	m_formulaIgnoreChanges = 0;
-	CalcFormulas();
 }
 
 
 void BZDlg::MoveFormulaTabItemUp()
 {
-	m_formulaIgnoreChanges = 1;
+	m_formulaIgnoreChanges = true;
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_formulaIgnoreChanges = false;
+	} BOOST_SCOPE_EXIT_END
+
 	m_formulas->setSortingEnabled(false);
 
 	auto selected = GetSelectedFormulaRows(false);
@@ -141,14 +153,17 @@ void BZDlg::MoveFormulaTabItemUp()
 				m_formulas->item(row, col)->setSelected(true);
 		}
 	}
-
-	m_formulaIgnoreChanges = 0;
 }
 
 
 void BZDlg::MoveFormulaTabItemDown()
 {
-	m_formulaIgnoreChanges = 1;
+	m_formulaIgnoreChanges = true;
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_formulaIgnoreChanges = false;
+	} BOOST_SCOPE_EXIT_END
+
 	m_formulas->setSortingEnabled(false);
 
 	auto selected = GetSelectedFormulaRows(true);
@@ -177,8 +192,6 @@ void BZDlg::MoveFormulaTabItemDown()
 				m_formulas->item(row, col)->setSelected(true);
 		}
 	}
-
-	m_formulaIgnoreChanges = 0;
 }
 
 

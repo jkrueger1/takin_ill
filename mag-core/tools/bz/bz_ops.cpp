@@ -35,6 +35,8 @@
 #include <iostream>
 #include <tuple>
 
+#include <boost/scope_exit.hpp>
+
 #include "tlibs2/libs/phys.h"
 #include "tlibs2/libs/algos.h"
 #include "tlibs2/libs/qt/helper.h"
@@ -44,8 +46,15 @@ using namespace tl2_ops;
 
 void BZDlg::AddSymOpTabItem(int row, const t_mat& op)
 {
-	bool bclone = 0;
-	m_symOpIgnoreChanges = 1;
+	m_symOpIgnoreChanges = true;
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_symOpIgnoreChanges = false;
+		this_->CalcBZ(true);
+	} BOOST_SCOPE_EXIT_END
+
+
+	bool bclone = false;
 
 	if(row == -1)	// append to end of table
 		row = m_symops->rowCount();
@@ -56,7 +65,7 @@ void BZDlg::AddSymOpTabItem(int row, const t_mat& op)
 	else if(row == -4 && m_symOpCursorRow >= 0)	// use row from member variable +1
 	{
 		row = m_symOpCursorRow + 1;
-		bclone = 1;
+		bclone = true;
 	}
 
 	//bool sorting = m_symops->isSortingEnabled();
@@ -82,15 +91,17 @@ void BZDlg::AddSymOpTabItem(int row, const t_mat& op)
 	m_symops->setCurrentCell(row, 0);
 
 	m_symops->setSortingEnabled(/*sorting*/ true);
-
-	m_symOpIgnoreChanges = 0;
-	CalcBZ(true);
 }
 
 
 void BZDlg::DelSymOpTabItem(int begin, int end)
 {
-	m_symOpIgnoreChanges = 1;
+	m_symOpIgnoreChanges = true;
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_symOpIgnoreChanges = false;
+		this_->CalcBZ(true);
+	} BOOST_SCOPE_EXIT_END
 
 	// if nothing is selected, clear all items
 	if(begin == -1 || m_symops->selectedItems().count() == 0)
@@ -108,15 +119,17 @@ void BZDlg::DelSymOpTabItem(int begin, int end)
 		for(int row=end-1; row>=begin; --row)
 			m_symops->removeRow(row);
 	}
-
-	m_symOpIgnoreChanges = 0;
-	CalcBZ(true);
 }
 
 
 void BZDlg::MoveSymOpTabItemUp()
 {
-	m_symOpIgnoreChanges = 1;
+	m_symOpIgnoreChanges = true;
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_symOpIgnoreChanges = false;
+	} BOOST_SCOPE_EXIT_END
+
 	m_symops->setSortingEnabled(false);
 
 	auto selected = GetSelectedSymOpRows(false);
@@ -145,14 +158,17 @@ void BZDlg::MoveSymOpTabItemUp()
 				m_symops->item(row, col)->setSelected(true);
 		}
 	}
-
-	m_symOpIgnoreChanges = 0;
 }
 
 
 void BZDlg::MoveSymOpTabItemDown()
 {
-	m_symOpIgnoreChanges = 1;
+	m_symOpIgnoreChanges = true;
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_symOpIgnoreChanges = false;
+	} BOOST_SCOPE_EXIT_END
+
 	m_symops->setSortingEnabled(false);
 
 	auto selected = GetSelectedSymOpRows(true);
@@ -181,8 +197,6 @@ void BZDlg::MoveSymOpTabItemDown()
 				m_symops->item(row, col)->setSelected(true);
 		}
 	}
-
-	m_symOpIgnoreChanges = 0;
 }
 
 
@@ -270,7 +284,6 @@ void BZDlg::GetSymOpsFromSG()
 		}
 
 		// remove original symops
-		//DelSymOpTabItem(0, orgRowCnt);
 		DelSymOpTabItem(-1);
 
 		// add symops

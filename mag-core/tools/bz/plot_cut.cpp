@@ -1,5 +1,5 @@
 /**
- * brillouin zone tool
+ * brillouin zone tool -- 2d plot
  * @author Tobias Weber <tweber@ill.fr>
  * @date May-2022
  * @license GPLv3, see 'LICENSE' file
@@ -144,6 +144,21 @@ void BZCutScene::ClearCurves()
 	m_curves.clear();
 }
 
+
+/**
+ * get the centre of the brillouin zone
+ */
+QPointF BZCutScene::GetCentre() const
+{
+	QPointF centre{0, 0};
+
+	for(const QGraphicsItem* item : m_bzcut)
+		centre += item->pos();
+	centre /= qreal(m_bzcut.size());
+
+	return centre;
+}
+
 // --------------------------------------------------------------------------------
 
 
@@ -163,6 +178,19 @@ BZCutView::BZCutView(BZCutScene* scene)
 
 BZCutView::~BZCutView()
 {
+}
+
+
+/**
+ * centre the view
+ */
+void BZCutView::Centre()
+{
+	QPointF centre{0, 0};
+	if(m_scene)
+		centre = m_scene->GetCentre();
+
+	centerOn(centre);
 }
 
 

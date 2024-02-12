@@ -202,19 +202,17 @@ BZDlg::BZDlg(QWidget* pParent) : QDialog{pParent},
 		tabGrid->addWidget(m_editGamma, y,3,1,1);
 
 
-		// table CustomContextMenu
+		// context menu
 		m_symOpContextMenu = new QMenu(m_symops);
 		m_symOpContextMenu->addAction("Add Symmetry Operation Before", this, [this]() { this->AddSymOpTabItem(-2); });
 		m_symOpContextMenu->addAction("Add Symmetry Operation After", this, [this]() { this->AddSymOpTabItem(-3); });
 		m_symOpContextMenu->addAction("Clone Symmetry Operation", this, [this]() { this->AddSymOpTabItem(-4); });
 		m_symOpContextMenu->addAction("Delete Symmetry Operation", this, [this]() { BZDlg::DelSymOpTabItem(); });
 
-
-		// table CustomContextMenu in case nothing is selected
+		// context menu in case nothing is selected
 		m_symOpContextMenuNoItem = new QMenu(m_symops);
 		m_symOpContextMenuNoItem->addAction("Add Symmetry Operation", this, [this]() { this->AddSymOpTabItem(); });
 		m_symOpContextMenuNoItem->addAction("Delete Symmetry Operation", this, [this]() { BZDlg::DelSymOpTabItem(); });
-		//m_symOpContextMenuNoItem->addSeparator();
 
 
 		// signals
@@ -700,8 +698,9 @@ BZDlg::BZDlg(QWidget* pParent) : QDialog{pParent},
 
 	setAcceptDrops(true);
 
-	m_symOpIgnoreChanges = 0;
-	m_formulaIgnoreChanges = 0;
+	m_symOpIgnoreChanges = false;
+	m_formulaIgnoreChanges = false;
+	CalcB(true);
 }
 
 
@@ -710,7 +709,8 @@ BZDlg::BZDlg(QWidget* pParent) : QDialog{pParent},
  */
 void BZDlg::dragEnterEvent(QDragEnterEvent *evt)
 {
-	if(evt) evt->accept();
+	if(evt)
+		evt->accept();
 }
 
 

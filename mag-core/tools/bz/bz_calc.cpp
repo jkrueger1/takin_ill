@@ -46,8 +46,6 @@ using namespace tl2_ops;
  */
 void BZDlg::SetDrawOrder(int order, bool recalc)
 {
-	//std::cout << "draw order: " << order << std::endl;
-
 	// already calculated?
 	if(order != m_drawOrder)
 	{
@@ -72,8 +70,6 @@ void BZDlg::SetDrawOrder(int order, bool recalc)
  */
 void BZDlg::SetCalcOrder(int order, bool recalc)
 {
-	//std::cout << "calc order: " << order << std::endl;
-
 	// already calculated?
 	if(order != m_calcOrder)
 	{
@@ -381,6 +377,7 @@ void BZDlg::CalcBZCut()
 	// draw cut
 	m_bzscene->ClearAll();
 	m_bzscene->AddCut(cut_lines);
+	m_bzview->Centre();
 
 
 	// get description of the cut plane

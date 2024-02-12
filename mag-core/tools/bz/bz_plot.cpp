@@ -1,5 +1,5 @@
 /**
- * brillouin zone tool
+ * brillouin zone tool -- 3d plot
  * @author Tobias Weber <tweber@ill.fr>
  * @date May-2022
  * @license GPLv3, see 'LICENSE' file
@@ -112,11 +112,12 @@ void BZDlg::ShowBZPlot()
 
 
 /**
- * show or hide the coordinate system
+ * show or hide the coordinate cross
  */
 void BZDlg::PlotShowCoordCross(bool show)
 {
-	if(!m_plot) return;
+	if(!m_plot)
+		return;
 
 	if(auto obj = m_plot->GetRenderer()->GetCoordCross(); obj)
 	{
@@ -131,7 +132,8 @@ void BZDlg::PlotShowCoordCross(bool show)
  */
 void BZDlg::PlotShowLabels(bool show)
 {
-	if(!m_plot) return;
+	if(!m_plot)
+		return;
 
 	m_plot->GetRenderer()->SetLabelsVisible(show);
 	m_plot->update();
@@ -143,7 +145,8 @@ void BZDlg::PlotShowLabels(bool show)
  */
 void BZDlg::PlotShowPlane(bool show)
 {
-	if(!m_plot) return;
+	if(!m_plot)
+		return;
 
 	m_plot->GetRenderer()->SetObjectVisible(m_plane, show);
 	m_plot->update();
@@ -155,7 +158,8 @@ void BZDlg::PlotShowPlane(bool show)
  */
 void BZDlg::PlotAddVoronoiVertex(const t_vec& pos)
 {
-	if(!m_plot) return;
+	if(!m_plot)
+		return;
 
 	t_real_gl r = 0, g = 0, b = 1;
 	t_real_gl scale = 1;
@@ -168,7 +172,6 @@ void BZDlg::PlotAddVoronoiVertex(const t_vec& pos)
 	m_plot->GetRenderer()->SetObjectMatrix(obj,
 		tl2::hom_translation<t_mat_gl>(posx, posy, posz) *
 		tl2::hom_scaling<t_mat_gl>(scale, scale, scale));
-	//m_plot->GetRenderer()->SetObjectLabel(obj, "Voronoi Vertex");
 
 	m_plotObjs.push_back(obj);
 	m_plot->update();
@@ -180,7 +183,8 @@ void BZDlg::PlotAddVoronoiVertex(const t_vec& pos)
  */
 void BZDlg::PlotAddBraggPeak(const t_vec& pos)
 {
-	if(!m_plot) return;
+	if(!m_plot)
+		return;
 
 	t_real_gl r = 1, g = 0, b = 0;
 	t_real_gl scale = 1;
@@ -193,7 +197,6 @@ void BZDlg::PlotAddBraggPeak(const t_vec& pos)
 	m_plot->GetRenderer()->SetObjectMatrix(obj,
 		tl2::hom_translation<t_mat_gl>(posx, posy, posz) *
 		tl2::hom_scaling<t_mat_gl>(scale, scale, scale));
-	//m_plot->GetRenderer()->SetObjectLabel(obj, "Voronoi Vertex");
 
 	m_plotObjs.push_back(obj);
 	m_plot->update();
@@ -205,8 +208,8 @@ void BZDlg::PlotAddBraggPeak(const t_vec& pos)
  */
 void BZDlg::PlotAddTriangles(const std::vector<t_vec>& _vecs)
 {
-	if(!m_plot) return;
-	if(_vecs.size() < 3) return;
+	if(!m_plot || _vecs.size() < 3)
+		return;
 
 	t_real_gl r = 1, g = 0, b = 0;
 	std::vector<t_vec3_gl> vecs, norms;
@@ -254,7 +257,8 @@ void BZDlg::PlotAddTriangles(const std::vector<t_vec>& _vecs)
  */
 void BZDlg::PlotSetPlane(const t_vec& _norm, t_real d)
 {
-	if(!m_plot) return;
+	if(!m_plot)
+		return;
 
 	t_vec3_gl norm = tl2::convert<t_vec3_gl>(_norm);
 	t_vec3_gl norm_old = tl2::create<t_vec3_gl>({ 0, 0, 1 });
@@ -271,7 +275,8 @@ void BZDlg::PlotSetPlane(const t_vec& _norm, t_real d)
 
 void BZDlg::ClearBZPlot()
 {
-	if(!m_plot) return;
+	if(!m_plot)
+		return;
 
 	for(std::size_t obj : m_plotObjs)
 		m_plot->GetRenderer()->RemoveObject(obj);
@@ -357,7 +362,8 @@ void BZDlg::PlotMouseUp(
 
 void BZDlg::AfterGLInitialisation()
 {
-	if(!m_plot) return;
+	if(!m_plot)
+		return;
 
 	// reference sphere and plane for linked objects
 	m_sphere = m_plot->GetRenderer()->AddSphere(0.05, 0.,0.,0., 1.,1.,1.,1.);
