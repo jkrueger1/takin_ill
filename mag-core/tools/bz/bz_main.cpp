@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * mag-core (part of the Takin software suite)
- * Copyright (C) 2018-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2018-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * "misc" project
  * Copyright (C) 2017-2021  Tobias WEBER (privately developed).
@@ -34,7 +34,7 @@
 	#include <QtWidgets/QApplication>
 #endif
 
-#include "bzlib.h"
+#include "bz_lib.h"
 #include "bz_conf.h"
 
 #include <iostream>

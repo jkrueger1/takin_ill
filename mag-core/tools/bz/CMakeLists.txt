@@ -40,19 +40,13 @@ set(CMAKE_VERBOSE_MAKEFILE TRUE)
 
 # options
 option(USE_QT "use Qt" TRUE)
+option(MAKE_LIB "create a library" FALSE)
 option(USE_BOOST_PROGOPTS "use Boost.program_options" TRUE)
 option(USE_SCRIPTING "use scripting" FALSE)
 
 
 # system specific settings
 message("Building for ${CMAKE_SYSTEM_NAME} systems.")
-
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-	# pass linker --subsystem option
-	add_compile_options(-Wl,--subsystem,windows)
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-	add_compile_options(-mmacosx-version-min=10.15)
-endif()
 
 
 if(USE_BOOST_PROGOPTS)
@@ -108,7 +102,7 @@ if(USE_QT)
 		globals.cpp globals.h
 		bz_formulas.cpp
 		plot_cut.cpp plot_cut.h
-		bzlib.h
+		bz_lib.h
 		../../tlibs2/libs/qt/recent.cpp ../../tlibs2/libs/qt/recent.h
 		../../tlibs2/libs/qt/gl.cpp ../../tlibs2/libs/qt/gl.h
 		../../tlibs2/libs/qt/glplot.cpp ../../tlibs2/libs/qt/glplot.h)
@@ -123,7 +117,7 @@ else()
 	add_definitions(-DDONT_USE_QT)
 
 	add_executable(takin_bz
-		bz_main.cpp bzlib.h
+		bz_main.cpp bz_lib.h
 		bz_conf.cpp bz_conf.h
 		globals.cpp globals.h
 		ops.h
@@ -140,6 +134,25 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 	target_link_options(takin_bz
 		# create an __info_plist section in the binary
 		PRIVATE LINKER:-sectcreate,__TEXT,__info_plist,${PROJECT_SOURCE_DIR}/../../setup_mac/InfoBZ.plist
+	)
+endif()
+
+
+if(MAKE_LIB)
+	message("Compiling as library.")
+
+	add_library(takinbz
+		bz_lib.cpp bz_lib.h
+		bz_conf.cpp bz_conf.h
+		globals.cpp globals.h
+		ops.h
+	)
+
+	target_compile_definitions(takinbz PUBLIC -DDONT_USE_QT)
+
+	target_link_libraries(takinbz
+		${Boost_LIBRARIES}
+		${Qhull_LIBRARIES}
 	)
 endif()
 
@@ -179,4 +192,12 @@ if(USE_SCRIPTING)
 	endif()
 else()
 	message("Scripting disabled.")
+endif()
+
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+	# pass linker --subsystem option
+	target_compile_options(takin_bz PUBLIC -Wl,--subsystem,windows)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+	target_compile_options(takin_bz PUBLIC -mmacosx-version-min=10.15)
 endif()

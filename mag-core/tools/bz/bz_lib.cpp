@@ -1,7 +1,7 @@
 /**
- * brillouin zone tool
+ * brillouin zone tool -- library
  * @author Tobias Weber <tweber@ill.fr>
- * @date Maz-2022
+ * @date February-2024
  * @license GPLv3, see 'LICENSE' file
  *
  * ----------------------------------------------------------------------------
@@ -25,36 +25,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef __BZTOOL_GLOBALS_H__
-#define __BZTOOL_GLOBALS_H__
+#include "bz_lib.h"
+#include "globals.h"
 
 
-#include <boost/math/quaternion.hpp>
-namespace math = boost::math;
-
-#include "tlibs2/libs/maths.h"
-
-
-using t_real = double;
-using t_vec = tl2::vec<t_real, std::vector>;
-using t_mat = tl2::mat<t_real, std::vector>;
-using t_quat = math::quaternion<t_real>;
-
-extern t_real g_eps;
-extern int g_prec;
-extern int g_prec_gui;
-
-extern void set_eps(t_real eps, int prec = -1);
-
-
-#ifndef DONT_USE_QT
-	#include "tlibs2/libs/qt/gl.h"
-
-	using t_real_gl = tl2::t_real_gl;
-	using t_vec2_gl = tl2::t_vec2_gl;
-	using t_vec3_gl = tl2::t_vec3_gl;
-	using t_vec_gl = tl2::t_vec_gl;
-	using t_mat_gl = tl2::t_mat_gl;
-#endif
-
-#endif
+template class BZCalc<t_mat, t_vec, t_real>;
