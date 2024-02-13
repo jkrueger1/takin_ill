@@ -10,4 +10,5 @@ authors:
     affiliation: "Institut Laue-Langevin (ILL), Grenoble, France"
 abstract: "An inelastic neutron scattering software suite."
 type: software
+doi: 10.1016/j.softx.2023.101471
 repository-code: "https://github.com/illgrenoble/takin"
