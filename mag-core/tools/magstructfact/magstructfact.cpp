@@ -167,8 +167,8 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 
 
 		auto pTabGrid = new QGridLayout(m_nucleipanel);
-		pTabGrid->setSpacing(2);
-		pTabGrid->setContentsMargins(4,4,4,4);
+		pTabGrid->setSpacing(4);
+		pTabGrid->setContentsMargins(6, 6, 6, 6);
 		int y = 0;
 		//pTabGrid->addWidget(m_plot.get(), y,0,1,4);
 		pTabGrid->addWidget(m_nuclei, y,0,1,4);
@@ -276,8 +276,8 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 
 
 		auto pTabGrid = new QGridLayout(m_propvecpanel);
-		pTabGrid->setSpacing(2);
-		pTabGrid->setContentsMargins(4,4,4,4);
+		pTabGrid->setSpacing(4);
+		pTabGrid->setContentsMargins(6, 6, 6, 6);
 		int y = 0;
 		pTabGrid->addWidget(m_propvecs, y,0,1,4);
 		pTabGrid->addWidget(pTabBtnAdd, ++y,0,1,1);
@@ -321,7 +321,7 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 		auto sfactpanel = new QWidget(this);
 		auto pGrid = new QGridLayout(sfactpanel);
 		pGrid->setSpacing(4);
-		pGrid->setContentsMargins(4,4,4,4);
+		pGrid->setContentsMargins(6, 6, 6, 6);
 
 		m_structfacts = new QPlainTextEdit(sfactpanel);
 		m_structfacts->setReadOnly(true);
@@ -355,7 +355,7 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 		auto powderpanel = new QWidget(this);
 		auto pGrid = new QGridLayout(powderpanel);
 		pGrid->setSpacing(4);
-		pGrid->setContentsMargins(4,4,4,4);
+		pGrid->setContentsMargins(6, 6, 6, 6);
 
 		m_powderlines = new QPlainTextEdit(powderpanel);
 		m_powderlines->setReadOnly(true);
@@ -372,7 +372,7 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 		auto mmpanel = new QWidget(this);
 		auto pGrid = new QGridLayout(mmpanel);
 		pGrid->setSpacing(4);
-		pGrid->setContentsMargins(4,4,4,4);
+		pGrid->setContentsMargins(6, 6, 6, 6);
 
 		m_moments = new QPlainTextEdit(mmpanel);
 		m_moments->setReadOnly(true);
@@ -410,7 +410,7 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 		auto infopanel = new QWidget(this);
 		auto pGrid = new QGridLayout(infopanel);
 		pGrid->setSpacing(4);
-		pGrid->setContentsMargins(4,4,4,4);
+		pGrid->setContentsMargins(6, 6, 6, 6);
 
 		// table grid
 		for(int i=0; i<4; ++i)
@@ -462,7 +462,7 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 	// main grid
 	auto pmainGrid = new QGridLayout(this);
 	pmainGrid->setSpacing(4);
-	pmainGrid->setContentsMargins(4,4,4,4);
+	pmainGrid->setContentsMargins(8, 8, 8, 8);
 	pmainGrid->addWidget(tabs, 0,0, 1,1);
 
 
@@ -556,8 +556,8 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 				labCoordSys->setSizePolicy(QSizePolicy{QSizePolicy::Fixed, QSizePolicy::Fixed});
 
 				auto grid = new QGridLayout(m_dlgPlot);
-				grid->setSpacing(2);
-				grid->setContentsMargins(4,4,4,4);
+				grid->setSpacing(4);
+				grid->setContentsMargins(6, 6, 6, 6);
 				grid->addWidget(m_plot.get(), 0,0,1,2);
 				grid->addWidget(labCoordSys, 1,0,1,1);
 				grid->addWidget(comboCoordSys, 1,1,1,1);
@@ -619,8 +619,8 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 				labCoordSys->setSizePolicy(QSizePolicy{QSizePolicy::Fixed, QSizePolicy::Fixed});
 
 				auto grid = new QGridLayout(m_dlgPlotSC);
-				grid->setSpacing(2);
-				grid->setContentsMargins(4,4,4,4);
+				grid->setSpacing(4);
+				grid->setContentsMargins(6, 6, 6, 6);
 				grid->addWidget(m_plotSC.get(), 0,0,1,2);
 				grid->addWidget(labCoordSys, 1,0,1,1);
 				grid->addWidget(comboCoordSys, 1,1,1,1);

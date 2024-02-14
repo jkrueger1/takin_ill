@@ -255,8 +255,6 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 			m_autocalc->setChecked(*optVal);
 		if(auto optVal = magdyn.get_optional<bool>("config.use_DMI"))
 			m_use_dmi->setChecked(*optVal);
-		if(auto optVal = magdyn.get_optional<bool>("config.use_genJ"))
-			m_use_genJ->setChecked(*optVal);
 		if(auto optVal = magdyn.get_optional<bool>("config.use_field"))
 			m_use_field->setChecked(*optVal);
 		if(auto optVal = magdyn.get_optional<bool>("config.use_temperature"))
@@ -323,6 +321,19 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 			m_xtalangles[1]->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<t_real>("xtal.gamma"))
 			m_xtalangles[2]->setValue(*optVal);
+		if(auto optVal = magdyn.get_optional<bool>("config.use_genJ"))
+		{
+			if(!m_allow_general_J && *optVal)
+			{
+				QMessageBox::warning(this, "Magnetic Structure",
+					"This file requires support for general exchange matrices J, "
+					"please activate them in the preferences.");
+			}
+			else
+			{
+				m_use_genJ->setChecked(*optVal);
+			}
+		}
 
 		m_dyn.Load(magdyn);
 
@@ -593,7 +604,10 @@ bool MagDynDlg::ImportStructure(const QString& filename)
 			}
 
 			if(propvecs->size() > 1)
-				QMessageBox::warning(this, "Magnetic Structure", "Only one propagation vector is supported.");
+			{
+				QMessageBox::warning(this, "Magnetic Structure",
+					"Only one propagation vector is supported.");
+			}
 		}
 	}
 	catch(const std::exception& ex)

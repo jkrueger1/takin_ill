@@ -167,8 +167,8 @@ StructFactDlg::StructFactDlg(QWidget* pParent) : QDialog{pParent},
 
 
 		auto pTabGrid = new QGridLayout(nucleipanel);
-		pTabGrid->setSpacing(2);
-		pTabGrid->setContentsMargins(4,4,4,4);
+		pTabGrid->setSpacing(4);
+		pTabGrid->setContentsMargins(6, 6, 6, 6);
 		int y=0;
 		//pTabGrid->addWidget(m_plot.get(), y,0,1,4);
 		pTabGrid->addWidget(m_nuclei, y,0,1,4);
@@ -233,7 +233,7 @@ StructFactDlg::StructFactDlg(QWidget* pParent) : QDialog{pParent},
 		auto sfactpanel = new QWidget(this);
 		auto pGrid = new QGridLayout(sfactpanel);
 		pGrid->setSpacing(4);
-		pGrid->setContentsMargins(4,4,4,4);
+		pGrid->setContentsMargins(6, 6, 6, 6);
 
 		m_structfacts = new QPlainTextEdit(sfactpanel);
 		m_structfacts->setReadOnly(true);
@@ -266,7 +266,7 @@ StructFactDlg::StructFactDlg(QWidget* pParent) : QDialog{pParent},
 		auto powderpanel = new QWidget(this);
 		auto pGrid = new QGridLayout(powderpanel);
 		pGrid->setSpacing(4);
-		pGrid->setContentsMargins(4,4,4,4);
+		pGrid->setContentsMargins(6, 6, 6, 6);
 
 		m_powderlines = new QPlainTextEdit(powderpanel);
 		m_powderlines->setReadOnly(true);
@@ -328,8 +328,8 @@ StructFactDlg::StructFactDlg(QWidget* pParent) : QDialog{pParent},
 
 
 		auto pTabGrid = new QGridLayout(findsgpanel);
-		pTabGrid->setSpacing(2);
-		pTabGrid->setContentsMargins(4,4,4,4);
+		pTabGrid->setSpacing(4);
+		pTabGrid->setContentsMargins(6, 6, 6, 6);
 		int y=0;
 		pTabGrid->addWidget(m_nuclei_FindSG, y,0,1,4);
 		pTabGrid->addWidget(m_sgmatches, ++y,0,1,4);
@@ -372,7 +372,7 @@ StructFactDlg::StructFactDlg(QWidget* pParent) : QDialog{pParent},
 		auto infopanel = new QWidget(this);
 		auto pGrid = new QGridLayout(infopanel);
 		pGrid->setSpacing(4);
-		pGrid->setContentsMargins(4,4,4,4);
+		pGrid->setContentsMargins(6, 6, 6, 6);
 
 		// table grid
 		for(int i=0; i<4; ++i)
@@ -424,7 +424,7 @@ StructFactDlg::StructFactDlg(QWidget* pParent) : QDialog{pParent},
 	// main grid
 	auto pmainGrid = new QGridLayout(this);
 	pmainGrid->setSpacing(4);
-	pmainGrid->setContentsMargins(4,4,4,4);
+	pmainGrid->setContentsMargins(8, 8, 8, 8);
 	pmainGrid->addWidget(tabs, 0,0, 1,1);
 
 

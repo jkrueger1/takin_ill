@@ -105,7 +105,7 @@ TrafoCalculator::TrafoCalculator(QWidget* pParent, QSettings *sett)
 	// rotation grid
 	auto grid_rotation = new QGridLayout(rotationPanel);
 	grid_rotation->setSpacing(4);
-	grid_rotation->setContentsMargins(8, 8, 8, 8);
+	grid_rotation->setContentsMargins(6, 6, 6, 6);
 	grid_rotation->addWidget(labelAxis, 0, 0, 1, 1);
 	grid_rotation->addWidget(m_spinAxis[0], 0, 1, 1, 1);
 	grid_rotation->addWidget(m_spinAxis[1], 0, 2, 1, 1);
@@ -121,7 +121,7 @@ TrafoCalculator::TrafoCalculator(QWidget* pParent, QSettings *sett)
 	// main grid
 	auto grid_dlg = new QGridLayout(this);
 	grid_dlg->setSpacing(4);
-	grid_dlg->setContentsMargins(12, 12, 12, 12);
+	grid_dlg->setContentsMargins(8, 8, 8, 8);
 	grid_dlg->addWidget(tabs, 0, 0, 1, 1);
 	grid_dlg->addWidget(buttons, 1, 0, 1, 1);
 

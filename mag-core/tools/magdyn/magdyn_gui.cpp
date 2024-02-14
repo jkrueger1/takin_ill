@@ -138,7 +138,7 @@ void MagDynDlg::CreateMainWindow()
 	// main grid
 	m_maingrid = new QGridLayout(this);
 	m_maingrid->setSpacing(4);
-	m_maingrid->setContentsMargins(6, 6, 6, 6);
+	m_maingrid->setContentsMargins(8, 8, 8, 8);
 	m_maingrid->addWidget(m_split_inout, 0,0, 1,9);
 	m_maingrid->addWidget(m_statusFixed, 1,0, 1,1);
 	m_maingrid->addWidget(m_status, 1,1, 1,3);
@@ -1961,7 +1961,7 @@ void MagDynDlg::CreateInfoDlg()
 		m_info_dlg, &QDialog::accept);
 
 	auto dlgGrid = new QGridLayout(m_info_dlg);
-	dlgGrid->setSpacing(8);
+	dlgGrid->setSpacing(4);
 	dlgGrid->setContentsMargins(8, 8, 8, 8);
 	dlgGrid->addWidget(infopanel, 0,0, 1,4);
 	dlgGrid->addWidget(infoDlgOk, 1,3, 1,1);

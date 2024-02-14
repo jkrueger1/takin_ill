@@ -47,6 +47,7 @@ void MagDynDlg::ShowStructurePlot()
 		m_structplot_dlg = new QDialog(this);
 		m_structplot_dlg->setWindowTitle("Structure Viewer");
 		m_structplot_dlg->setFont(this->font());
+		m_structplot_dlg->setSizeGripEnabled(true);
 
 		m_structplot = new tl2::GlPlot(this);
 		m_structplot->GetRenderer()->SetRestrictCamTheta(false);
@@ -76,8 +77,8 @@ void MagDynDlg::ShowStructurePlot()
 		m_structplot_context->addAction(acCentre);
 
 		auto grid = new QGridLayout(m_structplot_dlg);
-		grid->setSpacing(2);
-		grid->setContentsMargins(4,4,4,4);
+		grid->setSpacing(4);
+		grid->setContentsMargins(6, 6, 6, 6);
 		grid->addWidget(m_structplot, 0,0,1,2);
 		grid->addWidget(m_structplot_coordcross, 1,0,1,1);
 		grid->addWidget(m_structplot_labels, 1,1,1,1);

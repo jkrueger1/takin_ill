@@ -160,7 +160,7 @@ public:
 		// general settings
 		QWidget *panelGeneral = new QWidget(this);
 		QGridLayout *gridGeneral = new QGridLayout(panelGeneral);
-		gridGeneral->setSpacing(6);
+		gridGeneral->setSpacing(4);
 		gridGeneral->setContentsMargins(6, 6, 6, 6);
 
 		// create the settings table
@@ -202,7 +202,7 @@ public:
 		// gui settings
 		QWidget *panelGui = new QWidget(this);
 		QGridLayout *gridGui = new QGridLayout(panelGui);
-		gridGui->setSpacing(6);
+		gridGui->setSpacing(4);
 		gridGui->setContentsMargins(6, 6, 6, 6);
 		int yGui = 0;
 
@@ -296,7 +296,7 @@ public:
 		// main grid
 		QGridLayout *grid = new QGridLayout(this);
 		grid->setSpacing(4);
-		grid->setContentsMargins(12, 12, 12, 12);
+		grid->setContentsMargins(8, 8, 8, 8);
 		int y = 0;
 
 		QTabWidget *tab = new QTabWidget(this);
