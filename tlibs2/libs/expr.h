@@ -71,7 +71,7 @@
 namespace tl2 {
 
 
-template<class t_num=double>
+template<class t_num = double>
 t_num expr_modfunc(t_num t1, t_num t2)
 {
 	if constexpr(std::is_floating_point_v<t_num>)
@@ -87,7 +87,7 @@ t_num expr_modfunc(t_num t1, t_num t2)
 }
 
 
-template<class t_num=double>
+template<class t_num = double>
 t_num expr_binop(char op, t_num val_left, t_num val_right)
 {
 	switch(op)
@@ -104,7 +104,7 @@ t_num expr_binop(char op, t_num val_left, t_num val_right)
 }
 
 
-template<class t_num=double>
+template<class t_num = double>
 t_num expr_unop(char op, t_num val)
 {
 	switch(op)
@@ -117,14 +117,14 @@ t_num expr_unop(char op, t_num val)
 }
 
 
-template<typename t_num=double> class ExprParser;
+template<typename t_num = double> class ExprParser;
 
 
 // ------------------------------------------------------------------------
 // vm
 // ------------------------------------------------------------------------
 
-template<typename t_num=double>
+template<typename t_num = double>
 class ExprVM
 {
 public:
@@ -285,7 +285,7 @@ private:
 // ------------------------------------------------------------------------
 // ast
 // ------------------------------------------------------------------------
-template<typename t_num=double>
+template<typename t_num = double>
 class ExprAST
 {
 public:
@@ -298,7 +298,7 @@ public:
 };
 
 
-template<typename t_num=double>
+template<typename t_num = double>
 class ExprASTBinOp : public ExprAST<t_num>
 {
 public:
@@ -349,7 +349,7 @@ private:
 };
 
 
-template<typename t_num=double>
+template<typename t_num = double>
 class ExprASTUnOp : public ExprAST<t_num>
 {
 public:
@@ -390,7 +390,7 @@ private:
 };
 
 
-template<typename t_num=double>
+template<typename t_num = double>
 class ExprASTVar : public ExprAST<t_num>
 {
 public:
@@ -428,7 +428,7 @@ private:
 };
 
 
-template<typename t_num=double>
+template<typename t_num = double>
 class ExprASTValue : public ExprAST<t_num>
 {
 public:
@@ -464,7 +464,7 @@ private:
 };
 
 
-template<typename t_num=double>
+template<typename t_num = double>
 class ExprASTCall : public ExprAST<t_num>
 {
 public:
@@ -574,9 +574,10 @@ public:
 	/**
 	 * parse a given string into an ast (and generate code)
 	 */
-	bool parse(const std::string& str, bool codegen=true)
+	bool parse(const std::string& str, bool codegen = true)
 	{
 		m_code.clear();
+		m_ast = nullptr;
 
 		m_istr = std::make_shared<std::istringstream>(str);
 		next_lookahead();
@@ -584,7 +585,11 @@ public:
 		// no input given?
 		bool at_eof = (m_lookahead == (int)Token::TOK_INVALID || m_lookahead == (int)Token::TOK_END);
 		if(at_eof)
+		{
+			// interpret empty input as 0
+			m_ast = std::make_shared<ExprASTValue<t_num>>(t_num{});
 			return false;
+		}
 
 		m_ast = plus_term();
 
@@ -616,6 +621,12 @@ public:
 				code.read(reinterpret_cast<char*>(m_code.data()), code_size);
 			}
 		}
+		else
+		{
+			// interpret invalid input as 0
+			if(m_invalid_0)
+				m_ast = std::make_shared<ExprASTValue<t_num>>(t_num{});
+		}
 
 		return ok;
 	}
@@ -624,7 +635,7 @@ public:
 	/**
 	 * evaluate the ast (or execute the code)
 	 */
-	t_num eval()
+	t_num eval() const
 	{
 		// is compiled code available?
 		if(m_code.size())
@@ -638,6 +649,7 @@ public:
 			std::cerr << "Warning: No code available, interpreting AST." << std::endl;
 		if(!m_ast)
 			throw std::runtime_error("Invalid AST.");
+
 		return m_ast->eval(*this);
 	}
 
@@ -1306,6 +1318,12 @@ public:
 	}
 
 
+	void SetInvalid0(bool b)
+	{
+		m_invalid_0 = b;
+	}
+
+
 	void SetAutoregisterVariables(bool b)
 	{
 		m_autoregister_var = b;
@@ -1315,6 +1333,9 @@ public:
 private:
 	// debug output
 	bool m_debug = false;
+
+	// interpret invalid input as 0
+	bool m_invalid_0 = true;
 
 	// automatically register unknown variable
 	bool m_autoregister_var = true;
