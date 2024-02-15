@@ -2086,11 +2086,11 @@ void MagDynDlg::CreateMenuBar()
 	m_use_temperature->setToolTip("Enables the Bose factor.");
 	m_use_temperature->setCheckable(true);
 	m_use_temperature->setChecked(true);
-	m_use_weights = new QAction("Use Spectral Weights", menuCalc);
+	m_use_weights = new QAction("Use Neutron Spectral Weights", menuCalc);
 	m_use_weights->setToolTip("Enables calculation of the spin correlation function.");
 	m_use_weights->setCheckable(true);
 	m_use_weights->setChecked(true);
-	m_use_projector = new QAction("Use Neutron Weights", menuCalc);
+	m_use_projector = new QAction("Use Neutron Projector", menuCalc);
 	m_use_projector->setToolTip("Enables the neutron orthogonal projector.");
 	m_use_projector->setCheckable(true);
 	m_use_projector->setChecked(true);
