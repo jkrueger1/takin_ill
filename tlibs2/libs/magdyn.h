@@ -177,7 +177,8 @@ struct t_MagneticSiteCalc
 {
 	t_vec spin_dir{};        // spin direction
 
-	t_vec u{}, u_conj{};     // spin orthogonal vector
+	t_vec u{};               // spin orthogonal vector
+	t_vec u_conj{};
 	t_vec v{};               // spin vector
 };
 
@@ -583,8 +584,122 @@ public:
 
 		m_sites = std::move(newsites);
 		RemoveDuplicateMagneticSites();
-
 		//CalcMagneticSites();
+	}
+
+
+	/**
+	 * generate symmetric exchange terms based on the given symops
+	 */
+	void SymmetriseExchangeTerms(const std::vector<t_mat_real>& symops)
+	{
+		ExchangeTerms newterms;
+		tl2::ExprParser parser = GetExprParser();
+
+		// create unit cell site vectors
+		std::vector<t_vec_real> sites_uc;
+		sites_uc.reserve(m_sites.size());
+		for(const MagneticSite& site : m_sites)
+			sites_uc.push_back(tl2::create<t_vec_real>({
+				site.pos[0], site.pos[1], site.pos[2], 1. }));
+
+		for(const ExchangeTerm& term : m_exchange_terms)
+		{
+			// check if indices are valid
+			if(term.site1 >= sites_uc.size() || term.site2 >= sites_uc.size())
+			{
+				std::cerr << "Error: Site indices " << term.site1 << ", "
+					<< term.site2 << " are out of bounds." << std::endl;
+				continue;
+			}
+
+			// super cell distance vector
+			t_vec_real dist_sc = tl2::create<t_vec_real>({
+				term.dist[0], term.dist[1], term.dist[2], 0. });
+
+			// generate new (possibly supercell) sites with symop
+			auto sites1_sc = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
+				sites_uc[term.site1], symops, m_eps,
+				false /*keep in uc*/, true /*ignore occupied*/, true);
+			auto sites2_sc = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
+				sites_uc[term.site2] + dist_sc, symops, m_eps,
+				false /*keep in uc*/, true /*ignore occupied*/, true);
+
+			// generate new dmi vectors
+			t_vec_real dmi = tl2::zero<t_vec_real>(4);
+
+			for(int dmi_idx = 0; dmi_idx < 3; ++dmi_idx)
+			{
+				if(term.dmi[dmi_idx] == "")
+					continue;
+				if(parser.parse(term.dmi[dmi_idx]))
+					dmi[dmi_idx] = parser.eval().real();
+				else
+					std::cerr << "Error parsing DMI component " << dmi_idx
+						<< " of term " << term.index << "."
+						<< std::endl;
+			}
+
+			auto newdmis = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
+				dmi, symops, m_eps, false, true);
+
+			// generate new general J matrices
+			t_real Jgen_arr[3][3]{};
+
+			for(int J_idx1 = 0; J_idx1 < 3; ++J_idx1)
+				for(int J_idx2 = 0; J_idx2 < 3; ++J_idx2)
+				{
+					if(term.Jgen[J_idx1][J_idx2] == "")
+						continue;
+					if(parser.parse(term.Jgen[J_idx1][J_idx2]))
+						Jgen_arr[J_idx1][J_idx2] = parser.eval().real();
+					else
+						std::cerr << "Error parsing general J component ("
+							<< J_idx1 << ", " << J_idx2
+							<< ") of term " << term.index << "."
+							<< std::endl;
+				}
+
+			t_mat_real Jgen = tl2::create<t_mat_real>({
+				Jgen_arr[0][0], Jgen_arr[0][1], Jgen_arr[0][2], 0,
+				Jgen_arr[1][0], Jgen_arr[1][1], Jgen_arr[1][2], 0,
+				Jgen_arr[2][0], Jgen_arr[2][1], Jgen_arr[2][2], 0,
+				0,              0,              0,              0 });
+
+			auto newJgens = tl2::apply_ops_hom<t_mat_real, t_real>(Jgen, symops);
+
+			// iterate and insert generated couplings
+			for(t_size op_idx = 0; op_idx < sites1_sc.size(); ++op_idx)
+			{
+				// get position of the site in the supercell
+				auto [sc1_ok, site1_sc_idx, sc1] = tl2::get_supercell(sites1_sc[op_idx], sites_uc, 3, m_eps);
+				auto [sc2_ok, site2_sc_idx, sc2] = tl2::get_supercell(sites2_sc[op_idx], sites_uc, 3, m_eps);
+
+				if(!sc1_ok || !sc2_ok)
+				{
+					std::cerr << "Could not find supercell for position generated from symop "
+						<< op_idx << "." << std::endl;
+				}
+
+				ExchangeTerm newterm = term;
+				newterm.site1 = site1_sc_idx;
+				newterm.site2 = site2_sc_idx;
+				newterm.dist = sc2 - sc1;
+				for(int idx1 = 0; idx1 < 3; ++idx1)
+				{
+					newterm.dmi[idx1] = tl2::var_to_str(newdmis[op_idx][idx1]);
+					for(int idx2 = 0; idx2 < 3; ++idx2)
+						newterm.Jgen[idx1][idx2] = tl2::var_to_str(newJgens[op_idx](idx1, idx2));
+				}
+				newterm.name += "_" + tl2::var_to_str(op_idx);
+
+				newterms.emplace_back(std::move(newterm));
+			}
+		}
+
+		m_exchange_terms = std::move(newterms);
+		RemoveDuplicateExchangeTerms();
+		//CalcExchangeTerms();
 	}
 
 
@@ -597,21 +712,27 @@ public:
 				if(tl2::equals<t_vec_real>(iter1->pos, iter2->pos, m_eps))
 					iter2 = m_sites.erase(iter2);
 				else
-					++iter2;
+					std::advance(iter2, 1);
 			}
 		}
 	}
 
 
-	/**
-	 * generate symmetric exchange terms based on the given symops
-	 */
-	void SymmetriseExchangeTerms(const std::vector<t_mat_real>& symops)
+	void RemoveDuplicateExchangeTerms()
 	{
-		ExchangeTerms newterms;
+		for(auto iter1 = m_exchange_terms.begin(); iter1 != m_exchange_terms.end(); ++iter1)
+		{
+			for(auto iter2 = std::next(iter1, 1); iter2 != m_exchange_terms.end();)
+			{
+				bool same_uc = (iter1->site1 == iter2->site1 && iter1->site2 == iter2->site2);
+				bool same_sc = tl2::equals<t_vec_real>(iter1->dist, iter2->dist, m_eps);
 
-		m_exchange_terms = std::move(newterms);
-		//CalcExchangeTerms();
+				if(same_uc && same_sc)
+					iter2 = m_exchange_terms.erase(iter2);
+				else
+					std::advance(iter2, 1);
+			}
+		}
 	}
 	// --------------------------------------------------------------------
 

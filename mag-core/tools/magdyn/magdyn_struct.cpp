@@ -157,21 +157,28 @@ void MagDynDlg::SetCurrentField()
  */
 void MagDynDlg::GenerateSitesFromSG()
 {
-	// symops of current space group
-	auto sgidx = m_comboSG->itemData(m_comboSG->currentIndex()).toInt();
-	if(sgidx < 0 || t_size(sgidx) >= m_SGops.size())
+	try
 	{
-		QMessageBox::critical(this, "Magnetic Dynamics",
-			"Invalid space group selected.");
-		return;
+		// symops of current space group
+		auto sgidx = m_comboSG->itemData(m_comboSG->currentIndex()).toInt();
+		if(sgidx < 0 || t_size(sgidx) >= m_SGops.size())
+		{
+			QMessageBox::critical(this, "Magnetic Dynamics",
+				"Invalid space group selected.");
+			return;
+		}
+
+		SyncToKernel();
+		m_dyn.SymmetriseMagneticSites(m_SGops[sgidx]);
+		SyncSitesFromKernel();
+
+		if(m_autocalc->isChecked())
+			CalcAll();
 	}
-
-	SyncToKernel();
-	m_dyn.SymmetriseMagneticSites(m_SGops[sgidx]);
-	SyncSitesFromKernel();
-
-	if(m_autocalc->isChecked())
-		CalcAll();
+	catch(const std::exception& ex)
+	{
+		QMessageBox::critical(this, "Magnetic Dynamics", ex.what());
+	}
 }
 
 
@@ -181,239 +188,23 @@ void MagDynDlg::GenerateSitesFromSG()
  */
 void MagDynDlg::GenerateCouplingsFromSG()
 {
-	BOOST_SCOPE_EXIT(this_)
-	{
-		this_->m_ignoreCalc = false;
-		if(this_->m_autocalc->isChecked())
-			this_->CalcAll();
-	} BOOST_SCOPE_EXIT_END
-	m_ignoreCalc = true;
-
 	try
 	{
 		// symops of current space group
-		auto sgidx = m_comboSG2->itemData(m_comboSG2->currentIndex()).toInt();
+		auto sgidx = m_comboSG->itemData(m_comboSG->currentIndex()).toInt();
 		if(sgidx < 0 || t_size(sgidx) >= m_SGops.size())
 		{
-			QMessageBox::critical(this, "Magnetic Dynamics", "Invalid space group selected.");
+			QMessageBox::critical(this, "Magnetic Dynamics",
+				"Invalid space group selected.");
 			return;
 		}
 
-		std::vector<std::tuple<
-			std::string,                           // ident
-			t_size, t_size,                        // uc magnetic site indices
-			t_real, t_real, t_real,                // supercell vector
-			std::string,                           // exchange term (not modified)
-			std::string, std::string, std::string, // dmi vector
-			std::string, std::string, std::string, //
-			std::string, std::string, std::string, // general exchange matrix
-			std::string, std::string, std::string, //
-			std::string                            // colour
-			>> generatedcouplings;
+		SyncToKernel();
+		m_dyn.SymmetriseExchangeTerms(m_SGops[sgidx]);
+		SyncTermsFromKernel();
 
-		// avoids duplicate coupling terms
-		auto remove_duplicate_terms = [&generatedcouplings]()
-		{
-			for(auto iter1 = generatedcouplings.begin(); iter1 != generatedcouplings.end(); ++iter1)
-			{
-				for(auto iter2 = std::next(iter1, 1); iter2 != generatedcouplings.end();)
-				{
-					bool same_uc_idx1 = (std::get<1>(*iter1) == std::get<1>(*iter2));
-					bool same_uc_idx2 = (std::get<2>(*iter1) == std::get<2>(*iter2));
-
-					bool same_sc_x = tl2::equals<t_real>(std::get<3>(*iter1), std::get<3>(*iter2), g_eps);
-					bool same_sc_y = tl2::equals<t_real>(std::get<4>(*iter1), std::get<4>(*iter2), g_eps);
-					bool same_sc_z = tl2::equals<t_real>(std::get<5>(*iter1), std::get<5>(*iter2), g_eps);
-
-					if(same_uc_idx1 && same_uc_idx2 && same_sc_x && same_sc_y && same_sc_z)
-						iter2 = generatedcouplings.erase(iter2);
-					else
-						++iter2;
-				}
-			}
-		};
-
-		const auto& sites = m_dyn.GetMagneticSites();
-		const auto& ops = m_SGops[sgidx];
-
-		// get all site positions in unit cell in homogeneous coordinates
-		std::vector<t_vec_real> sites_uc;
-		sites_uc.reserve(sites.size());
-		for(const auto& site : sites)
-			sites_uc.push_back(tl2::create<t_vec_real>({
-				site.pos[0], site.pos[1], site.pos[2], 1. }));
-
-		// if no previous coupling terms are available, add default ones
-		if(!m_termstab->rowCount())
-		{
-			AddTermTabItem(-1, "term",
-				0, 1,                             // magnetic site indices
-				t_real(0), t_real(0), t_real(0),  // dist
-				"-1",                             // J
-				"0", "0", "0.1");                 // dmi
-		}
-
-		tl2::ExprParser parser = m_dyn.GetExprParser();
-
-		// iterate existing coupling terms
-		for(int row=0; row<m_termstab->rowCount(); ++row)
-		{
-			std::string ident = m_termstab->item(row, COL_XCH_NAME)->text().toStdString();
-
-			t_real sc_x = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_termstab->item(row, COL_XCH_DIST_X))->GetValue();
-			t_real sc_y = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_termstab->item(row, COL_XCH_DIST_Y))->GetValue();
-			t_real sc_z = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_termstab->item(row, COL_XCH_DIST_Z))->GetValue();
-
-			// have to evaluate the dmi vector here, because we can't transform its expression symbolically yet
-			bool dmi_x_ok = parser.parse(
-				m_termstab->item(row, COL_XCH_DMI_X)->text().toStdString());
-			t_real dmi_x = parser.eval().real();
-			bool dmi_y_ok = parser.parse(
-				m_termstab->item(row, COL_XCH_DMI_Y)->text().toStdString());
-			t_real dmi_y = parser.eval().real();
-			bool dmi_z_ok = parser.parse(
-				m_termstab->item(row, COL_XCH_DMI_Z)->text().toStdString());
-			t_real dmi_z = parser.eval().real();
-
-			if(!dmi_x_ok || !dmi_y_ok || !dmi_z_ok)
-				std::cerr << "Could not parse DMI vector expression." << std::endl;
-
-			// have to evaluate the general interaction matrix here, because we can't transform its expression symbolically yet
-			t_real genJ_xx = 0, genJ_xy = 0, genJ_xz = 0;
-			t_real genJ_yx = 0, genJ_yy = 0, genJ_yz = 0;
-			t_real genJ_zx = 0, genJ_zy = 0, genJ_zz = 0;
-			if(m_allow_general_J)
-			{
-				bool genJ_xx_ok = parser.parse(
-					m_termstab->item(row, COL_XCH_GEN_XX)->text().toStdString());
-				genJ_xx = parser.eval().real();
-				bool genJ_xy_ok = parser.parse(
-					m_termstab->item(row, COL_XCH_GEN_XY)->text().toStdString());
-				genJ_xy = parser.eval().real();
-				bool genJ_xz_ok = parser.parse(
-					m_termstab->item(row, COL_XCH_GEN_XZ)->text().toStdString());
-				genJ_xz = parser.eval().real();
-				bool genJ_yx_ok = parser.parse(
-					m_termstab->item(row, COL_XCH_GEN_YX)->text().toStdString());
-				genJ_yx = parser.eval().real();
-				bool genJ_yy_ok = parser.parse(
-					m_termstab->item(row, COL_XCH_GEN_YY)->text().toStdString());
-				genJ_yy = parser.eval().real();
-				bool genJ_yz_ok = parser.parse(
-					m_termstab->item(row, COL_XCH_GEN_YZ)->text().toStdString());
-				genJ_yz = parser.eval().real();
-				bool genJ_zx_ok = parser.parse(
-					m_termstab->item(row, COL_XCH_GEN_ZX)->text().toStdString());
-				genJ_zx = parser.eval().real();
-				bool genJ_zy_ok = parser.parse(
-					m_termstab->item(row, COL_XCH_GEN_ZY)->text().toStdString());
-				genJ_zy = parser.eval().real();
-				bool genJ_zz_ok = parser.parse(
-					m_termstab->item(row, COL_XCH_GEN_ZZ)->text().toStdString());
-				genJ_zz = parser.eval().real();
-
-				if(!genJ_xx_ok || !genJ_xy_ok || !genJ_xz_ok ||
-					!genJ_yx_ok || !genJ_yy_ok || !genJ_yz_ok ||
-					!genJ_zx_ok || !genJ_zy_ok || !genJ_zz_ok)
-					std::cerr << "Could not parse general interaction matrix expression."
-						<< std::endl;
-			}
-
-			std::string rgb = m_termstab->item(row, COL_XCH_RGB)->text().toStdString();
-			std::string oldJ = m_termstab->item(row, COL_XCH_INTERACTION)->text().toStdString();
-
-			auto atom_1_idx = GetTermAtomIndex(row, 0);
-			auto atom_2_idx = GetTermAtomIndex(row, 1);
-
-			if(!atom_1_idx || !atom_2_idx)
-			{
-				std::cerr << "Site indices for term " << row << " (\""
-					<< ident << "\") are invalid, skipping." << std::endl;
-				continue;
-			}
-
-			// magnetic site positions in unit cell
-			if(*atom_1_idx >= sites_uc.size() || *atom_2_idx >= sites_uc.size())
-			{
-				std::cerr << "Site indices for term " << row << " (\""
-					<< ident << "\") are out of bounds, skipping." << std::endl;
-				continue;
-			}
-			const t_vec_real& site1 = sites_uc[*atom_1_idx];
-			t_vec_real site2 = sites_uc[*atom_2_idx];
-
-			// position in super cell
-			site2 += tl2::create<t_vec_real>({ sc_x, sc_y, sc_z, 0. });
-
-			// generate new (possibly supercell) sites with symop
-			auto sites1_sc = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
-				site1, ops, g_eps, false /*keep in uc*/, true /*ignore occupied*/, true);
-			auto sites2_sc = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
-				site2, ops, g_eps, false /*keep in uc*/, true /*ignore occupied*/, true);
-
-			// generate dmi vectors
-			t_vec_real dmi = tl2::create<t_vec_real>({ dmi_x, dmi_y, dmi_z, 0 });
-			auto newdmis = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
-				dmi, ops, g_eps, false, true);
-
-			// generate general J matrices
-			t_mat_real Jgen = tl2::create<t_mat_real>({
-				genJ_xx, genJ_xy, genJ_xz,  0,
-				genJ_yx, genJ_yy, genJ_yz,  0,
-				genJ_zx, genJ_zy, genJ_zz,  0,
-				0,             0,       0,  0
-			});
-			auto newJgens = tl2::apply_ops_hom<t_mat_real, t_real>(Jgen, ops);
-
-			for(t_size op_idx=0; op_idx<sites1_sc.size(); ++op_idx)
-			{
-				const t_vec_real& site1_sc = sites1_sc[op_idx];
-				const t_vec_real& site2_sc = sites2_sc[op_idx];
-				const t_vec_real& newdmi = newdmis[op_idx];
-				const t_mat_real& newJgen = newJgens[op_idx];
-
-				// get position of the site in the supercell
-				auto [sc1_ok, site1_sc_idx, sc1] = tl2::get_supercell(site1_sc, sites_uc, 3, g_eps);
-				auto [sc2_ok, site2_sc_idx, sc2] = tl2::get_supercell(site2_sc, sites_uc, 3, g_eps);
-				t_vec_real sc_dist = sc2 - sc1;
-
-				if(!sc1_ok || !sc2_ok)
-				{
-					std::cerr << "Could not find supercell for position generated from symop "
-						<< op_idx << "." << std::endl;
-				}
-
-				generatedcouplings.emplace_back(std::make_tuple(
-					ident + "_" + tl2::var_to_str(op_idx), site1_sc_idx, site2_sc_idx,
-					sc_dist[0], sc_dist[1], sc_dist[2], oldJ,
-					tl2::var_to_str(newdmi[0]), tl2::var_to_str(newdmi[1]), tl2::var_to_str(newdmi[2]),
-					tl2::var_to_str(newJgen(0,0)), tl2::var_to_str(newJgen(0,1)), tl2::var_to_str(newJgen(0,2)),
-					tl2::var_to_str(newJgen(1,0)), tl2::var_to_str(newJgen(1,1)), tl2::var_to_str(newJgen(1,2)),
-					tl2::var_to_str(newJgen(2,0)), tl2::var_to_str(newJgen(2,1)), tl2::var_to_str(newJgen(2,2)),
-					rgb));
-			}
-
-			remove_duplicate_terms();
-		}
-
-		if(!generatedcouplings.size())
-		{
-			QMessageBox::critical(this, "Magnetic Dynamics", "No couplings could be generated.");
-			return;
-		}
-
-		// remove original couplings
-		DelTabItem(m_termstab, -1);
-
-		// add new couplings
-		for(const auto& coupling : generatedcouplings)
-		{
-			std::apply(&MagDynDlg::AddTermTabItem,
-				std::tuple_cat(std::make_tuple(this, -1), coupling));
-		}
+		if(m_autocalc->isChecked())
+			CalcAll();
 	}
 	catch(const std::exception& ex)
 	{
@@ -473,8 +264,8 @@ void MagDynDlg::GeneratePossibleCouplings()
 		t_real b = m_xtallattice[1]->value();
 		t_real c = m_xtallattice[2]->value();
 		t_real alpha = m_xtalangles[0]->value() / 180. * tl2::pi<t_real>;
-		t_real beta = m_xtalangles[1]->value()/ 180. * tl2::pi<t_real>;
-		t_real gamma = m_xtalangles[2]->value()/ 180. * tl2::pi<t_real>;
+		t_real beta = m_xtalangles[1]->value() / 180. * tl2::pi<t_real>;
+		t_real gamma = m_xtalangles[2]->value() / 180. * tl2::pi<t_real>;
 		t_mat_real A = tl2::A_matrix<t_mat_real>(a, b, c, alpha, beta, gamma);
 
 		std::vector<PossibleCoupling> couplings;
@@ -621,6 +412,14 @@ std::optional<t_size> MagDynDlg::GetTermAtomIndex(int row, int num) const
  */
 void MagDynDlg::SyncSitesFromKernel(boost::optional<const pt::ptree&> extra_infos)
 {
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_ignoreCalc = false;
+	} BOOST_SCOPE_EXIT_END
+
+	// prevent syncing before the new sites are transferred
+	m_ignoreCalc = true;
+
 	// clear old sites
 	DelTabItem(m_sitestab, -1);
 
@@ -666,6 +465,14 @@ void MagDynDlg::SyncSitesFromKernel(boost::optional<const pt::ptree&> extra_info
  */
 void MagDynDlg::SyncTermsFromKernel(boost::optional<const pt::ptree&> extra_infos)
 {
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_ignoreCalc = false;
+	} BOOST_SCOPE_EXIT_END
+
+	// prevent syncing before the new terms are transferred
+	m_ignoreCalc = true;
+
 	// clear old terms
 	DelTabItem(m_termstab, -1);
 
