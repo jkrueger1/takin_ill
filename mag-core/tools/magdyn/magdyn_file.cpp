@@ -31,7 +31,6 @@
 #include <boost/asio.hpp>
 namespace asio = boost::asio;
 
-#include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 namespace pt = boost::property_tree;
 
@@ -71,7 +70,7 @@ void MagDynDlg::Clear()
 	BOOST_SCOPE_EXIT(this_)
 	{
 		this_->m_ignoreCalc = false;
-		//this_->SyncSitesAndTerms();
+		//this_->SyncToKernel();
 		this_->StructPlotSync();
 	} BOOST_SCOPE_EXIT_END
 	m_ignoreCalc = true;
@@ -182,7 +181,7 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 				if(calc_dynamics)
 					this_->CalcAll();
 				else
-					this_->SyncSitesAndTerms();
+					this_->SyncToKernel();
 			}
 		} BOOST_SCOPE_EXIT_END
 		m_ignoreCalc = true;
@@ -216,7 +215,7 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 			}
 		}
 
-		const auto &magdyn = node.get_child("magdyn");
+		const pt::ptree &magdyn = node.get_child("magdyn");
 
 		// settings
 		if(auto optVal = magdyn.get_optional<t_real>("config.h_start"))
@@ -385,44 +384,10 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 		}
 
 		// get site entries for reading additional infos
-		auto sites = magdyn.get_child_optional("atom_sites");
+		boost::optional<const pt::ptree&> site_infos = magdyn.get_child_optional("atom_sites");
 
-		// atom sites
-		for(const auto &site : m_dyn.GetMagneticSites())
-		{
-			t_real S = site.spin_mag;
-
-			// default colour
-			std::string rgb = "auto";
-
-			// get additional data from exchange term entry
-			if(sites && site.index < sites->size())
-			{
-				auto siteiter = (*sites).begin();
-				std::advance(siteiter, site.index);
-
-				// read colour
-				rgb = siteiter->second.get<std::string>("colour", "auto");
-			}
-
-			std::string spin_ortho_x = site.spin_ortho[0];
-			std::string spin_ortho_y = site.spin_ortho[1];
-			std::string spin_ortho_z = site.spin_ortho[2];
-
-			if(spin_ortho_x == "")
-				spin_ortho_x = "auto";
-			if(spin_ortho_y == "")
-				spin_ortho_y = "auto";
-			if(spin_ortho_z == "")
-				spin_ortho_z = "auto";
-
-			AddSiteTabItem(-1,
-				site.name,
-				site.pos[0], site.pos[1], site.pos[2],
-				site.spin_dir[0], site.spin_dir[1], site.spin_dir[2], S,
-				spin_ortho_x, spin_ortho_y, spin_ortho_z,
-				rgb);
-		}
+		// magnetic sites
+		SyncSitesFromKernel(site_infos);
 
 		// get exchange terms entries for reading additional infos
 		auto terms = magdyn.get_child_optional("exchange_terms");
@@ -529,7 +494,7 @@ bool MagDynDlg::ImportStructure(const QString& filename)
 			this_->m_ignoreCalc = false;
 			if(this_->m_autocalc->isChecked())
 			{
-				this_->SyncSitesAndTerms();
+				this_->SyncToKernel();
 			}
 		} BOOST_SCOPE_EXIT_END
 		m_ignoreCalc = true;
@@ -657,7 +622,7 @@ bool MagDynDlg::Save(const QString& filename)
 {
 	try
 	{
-		SyncSitesAndTerms();
+		SyncToKernel();
 
 		// properties tree
 		pt::ptree magdyn;
@@ -759,9 +724,9 @@ bool MagDynDlg::Save(const QString& filename)
 		{
 			auto siteiter = (*sites).begin();
 
-			for(std::size_t site_idx = 0; site_idx < std::size_t(m_termstab->rowCount()); ++site_idx)
+			for(std::size_t site_idx = 0; site_idx < std::size_t(m_sitestab->rowCount()); ++site_idx)
 			{
-				// set additional data from exchange term entry
+				// set additional data from site entry
 				if(site_idx >= sites->size())
 					break;
 

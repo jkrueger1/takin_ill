@@ -57,6 +57,8 @@
 #include <unordered_map>
 #include <optional>
 
+#include <boost/property_tree/ptree.hpp>
+
 #include "tlibs2/libs/magdyn.h"
 #include "tlibs2/libs/qt/numerictablewidgetitem.h"
 #include "tlibs2/libs/qt/recent.h"
@@ -425,8 +427,11 @@ protected:
 	void GeneratePossibleCouplings();
 
 	std::optional<t_size> GetTermAtomIndex(int row, int num) const;
-	void SyncSitesAndTerms();
-	void CalcAll();          // syncs sites and terms and calculates all dynamics
+
+	// transfer sites from the kernel
+	void SyncSitesFromKernel(boost::optional<const boost::property_tree::ptree&> extra_infos = boost::none);
+	void SyncToKernel();         // transfer all data to the kernel
+	void CalcAll();              // syncs sites and terms and calculates all dynamics
 
 	void PlotDispersion();
 

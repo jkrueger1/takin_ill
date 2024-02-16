@@ -32,6 +32,8 @@
 #include <iostream>
 #include <boost/scope_exit.hpp>
 
+namespace pt = boost::property_tree;
+
 
 
 /**
@@ -155,125 +157,21 @@ void MagDynDlg::SetCurrentField()
  */
 void MagDynDlg::GenerateSitesFromSG()
 {
-	BOOST_SCOPE_EXIT(this_)
+	// symops of current space group
+	auto sgidx = m_comboSG->itemData(m_comboSG->currentIndex()).toInt();
+	if(sgidx < 0 || t_size(sgidx) >= m_SGops.size())
 	{
-		this_->m_ignoreCalc = false;
-		if(this_->m_autocalc->isChecked())
-			this_->CalcAll();
-	} BOOST_SCOPE_EXIT_END
-	m_ignoreCalc = true;
-
-	try
-	{
-		// symops of current space group
-		auto sgidx = m_comboSG->itemData(m_comboSG->currentIndex()).toInt();
-		if(sgidx < 0 || t_size(sgidx) >= m_SGops.size())
-		{
-			QMessageBox::critical(this, "Magnetic Dynamics",
-				"Invalid space group selected.");
-			return;
-		}
-
-		const auto& ops = m_SGops[sgidx];
-		std::vector<std::tuple<
-			std::string,                           // 0: name
-			t_real, t_real, t_real,                // 1-3: position
-			std::string, std::string, std::string, // 4-6: spin direction
-			t_real,                                // 7: spin magnitude
-			std::string, std::string, std::string, // 8-10: spin orthogonal plane
-			std::string                            // 11: colour
-			>> generatedsites;
-
-		// avoids multiple occupation of the same site
-		auto remove_duplicate_sites = [&generatedsites]()
-		{
-			for(auto iter1 = generatedsites.begin(); iter1 != generatedsites.end(); ++iter1)
-			{
-				for(auto iter2 = std::next(iter1, 1); iter2 != generatedsites.end();)
-				{
-					bool same_x = tl2::equals<t_real>(std::get<1>(*iter1), std::get<1>(*iter2), g_eps);
-					bool same_y = tl2::equals<t_real>(std::get<2>(*iter1), std::get<2>(*iter2), g_eps);
-					bool same_z = tl2::equals<t_real>(std::get<3>(*iter1), std::get<3>(*iter2), g_eps);
-
-					if(same_x && same_y && same_z)
-						iter2 = generatedsites.erase(iter2);
-					else
-						++iter2;
-				}
-			}
-		};
-
-		// if no previous positions are available, symmetrise based on the (000) position
-		if(!m_sitestab->rowCount())
-		{
-			t_real x = 0, y = 0, z = 1;
-			std::string sx = "0", sy = "0", sz = "1";
-			t_real S = 1;
-			AddSiteTabItem(-1, "pos", x, y, z, sx, sy, sz, S);
-		}
-
-		// iterate and symmetrise existing sites
-		for(int row=0; row<m_sitestab->rowCount(); ++row)
-		{
-			std::string ident = m_sitestab->item(row, COL_SITE_NAME)->text().toStdString();
-
-			t_real x = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_sitestab->item(row, COL_SITE_POS_X))->GetValue();
-			t_real y = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_sitestab->item(row, COL_SITE_POS_Y))->GetValue();
-			t_real z = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_sitestab->item(row, COL_SITE_POS_Z))->GetValue();
-
-			std::string sx = m_sitestab->item(row, COL_SITE_SPIN_X)->text().toStdString();
-			std::string sy = m_sitestab->item(row, COL_SITE_SPIN_Y)->text().toStdString();
-			std::string sz = m_sitestab->item(row, COL_SITE_SPIN_Z)->text().toStdString();
-
-			std::string sox = "auto";
-			std::string soy = "auto";
-			std::string soz = "auto";
-			if(m_allow_ortho_spin)
-			{
-				sox = m_sitestab->item(row, COL_SITE_SPIN_ORTHO_X)->text().toStdString();
-				soy = m_sitestab->item(row, COL_SITE_SPIN_ORTHO_Y)->text().toStdString();
-				soz = m_sitestab->item(row, COL_SITE_SPIN_ORTHO_Z)->text().toStdString();
-			}
-
-			t_real S = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_sitestab->item(row, COL_SITE_SPIN_MAG))->GetValue();
-
-			t_vec_real sitepos = tl2::create<t_vec_real>({x, y, z, 1});
-			auto newsitepos = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
-				sitepos, ops, g_eps);
-
-			std::string rgb = m_sitestab->item(row, COL_SITE_RGB)->text().toStdString();
-
-			for(t_size newsite_idx=0; newsite_idx<newsitepos.size(); ++newsite_idx)
-			{
-				const auto& newsite = newsitepos[newsite_idx];
-
-				generatedsites.emplace_back(std::make_tuple(
-					ident + "_" + tl2::var_to_str(newsite_idx),
-					newsite[0], newsite[1], newsite[2],
-					sx, sy, sz, S, sox, soy, soz, rgb));
-			}
-
-			remove_duplicate_sites();
-		}
-
-		// remove original sites
-		DelTabItem(m_sitestab, -1);
-
-		// add new sites
-		for(const auto& site : generatedsites)
-		{
-			std::apply(&MagDynDlg::AddSiteTabItem,
-				std::tuple_cat(std::make_tuple(this, -1), site));
-		}
+		QMessageBox::critical(this, "Magnetic Dynamics",
+			"Invalid space group selected.");
+		return;
 	}
-	catch(const std::exception& ex)
-	{
-		QMessageBox::critical(this, "Magnetic Dynamics", ex.what());
-	}
+
+	SyncToKernel();
+	m_dyn.SymmetriseMagneticSites(m_SGops[sgidx]);
+	SyncSitesFromKernel();
+
+	if(m_autocalc->isChecked())
+		CalcAll();
 }
 
 
@@ -457,7 +355,7 @@ void MagDynDlg::GenerateCouplingsFromSG()
 				site2, ops, g_eps, false /*keep in uc*/, true /*ignore occupied*/, true);
 
 			// generate dmi vectors
-			t_vec_real dmi = tl2::create<t_vec_real>({dmi_x, dmi_y, dmi_z, 0});
+			t_vec_real dmi = tl2::create<t_vec_real>({ dmi_x, dmi_y, dmi_z, 0 });
 			auto newdmis = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
 				dmi, ops, g_eps, false, true);
 
@@ -717,12 +615,56 @@ std::optional<t_size> MagDynDlg::GetTermAtomIndex(int row, int num) const
 }
 
 
+/**
+ * get the magnetic sites from the kernel
+ * and add them to the table
+ */
+void MagDynDlg::SyncSitesFromKernel(boost::optional<const pt::ptree&> extra_infos)
+{
+	// clear old sites
+	DelTabItem(m_sitestab, -1);
+
+	for(const auto &site : m_dyn.GetMagneticSites())
+	{
+		// default colour
+		std::string rgb = "auto";
+
+		// get additional data from exchange term entry
+		if(extra_infos && site.index < extra_infos->size())
+		{
+			auto siteiter = (*extra_infos).begin();
+			std::advance(siteiter, site.index);
+
+			// read colour
+			rgb = siteiter->second.get<std::string>("colour", "auto");
+		}
+
+		std::string spin_ortho_x = site.spin_ortho[0];
+		std::string spin_ortho_y = site.spin_ortho[1];
+		std::string spin_ortho_z = site.spin_ortho[2];
+
+		if(spin_ortho_x == "")
+			spin_ortho_x = "auto";
+		if(spin_ortho_y == "")
+			spin_ortho_y = "auto";
+		if(spin_ortho_z == "")
+			spin_ortho_z = "auto";
+
+		AddSiteTabItem(-1,
+			site.name,
+			site.pos[0], site.pos[1], site.pos[2],
+			site.spin_dir[0], site.spin_dir[1], site.spin_dir[2], site.spin_mag,
+			spin_ortho_x, spin_ortho_y, spin_ortho_z,
+			rgb);
+	}
+}
+
 
 /**
  * get the sites, exchange terms, and variables from the table
  * and transfer them to the dynamics calculator
  */
-void MagDynDlg::SyncSitesAndTerms()
+void MagDynDlg::SyncToKernel()
 {
 	if(m_ignoreCalc)
 		return;

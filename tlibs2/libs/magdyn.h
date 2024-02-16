@@ -177,9 +177,8 @@ struct t_MagneticSiteCalc
 {
 	t_vec spin_dir{};        // spin direction
 
-	t_vec u{};               // spin orthogonal plane vector 1
-	t_vec v{};               // spin orthogonal plane vector 2
-	t_vec u_conj{};
+	t_vec u{}, u_conj{};     // spin orthogonal vector
+	t_vec v{};               // spin vector
 };
 
 
@@ -281,8 +280,14 @@ public:
 	// --------------------------------------------------------------------
 	using MagneticSite = t_MagneticSite<t_vec_real, t_mat, t_real, t_size>;
 	using MagneticSiteCalc = t_MagneticSiteCalc<t_vec>;
+	using MagneticSites = std::vector<MagneticSite>;
+	using MagneticSitesCalc = std::vector<MagneticSiteCalc>;
+
 	using ExchangeTerm = t_ExchangeTerm<t_vec_real, t_size>;
 	using ExchangeTermCalc = t_ExchangeTermCalc<t_mat, t_vec, t_cplx>;
+	using ExchangeTerms = std::vector<ExchangeTerm>;
+	using ExchangeTermsCalc = std::vector<ExchangeTermCalc>;
+
 	using ExternalField = t_ExternalField<t_vec_real, t_real>;
 	using EnergyAndWeight = t_EnergyAndWeight<t_mat, t_real>;
 	using Variable = t_Variable<t_cplx>;
@@ -369,10 +374,10 @@ public:
 	// getter
 	// --------------------------------------------------------------------
 	const std::vector<Variable>& GetVariables() const { return m_variables; }
-	const std::vector<MagneticSite>& GetMagneticSites() const { return m_sites; }
-	const std::vector<MagneticSiteCalc>& GetMagneticSitesCalc() const { return m_sites_calc; }
-	const std::vector<ExchangeTerm>& GetExchangeTerms() const { return m_exchange_terms; }
-	const std::vector<ExchangeTermCalc>& GetExchangeTermsCalc() const { return m_exchange_terms_calc; }
+	const MagneticSites& GetMagneticSites() const { return m_sites; }
+	const MagneticSitesCalc& GetMagneticSitesCalc() const { return m_sites_calc; }
+	const ExchangeTerms& GetExchangeTerms() const { return m_exchange_terms; }
+	const ExchangeTermsCalc& GetExchangeTermsCalc() const { return m_exchange_terms_calc; }
 
 	const ExternalField& GetExternalField() const { return m_field; }
 	const t_vec_real& GetRotationAxis() const { return m_rotaxis; }
@@ -550,6 +555,65 @@ public:
 
 		return std::make_tuple(min, max);
 	}
+
+
+	// --------------------------------------------------------------------
+	// symmetrisation functions
+	// --------------------------------------------------------------------
+	/**
+	 * generate symmetric positions based on the given symops
+	 */
+	void SymmetriseMagneticSites(const std::vector<t_mat_real>& symops)
+	{
+		MagneticSites newsites;
+
+		for(const MagneticSite& site : m_sites)
+		{
+			auto positions = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
+				site.pos, symops, m_eps);
+
+			for(const t_vec_real& position : positions)
+			{
+				MagneticSite newsite = site;
+				newsite.pos = position;
+
+				newsites.emplace_back(std::move(newsite));
+			}
+		}
+
+		m_sites = std::move(newsites);
+		RemoveDuplicateMagneticSites();
+
+		//CalcMagneticSites();
+	}
+
+
+	void RemoveDuplicateMagneticSites()
+	{
+		for(auto iter1 = m_sites.begin(); iter1 != m_sites.end(); ++iter1)
+		{
+			for(auto iter2 = std::next(iter1, 1); iter2 != m_sites.end();)
+			{
+				if(tl2::equals<t_vec_real>(iter1->pos, iter2->pos, m_eps))
+					iter2 = m_sites.erase(iter2);
+				else
+					++iter2;
+			}
+		}
+	}
+
+
+	/**
+	 * generate symmetric exchange terms based on the given symops
+	 */
+	void SymmetriseExchangeTerms(const std::vector<t_mat_real>& symops)
+	{
+		ExchangeTerms newterms;
+
+		m_exchange_terms = std::move(newterms);
+		//CalcExchangeTerms();
+	}
+	// --------------------------------------------------------------------
 
 
 	// --------------------------------------------------------------------
@@ -1495,6 +1559,10 @@ public:
 	// --------------------------------------------------------------------
 
 
+
+	// --------------------------------------------------------------------
+	// loading and saving
+	// --------------------------------------------------------------------
 	/**
 	 * generates the dispersion plot along the given q path
 	 */
@@ -1895,6 +1963,7 @@ public:
 
 		return true;
 	}
+	// --------------------------------------------------------------------
 
 
 protected:
@@ -1936,12 +2005,12 @@ protected:
 
 private:
 	// magnetic sites
-	std::vector<MagneticSite> m_sites{};
-	std::vector<MagneticSiteCalc> m_sites_calc{};
+	MagneticSites m_sites{};
+	MagneticSitesCalc m_sites_calc{};
 
 	// magnetic couplings
-	std::vector<ExchangeTerm> m_exchange_terms{};
-	std::vector<ExchangeTermCalc> m_exchange_terms_calc{};
+	ExchangeTerms m_exchange_terms{};
+	ExchangeTermsCalc m_exchange_terms_calc{};
 
 	// open variables
 	std::vector<Variable> m_variables{};

@@ -7173,14 +7173,14 @@ requires is_vec<t_vec>
 template<class t_vec, class t_mat, class t_real = typename t_vec::value_type,
 	template<class...> class t_cont = std::vector>
 t_cont<t_vec> apply_ops_hom(const t_vec& _atom, const t_cont<t_mat>& ops,
-	t_real eps=std::numeric_limits<t_real>::epsilon(),
+	t_real eps = std::numeric_limits<t_real>::epsilon(),
 	bool keepInUnitCell = true, bool ignore_occupied = false, bool ret_hom = false)
 requires is_vec<t_vec> && is_mat<t_mat>
 {
 	// convert vector to homogeneous coordinates
 	t_vec atom = _atom;
 	if(atom.size() == 3)
-		atom = create<t_vec>({atom[0], atom[1], atom[2], 1});
+		atom = create<t_vec>({ atom[0], atom[1], atom[2], 1 });
 
 	t_cont<t_vec> newatoms;
 	newatoms.reserve(ops.size());
@@ -7211,6 +7211,7 @@ requires is_vec<t_vec> && is_mat<t_mat>
 
 	return newatoms;
 }
+
 
 
 /**
