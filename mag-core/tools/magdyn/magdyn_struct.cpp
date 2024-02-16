@@ -661,6 +661,43 @@ void MagDynDlg::SyncSitesFromKernel(boost::optional<const pt::ptree&> extra_info
 
 
 /**
+ * get the exchange terms from the kernel
+ * and add them to the table
+ */
+void MagDynDlg::SyncTermsFromKernel(boost::optional<const pt::ptree&> extra_infos)
+{
+	// clear old terms
+	DelTabItem(m_termstab, -1);
+
+	for(const auto& term : m_dyn.GetExchangeTerms())
+	{
+		// default colour
+		std::string rgb = "#0x00bf00";
+
+		// get additional data from exchange term entry
+		if(extra_infos && term.index < extra_infos->size())
+		{
+			auto termiter = (*extra_infos).begin();
+			std::advance(termiter, term.index);
+
+			// read colour
+			rgb = termiter->second.get<std::string>("colour", "#0x00bf00");
+		}
+
+		AddTermTabItem(-1,
+			term.name, term.site1, term.site2,
+			term.dist[0], term.dist[1], term.dist[2],
+			term.J,
+			term.dmi[0], term.dmi[1], term.dmi[2],
+			term.Jgen[0][0], term.Jgen[0][1], term.Jgen[0][2],
+			term.Jgen[1][0], term.Jgen[1][1], term.Jgen[1][2],
+			term.Jgen[2][0], term.Jgen[2][1], term.Jgen[2][2],
+			rgb);
+	}
+}
+
+
+/**
  * get the sites, exchange terms, and variables from the table
  * and transfer them to the dynamics calculator
  */

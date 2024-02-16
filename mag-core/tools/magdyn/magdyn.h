@@ -430,6 +430,7 @@ protected:
 
 	// transfer sites from the kernel
 	void SyncSitesFromKernel(boost::optional<const boost::property_tree::ptree&> extra_infos = boost::none);
+	void SyncTermsFromKernel(boost::optional<const boost::property_tree::ptree&> extra_infos = boost::none);
 	void SyncToKernel();         // transfer all data to the kernel
 	void CalcAll();              // syncs sites and terms and calculates all dynamics
 

@@ -383,41 +383,11 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 			AddVariableTabItem(-1, var.name, var.value);
 		}
 
-		// get site entries for reading additional infos
-		boost::optional<const pt::ptree&> site_infos = magdyn.get_child_optional("atom_sites");
+		// sync magnetic sites and additional entries
+		SyncSitesFromKernel(magdyn.get_child_optional("atom_sites"));
 
-		// magnetic sites
-		SyncSitesFromKernel(site_infos);
-
-		// get exchange terms entries for reading additional infos
-		auto terms = magdyn.get_child_optional("exchange_terms");
-
-		// exchange terms
-		for(const auto& term : m_dyn.GetExchangeTerms())
-		{
-			// default colour
-			std::string rgb = "#0x00bf00";
-
-			// get additional data from exchange term entry
-			if(terms && term.index < terms->size())
-			{
-				auto termiter = (*terms).begin();
-				std::advance(termiter, term.index);
-
-				// read colour
-				rgb = termiter->second.get<std::string>("colour", "#0x00bf00");
-			}
-
-			AddTermTabItem(-1,
-				term.name, term.site1, term.site2,
-				term.dist[0], term.dist[1], term.dist[2],
-				term.J,
-				term.dmi[0], term.dmi[1], term.dmi[2],
-				term.Jgen[0][0], term.Jgen[0][1], term.Jgen[0][2],
-				term.Jgen[1][0], term.Jgen[1][1], term.Jgen[1][2],
-				term.Jgen[2][0], term.Jgen[2][1], term.Jgen[2][2],
-				rgb);
-		}
+		// sync exchange terms and additional entries
+		SyncTermsFromKernel(magdyn.get_child_optional("exchange_terms"));
 
 		// saved fields
 		if(auto vars = magdyn.get_child_optional("saved_fields"); vars)
