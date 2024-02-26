@@ -39,15 +39,13 @@
 #ifndef __TLIBS2_MAGDYN_H__
 #define __TLIBS2_MAGDYN_H__
 
+#include <algorithm>
+#include <numeric>
 #include <vector>
 #include <array>
 #include <tuple>
 #include <unordered_map>
 #include <string>
-
-#include <algorithm>
-#include <numeric>
-
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -376,9 +374,11 @@ public:
 	// --------------------------------------------------------------------
 	const std::vector<Variable>& GetVariables() const { return m_variables; }
 	const MagneticSites& GetMagneticSites() const { return m_sites; }
+	t_size GetMagneticSitesCount() const { return m_sites.size(); }
 	const MagneticSitesCalc& GetMagneticSitesCalc() const { return m_sites_calc; }
 	const ExchangeTerms& GetExchangeTerms() const { return m_exchange_terms; }
 	const ExchangeTermsCalc& GetExchangeTermsCalc() const { return m_exchange_terms_calc; }
+	t_size GetExchangeTermsCount() const { return m_exchange_terms.size(); }
 
 	const ExternalField& GetExternalField() const { return m_field; }
 	const t_vec_real& GetRotationAxis() const { return m_rotaxis; }
@@ -386,6 +386,54 @@ public:
 
 	t_real GetTemperature() const { return m_temperature; }
 	t_real GetBoseCutoffEnergy() const { return m_bose_cutoff; }
+
+
+	const MagneticSite& GetMagneticSite(t_size idx) const
+	{
+		if(!CheckMagneticSite(idx))
+		{
+			static MagneticSite null_site{};
+			return null_site;
+		}
+
+		return m_sites[idx];
+	}
+
+
+	const MagneticSiteCalc& GetMagneticSiteCalc(t_size idx) const
+	{
+		if(!CheckMagneticSite(idx) || !CheckMagneticSites())
+		{
+			static MagneticSiteCalc null_site{};
+			return null_site;
+		}
+
+		return m_sites_calc[idx];
+	}
+
+
+	const ExchangeTerm& GetExchangeTerm(t_size idx) const
+	{
+		if(!CheckExchangeTerm(idx))
+		{
+			static ExchangeTerm null_term{};
+			return null_term;
+		}
+
+		return m_exchange_terms[idx];
+	}
+
+
+	const ExchangeTermCalc& GetExchangeTermCalc(t_size idx) const
+	{
+		if(!CheckExchangeTerm(idx) || !CheckExchangeTerms())
+		{
+			static ExchangeTermCalc null_term{};
+			return null_term;
+		}
+
+		return m_exchange_terms_calc[idx];
+	}
 
 
 	bool IsIncommensurate() const
@@ -401,7 +449,7 @@ public:
 	{
 		std::vector<const MagneticSite*> sites;
 
-		for(const auto& site : m_sites)
+		for(const auto& site : GetMagneticSites())
 		{
 			if(site.name == name)
 				sites.push_back(&site);
@@ -505,7 +553,7 @@ public:
 	void AddMagneticSite(MagneticSite&& site, bool set_index = true)
 	{
 		if(set_index)
-			site.index = GetMagneticSites().size();
+			site.index = GetMagneticSitesCount();
 		m_sites.emplace_back(std::forward<MagneticSite&&>(site));
 	}
 
@@ -513,7 +561,7 @@ public:
 	void AddExchangeTerm(ExchangeTerm&& term, bool set_index = true)
 	{
 		if(set_index)
-			term.index = GetExchangeTerms().size();
+			term.index = GetExchangeTermsCount();
 		m_exchange_terms.emplace_back(std::forward<ExchangeTerm&&>(term));
 	}
 	// --------------------------------------------------------------------
@@ -545,7 +593,7 @@ public:
 		t_vec_real min = tl2::zero<t_vec_real>(3);
 		t_vec_real max = tl2::zero<t_vec_real>(3);
 
-		for(const ExchangeTerm& term : m_exchange_terms)
+		for(const ExchangeTerm& term : GetExchangeTerms())
 		{
 			for(t_size i=0; i<3; ++i)
 			{
@@ -559,7 +607,91 @@ public:
 
 
 	// --------------------------------------------------------------------
-	// symmetrisation functions
+	// sanity checks
+	// --------------------------------------------------------------------
+	/**
+	 * check if the site index is valid
+	 */
+	bool CheckMagneticSite(t_size idx, bool print_error = true) const
+	{
+		if(idx >= m_sites.size())
+		{
+			if(print_error)
+			{
+				std::cerr << "Error: Site index " << idx
+					<< " is out of bounds." << std::endl;
+			}
+
+			return false;
+		}
+
+		return true;
+	}
+
+
+	/**
+	 * check if the term index is valid
+	 */
+	bool CheckExchangeTerm(t_size idx, bool print_error = true) const
+	{
+		if(idx >= m_exchange_terms.size())
+		{
+			if(print_error)
+			{
+				std::cerr << "Error: Coupling term index " << idx
+					<< " is out of bounds." << std::endl;
+			}
+
+			return false;
+		}
+
+		return true;
+	}
+
+
+	/**
+	 * check if the magnetic sites have been calculated
+	 */
+	bool CheckMagneticSites(bool print_error = true) const
+	{
+		if(GetMagneticSites().size() != GetMagneticSitesCalc().size())
+		{
+			if(print_error)
+			{
+				std::cerr << "Error: Sites have not yet been calculated."
+					<< std::endl;
+			}
+
+			return false;
+		}
+
+		return true;
+	}
+
+
+	/**
+	 * check if the exchange terms have been calculated
+	 */
+	bool CheckExchangeTerms(bool print_error = true) const
+	{
+		if(GetExchangeTerms().size() != GetExchangeTermsCalc().size())
+		{
+			if(print_error)
+			{
+				std::cerr << "Error: Coupling terms have not yet been calculated."
+					<< std::endl;
+			}
+
+			return false;
+		}
+
+		return true;
+	}
+	// --------------------------------------------------------------------
+
+
+	// --------------------------------------------------------------------
+	// symmetrisation and generation functions
 	// --------------------------------------------------------------------
 	/**
 	 * generate symmetric positions based on the given symops
@@ -568,7 +700,7 @@ public:
 	{
 		MagneticSites newsites;
 
-		for(const MagneticSite& site : m_sites)
+		for(const MagneticSite& site : GetMagneticSites())
 		{
 			auto positions = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
 				site.pos, symops, m_eps);
@@ -598,20 +730,16 @@ public:
 
 		// create unit cell site vectors
 		std::vector<t_vec_real> sites_uc;
-		sites_uc.reserve(m_sites.size());
-		for(const MagneticSite& site : m_sites)
+		sites_uc.reserve(GetMagneticSitesCount());
+		for(const MagneticSite& site : GetMagneticSites())
 			sites_uc.push_back(tl2::create<t_vec_real>({
 				site.pos[0], site.pos[1], site.pos[2], 1. }));
 
-		for(const ExchangeTerm& term : m_exchange_terms)
+		for(const ExchangeTerm& term : GetExchangeTerms())
 		{
 			// check if indices are valid
-			if(term.site1 >= sites_uc.size() || term.site2 >= sites_uc.size())
-			{
-				std::cerr << "Error: Site indices " << term.site1 << ", "
-					<< term.site2 << " are out of bounds." << std::endl;
+			if(!CheckMagneticSite(term.site1) || !CheckMagneticSite(term.site2))
 				continue;
-			}
 
 			// super cell distance vector
 			t_vec_real dist_sc = tl2::create<t_vec_real>({
@@ -703,6 +831,13 @@ public:
 	}
 
 
+	void GeneratePossibleExchangeTerms(
+		t_real a, t_real b, t_real c,
+		t_real alpha, t_real beta, t_real gamma)
+	{
+	}
+
+
 	void RemoveDuplicateMagneticSites()
 	{
 		for(auto iter1 = m_sites.begin(); iter1 != m_sites.end(); ++iter1)
@@ -745,12 +880,11 @@ public:
 	 */
 	void CalcMagneticSites()
 	{
-		const t_size num_sites = m_sites.size();
-		if(num_sites == 0)
+		if(GetMagneticSitesCount() == 0)
 			return;
 
 		m_sites_calc.clear();
-		m_sites_calc.reserve(num_sites);
+		m_sites_calc.reserve(GetMagneticSitesCount());
 
 		bool use_field =
 			(!tl2::equals_0<t_real>(m_field.mag, m_eps) || m_field.align_spins)
@@ -777,7 +911,7 @@ public:
 
 		tl2::ExprParser parser = GetExprParser();
 
-		for(const MagneticSite& site : m_sites)
+		for(const MagneticSite& site : GetMagneticSites())
 		{
 			try
 			{
@@ -877,15 +1011,15 @@ public:
 	 */
 	void CalcExchangeTerms()
 	{
-		if(m_exchange_terms.size() == 0)
+		if(GetExchangeTermsCount() == 0)
 			return;
 
 		tl2::ExprParser parser = GetExprParser();
 
 		m_exchange_terms_calc.clear();
-		m_exchange_terms_calc.reserve(m_exchange_terms.size());
+		m_exchange_terms_calc.reserve(GetExchangeTermsCount());
 
-		for(const ExchangeTerm& term : m_exchange_terms)
+		for(const ExchangeTerm& term : GetExchangeTerms())
 		{
 			ExchangeTermCalc calc;
 
@@ -966,15 +1100,15 @@ public:
 	 */
 	void CalcIndices()
 	{
-		for(t_size site_idx=0; site_idx<m_sites.size(); ++site_idx)
+		for(t_size site_idx=0; site_idx<GetMagneticSitesCount(); ++site_idx)
 		{
 			MagneticSite& site = m_sites[site_idx];
 			site.index = site_idx;
 		}
 
-		for(t_size term_idx=0; term_idx<m_exchange_terms.size(); ++term_idx)
+		for(t_size term_idx=0; term_idx<GetExchangeTermsCount(); ++term_idx)
 		{
-			ExchangeTerm& term = m_exchange_terms[term_idx];
+			ExchangeTerm& term = GetExchangeTerm(term_idx);
 			term.index = term_idx;
 		}
 	}
@@ -986,13 +1120,7 @@ public:
 	 */
 	t_mat CalcRealJ(const ExchangeTerm& term) const
 	{
-		if(term.index >= m_exchange_terms_calc.size())
-		{
-			std::cerr << "Error: Coupling terms not yet calculated." << std::endl;
-			return t_mat{};
-		}
-
-		const ExchangeTermCalc& term_calc = m_exchange_terms_calc[term.index];
+		const ExchangeTermCalc& term_calc = GetExchangeTermCalc(term.index);
 
 		// symmetric part of the exchange interaction matrix, see (Toth 2015) p. 2
 		t_mat J = tl2::diag<t_mat>(
@@ -1038,18 +1166,12 @@ public:
 	{
 		t_Jmap J_Q, J_Q0;
 
-		// no exchange terms given
-		if(m_exchange_terms.size() == 0)
+		// no (or not valid) exchange terms given
+		if(GetExchangeTermsCount() == 0 || !CheckExchangeTerms())
 			return std::make_tuple(J_Q, J_Q0);
-
-		if(m_exchange_terms.size() != m_exchange_terms_calc.size())
-		{
-			std::cerr << "Error: Coupling terms not yet calculated." << std::endl;
-			return std::make_tuple(J_Q, J_Q0);
-		}
 
 		// iterate couplings to pre-calculate corresponding J matrices
-		for(const ExchangeTerm& term : m_exchange_terms)
+		for(const ExchangeTerm& term : GetExchangeTerms())
 		{
 			// insert or add an exchange matrix at the given site indices
 			auto insert_or_add = [](t_Jmap& J, const t_indices& indices, const t_mat& J33)
@@ -1060,12 +1182,8 @@ public:
 					J.emplace(std::move(std::make_pair(indices, J33)));
 			};
 
-			if(term.site1 >= m_sites.size() || term.site2 >= m_sites.size())
-			{
-				std::cerr << "Error: Site index out of bounds for coupling term "
-					<< term.index << "." << std::endl;
+			if(!CheckMagneticSite(term.site1) || !CheckMagneticSite(term.site2))
 				continue;
-			}
 
 			const t_indices indices = std::make_pair(term.site1, term.site2);
 			const t_indices indices_t = std::make_pair(term.site2, term.site1);
@@ -1101,47 +1219,39 @@ public:
 	 */
 	t_mat CalcHamiltonian(const t_vec_real& Qvec) const
 	{
-		const t_size num_sites = m_sites.size();
-
-		// no sites given
-		if(num_sites == 0)
+		// no (or no valid) sites given
+		if(GetMagneticSitesCount() == 0 || !CheckMagneticSites())
 			return t_mat{};
-
-		if(num_sites != m_sites_calc.size())
-		{
-			std::cerr << "Error: Sites not yet calculated." << std::endl;
-			return t_mat{};
-		}
 
 		// build the interaction matrices J(Q) and J(-Q) of
 		// equations (12) and (14) from (Toth 2015)
 		auto [J_Q, J_Q0] = CalcReciprocalJs(Qvec);
 
 		// create the hamiltonian of equation (25) and (26) from (Toth 2015)
-		t_mat A = tl2::create<t_mat>(num_sites, num_sites);
-		t_mat A_conj_mQ = tl2::create<t_mat>(num_sites, num_sites);
-		t_mat B = tl2::create<t_mat>(num_sites, num_sites);
-		t_mat C = tl2::zero<t_mat>(num_sites, num_sites);
+		t_mat A = tl2::create<t_mat>(GetMagneticSitesCount(), GetMagneticSitesCount());
+		t_mat A_conj_mQ = tl2::create<t_mat>(GetMagneticSitesCount(), GetMagneticSitesCount());
+		t_mat B = tl2::create<t_mat>(GetMagneticSitesCount(), GetMagneticSitesCount());
+		t_mat C = tl2::zero<t_mat>(GetMagneticSitesCount(), GetMagneticSitesCount());
 
 		bool use_field = !tl2::equals_0<t_real>(m_field.mag, m_eps)
 			&& m_field.dir.size() == 3;
 
 		// iterate magnetic sites
-		for(t_size i=0; i<num_sites; ++i)
+		for(t_size i=0; i<GetMagneticSitesCount(); ++i)
 		{
 			// get the pre-calculated u and v vectors for the commensurate case
-			const t_vec& u_i = m_sites_calc[i].u;
-			const t_vec& u_conj_i = m_sites_calc[i].u_conj;
-			const t_vec& v_i = m_sites_calc[i].v;
-			t_real S_i = m_sites[i].spin_mag;
+			const t_vec& u_i = GetMagneticSiteCalc(i).u;
+			const t_vec& u_conj_i = GetMagneticSiteCalc(i).u_conj;
+			const t_vec& v_i = GetMagneticSiteCalc(i).v;
+			t_real S_i = GetMagneticSite(i).spin_mag;
 
-			for(t_size j=0; j<num_sites; ++j)
+			for(t_size j=0; j<GetMagneticSitesCount(); ++j)
 			{
 				// get the pre-calculated u and v vectors for the commensurate case
-				const t_vec& u_j = m_sites_calc[j].u;
-				const t_vec& u_conj_j = m_sites_calc[j].u_conj;
-				const t_vec& v_j = m_sites_calc[j].v;
-				t_real S_j = m_sites[j].spin_mag;
+				const t_vec& u_j = GetMagneticSiteCalc(j).u;
+				const t_vec& u_conj_j = GetMagneticSiteCalc(j).u_conj;
+				const t_vec& v_j = GetMagneticSiteCalc(j).v;
+				t_real S_j = GetMagneticSite(j).spin_mag;
 
 				// get the pre-calculated exchange matrices for the (i, j) coupling
 				const t_indices indices_ij = std::make_pair(i, j);
@@ -1169,7 +1279,7 @@ public:
 			{
 				t_vec B = tl2::convert<t_vec>(-m_field.dir) * m_field.mag;
 
-				t_vec gv = m_sites[i].g * v_i;
+				t_vec gv = GetMagneticSite(i).g * v_i;
 				t_cplx Bgv = tl2::inner_noconj<t_vec>(B, gv);
 
 				// bohr magneton in [meV/T]
@@ -1182,11 +1292,11 @@ public:
 		}  // end of iteration over i sites
 
 		// equation (25) from (Toth 2015)
-		t_mat H = tl2::zero<t_mat>(num_sites*2, num_sites*2);
+		t_mat H = tl2::zero<t_mat>(GetMagneticSitesCount()*2, GetMagneticSitesCount()*2);
 		tl2::set_submat(H, A - C, 0, 0);
-		tl2::set_submat(H, B, 0, num_sites);
-		tl2::set_submat(H, tl2::herm(B), num_sites, 0);
-		tl2::set_submat(H, A_conj_mQ - C, num_sites, num_sites);
+		tl2::set_submat(H, B, 0, GetMagneticSitesCount());
+		tl2::set_submat(H, tl2::herm(B), GetMagneticSitesCount(), 0);
+		tl2::set_submat(H, A_conj_mQ - C, GetMagneticSitesCount(), GetMagneticSitesCount());
 
 		return H;
 	}
@@ -1200,15 +1310,14 @@ public:
 		t_mat _H, const t_vec_real& Qvec,
 		bool only_energies = false) const
 	{
-		const t_size num_sites = m_sites.size();
-		if(num_sites == 0 || _H.size1() == 0)
+		if(GetMagneticSitesCount() == 0 || _H.size1() == 0)
 			return {};
 
 		// equation (30) from (Toth 2015)
-		t_mat g_sign = tl2::zero<t_mat>(num_sites*2, num_sites*2);
-		for(t_size i=0; i<num_sites; ++i)
+		t_mat g_sign = tl2::zero<t_mat>(GetMagneticSitesCount()*2, GetMagneticSitesCount()*2);
+		for(t_size i=0; i<GetMagneticSitesCount(); ++i)
 			g_sign(i, i) = 1.;
-		for(t_size i=num_sites; i<2*num_sites; ++i)
+		for(t_size i=GetMagneticSitesCount(); i<2*GetMagneticSitesCount(); ++i)
 			g_sign(i, i) = -1.;
 
 		// equation (31) from (Toth 2015)
@@ -1235,7 +1344,7 @@ public:
 				}
 
 				// try forcing the hamilton to be positive definite
-				for(t_size i=0; i<2*num_sites; ++i)
+				for(t_size i=0; i<2*GetMagneticSitesCount(); ++i)
 					_H(i, i) += m_delta_chol;
 			}
 		}
@@ -1301,8 +1410,7 @@ public:
 		const t_mat& H_mat, const t_mat& C_mat, const t_mat& g_sign,
 		const t_vec_real& Qvec, const std::vector<t_vec>& evecs) const
 	{
-		const t_size num_sites = m_sites.size();
-		if(num_sites == 0)
+		if(GetMagneticSitesCount() == 0)
 			return;
 
 		// get the sorting of the energies
@@ -1374,36 +1482,36 @@ public:
 		for(int y_idx=0; y_idx<3; ++y_idx)
 		{
 			// equations (44) from (Toth 2015)
-			auto create_matrices = [num_sites](
+			auto create_matrices = [this](
 				t_mat& V, t_mat& W, t_mat& Y, t_mat& Z)
 			{
-				V = tl2::create<t_mat>(num_sites, num_sites);
-				W = tl2::create<t_mat>(num_sites, num_sites);
-				Y = tl2::create<t_mat>(num_sites, num_sites);
-				Z = tl2::create<t_mat>(num_sites, num_sites);
+				V = tl2::create<t_mat>(GetMagneticSitesCount(), GetMagneticSitesCount());
+				W = tl2::create<t_mat>(GetMagneticSitesCount(), GetMagneticSitesCount());
+				Y = tl2::create<t_mat>(GetMagneticSitesCount(), GetMagneticSitesCount());
+				Z = tl2::create<t_mat>(GetMagneticSitesCount(), GetMagneticSitesCount());
 			};
 
 			t_mat V, W, Y, Z;
 			create_matrices(V, W, Y, Z);
 
-			for(t_size i=0; i<num_sites; ++i)
-			for(t_size j=0; j<num_sites; ++j)
+			for(t_size i=0; i<GetMagneticSitesCount(); ++i)
+			for(t_size j=0; j<GetMagneticSitesCount(); ++j)
 			{
 				auto calc_mat_elems = [this, i, j, x_idx, y_idx](
 					const t_vec_real& Qvec,
 					t_mat& Y, t_mat& V, t_mat& Z, t_mat& W)
 				{
 					// get the sites and spins
-					const t_vec_real& pos_i = m_sites[i].pos;
-					const t_vec_real& pos_j = m_sites[j].pos;
-					t_real S_i = m_sites[i].spin_mag;
-					t_real S_j = m_sites[j].spin_mag;
+					const t_vec_real& pos_i = GetMagneticSite(i).pos;
+					const t_vec_real& pos_j = GetMagneticSite(j).pos;
+					t_real S_i = GetMagneticSite(i).spin_mag;
+					t_real S_j = GetMagneticSite(j).spin_mag;
 
 					// get the pre-calculated u vectors
-					const t_vec& u_i = m_sites_calc[i].u;
-					const t_vec& u_j = m_sites_calc[j].u;
-					const t_vec& u_conj_i = m_sites_calc[i].u_conj;
-					const t_vec& u_conj_j = m_sites_calc[j].u_conj;
+					const t_vec& u_i = GetMagneticSiteCalc(i).u;
+					const t_vec& u_j = GetMagneticSiteCalc(j).u;
+					const t_vec& u_conj_i = GetMagneticSiteCalc(i).u_conj;
+					const t_vec& u_conj_j = GetMagneticSiteCalc(j).u_conj;
 
 					// pre-factors of equation (44) from (Toth 2015)
 					t_real SiSj = 4. * std::sqrt(S_i*S_j);
@@ -1436,15 +1544,15 @@ public:
 				calc_mat_elems(Qvec, Y, V, Z, W);
 			} // end of iteration over sites
 
-			auto calc_S = [num_sites, x_idx, y_idx, &trafo, &trafo_herm, &energies_and_correlations]
+			auto calc_S = [this, x_idx, y_idx, &trafo, &trafo_herm, &energies_and_correlations]
 				(t_mat EnergyAndWeight::*S, const t_mat& Y, const t_mat& V, const t_mat& Z, const t_mat& W)
 			{
 				// equation (47) from (Toth 2015)
-				t_mat M = tl2::create<t_mat>(num_sites*2, num_sites*2);
+				t_mat M = tl2::create<t_mat>(GetMagneticSitesCount()*2, GetMagneticSitesCount()*2);
 				tl2::set_submat(M, Y, 0, 0);
-				tl2::set_submat(M, V, num_sites, 0);
-				tl2::set_submat(M, Z, 0, num_sites);
-				tl2::set_submat(M, W, num_sites, num_sites);
+				tl2::set_submat(M, V, GetMagneticSitesCount(), 0);
+				tl2::set_submat(M, Z, 0, GetMagneticSitesCount());
+				tl2::set_submat(M, W, GetMagneticSitesCount(), GetMagneticSitesCount());
 
 				t_mat M_trafo = trafo_herm * M * trafo;
 
@@ -1455,7 +1563,10 @@ public:
 #endif
 
 				for(t_size i=0; i<energies_and_correlations.size(); ++i)
-					(energies_and_correlations[i].*S)(x_idx, y_idx) += M_trafo(i, i) / t_real(2*num_sites);
+				{
+					(energies_and_correlations[i].*S)(x_idx, y_idx) +=
+						M_trafo(i, i) / t_real(2*GetMagneticSitesCount());
+				}
 			};
 
 			calc_S(&EnergyAndWeight::S, Y, V, Z, W);
@@ -1665,12 +1776,12 @@ public:
 	{
 		t_real E = 0.;
 
-		for(const ExchangeTerm& term : m_exchange_terms)
+		for(const ExchangeTerm& term : GetExchangeTerms())
 		{
 			t_mat J = CalcRealJ(term);  // Q=0 -> no rotation needed
 
-			t_vec Si = m_sites[term.site1].spin_mag * m_sites_calc[term.site1].v;
-			t_vec Sj = m_sites[term.site2].spin_mag * m_sites_calc[term.site2].v;
+			t_vec Si = GetMagneticSite(term.site1).spin_mag * GetMagneticSiteCalc(term.site1).v;
+			t_vec Sj = GetMagneticSite(term.site2).spin_mag * GetMagneticSiteCalc(term.site2).v;
 
 			E += tl2::inner_noconj<t_vec>(Si, J * Sj).real();
 		}
@@ -1827,7 +1938,7 @@ public:
 				MagneticSite magnetic_site;
 
 				magnetic_site.name = site.second.get<std::string>("name", "n/a");
-				magnetic_site.index = m_sites.size();
+				magnetic_site.index = GetMagneticSitesCount();
 
 				magnetic_site.pos = tl2::create<t_vec_real>(
 				{
@@ -1859,7 +1970,7 @@ public:
 				ExchangeTerm exchange_term;
 
 				exchange_term.name = term.second.get<std::string>("name", "n/a");
-				exchange_term.index = m_exchange_terms.size();
+				exchange_term.index = GetExchangeTermsCount();
 				exchange_term.site1 = term.second.get<t_size>("atom_1_index", 0);
 				exchange_term.site2 = term.second.get<t_size>("atom_2_index", 0);
 
@@ -2073,11 +2184,10 @@ public:
 			}
 
 			// also save the magnetic site names
-			const auto& sites = GetMagneticSites();
-			if(term.site1 < sites.size())
-				itemNode.put<std::string>("atom_1_name", sites[term.site1].name);
-			if(term.site2 < sites.size())
-				itemNode.put<std::string>("atom_2_name", sites[term.site2].name);
+			if(term.site1 < GetMagneticSitesCount())
+				itemNode.put<std::string>("atom_1_name", GetMagneticSite(term.site1).name);
+			if(term.site2 < GetMagneticSitesCount())
+				itemNode.put<std::string>("atom_2_name", GetMagneticSite(term.site2).name);
 
 			node.add_child("exchange_terms.term", itemNode);
 		}
