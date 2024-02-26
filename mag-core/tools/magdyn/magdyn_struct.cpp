@@ -213,52 +213,16 @@ void MagDynDlg::GenerateCouplingsFromSG()
 }
 
 
-
-/**
- * helper struct for finding possible couplings
- */
-struct PossibleCoupling
-{
-	// corresponding unit cell position
-	t_vec_real pos1_uc{};
-	t_vec_real pos2_uc{};
-
-	// magnetic site position in supercell
-	t_vec_real sc_vec{};
-	t_vec_real pos2_sc{};
-
-	// coordinates in orthogonal lab units
-	t_vec_real pos1_uc_lab{};
-	t_vec_real pos2_sc_lab{};
-
-	// corresponding unit cell index
-	t_size idx1_uc{};
-	t_size idx2_uc{};
-
-	// distance between the two magnetic sites
-	t_real dist{};
-};
-
-
-
 /**
  * generate possible couplings up to a certain distance
  */
 void MagDynDlg::GeneratePossibleCouplings()
 {
-	BOOST_SCOPE_EXIT(this_)
-	{
-		this_->m_ignoreCalc = false;
-		if(this_->m_autocalc->isChecked())
-			this_->CalcAll();
-	} BOOST_SCOPE_EXIT_END
-	m_ignoreCalc = true;
-
 	try
 	{
-		t_real maxdist = m_maxdist->value();
-		t_real sc_max = t_real(m_maxSC->value());
-		t_size max_couplings = m_maxcouplings->value();
+		t_real dist_max = m_maxdist->value();
+		t_size sc_max = m_maxSC->value();
+		t_size couplings_max = m_maxcouplings->value();
 
 		t_real a = m_xtallattice[0]->value();
 		t_real b = m_xtallattice[1]->value();
@@ -266,94 +230,15 @@ void MagDynDlg::GeneratePossibleCouplings()
 		t_real alpha = m_xtalangles[0]->value() / 180. * tl2::pi<t_real>;
 		t_real beta = m_xtalangles[1]->value() / 180. * tl2::pi<t_real>;
 		t_real gamma = m_xtalangles[2]->value() / 180. * tl2::pi<t_real>;
-		t_mat_real A = tl2::A_matrix<t_mat_real>(a, b, c, alpha, beta, gamma);
 
-		std::vector<PossibleCoupling> couplings;
-		const auto& sites = m_dyn.GetMagneticSites();
+		SyncToKernel();
+		m_dyn.GeneratePossibleExchangeTerms(
+			a, b, c, alpha, beta, gamma,
+			dist_max, sc_max, couplings_max);
+		SyncTermsFromKernel();
 
-		// get all site position vectors in unit cell
-		std::vector<t_vec_real> sites_uc;
-		sites_uc.reserve(sites.size());
-		for(const auto& site : sites)
-			sites_uc.push_back(tl2::create<t_vec_real>({
-				site.pos[0], site.pos[1], site.pos[2], }));
-
-		// generate a list of supercell vectors
-		std::vector<t_vec_real> sc_vecs;
-		sc_vecs.reserve(sc_max * sc_max * sc_max * 2*2*2);
-		for(t_real sc_h = -sc_max; sc_h<=sc_max; sc_h += 1.)
-		{
-			for(t_real sc_k = -sc_max; sc_k<=sc_max; sc_k += 1.)
-			{
-				for(t_real sc_l = -sc_max; sc_l<=sc_max; sc_l += 1.)
-				{
-					sc_vecs.emplace_back(
-						tl2::create<t_vec_real>({ sc_h, sc_k, sc_l }));
-				}
-			}
-		}
-
-		for(const t_vec_real& sc_vec : sc_vecs)
-		{
-			for(t_size idx1=0; idx1<sites.size()-1; ++idx1)
-			{
-				for(t_size idx2=idx1+1; idx2<sites.size(); ++idx2)
-				{
-					PossibleCoupling coupling;
-
-					coupling.idx1_uc = idx1;
-					coupling.idx2_uc = idx2;
-
-					coupling.pos1_uc = sites_uc[idx1];
-					coupling.pos2_uc = sites_uc[idx2];
-
-					coupling.sc_vec = sc_vec;
-					coupling.pos2_sc = coupling.pos2_uc + sc_vec;
-
-					// transform to lab units for correct distance
-					coupling.pos1_uc_lab = A * coupling.pos1_uc;
-					coupling.pos2_sc_lab = A * coupling.pos2_sc;
-
-					coupling.dist = tl2::norm<t_vec_real>(
-						coupling.pos2_sc_lab - coupling.pos1_uc_lab);
-					if(coupling.dist <= maxdist)
-						couplings.emplace_back(std::move(coupling));
-				}
-			}
-		}
-
-		// sort couplings by distance
-		std::stable_sort(couplings.begin(), couplings.end(),
-			[](const PossibleCoupling& coupling1, const PossibleCoupling& coupling2) -> bool
-		{
-			return coupling1.dist < coupling2.dist;
-		});
-
-		// add couplings to list
-		t_size coupling_idx = 0;
-		for(const PossibleCoupling& coupling : couplings)
-		{
-			if(coupling_idx >= max_couplings)
-				break;
-
-			std::ostringstream ident;
-			ident << "coupling_" << (coupling_idx + 1);
-			auto generatedcoupling = std::make_tuple(
-				ident.str(),
-				coupling.idx1_uc, coupling.idx2_uc,
-				coupling.sc_vec[0], coupling.sc_vec[1], coupling.sc_vec[2],
-				"0",                                   // exchange term
-				"0", "0", "0",                         // dmi vector
-				"0", "0", "0",                         //
-				"0", "0", "0",                         // general exchange matrix
-				"0", "0", "0",                         //
-				"auto");                               // colour
-
-			++coupling_idx;
-
-			std::apply(&MagDynDlg::AddTermTabItem,
-				std::tuple_cat(std::make_tuple(this, -1), generatedcoupling));
-		}
+		if(m_autocalc->isChecked())
+			CalcAll();
 	}
 	catch(const std::exception& ex)
 	{

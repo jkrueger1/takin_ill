@@ -831,10 +831,117 @@ public:
 	}
 
 
+	/**
+	 * generate possible couplings up to a certain distance
+	 */
 	void GeneratePossibleExchangeTerms(
 		t_real a, t_real b, t_real c,
-		t_real alpha, t_real beta, t_real gamma)
+		t_real alpha, t_real beta, t_real gamma,
+		t_real dist_max, t_size _sc_max,
+		std::optional<t_size> couplings_max)
 	{
+		// helper struct for finding possible couplings
+		struct PossibleCoupling
+		{
+			// corresponding unit cell position
+			t_vec_real pos1_uc{};
+			t_vec_real pos2_uc{};
+
+			// magnetic site position in supercell
+			t_vec_real sc_vec{};
+			t_vec_real pos2_sc{};
+
+			// coordinates in orthogonal lab units
+			t_vec_real pos1_uc_lab{};
+			t_vec_real pos2_sc_lab{};
+
+			// corresponding unit cell index
+			t_size idx1_uc{};
+			t_size idx2_uc{};
+
+			// distance between the two magnetic sites
+			t_real dist{};
+		};
+
+		ExchangeTerms newterms;
+		std::vector<PossibleCoupling> couplings;
+
+		// crystal fractional coordinate trafo matrix
+		t_mat_real A = tl2::A_matrix<t_mat_real>(a, b, c, alpha, beta, gamma);
+
+		// generate a list of supercell vectors
+		std::vector<t_vec_real> sc_vecs;
+		sc_vecs.reserve(_sc_max * _sc_max * _sc_max * 2 * 2 * 2);
+		t_real sc_max = t_real(_sc_max);
+		for(t_real sc_h = -sc_max; sc_h<=sc_max; sc_h += 1.)
+		{
+			for(t_real sc_k = -sc_max; sc_k<=sc_max; sc_k += 1.)
+			{
+				for(t_real sc_l = -sc_max; sc_l<=sc_max; sc_l += 1.)
+				{
+					sc_vecs.emplace_back(
+						tl2::create<t_vec_real>({ sc_h, sc_k, sc_l }));
+				}
+			}
+		}
+
+		for(const t_vec_real& sc_vec : sc_vecs)
+		{
+			for(t_size idx1=0; idx1<GetMagneticSitesCount()-1; ++idx1)
+			{
+				for(t_size idx2=idx1+1; idx2<GetMagneticSitesCount(); ++idx2)
+				{
+					PossibleCoupling coupling;
+
+					coupling.idx1_uc = idx1;
+					coupling.idx2_uc = idx2;
+
+					coupling.pos1_uc = GetMagneticSite(idx1).pos;
+					coupling.pos2_uc = GetMagneticSite(idx2).pos;
+
+					coupling.sc_vec = sc_vec;
+					coupling.pos2_sc = coupling.pos2_uc + sc_vec;
+
+					// transform to lab units for correct distance
+					coupling.pos1_uc_lab = A * coupling.pos1_uc;
+					coupling.pos2_sc_lab = A * coupling.pos2_sc;
+
+					coupling.dist = tl2::norm<t_vec_real>(
+						coupling.pos2_sc_lab - coupling.pos1_uc_lab);
+					if(coupling.dist <= dist_max)
+						couplings.emplace_back(std::move(coupling));
+				}
+			}
+		}
+
+		// sort couplings by distance
+		std::stable_sort(couplings.begin(), couplings.end(),
+			[](const PossibleCoupling& coupling1, const PossibleCoupling& coupling2) -> bool
+		{
+			return coupling1.dist < coupling2.dist;
+		});
+
+		// add couplings to list
+		t_size coupling_idx = 0;
+		for(const PossibleCoupling& coupling : couplings)
+		{
+			if(couplings_max && coupling_idx >= *couplings_max)
+				break;
+
+			ExchangeTerm newterm{};
+			newterm.site1 = coupling.idx1_uc;
+			newterm.site2 = coupling.idx2_uc;
+			newterm.dist = coupling.sc_vec;
+			newterm.J = "0";
+			newterm.name += "coupling_" + tl2::var_to_str(coupling_idx + 1);
+			newterms.emplace_back(std::move(newterm));
+
+			++coupling_idx;
+		}
+
+		m_exchange_terms = std::move(newterms);
+		RemoveDuplicateExchangeTerms();
+		//CalcExchangeTerms();
 	}
 
 
@@ -913,9 +1020,10 @@ public:
 
 		for(const MagneticSite& site : GetMagneticSites())
 		{
+			MagneticSiteCalc site_calc{};
+
 			try
 			{
-				MagneticSiteCalc site_calc{};
 				bool has_explicit_uv = true;
 
 				site_calc.spin_dir = tl2::zero<t_vec>(3);
@@ -996,12 +1104,13 @@ public:
 				}
 
 				site_calc.u_conj = tl2::conj(site_calc.u);
-				m_sites_calc.emplace_back(std::move(site_calc));
 			}
 			catch(const std::exception& ex)
 			{
 				std::cerr << ex.what() << std::endl;
 			}
+
+			m_sites_calc.emplace_back(std::move(site_calc));
 		}
 	}
 
@@ -1021,7 +1130,7 @@ public:
 
 		for(const ExchangeTerm& term : GetExchangeTerms())
 		{
-			ExchangeTermCalc calc;
+			ExchangeTermCalc calc{};
 
 			try
 			{
@@ -1108,7 +1217,7 @@ public:
 
 		for(t_size term_idx=0; term_idx<GetExchangeTermsCount(); ++term_idx)
 		{
-			ExchangeTerm& term = GetExchangeTerm(term_idx);
+			ExchangeTerm& term = m_exchange_terms[term_idx];
 			term.index = term_idx;
 		}
 	}
