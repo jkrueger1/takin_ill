@@ -135,6 +135,11 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 		# create an __info_plist section in the binary
 		PRIVATE LINKER:-sectcreate,__TEXT,__info_plist,${PROJECT_SOURCE_DIR}/../../setup_mac/InfoBZ.plist
 	)
+
+	add_custom_command(TARGET takin_bz POST_BUILD
+		COMMAND install_name_tool -add_rpath /usr/local/lib $<TARGET_FILE:takin_bz>
+		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+	)
 endif()
 
 
