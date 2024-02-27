@@ -247,10 +247,12 @@ void MagDynDlg::GeneratePossibleCouplings()
 }
 
 
-
-std::optional<t_size> MagDynDlg::GetTermAtomIndex(int row, int num) const
+/**
+ * get the magnetic site indices from the exchange term in a given row
+ */
+std::optional<t_size> MagDynDlg::GetTermAtomIndex(int row, int atom_num) const
 {
-	int col = num==0 ? COL_XCH_ATOM1_IDX : COL_XCH_ATOM2_IDX;
+	int col = (atom_num==0 ? COL_XCH_ATOM1_IDX : COL_XCH_ATOM2_IDX);
 
 	auto *atom_idx = static_cast<tl2::NumericTableWidgetItem<t_size>*>(
 		m_termstab->item(row, col));

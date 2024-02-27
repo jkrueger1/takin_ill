@@ -324,7 +324,7 @@ public:
 		m_ordering = tl2::zero<t_vec_real>(3);
 
 		// reset rotation axis
-		m_rotaxis = tl2::create<t_vec_real>({1., 0., 0.});
+		m_rotaxis = tl2::create<t_vec_real>({ 1., 0., 0. });
 	}
 
 
@@ -478,6 +478,8 @@ public:
 	void SetExternalField(const ExternalField& field)
 	{
 		m_field = field;
+
+		// normalise direction vector
 		t_real len = tl2::norm<t_vec_real>(m_field.dir);
 		if(!tl2::equals_0<t_real>(len, m_eps))
 			m_field.dir /= len;
@@ -494,7 +496,7 @@ public:
 
 	void RotateExternalField(t_real x, t_real y, t_real z, t_real angle)
 	{
-		RotateExternalField(tl2::create<t_vec_real>({x, y, z}), angle);
+		RotateExternalField(tl2::create<t_vec_real>({ x, y, z }), angle);
 	}
 
 
@@ -737,7 +739,7 @@ public:
 
 		for(const ExchangeTerm& term : GetExchangeTerms())
 		{
-			// check if indices are valid
+			// check if the site indices are valid
 			if(!CheckMagneticSite(term.site1) || !CheckMagneticSite(term.site2))
 				continue;
 
@@ -760,12 +762,17 @@ public:
 			{
 				if(term.dmi[dmi_idx] == "")
 					continue;
+
 				if(parser.parse(term.dmi[dmi_idx]))
+				{
 					dmi[dmi_idx] = parser.eval().real();
+				}
 				else
+				{
 					std::cerr << "Error parsing DMI component " << dmi_idx
 						<< " of term " << term.index << "."
 						<< std::endl;
+				}
 			}
 
 			auto newdmis = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
@@ -779,13 +786,18 @@ public:
 				{
 					if(term.Jgen[J_idx1][J_idx2] == "")
 						continue;
+
 					if(parser.parse(term.Jgen[J_idx1][J_idx2]))
+					{
 						Jgen_arr[J_idx1][J_idx2] = parser.eval().real();
+					}
 					else
+					{
 						std::cerr << "Error parsing general J component ("
 							<< J_idx1 << ", " << J_idx2
 							<< ") of term " << term.index << "."
 							<< std::endl;
+					}
 				}
 
 			t_mat_real Jgen = tl2::create<t_mat_real>({
@@ -819,7 +831,7 @@ public:
 					for(int idx2 = 0; idx2 < 3; ++idx2)
 						newterm.Jgen[idx1][idx2] = tl2::var_to_str(newJgens[op_idx](idx1, idx2));
 				}
-				newterm.name += "_" + tl2::var_to_str(op_idx);
+				newterm.name += "_" + tl2::var_to_str(op_idx + 1);
 
 				newterms.emplace_back(std::move(newterm));
 			}
@@ -1887,6 +1899,10 @@ public:
 
 		for(const ExchangeTerm& term : GetExchangeTerms())
 		{
+			// check if the site indices are valid
+			if(!CheckMagneticSite(term.site1) || !CheckMagneticSite(term.site2))
+				continue;
+
 			t_mat J = CalcRealJ(term);  // Q=0 -> no rotation needed
 
 			t_vec Si = GetMagneticSite(term.site1).spin_mag * GetMagneticSiteCalc(term.site1).v;
@@ -2087,7 +2103,7 @@ public:
 				if(auto name1 = term.second.get_optional<std::string>("atom_1_name"); name1)
 				{
 					t_size site1_old = exchange_term.site1;
-					if(auto sites1 = FindMagneticSites(*name1); sites1.size()==1)
+					if(auto sites1 = FindMagneticSites(*name1); sites1.size() == 1)
 						exchange_term.site1 = sites1[0]->index;
 					if(exchange_term.site1 != site1_old)
 					{
@@ -2102,7 +2118,7 @@ public:
 				if(auto name2 = term.second.get_optional<std::string>("atom_2_name"); name2)
 				{
 					t_size site2_old = exchange_term.site2;
-					if(auto sites2 = FindMagneticSites(*name2); sites2.size()==1)
+					if(auto sites2 = FindMagneticSites(*name2); sites2.size() == 1)
 						exchange_term.site2 = sites2[0]->index;
 					if(exchange_term.site2 != site2_old)
 					{
@@ -2352,7 +2368,7 @@ private:
 	ExchangeTerms m_exchange_terms{};
 	ExchangeTermsCalc m_exchange_terms_calc{};
 
-	// open variables
+	// open variables in expressions
 	std::vector<Variable> m_variables{};
 
 	// external field
@@ -2362,7 +2378,7 @@ private:
 
 	// ordering wave vector for incommensurate structures
 	t_vec_real m_ordering = tl2::zero<t_vec_real>(3);
-	t_vec_real m_rotaxis = tl2::create<t_vec_real>({1., 0., 0.});
+	t_vec_real m_rotaxis = tl2::create<t_vec_real>({ 1., 0., 0. });
 
 	// calculate the hamiltonian for Q, Q+ordering, and Q-ordering
 	bool m_calc_H{true};
@@ -2370,7 +2386,7 @@ private:
 	bool m_calc_Hm{true};
 
 	// direction to rotation spins into, usually [001]
-	t_vec_real m_zdir = tl2::create<t_vec_real>({0., 0., 1.});
+	t_vec_real m_zdir = tl2::create<t_vec_real>({ 0., 0., 1. });
 
 	// temperature (-1: disable bose factor)
 	t_real m_temperature{-1};
@@ -2395,8 +2411,8 @@ private:
 	t_real m_phase_sign{-1.};
 
 	// constants
-	static constexpr const t_cplx s_imag {t_real(0), t_real(1)};
-	static constexpr const t_real s_twopi {t_real(2)*tl2::pi<t_real>};
+	static constexpr const t_cplx s_imag { t_real(0), t_real(1) };
+	static constexpr const t_real s_twopi { t_real(2)*tl2::pi<t_real> };
 };
 
 }
