@@ -67,49 +67,40 @@
 // input- and output structs (and vectors of them)
 // ----------------------------------------------------------------------------
 %template(MagneticSiteD) tl2_mag::t_MagneticSite<
-	tl2::vec<double>,
 	tl2::mat<std::complex<double>>,
-	double,
-	std::size_t>;
+	tl2::vec<std::complex<double>>,
+	tl2::vec<double>,
+	std::size_t,
+	double>;
 %template(VecMagneticSite) std::vector<
 	tl2_mag::t_MagneticSite<
-		tl2::vec<double>,
 		tl2::mat<std::complex<double>>,
-		double,
-		std::size_t>
+		tl2::vec<std::complex<double>>,
+		tl2::vec<double>,
+		std::size_t,
+		double>
 	>;
 %template(VecMagneticSitePtr) std::vector<
 	const tl2_mag::t_MagneticSite<
-		tl2::vec<double>,
 		tl2::mat<std::complex<double>>,
-		double,
-		std::size_t>*
-	>;
-
-%template(MagneticSiteCalcD) tl2_mag::t_MagneticSiteCalc<
-	tl2::vec<std::complex<double>>>;
-%template(VecMagneticSiteCalc) std::vector<
-	tl2_mag::t_MagneticSiteCalc<
-		tl2::vec<std::complex<double>>>
+		tl2::vec<std::complex<double>>,
+		tl2::vec<double>,
+		std::size_t,
+		double>*
 	>;
 
 %template(ExchangeTermD) tl2_mag::t_ExchangeTerm<
-	tl2::vec<double>,
-	std::size_t>;
-%template(VecExchangeTerm) std::vector<
-	tl2_mag::t_ExchangeTerm<
-		tl2::vec<double>,
-		std::size_t>
-	>;
-
-%template(ExchangeTermCalcD) tl2_mag::t_ExchangeTermCalc<
 	tl2::mat<std::complex<double>>,
 	tl2::vec<std::complex<double>>,
+	tl2::vec<double>,
+	std::size_t,
 	std::complex<double>>;
-%template(VecExchangeTermCalc) std::vector<
-	tl2_mag::t_ExchangeTermCalc<
+%template(VecExchangeTerm) std::vector<
+	tl2_mag::t_ExchangeTerm<
 		tl2::mat<std::complex<double>>,
 		tl2::vec<std::complex<double>>,
+		tl2::vec<double>,
+		std::size_t,
 		std::complex<double>>
 	>;
 

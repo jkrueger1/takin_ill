@@ -321,9 +321,7 @@ void MagDynDlg::StructPlotSync()
 
 	// get sites and terms
 	const auto& sites = m_dyn.GetMagneticSites();
-	const auto& sites_calc = m_dyn.GetMagneticSitesCalc();
 	const auto& terms = m_dyn.GetExchangeTerms();
-	const auto& terms_calc = m_dyn.GetExchangeTermsCalc();
 	const auto& field = m_dyn.GetExternalField();
 	const auto& ordering = m_dyn.GetOrderingWavevector();
 	const auto& rotaxis = m_dyn.GetRotationAxis();
@@ -387,7 +385,6 @@ void MagDynDlg::StructPlotSync()
 		is_incommensurate, &ordering, &rotaxis](
 		std::size_t site_idx,
 		const t_magdyn::MagneticSite& site,
-		const t_magdyn::MagneticSiteCalc& site_calc,
 		const t_magdyn::ExternalField& field,
 		t_real_gl sc_x, t_real_gl sc_y, t_real_gl sc_z)
 	{
@@ -450,9 +447,9 @@ void MagDynDlg::StructPlotSync()
 		else
 		{
 			spin_vec = tl2::create<t_vec_gl>({
-				t_real_gl(site_calc.spin_dir[0].real() * site.spin_mag),
-				t_real_gl(site_calc.spin_dir[1].real() * site.spin_mag),
-				t_real_gl(site_calc.spin_dir[2].real() * site.spin_mag),
+				t_real_gl(site.spin_dir_calc[0].real() * site.spin_mag),
+				t_real_gl(site.spin_dir_calc[1].real() * site.spin_mag),
+				t_real_gl(site.spin_dir_calc[2].real() * site.spin_mag),
 			});
 
 			if(is_incommensurate)
@@ -494,9 +491,7 @@ void MagDynDlg::StructPlotSync()
 	// iterate and add unit cell magnetic sites
 	for(std::size_t site_idx=0; site_idx<sites.size(); ++site_idx)
 	{
-		add_atom_site(site_idx, sites[site_idx],
-			sites_calc[site_idx],
-			field, 0, 0, 0);
+		add_atom_site(site_idx, sites[site_idx], field, 0, 0, 0);
 	}
 
 
@@ -504,14 +499,12 @@ void MagDynDlg::StructPlotSync()
 	for(t_size term_idx=0; term_idx<terms.size(); ++term_idx)
 	{
 		const auto& term = terms[term_idx];
-		const auto& term_calc = terms_calc[term_idx];
 
 		if(term.site1 >= sites.size() || term.site2 >= sites.size())
 			continue;
 
 		const auto& site1 = sites[term.site1];
 		const auto& site2 = sites[term.site2];
-		const auto& site2_calc = sites_calc[term.site2];
 
 		t_real_gl sc_x = t_real_gl(term.dist[0]);
 		t_real_gl sc_y = t_real_gl(term.dist[1]);
@@ -549,7 +542,7 @@ void MagDynDlg::StructPlotSync()
 
 		// add the supercell site if it hasn't been inserted yet
 		if(atom_not_yet_seen(site2, sc_x, sc_y, sc_z))
-			add_atom_site(term.site2, site2, site2_calc, field, sc_x, sc_y, sc_z);
+			add_atom_site(term.site2, site2, field, sc_x, sc_y, sc_z);
 
 		t_vec_gl dir_vec = pos2_vec - pos1_vec;
 		t_real_gl dir_len = tl2::norm<t_vec_gl>(dir_vec);
@@ -573,9 +566,9 @@ void MagDynDlg::StructPlotSync()
 
 		// dmi vector
 		const t_vec_gl dmi_vec = tl2::create<t_vec_gl>({
-			t_real_gl(term_calc.dmi[0].real()),
-			t_real_gl(term_calc.dmi[1].real()),
-			t_real_gl(term_calc.dmi[2].real()),
+			t_real_gl(term.dmi_calc[0].real()),
+			t_real_gl(term.dmi_calc[1].real()),
+			t_real_gl(term.dmi_calc[2].real()),
 		});
 
 		if(tl2::norm<t_vec_gl>(dmi_vec) > g_eps)
