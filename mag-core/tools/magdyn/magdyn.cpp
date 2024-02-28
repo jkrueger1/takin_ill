@@ -33,6 +33,7 @@
 #include <QtWidgets/QMessageBox>
 
 #include <iostream>
+#include <unordered_set>
 #include <boost/scope_exit.hpp>
 
 
@@ -247,19 +248,34 @@ void MagDynDlg::SyncSiteComboBoxes()
  */
 void MagDynDlg::SyncSiteComboBox(QComboBox* combo, const std::string& selected_site)
 {
+	BOOST_SCOPE_EXIT(combo)
+	{
+		combo->blockSignals(false);
+	} BOOST_SCOPE_EXIT_END
+	combo->blockSignals(true);
+
 	combo->clear();
 
 	// iterate sites to get their names
 	int selected_idx = -1;
+	std::unordered_set<std::string> seen_names;
 	for(int row=0; row<m_sitestab->rowCount(); ++row)
 	{
-		if(auto *name = m_sitestab->item(row, COL_SITE_NAME); name)
-		{
-			combo->addItem(name->text());
+		auto *name = m_sitestab->item(row, COL_SITE_NAME);
+		if(!name)
+			continue;
 
-			if(name->text().toStdString() == selected_site)
-				selected_idx = row;
-		}
+		std::string site_name = name->text().toStdString();
+		if(seen_names.find(site_name) != seen_names.end())
+			continue;
+		seen_names.insert(site_name);
+
+		// add the item
+		combo->addItem(name->text());
+
+		// check if this item has to be selected
+		if(name->text().toStdString() == selected_site)
+			selected_idx = row;
 	}
 
 	combo->addItem("<invalid>");
@@ -769,6 +785,8 @@ void MagDynDlg::SitesTableItemChanged(QTableWidgetItem * /*item*/)
 {
 	if(m_ignoreTableChanges)
 		return;
+
+	SyncSiteComboBoxes();
 
 	if(m_autocalc->isChecked())
 		CalcAll();
