@@ -273,7 +273,7 @@ public:
 		{
 			m_checkMenubar = new QCheckBox("Use native menubar.", panelGui);
 			get_setting<int>(m_sett, "native_menubar", s_use_native_menubar);
-			m_checkMenubar->setChecked(*s_use_native_menubar!=0);
+			m_checkMenubar->setChecked(*s_use_native_menubar != 0);
 
 			gridGui->addWidget(m_checkMenubar, yGui++,0,1,3);
 		}
@@ -283,7 +283,7 @@ public:
 		{
 			m_checkDialogs = new QCheckBox("Use native dialogs.", panelGui);
 			get_setting<int>(m_sett, "native_dialogs", s_use_native_dialogs);
-			m_checkDialogs->setChecked(*s_use_native_dialogs!=0);
+			m_checkDialogs->setChecked(*s_use_native_dialogs != 0);
 
 			gridGui->addWidget(m_checkDialogs, yGui++,0,1,3);
 		}
@@ -490,7 +490,7 @@ protected:
 			{
 				if(std::holds_alternative<std::string>(iter->second))
 					*s_theme = std::get<std::string>(iter->second).c_str();
-				if(m_comboTheme && *s_theme!="")
+				if(m_comboTheme && *s_theme != "")
 				{
 					int idxTheme = m_comboTheme->findText(*s_theme);
 					if(idxTheme >= 0 && idxTheme < m_comboTheme->count())
@@ -504,7 +504,7 @@ protected:
 			{
 				if(std::holds_alternative<std::string>(iter->second))
 					*s_font = std::get<std::string>(iter->second).c_str();
-				if(m_editFont && *s_font!="")
+				if(m_editFont && *s_font != "")
 					m_editFont->setText(*s_font);
 			}
 		}
@@ -538,7 +538,7 @@ protected:
 				if(std::holds_alternative<int>(iter->second))
 					*vars[idx] = std::get<int>(iter->second);
 				if(checks[idx])
-					checks[idx]->setChecked(*vars[idx]!=0);
+					checks[idx]->setChecked(*vars[idx] != 0);
 			}
 		}
 	}
@@ -665,7 +665,7 @@ protected:
 			combo->addItem("No");
 			combo->addItem("Yes");
 
-			combo->setCurrentIndex(finalval==0 ? 0 : 1);
+			combo->setCurrentIndex(finalval == 0 ? 0 : 1);
 			table->setCellWidget((int)idx, (int)SettingsColumn::VALUE, combo);
 		}
 		if(var.editor == SettingsVariableEditor::COMBOBOX)

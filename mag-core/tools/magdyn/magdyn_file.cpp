@@ -328,7 +328,7 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 					"This file requires support for general exchange matrices J, "
 					"please activate them in the preferences.");
 			}
-			else
+			else if(m_allow_general_J)
 			{
 				m_use_genJ->setChecked(*optVal);
 			}
@@ -630,7 +630,7 @@ bool MagDynDlg::Save(const QString& filename)
 		magdyn.put<bool>("config.plot_weight_as_alpha", m_plot_weights_alpha->isChecked());
 		magdyn.put<bool>("config.auto_calc", m_autocalc->isChecked());
 		magdyn.put<bool>("config.use_DMI", m_use_dmi->isChecked());
-		magdyn.put<bool>("config.use_genJ", m_use_genJ->isChecked());
+		magdyn.put<bool>("config.use_genJ", m_allow_general_J && m_use_genJ->isChecked());
 		magdyn.put<bool>("config.use_field", m_use_field->isChecked());
 		magdyn.put<bool>("config.use_temperature", m_use_temperature->isChecked());
 		magdyn.put<bool>("config.use_weights", m_use_weights->isChecked());

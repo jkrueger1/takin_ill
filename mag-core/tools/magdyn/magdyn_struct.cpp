@@ -582,7 +582,6 @@ void MagDynDlg::SyncToKernel()
 			dist_z->GetValue(),
 		});
 
-		//term.J = interaction->GetValue();
 		term.J = interaction->text().toStdString();
 
 		if(m_use_dmi->isChecked())
@@ -609,7 +608,6 @@ void MagDynDlg::SyncToKernel()
 	}
 
 	m_dyn.CalcExchangeTerms();
-	//m_dyn.CalcIndices();
 
 	// ground state energy
 	std::ostringstream ostrGS;
