@@ -256,10 +256,12 @@ void MagDynDlg::SyncSitesFromKernel(boost::optional<const pt::ptree&> extra_info
 	BOOST_SCOPE_EXIT(this_)
 	{
 		this_->m_ignoreCalc = false;
+		this_->m_ignoreSitesCalc = false;
 	} BOOST_SCOPE_EXIT_END
 
 	// prevent syncing before the new sites are transferred
 	m_ignoreCalc = true;
+	m_ignoreSitesCalc = true;
 
 	// clear old sites
 	DelTabItem(m_sitestab, -1);
@@ -299,6 +301,8 @@ void MagDynDlg::SyncSitesFromKernel(boost::optional<const pt::ptree&> extra_info
 			spin_ortho_x, spin_ortho_y, spin_ortho_z,
 			rgb);
 	}
+
+	SyncSiteComboBoxes();
 }
 
 
@@ -528,8 +532,10 @@ void MagDynDlg::SyncToKernel()
 			m_termstab->item(row, COL_XCH_DMI_Y));
 		auto *dmi_z = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
 			m_termstab->item(row, COL_XCH_DMI_Z));
-		auto *site_1 = m_termstab->item(row, COL_XCH_ATOM1_IDX);
-		auto *site_2 = m_termstab->item(row, COL_XCH_ATOM2_IDX);
+		QComboBox *site_1 = reinterpret_cast<QComboBox*>(
+			m_termstab->cellWidget(row, COL_XCH_ATOM1_IDX));
+		QComboBox *site_2 = reinterpret_cast<QComboBox*>(
+			m_termstab->cellWidget(row, COL_XCH_ATOM2_IDX));
 
 		tl2::NumericTableWidgetItem<t_real>* gen_xx = nullptr;
 		tl2::NumericTableWidgetItem<t_real>* gen_xy = nullptr;
@@ -573,8 +579,8 @@ void MagDynDlg::SyncToKernel()
 
 		t_magdyn::ExchangeTerm term;
 		term.name = name->text().toStdString();
-		term.site1 = site_1->text().toStdString();
-		term.site2 = site_2->text().toStdString();
+		term.site1 = site_1->currentText().toStdString();
+		term.site2 = site_2->currentText().toStdString();
 		term.dist = tl2::create<t_vec_real>(
 		{
 			dist_x->GetValue(),

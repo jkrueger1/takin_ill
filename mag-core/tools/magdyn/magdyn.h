@@ -111,7 +111,7 @@ enum : int
 enum : int
 {
 	COL_XCH_NAME = 0,                                // label
-	COL_XCH_ATOM1_IDX, COL_XCH_ATOM2_IDX,            // site indices
+	COL_XCH_ATOM1_IDX, COL_XCH_ATOM2_IDX,            // site names or indices
 	COL_XCH_DIST_X, COL_XCH_DIST_Y, COL_XCH_DIST_Z,  // unit cell distance
 	COL_XCH_INTERACTION,                             // isotropic exchange interaction
 	COL_XCH_DMI_X, COL_XCH_DMI_Y, COL_XCH_DMI_Z,     // antisymmetric DMI
@@ -384,6 +384,10 @@ protected:
 		const std::string& gen_zx = "0", const std::string& gen_zy = "0", const std::string& gen_zz = "0",
 		const std::string& rgb = "#0x00bf00");
 
+	void SyncSiteComboBoxes();
+	void SyncSiteComboBox(QComboBox* combo, const std::string& selected_site);
+	QComboBox* CreateSitesComboBox(const std::string& selected_site);
+
 	// add a variable to the table
 	void AddVariableTabItem(int row = -1,
 		const std::string& name = "var",
@@ -497,6 +501,7 @@ private:
 
 	bool m_ignoreTableChanges = true;
 	bool m_ignoreCalc = false;
+	bool m_ignoreSitesCalc = false;
 	bool m_stopRequested = false;
 
 	// data for dispersion plot

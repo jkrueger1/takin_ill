@@ -214,6 +214,80 @@ void MagDynDlg::AddSiteTabItem(int row,
 	m_sitestab->setSortingEnabled(true);
 
 	UpdateVerticalHeader(m_sitestab);
+	SyncSiteComboBoxes();
+}
+
+
+
+/**
+ * update the contents of all site selection combo boxes to match the sites table
+ */
+void MagDynDlg::SyncSiteComboBoxes()
+{
+	if(m_ignoreSitesCalc)
+		return;
+
+	// iterate couplings and update their site selection combo boxes
+	for(int row=0; row<m_termstab->rowCount(); ++row)
+	{
+		QComboBox *site_1 = reinterpret_cast<QComboBox*>(
+			m_termstab->cellWidget(row, COL_XCH_ATOM1_IDX));
+		QComboBox *site_2 = reinterpret_cast<QComboBox*>(
+			m_termstab->cellWidget(row, COL_XCH_ATOM2_IDX));
+
+		SyncSiteComboBox(site_1, site_1->currentText().toStdString());
+		SyncSiteComboBox(site_2, site_2->currentText().toStdString());
+	}
+}
+
+
+
+/**
+ * update the contents of a site selection combo box to match the sites table
+ */
+void MagDynDlg::SyncSiteComboBox(QComboBox* combo, const std::string& selected_site)
+{
+	combo->clear();
+
+	// iterate sites to get their names
+	int selected_idx = -1;
+	for(int row=0; row<m_sitestab->rowCount(); ++row)
+	{
+		if(auto *name = m_sitestab->item(row, COL_SITE_NAME); name)
+		{
+			combo->addItem(name->text());
+
+			if(name->text().toStdString() == selected_site)
+				selected_idx = row;
+		}
+	}
+
+	combo->addItem("<invalid>");
+
+	if(selected_idx >= 0)
+		combo->setCurrentIndex(selected_idx);
+	else
+		combo->setCurrentIndex(combo->count() - 1);
+}
+
+
+
+/**
+ * create a combo box with the site names
+ */
+QComboBox* MagDynDlg::CreateSitesComboBox(const std::string& selected_site)
+{
+	QComboBox* combo = new QComboBox(m_termstab);
+	SyncSiteComboBox(combo, selected_site);
+
+	// connections
+	connect(combo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+		[this]()
+		{
+			TermsTableItemChanged(nullptr);
+		});
+
+	return combo;
 }
 
 
@@ -283,10 +357,8 @@ void MagDynDlg::AddTermTabItem(int row,
 	{
 		m_termstab->setItem(row, COL_XCH_NAME,
 			new QTableWidgetItem(name.c_str()));
-		m_termstab->setItem(row, COL_XCH_ATOM1_IDX,
-			new QTableWidgetItem(atom_1.c_str()));
-		m_termstab->setItem(row, COL_XCH_ATOM2_IDX,
-			new QTableWidgetItem(atom_2.c_str()));
+		m_termstab->setCellWidget(row, COL_XCH_ATOM1_IDX, CreateSitesComboBox(atom_1));
+		m_termstab->setCellWidget(row, COL_XCH_ATOM2_IDX, CreateSitesComboBox(atom_2));
 		m_termstab->setItem(row, COL_XCH_DIST_X,
 			new tl2::NumericTableWidgetItem<t_real>(dist_x));
 		m_termstab->setItem(row, COL_XCH_DIST_Y,
@@ -544,6 +616,8 @@ void MagDynDlg::DelTabItem(QTableWidget *pTab, int begin, int end)
 	}
 
 	UpdateVerticalHeader(pTab);
+	if(pTab == m_sitestab)
+		SyncSiteComboBoxes();
 }
 
 
