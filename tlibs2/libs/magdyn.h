@@ -44,6 +44,7 @@
 #include <vector>
 #include <array>
 #include <tuple>
+#include <unordered_set>
 #include <unordered_map>
 #include <string>
 #include <iostream>
@@ -158,7 +159,6 @@ struct t_MagneticSite
 	// ------------------------------------------------------------------------
 	// input properties
 	std::string name{};          // identifier
-	t_size index{};              // index
 
 	t_vec_real pos{};            // magnetic site position
 
@@ -190,10 +190,9 @@ struct t_ExchangeTerm
 	// ------------------------------------------------------------------------
 	// input properties
 	std::string name{};          // identifier
-	t_size index{};              // index
 
-	t_size site1{};              // index of first magnetic site
-	t_size site2{};              // index of second magnetic site
+	std::string site1{};         // name of first magnetic site
+	std::string site2{};         // name of second magnetic site
 	t_vec_real dist{};           // distance between unit cells
 
 	std::string J{};             // parsable expression for Heisenberg interaction
@@ -203,6 +202,8 @@ struct t_ExchangeTerm
 
 	// ------------------------------------------------------------------------
 	// calculated properties
+	t_size site1_calc{};         // index of first magnetic site
+	t_size site2_calc{};         // index of second magnetic site
 	t_cplx J_calc{};             // Heisenberg interaction
 	t_vec dmi_calc{};            // Dzyaloshinskij-Moriya interaction
 	t_mat Jgen_calc{};           // general exchange interaction
@@ -422,7 +423,60 @@ public:
 			if(site.name == name)
 				sites.push_back(&site);
 		}
+
 		return sites;
+	}
+
+
+	/**
+	 * get the index of a magnetic site from its name
+	 */
+	t_size GetMagneticSiteIndex(const std::string& name) const
+	{
+		// try to find the site index by name
+		for(t_size idx = 0; idx < GetMagneticSitesCount(); ++idx)
+		{
+			if(GetMagneticSite(idx).name == name)
+				return idx;
+		}
+
+		// alternatively try to parse the expression for the index
+		tl2::ExprParser<t_size> parser;
+		parser.SetAutoregisterVariables(false);
+		if(parser.parse(name))
+		{
+			t_size idx = parser.eval();
+			if(idx < GetMagneticSitesCount())
+				return idx;
+		}
+
+		// nothing found: return invalid index
+		return GetMagneticSitesCount();
+	}
+
+
+	/**
+	 * get the index of an exchange term from its name
+	 */
+	t_size GetExchangeTermIndex(const std::string& name) const
+	{
+		for(t_size idx = 0; idx < GetExchangeTermsCount(); ++idx)
+		{
+			if(GetExchangeTerm(idx).name == name)
+				return idx;
+		}
+
+		// alternatively try to parse the expression for the index
+		tl2::ExprParser<t_size> parser;
+		parser.SetAutoregisterVariables(false);
+		if(parser.parse(name))
+		{
+			t_size idx = parser.eval();
+			if(idx < GetExchangeTermsCount())
+				return idx;
+		}
+
+		return GetExchangeTermsCount();  // return invalid index
 	}
 	// --------------------------------------------------------------------
 
@@ -520,18 +574,14 @@ public:
 	}
 
 
-	void AddMagneticSite(MagneticSite&& site, bool set_index = true)
+	void AddMagneticSite(MagneticSite&& site)
 	{
-		if(set_index)
-			site.index = GetMagneticSitesCount();
 		m_sites.emplace_back(std::forward<MagneticSite&&>(site));
 	}
 
 
-	void AddExchangeTerm(ExchangeTerm&& term, bool set_index = true)
+	void AddExchangeTerm(ExchangeTerm&& term)
 	{
-		if(set_index)
-			term.index = GetExchangeTermsCount();
 		m_exchange_terms.emplace_back(std::forward<ExchangeTerm&&>(term));
 	}
 	// --------------------------------------------------------------------
@@ -608,7 +658,7 @@ public:
 		{
 			if(print_error)
 			{
-				std::cerr << "Error: Coupling term index " << idx
+				std::cerr << "Error: Coupling index " << idx
 					<< " is out of bounds." << std::endl;
 			}
 
@@ -628,6 +678,7 @@ public:
 	 */
 	void SymmetriseMagneticSites(const std::vector<t_mat_real>& symops)
 	{
+		CalcMagneticSites();
 		MagneticSites newsites;
 
 		for(const MagneticSite& site : GetMagneticSites())
@@ -646,7 +697,7 @@ public:
 
 		m_sites = std::move(newsites);
 		RemoveDuplicateMagneticSites();
-		//CalcMagneticSites();
+		CalcMagneticSites();
 	}
 
 
@@ -655,6 +706,8 @@ public:
 	 */
 	void SymmetriseExchangeTerms(const std::vector<t_mat_real>& symops)
 	{
+		CalcMagneticSites();
+		CalcExchangeTerms();
 		ExchangeTerms newterms;
 		tl2::ExprParser parser = GetExprParser();
 
@@ -668,7 +721,7 @@ public:
 		for(const ExchangeTerm& term : GetExchangeTerms())
 		{
 			// check if the site indices are valid
-			if(!CheckMagneticSite(term.site1) || !CheckMagneticSite(term.site2))
+			if(!CheckMagneticSite(term.site1_calc) || !CheckMagneticSite(term.site2_calc))
 				continue;
 
 			// super cell distance vector
@@ -677,10 +730,10 @@ public:
 
 			// generate new (possibly supercell) sites with symop
 			auto sites1_sc = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
-				sites_uc[term.site1], symops, m_eps,
+				sites_uc[term.site1_calc], symops, m_eps,
 				false /*keep in uc*/, true /*ignore occupied*/, true);
 			auto sites2_sc = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
-				sites_uc[term.site2] + dist_sc, symops, m_eps,
+				sites_uc[term.site2_calc] + dist_sc, symops, m_eps,
 				false /*keep in uc*/, true /*ignore occupied*/, true);
 
 			// generate new dmi vectors
@@ -698,7 +751,7 @@ public:
 				else
 				{
 					std::cerr << "Error parsing DMI component " << dmi_idx
-						<< " of term " << term.index << "."
+						<< " of term \"" << term.name << "\"."
 						<< std::endl;
 				}
 			}
@@ -710,6 +763,7 @@ public:
 			t_real Jgen_arr[3][3]{};
 
 			for(int J_idx1 = 0; J_idx1 < 3; ++J_idx1)
+			{
 				for(int J_idx2 = 0; J_idx2 < 3; ++J_idx2)
 				{
 					if(term.Jgen[J_idx1][J_idx2] == "")
@@ -723,10 +777,11 @@ public:
 					{
 						std::cerr << "Error parsing general J component ("
 							<< J_idx1 << ", " << J_idx2
-							<< ") of term " << term.index << "."
+							<< ") of term \"" << term.name << "\"."
 							<< std::endl;
 					}
 				}
+			}
 
 			t_mat_real Jgen = tl2::create<t_mat_real>({
 				Jgen_arr[0][0], Jgen_arr[0][1], Jgen_arr[0][2], 0,
@@ -750,8 +805,10 @@ public:
 				}
 
 				ExchangeTerm newterm = term;
-				newterm.site1 = site1_sc_idx;
-				newterm.site2 = site2_sc_idx;
+				newterm.site1_calc = site1_sc_idx;
+				newterm.site2_calc = site2_sc_idx;
+				newterm.site1 = GetMagneticSite(newterm.site1_calc).name;
+				newterm.site2 = GetMagneticSite(newterm.site2_calc).name;
 				newterm.dist = sc2 - sc1;
 				for(int idx1 = 0; idx1 < 3; ++idx1)
 				{
@@ -767,7 +824,7 @@ public:
 
 		m_exchange_terms = std::move(newterms);
 		RemoveDuplicateExchangeTerms();
-		//CalcExchangeTerms();
+		CalcExchangeTerms();
 	}
 
 
@@ -803,6 +860,8 @@ public:
 			t_real dist{};
 		};
 
+		CalcMagneticSites();
+		CalcExchangeTerms();
 		ExchangeTerms newterms;
 		std::vector<PossibleCoupling> couplings;
 
@@ -869,8 +928,10 @@ public:
 				break;
 
 			ExchangeTerm newterm{};
-			newterm.site1 = coupling.idx1_uc;
-			newterm.site2 = coupling.idx2_uc;
+			newterm.site1_calc = coupling.idx1_uc;
+			newterm.site2_calc = coupling.idx2_uc;
+			newterm.site1 = GetMagneticSite(newterm.site1_calc).name;
+			newterm.site2 = GetMagneticSite(newterm.site2_calc).name;
 			newterm.dist = coupling.sc_vec;
 			newterm.J = "0";
 			newterm.name += "coupling_" + tl2::var_to_str(coupling_idx + 1);
@@ -881,7 +942,7 @@ public:
 
 		m_exchange_terms = std::move(newterms);
 		RemoveDuplicateExchangeTerms();
-		//CalcExchangeTerms();
+		CalcExchangeTerms();
 	}
 
 
@@ -980,7 +1041,7 @@ public:
 						{
 							std::cerr << "Error parsing spin direction \""
 								<< site.spin_dir[dir_idx] << "\""
-								<< " for site " << site.index
+								<< " for site \"" << site.name << "\""
 								<< " and component " << dir_idx
 								<< "." << std::endl;
 						}
@@ -1000,7 +1061,7 @@ public:
 
 							std::cerr << "Error parsing spin orthogonal plane \""
 								<< site.spin_ortho[dir_idx] << "\""
-								<< " for site " << site.index
+								<< " for site \"" << site.name << "\""
 								<< " and component " << dir_idx
 								<< "." << std::endl;
 						}
@@ -1029,10 +1090,10 @@ public:
 					// in case they are explicitly given
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
-					std::cout << "Site " << site.index << " u = "
+					std::cout << "Site " << site.name << " u = "
 						<< site.u_calc[0] << " " << site.u_calc[1] << " " << site.u_calc[2]
 						<< std::endl;
-					std::cout << "Site " << site.index << " v = "
+					std::cout << "Site " << site.name << " v = "
 						<< site.v_calc[0] << " " << site.v_calc[1] << " " << site.v_calc[2]
 						<< std::endl;
 #endif
@@ -1062,6 +1123,23 @@ public:
 		{
 			try
 			{
+				// get site indices
+				term.site1_calc = GetMagneticSiteIndex(term.site1);
+				term.site2_calc = GetMagneticSiteIndex(term.site2);
+
+				if(term.site1_calc >= GetMagneticSitesCount())
+				{
+					std::cerr << "Error: Unknown site 1 name \"" << term.site1 << "\"."
+						<< " in coupling \"" << term.name << "\"." << std::endl;
+					continue;
+				}
+				if(term.site2_calc >= GetMagneticSitesCount())
+				{
+					std::cerr << "Error: Unknown site 2 name \"" << term.site2 << "\"."
+						<< " in coupling \"" << term.name << "\"." << std::endl;
+					continue;
+				}
+
 				// symmetric interaction
 				if(parser.parse(term.J))
 				{
@@ -1129,25 +1207,6 @@ public:
 
 
 	/**
-	 * update the site and term indices
-	 */
-	void CalcIndices()
-	{
-		for(t_size site_idx=0; site_idx<GetMagneticSitesCount(); ++site_idx)
-		{
-			MagneticSite& site = m_sites[site_idx];
-			site.index = site_idx;
-		}
-
-		for(t_size term_idx=0; term_idx<GetExchangeTermsCount(); ++term_idx)
-		{
-			ExchangeTerm& term = m_exchange_terms[term_idx];
-			term.index = term_idx;
-		}
-	}
-
-
-	/**
 	 * calculate the real-space interaction matrix J of
 	 * equations (10) - (13) from (Toth 2015)
 	 */
@@ -1179,7 +1238,7 @@ public:
 				J = J * rot_UC;
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
-				std::cout << "Coupling rot_UC = " << term.index << ":\n";
+				std::cout << "Coupling rot_UC = " << term.name << ":\n";
 				tl2::niceprint(std::cout, rot_UC, 1e-4, 4);
 #endif
 			}
@@ -1213,11 +1272,11 @@ public:
 					J.emplace(std::move(std::make_pair(indices, J33)));
 			};
 
-			if(!CheckMagneticSite(term.site1) || !CheckMagneticSite(term.site2))
+			if(!CheckMagneticSite(term.site1_calc) || !CheckMagneticSite(term.site2_calc))
 				continue;
 
-			const t_indices indices = std::make_pair(term.site1, term.site2);
-			const t_indices indices_t = std::make_pair(term.site2, term.site1);
+			const t_indices indices = std::make_pair(term.site1_calc, term.site2_calc);
+			const t_indices indices_t = std::make_pair(term.site2_calc, term.site1_calc);
 
 			t_mat J = CalcRealJ(term);
 			if(J.size1() == 0 || J.size2() == 0)
@@ -1244,7 +1303,6 @@ public:
 
 	/**
 	 * get the hamiltonian at the given momentum
-	 * (CalcMagneticSites() needs to be called once before this function)
 	 * @note implements the formalism given by (Toth 2015)
 	 * @note a first version for a simplified ferromagnetic dispersion was based on (Heinsdorf 2021)
 	 */
@@ -1810,13 +1868,13 @@ public:
 		for(const ExchangeTerm& term : GetExchangeTerms())
 		{
 			// check if the site indices are valid
-			if(!CheckMagneticSite(term.site1) || !CheckMagneticSite(term.site2))
+			if(!CheckMagneticSite(term.site1_calc) || !CheckMagneticSite(term.site2_calc))
 				continue;
 
 			t_mat J = CalcRealJ(term);  // Q=0 -> no rotation needed
 
-			t_vec Si = GetMagneticSite(term.site1).spin_mag * GetMagneticSite(term.site1).v_calc;
-			t_vec Sj = GetMagneticSite(term.site2).spin_mag * GetMagneticSite(term.site2).v_calc;
+			t_vec Si = GetMagneticSite(term.site1_calc).spin_mag * GetMagneticSite(term.site1_calc).v_calc;
+			t_vec Sj = GetMagneticSite(term.site2_calc).spin_mag * GetMagneticSite(term.site2_calc).v_calc;
 
 			E += tl2::inner_noconj<t_vec>(Si, J * Sj).real();
 		}
@@ -1968,12 +2026,27 @@ public:
 		// magnetic sites
 		if(auto sites = node.get_child_optional("atom_sites"); sites)
 		{
+			std::unordered_set<std::string> seen_names;
+			t_size unique_name_counter = 1;
+
 			for(const auto &site : *sites)
 			{
 				MagneticSite magnetic_site;
 
-				magnetic_site.name = site.second.get<std::string>("name", "n/a");
-				magnetic_site.index = GetMagneticSitesCount();
+				magnetic_site.name = site.second.get<std::string>("name", "");
+				if(magnetic_site.name == "")
+					magnetic_site.name = "site_" + tl2::var_to_str(GetMagneticSitesCount());
+
+				if(seen_names.find(magnetic_site.name) != seen_names.end())
+				{
+					// try to create a unique name
+					magnetic_site.name += "_" + tl2::var_to_str(unique_name_counter);
+					++unique_name_counter;
+				}
+				else
+				{
+					seen_names.insert(magnetic_site.name);
+				}
 
 				magnetic_site.pos = tl2::create<t_vec_real>(
 				{
@@ -1993,52 +2066,73 @@ public:
 				magnetic_site.spin_mag = site.second.get<t_real>("spin_magnitude", 1.);
 				magnetic_site.g = -2. * tl2::unit<t_mat>(3);
 
-				AddMagneticSite(std::move(magnetic_site), false);
+				AddMagneticSite(std::move(magnetic_site));
 			}
 		}
 
 		// exchange terms / couplings
 		if(auto terms = node.get_child_optional("exchange_terms"); terms)
 		{
+			std::unordered_set<std::string> seen_names;
+			t_size unique_name_counter = 1;
+
 			for(const auto &term : *terms)
 			{
 				ExchangeTerm exchange_term;
 
-				exchange_term.name = term.second.get<std::string>("name", "n/a");
-				exchange_term.index = GetExchangeTermsCount();
-				exchange_term.site1 = term.second.get<t_size>("atom_1_index", 0);
-				exchange_term.site2 = term.second.get<t_size>("atom_2_index", 0);
+				exchange_term.name = term.second.get<std::string>("name", "");
+				if(exchange_term.name == "")
+					exchange_term.name = "coupling_" + tl2::var_to_str(GetExchangeTermsCount());
 
-				// alternatively get the magnetic site indices via the names
+				if(seen_names.find(exchange_term.name) != seen_names.end())
+				{
+					// try to create a unique name
+					exchange_term.name += "_" + tl2::var_to_str(unique_name_counter);
+					++unique_name_counter;
+				}
+				else
+				{
+					seen_names.insert(exchange_term.name);
+				}
+
+				exchange_term.site1_calc = term.second.get<t_size>("atom_1_index", 0);
+				exchange_term.site2_calc = term.second.get<t_size>("atom_2_index", 0);
+
 				if(auto name1 = term.second.get_optional<std::string>("atom_1_name"); name1)
 				{
-					t_size site1_old = exchange_term.site1;
+					// get the magnetic site index via the name
 					if(auto sites1 = FindMagneticSites(*name1); sites1.size() == 1)
-						exchange_term.site1 = sites1[0]->index;
-					if(exchange_term.site1 != site1_old)
+						exchange_term.site1 = sites1[0]->name;
+					else
 					{
 						std::cerr
-							<< "Error in coupling " << exchange_term.index
-							<< ": Index of site 1 (" << site1_old
-							<< ") does not correspond to the selected name (" << *name1
-							<< ")." << std::endl;
-						exchange_term.site1 = site1_old;
+							<< "Error in coupling \"" << exchange_term.name
+							<< "\": Site 1 name \"" << *name1
+							<< "\" was not found." << std::endl;
 					}
 				}
+				else
+				{
+					// get the magnetic site name via the index
+					exchange_term.site1 = GetMagneticSite(exchange_term.site1_calc).name;
+				}
+
 				if(auto name2 = term.second.get_optional<std::string>("atom_2_name"); name2)
 				{
-					t_size site2_old = exchange_term.site2;
 					if(auto sites2 = FindMagneticSites(*name2); sites2.size() == 1)
-						exchange_term.site2 = sites2[0]->index;
-					if(exchange_term.site2 != site2_old)
+						exchange_term.site2 = sites2[0]->name;
+					else
 					{
 						std::cerr
-							<< "Error in coupling " << exchange_term.index
-							<< ": Index of site 2 (" << site2_old
-							<< ") does not correspond to the selected name (" << *name2
-							<< ")." << std::endl;
-						exchange_term.site2 = site2_old;
+							<< "Error in coupling \"" << exchange_term.name
+							<< "\": Site 2 name \"" << *name2
+							<< "\" was not found." << std::endl;
 					}
+				}
+				else
+				{
+					// get the magnetic site name via the index
+					exchange_term.site2 = GetMagneticSite(exchange_term.site2_calc).name;
 				}
 
 				exchange_term.dist = tl2::create<t_vec_real>(
@@ -2063,7 +2157,7 @@ public:
 					}
 				}
 
-				AddExchangeTerm(std::move(exchange_term), false);
+				AddExchangeTerm(std::move(exchange_term));
 			}
 		}
 
@@ -2196,8 +2290,11 @@ public:
 			boost::property_tree::ptree itemNode;
 			itemNode.put<std::string>("name", term.name);
 
-			itemNode.put<t_size>("atom_1_index", term.site1);
-			itemNode.put<t_size>("atom_2_index", term.site2);
+			// save the magnetic site names and indices
+			itemNode.put<t_size>("atom_1_index", term.site1_calc);
+			itemNode.put<t_size>("atom_2_index", term.site2_calc);
+			itemNode.put<std::string>("atom_1_name", term.site1);
+			itemNode.put<std::string>("atom_2_name", term.site2);
 
 			itemNode.put<t_real>("distance_x", term.dist[0]);
 			itemNode.put<t_real>("distance_y", term.dist[1]);
@@ -2217,12 +2314,6 @@ public:
 						comps[i] + comps[j], term.Jgen[i][j]);
 				}
 			}
-
-			// also save the magnetic site names
-			if(term.site1 < GetMagneticSitesCount())
-				itemNode.put<std::string>("atom_1_name", GetMagneticSite(term.site1).name);
-			if(term.site2 < GetMagneticSitesCount())
-				itemNode.put<std::string>("atom_2_name", GetMagneticSite(term.site2).name);
 
 			node.add_child("exchange_terms.term", itemNode);
 		}

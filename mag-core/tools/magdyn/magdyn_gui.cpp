@@ -164,7 +164,7 @@ void MagDynDlg::CreateSitesPanel()
 
 	m_sitestab = new QTableWidget(m_sitespanel);
 	m_sitestab->setShowGrid(true);
-	m_sitestab->setSortingEnabled(g_allow_sorting_sites != 0);  // warning: the site index depends on the order
+	m_sitestab->setSortingEnabled(true);
 	m_sitestab->setMouseTracking(true);
 	m_sitestab->setSelectionBehavior(QTableWidget::SelectRows);
 	m_sitestab->setSelectionMode(QTableWidget::ContiguousSelection);

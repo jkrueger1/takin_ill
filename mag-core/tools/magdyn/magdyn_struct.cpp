@@ -248,52 +248,6 @@ void MagDynDlg::GeneratePossibleCouplings()
 
 
 /**
- * get the magnetic site indices from the exchange term in a given row
- */
-std::optional<t_size> MagDynDlg::GetTermAtomIndex(int row, int atom_num) const
-{
-	int col = (atom_num==0 ? COL_XCH_ATOM1_IDX : COL_XCH_ATOM2_IDX);
-
-	auto *atom_idx = static_cast<tl2::NumericTableWidgetItem<t_size>*>(
-		m_termstab->item(row, col));
-
-	std::optional<t_size> idx = std::nullopt;
-
-	// try to find the magnetic site with the given name (if it's unique)
-	std::string atomName = atom_idx->text().toStdString();
-	if(auto sites = m_dyn.FindMagneticSites(atomName); sites.size() == 1)
-	{
-		//std::cout << sites[0]->name<< " -> " << sites[0]->index << std::endl;
-		idx = sites[0]->index;
-	}
-
-	// otherwise try to use the given index
-	bool valid = true;
-	if(!idx)
-	{
-		idx = atom_idx->GetValue(&valid);
-		if(!valid)
-			idx = std::nullopt;
-	}
-
-	// out-of-bounds check for atom index
-	if(!idx || *idx >= m_dyn.GetMagneticSites().size() || !valid)
-	{
-		// set background red
-		atom_idx->setBackground(QBrush(QColor(0xff, 0x00, 0x00)));
-	}
-	else
-	{
-		// restore background
-		QBrush brush = m_termstab->item(row, COL_XCH_NAME)->background();
-		atom_idx->setBackground(brush);
-	}
-
-	return idx;
-}
-
-
-/**
  * get the magnetic sites from the kernel
  * and add them to the table
  */
@@ -310,16 +264,18 @@ void MagDynDlg::SyncSitesFromKernel(boost::optional<const pt::ptree&> extra_info
 	// clear old sites
 	DelTabItem(m_sitestab, -1);
 
-	for(const auto &site : m_dyn.GetMagneticSites())
+	for(t_size site_index = 0; site_index < m_dyn.GetMagneticSitesCount(); ++site_index)
 	{
+		const auto &site = m_dyn.GetMagneticSite(site_index);
+
 		// default colour
 		std::string rgb = "auto";
 
 		// get additional data from exchange term entry
-		if(extra_infos && site.index < extra_infos->size())
+		if(extra_infos && site_index < extra_infos->size())
 		{
 			auto siteiter = (*extra_infos).begin();
-			std::advance(siteiter, site.index);
+			std::advance(siteiter, site_index);
 
 			// read colour
 			rgb = siteiter->second.get<std::string>("colour", "auto");
@@ -363,16 +319,18 @@ void MagDynDlg::SyncTermsFromKernel(boost::optional<const pt::ptree&> extra_info
 	// clear old terms
 	DelTabItem(m_termstab, -1);
 
-	for(const auto& term : m_dyn.GetExchangeTerms())
+	for(t_size term_index = 0; term_index < m_dyn.GetExchangeTermsCount(); ++term_index)
 	{
+		const auto& term = m_dyn.GetExchangeTerm(term_index);
+
 		// default colour
 		std::string rgb = "#0x00bf00";
 
 		// get additional data from exchange term entry
-		if(extra_infos && term.index < extra_infos->size())
+		if(extra_infos && term_index < extra_infos->size())
 		{
 			auto termiter = (*extra_infos).begin();
-			std::advance(termiter, term.index);
+			std::advance(termiter, term_index);
 
 			// read colour
 			rgb = termiter->second.get<std::string>("colour", "#0x00bf00");
@@ -570,6 +528,8 @@ void MagDynDlg::SyncToKernel()
 			m_termstab->item(row, COL_XCH_DMI_Y));
 		auto *dmi_z = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
 			m_termstab->item(row, COL_XCH_DMI_Z));
+		auto *site_1 = m_termstab->item(row, COL_XCH_ATOM1_IDX);
+		auto *site_2 = m_termstab->item(row, COL_XCH_ATOM2_IDX);
 
 		tl2::NumericTableWidgetItem<t_real>* gen_xx = nullptr;
 		tl2::NumericTableWidgetItem<t_real>* gen_xy = nullptr;
@@ -602,10 +562,7 @@ void MagDynDlg::SyncToKernel()
 				m_termstab->item(row, COL_XCH_GEN_ZZ));
 		}
 
-		auto atom_1_idx = GetTermAtomIndex(row, 0);
-		auto atom_2_idx = GetTermAtomIndex(row, 1);
-
-		if(!name || !atom_1_idx || !atom_2_idx ||
+		if(!name || !site_1 || !site_2 ||
 			!dist_x || !dist_y || !dist_z ||
 			!interaction || !dmi_x || !dmi_y || !dmi_z)
 		{
@@ -616,8 +573,8 @@ void MagDynDlg::SyncToKernel()
 
 		t_magdyn::ExchangeTerm term;
 		term.name = name->text().toStdString();
-		term.site1 = *atom_1_idx;
-		term.site2 = *atom_2_idx;
+		term.site1 = site_1->text().toStdString();
+		term.site2 = site_2->text().toStdString();
 		term.dist = tl2::create<t_vec_real>(
 		{
 			dist_x->GetValue(),
@@ -774,8 +731,11 @@ void MagDynDlg::ImportCouplings(const std::vector<TableImportCoupling>& coupling
 			name = ostrName.str();
 		}
 
-		AddTermTabItem(-1, name, atom_1, atom_2,
-			dist_x, dist_y, dist_z,
-			J, dmi_x, dmi_y, dmi_z);
+		// TODO: get the site names
+		std::string atom_1_name = tl2::var_to_str(atom_1);
+		std::string atom_2_name = tl2::var_to_str(atom_2);
+
+		AddTermTabItem(-1, name, atom_1_name, atom_2_name,
+			dist_x, dist_y, dist_z, J, dmi_x, dmi_y, dmi_z);
 	}
 }

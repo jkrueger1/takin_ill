@@ -211,7 +211,7 @@ void MagDynDlg::AddSiteTabItem(int row,
 
 	m_sitestab->scrollToItem(m_sitestab->item(row, 0));
 	m_sitestab->setCurrentCell(row, 0);
-	m_sitestab->setSortingEnabled(g_allow_sorting_sites != 0);  // warning: the site index depends on the order
+	m_sitestab->setSortingEnabled(true);
 
 	UpdateVerticalHeader(m_sitestab);
 }
@@ -223,7 +223,7 @@ void MagDynDlg::AddSiteTabItem(int row,
  */
 void MagDynDlg::AddTermTabItem(int row,
 	const std::string& _name,
-	t_size atom_1, t_size atom_2,
+	const std::string& atom_1, const std::string& atom_2,
 	t_real dist_x, t_real dist_y, t_real dist_z,
 	const std::string& J,
 	const std::string& dmi_x, const std::string& dmi_y, const std::string& dmi_z,
@@ -284,9 +284,9 @@ void MagDynDlg::AddTermTabItem(int row,
 		m_termstab->setItem(row, COL_XCH_NAME,
 			new QTableWidgetItem(name.c_str()));
 		m_termstab->setItem(row, COL_XCH_ATOM1_IDX,
-			new tl2::NumericTableWidgetItem<t_size>(atom_1));
+			new QTableWidgetItem(atom_1.c_str()));
 		m_termstab->setItem(row, COL_XCH_ATOM2_IDX,
-			new tl2::NumericTableWidgetItem<t_size>(atom_2));
+			new QTableWidgetItem(atom_2.c_str()));
 		m_termstab->setItem(row, COL_XCH_DIST_X,
 			new tl2::NumericTableWidgetItem<t_real>(dist_x));
 		m_termstab->setItem(row, COL_XCH_DIST_Y,

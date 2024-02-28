@@ -322,8 +322,8 @@ protected:
 	std::unordered_map<std::size_t, AtomSiteInfo> m_structplot_atoms{};
 	std::unordered_map<std::size_t, ExchangeTermInfo> m_structplot_terms{};
 	std::optional<std::size_t> m_structplot_cur_obj{};
-	std::optional<std::size_t> m_structplot_cur_atom{};
-	std::optional<std::size_t> m_structplot_cur_term{};
+	std::optional<std::string> m_structplot_cur_atom{};
+	std::optional<std::string> m_structplot_cur_term{};
 
 	TableImportDlg *m_table_import_dlg{};  // table import dialog
 	QDialog *m_info_dlg{};                 // info dialog
@@ -375,7 +375,7 @@ protected:
 	// add a coupling to the table
 	void AddTermTabItem(int row = -1,
 		const std::string& name = "",
-		t_size atom_1 = 0, t_size atom_2 = 0,
+		const std::string& atom_1 = "", const std::string& atom_2 = "",
 		t_real dist_x = 0., t_real dist_y = 0., t_real dist_z = 0.,
 		const std::string& J = "0",
 		const std::string& dmi_x = "0", const std::string& dmi_y = "0", const std::string& dmi_z = "0",
@@ -425,8 +425,6 @@ protected:
 	void GenerateSitesFromSG();
 	void GenerateCouplingsFromSG();
 	void GeneratePossibleCouplings();
-
-	std::optional<t_size> GetTermAtomIndex(int row, int num) const;
 
 	// transfer sites from the kernel
 	void SyncSitesFromKernel(boost::optional<const boost::property_tree::ptree&> extra_infos = boost::none);

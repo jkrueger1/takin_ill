@@ -184,7 +184,7 @@ void MagDynDlg::CalcDispersion()
 	DisableInput();
 
 	// nothing to calculate?
-	if(m_dyn.GetMagneticSites().size()==0 || m_dyn.GetExchangeTerms().size()==0)
+	if(m_dyn.GetMagneticSitesCount() == 0 || m_dyn.GetExchangeTermsCount() == 0)
 	{
 		ClearDispersion(true);
 		return;

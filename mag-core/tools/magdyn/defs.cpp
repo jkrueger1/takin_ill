@@ -46,7 +46,6 @@ t_real g_eps = 1e-6;
 // optional features
 int g_allow_ortho_spin = 0;
 int g_allow_general_J = 1;
-int g_allow_sorting_sites = 0;
 
 // gui theme
 QString g_theme = "Fusion";

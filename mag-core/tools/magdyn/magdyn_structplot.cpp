@@ -137,10 +137,8 @@ void MagDynDlg::StructPlotPickerIntersection(
 	if(auto iter_atoms = m_structplot_atoms.find(objIdx);
 		iter_atoms != m_structplot_atoms.end())
 	{
-		m_structplot_cur_atom = iter_atoms->second.site->index;
-
-		const std::string& ident = iter_atoms->second.site->name;
-		m_structplot_status->setText(("Site " + ident).c_str());
+		m_structplot_cur_atom = iter_atoms->second.site->name;
+		m_structplot_status->setText(("Site " + *m_structplot_cur_atom).c_str());
 
 		return;
 	}
@@ -149,10 +147,8 @@ void MagDynDlg::StructPlotPickerIntersection(
 	if(auto iter_terms = m_structplot_terms.find(objIdx);
 		iter_terms != m_structplot_terms.end())
 	{
-		m_structplot_cur_term = iter_terms->second.term->index;
-
-		const std::string& ident = iter_terms->second.term->name;
-		m_structplot_status->setText(("Coupling " + ident).c_str());
+		m_structplot_cur_term = iter_terms->second.term->name;
+		m_structplot_status->setText(("Coupling " + *m_structplot_cur_term).c_str());
 
 		return;
 	}
@@ -166,13 +162,15 @@ void MagDynDlg::StructPlotDelete()
 {
 	if(m_structplot_cur_atom)
 	{
-		DelTabItem(m_sitestab, *m_structplot_cur_atom, *m_structplot_cur_atom+1);
+		if(t_size idx = m_dyn.GetMagneticSiteIndex(*m_structplot_cur_atom); idx < m_dyn.GetMagneticSitesCount())
+			DelTabItem(m_sitestab, idx, idx+1);
 		m_structplot_cur_atom = std::nullopt;
 	}
 
 	if(m_structplot_cur_term)
 	{
-		DelTabItem(m_termstab, *m_structplot_cur_term, *m_structplot_cur_term+1);
+		if(t_size idx = m_dyn.GetExchangeTermIndex(*m_structplot_cur_term); idx < m_dyn.GetExchangeTermsCount())
+			DelTabItem(m_termstab, idx, idx+1);
 		m_structplot_cur_term = std::nullopt;
 	}
 }
@@ -243,16 +241,24 @@ void MagDynDlg::StructPlotMouseDown(
 {
 	if(left && m_structplot_cur_atom)
 	{
-		// select current site in table
-		m_tabs_in->setCurrentWidget(m_sitespanel);
-		m_sitestab->setCurrentCell(*m_structplot_cur_atom, 0);
+		if(t_size idx = m_dyn.GetMagneticSiteIndex(*m_structplot_cur_atom);
+			idx < m_dyn.GetMagneticSitesCount())
+		{
+			// select current site in table
+			m_tabs_in->setCurrentWidget(m_sitespanel);
+			m_sitestab->setCurrentCell(idx, 0);
+		}
 	}
 
 	if(left && m_structplot_cur_term)
 	{
-		// select current term in table
-		m_tabs_in->setCurrentWidget(m_termspanel);
-		m_termstab->setCurrentCell(*m_structplot_cur_term, 0);
+		if(t_size idx = m_dyn.GetExchangeTermIndex(*m_structplot_cur_term);
+			idx < m_dyn.GetExchangeTermsCount())
+		{
+			// select current term in table
+			m_tabs_in->setCurrentWidget(m_termspanel);
+			m_termstab->setCurrentCell(idx, 0);
+		}
 	}
 }
 
@@ -361,7 +367,7 @@ void MagDynDlg::StructPlotSync()
 		int _sc_z = int(std::round(sc_z));
 
 		std::size_t hash = 0;
-		boost::hash_combine(hash, std::hash<int>{}(site.index));
+		boost::hash_combine(hash, std::hash<std::string>{}(site.name));
 		boost::hash_combine(hash, std::hash<int>{}(_sc_x));
 		boost::hash_combine(hash, std::hash<int>{}(_sc_y));
 		boost::hash_combine(hash, std::hash<int>{}(_sc_z));
@@ -500,11 +506,11 @@ void MagDynDlg::StructPlotSync()
 	{
 		const auto& term = terms[term_idx];
 
-		if(term.site1 >= sites.size() || term.site2 >= sites.size())
+		if(term.site1_calc >= sites.size() || term.site2_calc >= sites.size())
 			continue;
 
-		const auto& site1 = sites[term.site1];
-		const auto& site2 = sites[term.site2];
+		const auto& site1 = sites[term.site1_calc];
+		const auto& site2 = sites[term.site2_calc];
 
 		t_real_gl sc_x = t_real_gl(term.dist[0]);
 		t_real_gl sc_y = t_real_gl(term.dist[1]);
@@ -542,7 +548,7 @@ void MagDynDlg::StructPlotSync()
 
 		// add the supercell site if it hasn't been inserted yet
 		if(atom_not_yet_seen(site2, sc_x, sc_y, sc_z))
-			add_atom_site(term.site2, site2, field, sc_x, sc_y, sc_z);
+			add_atom_site(term.site2_calc, site2, field, sc_x, sc_y, sc_z);
 
 		t_vec_gl dir_vec = pos2_vec - pos1_vec;
 		t_real_gl dir_len = tl2::norm<t_vec_gl>(dir_vec);
