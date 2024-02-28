@@ -337,18 +337,14 @@ void MagDynDlg::StructPlotSync()
 
 	// clear old magnetic sites
 	for(const auto& [atom_idx, atom_site] : m_structplot_atoms)
-	{
 		m_structplot->GetRenderer()->RemoveObject(atom_idx);
-	}
 
 	m_structplot_atoms.clear();
 
 
 	// clear old terms
 	for(const auto& [term_idx, term] : m_structplot_terms)
-	{
 		m_structplot->GetRenderer()->RemoveObject(term_idx);
-	}
 
 	m_structplot_terms.clear();
 
@@ -478,12 +474,12 @@ void MagDynDlg::StructPlotSync()
 
 		m_structplot->GetRenderer()->SetObjectMatrix(arrow,
 			tl2::get_arrow_matrix<t_vec_gl, t_mat_gl, t_real_gl>(
-				spin_vec,                          // to
-				1,                                 // post-scale
-				tl2::create<t_vec_gl>({0, 0, 0}),  // post-translate
-				tl2::create<t_vec_gl>({0, 0, 1}),  // from
-				scale,                             // pre-scale
-				pos_vec));                         // pre-translate
+				spin_vec,                           // to
+				1,                                  // post-scale
+				tl2::create<t_vec_gl>({ 0, 0, 0 }), // post-translate
+				tl2::create<t_vec_gl>({ 0, 0, 1 }), // from
+				scale,                              // pre-scale
+				pos_vec));                          // pre-translate
 
 		m_structplot->GetRenderer()->SetObjectLabel(obj, site.name);
 		//m_structplot->GetRenderer()->SetObjectLabel(arrow, site.name);
@@ -505,7 +501,6 @@ void MagDynDlg::StructPlotSync()
 	for(t_size term_idx=0; term_idx<terms.size(); ++term_idx)
 	{
 		const auto& term = terms[term_idx];
-
 		if(term.site1_calc >= sites.size() || term.site2_calc >= sites.size())
 			continue;
 
@@ -524,7 +519,7 @@ void MagDynDlg::StructPlotSync()
 		t_real_gl scale = 1.;
 
 		std::size_t obj = m_structplot->GetRenderer()->AddLinkedObject(
-			m_structplot_cyl, 0,0,0, rgb[0], rgb[1], rgb[2], 1);
+			m_structplot_cyl, 0, 0, 0, rgb[0], rgb[1], rgb[2], 1);
 
 		{
 			ExchangeTermInfo terminfo;
@@ -556,12 +551,12 @@ void MagDynDlg::StructPlotSync()
 		// coupling bond
 		m_structplot->GetRenderer()->SetObjectMatrix(obj,
 			tl2::get_arrow_matrix<t_vec_gl, t_mat_gl, t_real_gl>(
-				dir_vec,                           // to
-				1,                                 // post-scale
-				tl2::create<t_vec_gl>({0, 0, 0}),  // post-translate
-				tl2::create<t_vec_gl>({0, 0, 1}),  // from
-				scale,                             // pre-scale
-				pos1_vec)                          // pre-translate
+				dir_vec,                            // to
+				1,                                  // post-scale
+				tl2::create<t_vec_gl>({ 0, 0, 0 }), // post-translate
+				tl2::create<t_vec_gl>({ 0, 0, 1 }), // from
+				scale,                              // pre-scale
+				pos1_vec)                           // pre-translate
 			* tl2::hom_translation<t_mat_gl>(
 				t_real_gl(0), t_real_gl(0), dir_len*t_real_gl(0.5))
 			* tl2::hom_scaling<t_mat_gl>(
@@ -571,11 +566,13 @@ void MagDynDlg::StructPlotSync()
 
 
 		// dmi vector
-		const t_vec_gl dmi_vec = tl2::create<t_vec_gl>({
-			t_real_gl(term.dmi_calc[0].real()),
-			t_real_gl(term.dmi_calc[1].real()),
-			t_real_gl(term.dmi_calc[2].real()),
-		});
+		t_vec_gl dmi_vec = tl2::zero<t_vec_gl>(3);
+		if(term.dmi_calc.size() >= 3)
+		{
+			dmi_vec[0] = t_real_gl(term.dmi_calc[0].real());
+			dmi_vec[1] = t_real_gl(term.dmi_calc[1].real());
+			dmi_vec[2] = t_real_gl(term.dmi_calc[2].real());
+		}
 
 		if(tl2::norm<t_vec_gl>(dmi_vec) > g_eps)
 		{

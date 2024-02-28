@@ -2,7 +2,7 @@
  * tlibs2
  * (container-agnostic) math library
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
- * @date 2015 - 2023
+ * @date 2015 - 2024
  * @license GPLv3, see 'LICENSE' file
  *
  * @note The present version was forked on 8-Nov-2018 from my privately developed "magtools" project (https://github.com/t-weber/magtools).

@@ -1,8 +1,7 @@
 /**
- * tlibs2
- * magnon dynamics
+ * tlibs2 -- magnetic dynamics
  * @author Tobias Weber <tweber@ill.fr>
- * @date january-2022
+ * @date 2022 - 2024
  * @license GPLv3, see 'LICENSE' file
  *
  * References:
@@ -17,7 +16,7 @@
  *
  * ----------------------------------------------------------------------------
  * tlibs
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -440,14 +439,24 @@ public:
 				return idx;
 		}
 
-		// alternatively try to parse the expression for the index
-		tl2::ExprParser<t_size> parser;
-		parser.SetAutoregisterVariables(false);
-		if(parser.parse(name))
+		try
 		{
-			t_size idx = parser.eval();
-			if(idx < GetMagneticSitesCount())
-				return idx;
+			// alternatively try to parse the expression for the index
+			tl2::ExprParser<t_size> parser;
+			parser.SetInvalid0(false);
+			parser.SetAutoregisterVariables(false);
+			if(parser.parse(name))
+			{
+				t_size idx = parser.eval();
+				if(idx < GetMagneticSitesCount())
+					return idx;
+			}
+		}
+		catch(const std::exception& ex)
+		{
+			std::cerr << "Error: Invalid site name \"" << name << "\"."
+				<< " Parser error: " << ex.what()
+				<< std::endl;
 		}
 
 		// nothing found: return invalid index
@@ -466,14 +475,24 @@ public:
 				return idx;
 		}
 
-		// alternatively try to parse the expression for the index
-		tl2::ExprParser<t_size> parser;
-		parser.SetAutoregisterVariables(false);
-		if(parser.parse(name))
+		try
 		{
-			t_size idx = parser.eval();
-			if(idx < GetExchangeTermsCount())
-				return idx;
+			// alternatively try to parse the expression for the index
+			tl2::ExprParser<t_size> parser;
+			parser.SetInvalid0(false);
+			parser.SetAutoregisterVariables(false);
+			if(parser.parse(name))
+			{
+				t_size idx = parser.eval();
+				if(idx < GetExchangeTermsCount())
+					return idx;
+			}
+		}
+		catch(const std::exception& ex)
+		{
+			std::cerr << "Error: Invalid coupling name \"" << name << "\"."
+				<< " Parser error: " << ex.what()
+				<< std::endl;
 		}
 
 		return GetExchangeTermsCount();  // return invalid index
