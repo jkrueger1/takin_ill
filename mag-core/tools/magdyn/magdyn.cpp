@@ -1,7 +1,7 @@
 /**
  * magnetic dynamics -- main dialog handler functions
  * @author Tobias Weber <tweber@ill.fr>
- * @date Jan-2022
+ * @date 2022 - 2024
  * @license GPLv3, see 'LICENSE' file
  * @desc The present version was forked on 28-Dec-2018 from my privately developed "misc" project (https://github.com/t-weber/misc).
  *
@@ -230,9 +230,9 @@ void MagDynDlg::SyncSiteComboBoxes()
 	// iterate couplings and update their site selection combo boxes
 	for(int row=0; row<m_termstab->rowCount(); ++row)
 	{
-		QComboBox *site_1 = reinterpret_cast<QComboBox*>(
+		SitesComboBox *site_1 = reinterpret_cast<SitesComboBox*>(
 			m_termstab->cellWidget(row, COL_XCH_ATOM1_IDX));
-		QComboBox *site_2 = reinterpret_cast<QComboBox*>(
+		SitesComboBox *site_2 = reinterpret_cast<SitesComboBox*>(
 			m_termstab->cellWidget(row, COL_XCH_ATOM2_IDX));
 
 		SyncSiteComboBox(site_1, site_1->currentText().toStdString());
@@ -245,7 +245,7 @@ void MagDynDlg::SyncSiteComboBoxes()
 /**
  * update the contents of a site selection combo box to match the sites table
  */
-void MagDynDlg::SyncSiteComboBox(QComboBox* combo, const std::string& selected_site)
+void MagDynDlg::SyncSiteComboBox(SitesComboBox* combo, const std::string& selected_site)
 {
 	BOOST_SCOPE_EXIT(combo)
 	{
@@ -290,7 +290,7 @@ void MagDynDlg::SyncSiteComboBox(QComboBox* combo, const std::string& selected_s
 /**
  * create a combo box with the site names
  */
-QComboBox* MagDynDlg::CreateSitesComboBox(const std::string& selected_site)
+SitesComboBox* MagDynDlg::CreateSitesComboBox(const std::string& selected_site)
 {
 	/**
 	 * filter out wheel events (used for the combo boxes in the table)
@@ -311,7 +311,8 @@ QComboBox* MagDynDlg::CreateSitesComboBox(const std::string& selected_site)
 	};
 
 
-	QComboBox* combo = new QComboBox(m_termstab);
+	SitesComboBox* combo = new SitesComboBox();
+	combo->setParent(m_termstab);
 	combo->installEventFilter(new WheelEventFilter(combo));
 	SyncSiteComboBox(combo, selected_site);
 
@@ -392,8 +393,14 @@ void MagDynDlg::AddTermTabItem(int row,
 	{
 		m_termstab->setItem(row, COL_XCH_NAME,
 			new QTableWidgetItem(name.c_str()));
-		m_termstab->setCellWidget(row, COL_XCH_ATOM1_IDX, CreateSitesComboBox(atom_1));
-		m_termstab->setCellWidget(row, COL_XCH_ATOM2_IDX, CreateSitesComboBox(atom_2));
+
+		SitesComboBox* combo1 = CreateSitesComboBox(atom_1);
+		SitesComboBox* combo2 = CreateSitesComboBox(atom_2);
+		m_termstab->setCellWidget(row, COL_XCH_ATOM1_IDX, combo1);
+		m_termstab->setCellWidget(row, COL_XCH_ATOM2_IDX, combo2);
+		m_termstab->setItem(row, COL_XCH_ATOM1_IDX, combo1);
+		m_termstab->setItem(row, COL_XCH_ATOM2_IDX, combo2);
+
 		m_termstab->setItem(row, COL_XCH_DIST_X,
 			new tl2::NumericTableWidgetItem<t_real>(dist_x));
 		m_termstab->setItem(row, COL_XCH_DIST_Y,

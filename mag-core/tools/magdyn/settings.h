@@ -77,6 +77,7 @@ enum class SettingsVariableEditor
 };
 
 
+
 struct SettingsVariable
 {
 	using t_variant = std::variant<t_real, int, unsigned int, std::string>;
@@ -104,6 +105,7 @@ enum class SettingsColumn : int
 };
 
 
+
 /**
  * settings dialog
  */
@@ -125,6 +127,7 @@ public:
 	{
 		InitGui();
 	}
+
 
 
 	/**
@@ -166,6 +169,7 @@ public:
 		// create the settings table
 		m_table = new QTableWidget(panelGeneral);
 		m_table->setShowGrid(true);
+		m_table->setAlternatingRowColors(true);
 		m_table->setSortingEnabled(false);
 		m_table->setMouseTracking(false);
 		m_table->setSelectionBehavior(QTableWidget::SelectRows);
@@ -347,6 +351,7 @@ public:
 	}
 
 
+
 	/**
 	 * destructor
 	 */
@@ -355,11 +360,13 @@ public:
 	}
 
 
+
 	/**
 	 * copy constructor
 	 */
 	SettingsDlg(const SettingsDlg&) = delete;
 	const SettingsDlg& operator=(const SettingsDlg&) = delete;
+
 
 
 	/**
@@ -390,11 +397,13 @@ public:
 	}
 
 
+
 	// common gui settings
 	static void SetGuiTheme(QString* str) { s_theme = str; }
 	static void SetGuiFont(QString* str) { s_font = str; }
 	static void SetGuiUseNativeMenubar(int *i) { s_use_native_menubar = i; }
 	static void SetGuiUseNativeDialogs(int *i) { s_use_native_dialogs = i; }
+
 
 
 	/**
@@ -416,6 +425,7 @@ public:
 		if(s_use_native_dialogs)
 			s_defaults.insert_or_assign("<native_dialogs>", *s_use_native_dialogs);
 	}
+
 
 
 protected:
@@ -447,6 +457,7 @@ protected:
 	}
 
 
+
 	/**
 	 * populate the settings table using the global settings items
 	 */
@@ -469,6 +480,7 @@ protected:
 				m_table->item(row, (int)SettingsColumn::VALUE)->flags() | Qt::ItemIsEditable);
 		}
 	}
+
 
 
 	/**
@@ -544,6 +556,7 @@ protected:
 	}
 
 
+
 	/**
 	 * 'Apply' was clicked, write the settings from the global variables
 	 */
@@ -587,6 +600,7 @@ protected:
 	}
 
 
+
 	static void ApplyGuiSettings()
 	{
 		// set gui theme
@@ -620,6 +634,7 @@ protected:
 	}
 
 
+
 	// ------------------------------------------------------------------------
 	// helpers
 	// ------------------------------------------------------------------------
@@ -640,6 +655,7 @@ protected:
 	}
 
 
+
 	/**
 	 * adds a settings item from a global variable to the table
 	 */
@@ -654,10 +670,8 @@ protected:
 		if(var.is_angle)
 			finalval = finalval / tl2::pi<t_real>*180;
 
-		QTableWidgetItem *item = new tl2::NumericTableWidgetItem<t_value>(finalval, 10);
 		table->setItem((int)idx, (int)SettingsColumn::SETTING, new QTableWidgetItem{var.description});
 		table->setItem((int)idx, (int)SettingsColumn::TYPE, new QTableWidgetItem{get_type_str<t_value>()});
-		table->setItem((int)idx, (int)SettingsColumn::VALUE, item);
 
 		if(var.editor == SettingsVariableEditor::YESNO)
 		{
@@ -681,7 +695,13 @@ protected:
 			combo->setCurrentIndex((int)finalval);
 			table->setCellWidget((int)idx, (int)SettingsColumn::VALUE, combo);
 		}
+		else
+		{
+			QTableWidgetItem *item = new tl2::NumericTableWidgetItem<t_value>(finalval, 10);
+			table->setItem((int)idx, (int)SettingsColumn::VALUE, item);
+		}
 	}
+
 
 
 	/**
@@ -696,6 +716,7 @@ protected:
 	}
 
 
+
 	/**
 	 * get a value from a QSettings object
 	 */
@@ -708,6 +729,7 @@ protected:
 			//std::cout << key << ": " << *val << std::endl;
 		}
 	}
+
 
 
 	/**
@@ -725,6 +747,7 @@ protected:
 	}
 
 
+
 	/**
 	 * gets all settings items from the QSettings object and saves them
 	 * to the global variables
@@ -736,6 +759,7 @@ protected:
 		// a sequence of function calls
 		( (get_settings_item<seq>(sett)), ... );
 	}
+
 
 
 	/**
@@ -752,6 +776,7 @@ protected:
 	}
 
 
+
 	/**
 	 * save the current settings values as their default values
 	 */
@@ -763,6 +788,7 @@ protected:
 		// a sequence of function calls
 		( (save_default_value<seq>(map)), ... );
 	}
+
 
 
 	/**
@@ -786,6 +812,7 @@ protected:
 	}
 
 
+
 	/**
 	 * restore the current settings values from their default values
 	 */
@@ -797,6 +824,7 @@ protected:
 		// a sequence of function calls
 		( (restore_default_value<seq>(map)), ... );
 	}
+
 
 
 	/**
@@ -833,6 +861,7 @@ protected:
 	}
 
 
+
 	/**
 	 * reads all settings items from the table and saves them to the
 	 * global variables and to the QSettings object
@@ -845,6 +874,7 @@ protected:
 		( (apply_settings_item<seq>(table, sett)), ... );
 	}
 	// ------------------------------------------------------------------------
+
 
 
 private:
@@ -864,6 +894,7 @@ private:
 
 	// default setting values
 	static std::unordered_map<std::string, SettingsVariable::t_variant> s_defaults;
+
 
 
 #ifdef MAGDYN_SETTINGS_USE_QT_SIGNALS

@@ -1,5 +1,5 @@
 /**
- * magnon dynamics -- type definitions and setting variables
+ * magnetic dynamics -- type definitions and setting variables
  * @author Tobias Weber <tweber@ill.fr>
  * @date Jan-2023
  * @license GPLv3, see 'LICENSE' file

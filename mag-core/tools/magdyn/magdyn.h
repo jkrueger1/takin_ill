@@ -1,7 +1,7 @@
 /**
- * magnon dynamics
+ * magnetic dynamics
  * @author Tobias Weber <tweber@ill.fr>
- * @date Jan-2022
+ * @date 2022 - 2024
  * @license GPLv3, see 'LICENSE' file
  * @desc The present version was forked on 28-Dec-2018 from my privately developed "misc" project (https://github.com/t-weber/misc).
  *
@@ -35,6 +35,7 @@
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QTableWidget>
+#include <QtWidgets/QTableWidgetItem>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QProgressBar>
 #include <QtWidgets/QPushButton>
@@ -89,6 +90,7 @@ enum : int
 };
 
 
+
 /**
  * columns of the sites table
  */
@@ -103,6 +105,7 @@ enum : int
 
 	NUM_SITE_COLS
 };
+
 
 
 /**
@@ -124,6 +127,7 @@ enum : int
 };
 
 
+
 /**
  * columns of the variables table
  */
@@ -135,6 +139,7 @@ enum : int
 
 	NUM_VARS_COLS
 };
+
 
 
 /**
@@ -149,6 +154,7 @@ enum : int
 };
 
 
+
 /**
  * columns of the table with saved Q coordinates
  */
@@ -161,6 +167,7 @@ enum : int
 };
 
 
+
 /**
  * infos for magnetic sites
  */
@@ -170,6 +177,7 @@ struct AtomSiteInfo
 };
 
 
+
 /**
  * infos for exchange term
  */
@@ -177,6 +185,28 @@ struct ExchangeTermInfo
 {
 	const t_magdyn::ExchangeTerm* term = nullptr;
 };
+
+
+
+/**
+ * combo box showing the magnetic sites and sorting according to their index
+ */
+struct SitesComboBox : public QComboBox, QTableWidgetItem
+{
+	SitesComboBox() = default;
+	virtual ~SitesComboBox() = default;
+
+
+	virtual bool operator<(const QTableWidgetItem& item) const override
+	{
+		const SitesComboBox* combo = dynamic_cast<const SitesComboBox*>(&item);
+		if(!combo)
+			return true;
+
+		return currentIndex() < combo->currentIndex();
+	}
+};
+
 
 
 /**
@@ -384,8 +414,8 @@ protected:
 		const std::string& rgb = "#0x00bf00");
 
 	void SyncSiteComboBoxes();
-	void SyncSiteComboBox(QComboBox* combo, const std::string& selected_site);
-	QComboBox* CreateSitesComboBox(const std::string& selected_site);
+	void SyncSiteComboBox(SitesComboBox* combo, const std::string& selected_site);
+	SitesComboBox* CreateSitesComboBox(const std::string& selected_site);
 
 	// add a variable to the table
 	void AddVariableTabItem(int row = -1,

@@ -1,5 +1,5 @@
 /**
- * magnon dynamics -- helper functions
+ * magnetic dynamics -- helper functions
  * @author Tobias Weber <tweber@ill.fr>
  * @date Mar-2023
  * @license GPLv3, see 'LICENSE' file
