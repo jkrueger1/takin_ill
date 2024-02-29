@@ -213,6 +213,7 @@ void MagDynDlg::GenerateCouplingsFromSG()
 }
 
 
+
 /**
  * generate possible couplings up to a certain distance
  */
@@ -245,6 +246,7 @@ void MagDynDlg::GeneratePossibleCouplings()
 		QMessageBox::critical(this, "Magnetic Dynamics", ex.what());
 	}
 }
+
 
 
 /**
@@ -306,6 +308,7 @@ void MagDynDlg::SyncSitesFromKernel(boost::optional<const pt::ptree&> extra_info
 }
 
 
+
 /**
  * get the exchange terms from the kernel
  * and add them to the table
@@ -351,6 +354,7 @@ void MagDynDlg::SyncTermsFromKernel(boost::optional<const pt::ptree&> extra_info
 			rgb);
 	}
 }
+
 
 
 /**
@@ -735,9 +739,20 @@ void MagDynDlg::ImportCouplings(const std::vector<TableImportCoupling>& coupling
 			name = ostrName.str();
 		}
 
-		// TODO: get the site names
 		std::string atom_1_name = tl2::var_to_str(atom_1);
 		std::string atom_2_name = tl2::var_to_str(atom_2);
+
+		// get the site names from the table
+		if((int)atom_1 < m_sitestab->rowCount())
+		{
+			if(auto *name = m_sitestab->item(atom_1, COL_SITE_NAME); name)
+				atom_1_name = name->text().toStdString();
+		}
+		if((int)atom_2 < m_sitestab->rowCount())
+		{
+			if(auto *name = m_sitestab->item(atom_2, COL_SITE_NAME); name)
+				atom_2_name = name->text().toStdString();
+		}
 
 		AddTermTabItem(-1, name, atom_1_name, atom_2_name,
 			dist_x, dist_y, dist_z, J, dmi_x, dmi_y, dmi_z);

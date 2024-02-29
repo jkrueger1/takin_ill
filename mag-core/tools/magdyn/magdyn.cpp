@@ -96,7 +96,6 @@ MagDynDlg::MagDynDlg(QWidget* pParent) : QDialog{pParent},
 	}
 
 	setAcceptDrops(true);
-	m_ignoreTableChanges = false;
 }
 
 
@@ -140,10 +139,10 @@ void MagDynDlg::AddSiteTabItem(int row,
 	const std::string& rgb)
 {
 	bool bclone = false;
-	m_ignoreTableChanges = true;
+	m_sitestab->blockSignals(true);
 	BOOST_SCOPE_EXIT(this_)
 	{
-		this_->m_ignoreTableChanges = false;
+		this_->m_sitestab->blockSignals(false);
 		if(this_->m_autocalc->isChecked())
 			this_->CalcAll();
 	} BOOST_SCOPE_EXIT_END
@@ -293,7 +292,27 @@ void MagDynDlg::SyncSiteComboBox(QComboBox* combo, const std::string& selected_s
  */
 QComboBox* MagDynDlg::CreateSitesComboBox(const std::string& selected_site)
 {
+	/**
+	 * filter out wheel events (used for the combo boxes in the table)
+	 */
+	struct WheelEventFilter : public QObject
+	{
+		WheelEventFilter(QObject* comp) : m_comp{comp} {}
+		WheelEventFilter(const WheelEventFilter&) = delete;
+		WheelEventFilter& operator=(const WheelEventFilter&) = delete;
+
+		bool eventFilter(QObject *comp, QEvent *evt) override
+		{
+			// ignore wheel events on the given component
+			return comp == m_comp && evt->type() == QEvent::Wheel;
+		}
+
+		QObject* m_comp = nullptr;
+	};
+
+
 	QComboBox* combo = new QComboBox(m_termstab);
+	combo->installEventFilter(new WheelEventFilter(combo));
 	SyncSiteComboBox(combo, selected_site);
 
 	// connections
@@ -329,10 +348,10 @@ void MagDynDlg::AddTermTabItem(int row,
 	const std::string& rgb)
 {
 	bool bclone = 0;
-	m_ignoreTableChanges = true;
+	m_termstab->blockSignals(true);
 	BOOST_SCOPE_EXIT(this_)
 	{
-		this_->m_ignoreTableChanges = false;
+		this_->m_termstab->blockSignals(false);
 		if(this_->m_autocalc->isChecked())
 			this_->CalcAll();
 	} BOOST_SCOPE_EXIT_END
@@ -429,10 +448,10 @@ void MagDynDlg::AddVariableTabItem(int row,
 	const std::string& name, const t_cplx& value)
 {
 	bool bclone = 0;
-	m_ignoreTableChanges = true;
+	m_varstab->blockSignals(true);
 	BOOST_SCOPE_EXIT(this_)
 	{
-		this_->m_ignoreTableChanges = false;
+		this_->m_varstab->blockSignals(false);
 		if(this_->m_autocalc->isChecked())
 			this_->CalcAll();
 	} BOOST_SCOPE_EXIT_END
@@ -599,12 +618,12 @@ void MagDynDlg::DelTabItem(QTableWidget *pTab, int begin, int end)
 		needs_recalc = false;
 
 	if(needs_recalc)
-		m_ignoreTableChanges = true;
-	BOOST_SCOPE_EXIT(this_, needs_recalc)
+		pTab->blockSignals(true);
+	BOOST_SCOPE_EXIT(this_, pTab, needs_recalc)
 	{
 		if(needs_recalc)
 		{
-			this_->m_ignoreTableChanges = false;
+			pTab->blockSignals(false);
 			if(this_->m_autocalc->isChecked())
 				this_->CalcAll();
 		}
@@ -645,13 +664,13 @@ void MagDynDlg::MoveTabItemUp(QTableWidget *pTab)
 		needs_recalc = false;
 
 	if(needs_recalc)
-		m_ignoreTableChanges = true;
+		pTab->blockSignals(true);
 	pTab->setSortingEnabled(false);
-	BOOST_SCOPE_EXIT(this_, needs_recalc)
+	BOOST_SCOPE_EXIT(this_, pTab, needs_recalc)
 	{
 		if(needs_recalc)
 		{
-			this_->m_ignoreTableChanges = false;
+			pTab->blockSignals(false);
 			if(this_->m_autocalc->isChecked())
 				this_->CalcAll();
 		}
@@ -695,13 +714,13 @@ void MagDynDlg::MoveTabItemDown(QTableWidget *pTab)
 		needs_recalc = false;
 
 	if(needs_recalc)
-		m_ignoreTableChanges = true;
+		pTab->blockSignals(true);
 	pTab->setSortingEnabled(false);
-	BOOST_SCOPE_EXIT(this_, needs_recalc)
+	BOOST_SCOPE_EXIT(this_, pTab, needs_recalc)
 	{
 		if(needs_recalc)
 		{
-			this_->m_ignoreTableChanges = false;
+			pTab->blockSignals(false);
 			if(this_->m_autocalc->isChecked())
 				this_->CalcAll();
 		}
@@ -783,9 +802,6 @@ std::vector<int> MagDynDlg::GetSelectedRows(
  */
 void MagDynDlg::SitesTableItemChanged(QTableWidgetItem * /*item*/)
 {
-	if(m_ignoreTableChanges)
-		return;
-
 	SyncSiteComboBoxes();
 
 	if(m_autocalc->isChecked())
@@ -799,9 +815,6 @@ void MagDynDlg::SitesTableItemChanged(QTableWidgetItem * /*item*/)
  */
 void MagDynDlg::TermsTableItemChanged(QTableWidgetItem * /*item*/)
 {
-	if(m_ignoreTableChanges)
-		return;
-
 	if(m_autocalc->isChecked())
 		CalcAll();
 }
@@ -813,9 +826,6 @@ void MagDynDlg::TermsTableItemChanged(QTableWidgetItem * /*item*/)
  */
 void MagDynDlg::VariablesTableItemChanged(QTableWidgetItem * /*item*/)
 {
-	if(m_ignoreTableChanges)
-		return;
-
 	if(m_autocalc->isChecked())
 		CalcAll();
 }

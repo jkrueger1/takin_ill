@@ -96,6 +96,7 @@ void rotate_spin_incommensurate(t_vec& spin_vec,
 }
 
 
+
 /**
  * polarisation matrix
  * @see https://doi.org/10.1088/1361-6463/aa7573
@@ -179,6 +180,7 @@ struct t_MagneticSite
 };
 
 
+
 /**
  * couplings between magnetic sites
  */
@@ -210,6 +212,7 @@ struct t_ExchangeTerm
 };
 
 
+
 /**
  * terms related to an external magnetic field
  */
@@ -220,6 +223,7 @@ struct t_ExternalField
 	t_vec_real dir{};            // field direction
 	t_real mag{};                // field magnitude
 };
+
 
 
 /**
@@ -240,6 +244,7 @@ struct t_EnergyAndWeight
 	t_real weight{};
 	t_real weight_channel[3] = { 0., 0., 0. };
 };
+
 
 
 /**
@@ -322,6 +327,7 @@ public:
 	}
 
 
+
 	/**
 	 * clear all parser variables
 	 */
@@ -329,6 +335,7 @@ public:
 	{
 		m_variables.clear();
 	}
+
 
 
 	/**
@@ -340,6 +347,7 @@ public:
 	}
 
 
+
 	/**
 	 * clear all couplings
 	 */
@@ -347,6 +355,7 @@ public:
 	{
 		m_exchange_terms.clear();
 	}
+
 
 
 	/**
@@ -359,6 +368,7 @@ public:
 		m_field.align_spins = false;
 	}
 	// --------------------------------------------------------------------
+
 
 
 	// --------------------------------------------------------------------
@@ -380,6 +390,7 @@ public:
 	t_real GetBoseCutoffEnergy() const { return m_bose_cutoff; }
 
 
+
 	const MagneticSite& GetMagneticSite(t_size idx) const
 	{
 		if(!CheckMagneticSite(idx))
@@ -390,6 +401,7 @@ public:
 
 		return m_sites[idx];
 	}
+
 
 
 	const ExchangeTerm& GetExchangeTerm(t_size idx) const
@@ -404,10 +416,12 @@ public:
 	}
 
 
+
 	bool IsIncommensurate() const
 	{
 		return m_is_incommensurate || m_force_incommensurate;
 	}
+
 
 
 	/**
@@ -425,6 +439,7 @@ public:
 
 		return sites;
 	}
+
 
 
 	/**
@@ -464,6 +479,7 @@ public:
 	}
 
 
+
 	/**
 	 * get the index of an exchange term from its name
 	 */
@@ -500,6 +516,7 @@ public:
 	// --------------------------------------------------------------------
 
 
+
 	// --------------------------------------------------------------------
 	// setter
 	// --------------------------------------------------------------------
@@ -516,6 +533,7 @@ public:
 	void SetCholeskyInc(t_real delta) { m_delta_chol = delta; }
 
 
+
 	void SetExternalField(const ExternalField& field)
 	{
 		m_field = field;
@@ -527,6 +545,7 @@ public:
 	}
 
 
+
 	void RotateExternalField(const t_vec_real& axis, t_real angle)
 	{
 		t_mat_real rot = tl2::rotation<t_mat_real, t_vec_real>(
@@ -535,10 +554,12 @@ public:
 	}
 
 
+
 	void RotateExternalField(t_real x, t_real y, t_real z, t_real angle)
 	{
 		RotateExternalField(tl2::create<t_vec_real>({ x, y, z }), angle);
 	}
+
 
 
 	void SetOrderingWavevector(const t_vec_real& ordering)
@@ -548,12 +569,14 @@ public:
 	}
 
 
+
 	void SetCalcHamiltonian(bool H, bool Hp, bool Hm)
 	{
 		m_calc_H = H;
 		m_calc_Hp = Hp;
 		m_calc_Hm = Hm;
 	}
+
 
 
 	void SetRotationAxis(const t_vec_real& axis)
@@ -565,10 +588,12 @@ public:
 	}
 
 
+
 	void AddVariable(Variable&& var)
 	{
 		m_variables.emplace_back(std::forward<Variable&&>(var));
 	}
+
 
 
 	void SetVariable(Variable&& var)
@@ -593,10 +618,12 @@ public:
 	}
 
 
+
 	void AddMagneticSite(MagneticSite&& site)
 	{
 		m_sites.emplace_back(std::forward<MagneticSite&&>(site));
 	}
+
 
 
 	void AddExchangeTerm(ExchangeTerm&& term)
@@ -604,6 +631,7 @@ public:
 		m_exchange_terms.emplace_back(std::forward<ExchangeTerm&&>(term));
 	}
 	// --------------------------------------------------------------------
+
 
 
 	// --------------------------------------------------------------------
@@ -622,6 +650,7 @@ public:
 		return parser;
 	}
 	// --------------------------------------------------------------------
+
 
 
 	/**
@@ -643,6 +672,7 @@ public:
 
 		return std::make_tuple(min, max);
 	}
+
 
 
 	// --------------------------------------------------------------------
@@ -668,6 +698,7 @@ public:
 	}
 
 
+
 	/**
 	 * check if the term index is valid
 	 */
@@ -687,6 +718,7 @@ public:
 		return true;
 	}
 	// --------------------------------------------------------------------
+
 
 
 	// --------------------------------------------------------------------
@@ -718,6 +750,7 @@ public:
 		RemoveDuplicateMagneticSites();
 		CalcMagneticSites();
 	}
+
 
 
 	/**
@@ -847,6 +880,7 @@ public:
 	}
 
 
+
 	/**
 	 * generate possible couplings up to a certain distance
 	 */
@@ -965,6 +999,7 @@ public:
 	}
 
 
+
 	void RemoveDuplicateMagneticSites()
 	{
 		for(auto iter1 = m_sites.begin(); iter1 != m_sites.end(); ++iter1)
@@ -978,6 +1013,7 @@ public:
 			}
 		}
 	}
+
 
 
 	void RemoveDuplicateExchangeTerms()
@@ -997,6 +1033,7 @@ public:
 		}
 	}
 	// --------------------------------------------------------------------
+
 
 
 	// --------------------------------------------------------------------
@@ -1128,6 +1165,7 @@ public:
 	}
 
 
+
 	/**
 	 * parse the exchange term expressions
 	 */
@@ -1225,6 +1263,7 @@ public:
 	}
 
 
+
 	/**
 	 * calculate the real-space interaction matrix J of
 	 * equations (10) - (13) from (Toth 2015)
@@ -1265,6 +1304,7 @@ public:
 
 		return J;
 	}
+
 
 
 	/**
@@ -1318,6 +1358,7 @@ public:
 
 		return std::make_tuple(J_Q, J_Q0);
 	}
+
 
 
 	/**
@@ -1408,6 +1449,7 @@ public:
 
 		return H;
 	}
+
 
 
 	/**
@@ -1508,6 +1550,7 @@ public:
 
 		return energies_and_correlations;
 	}
+
 
 
 	/**
@@ -1688,6 +1731,7 @@ public:
 	}
 
 
+
 	/**
 	 * applies projectors and weight factors to get neutron intensities
 	 * @note implements the formalism given by (Toth 2015)
@@ -1724,6 +1768,7 @@ public:
 			}
 		}
 	}
+
 
 
 	/**
@@ -1772,6 +1817,7 @@ public:
 
 		return new_energies_and_correlations;
 	}
+
 
 
 	/**
@@ -1847,6 +1893,7 @@ public:
 	}
 
 
+
 	std::vector<EnergyAndWeight> CalcEnergies(t_real h, t_real k, t_real l,
 		bool only_energies = false) const
 	{
@@ -1854,6 +1901,7 @@ public:
 		const t_vec_real Qvec = tl2::create<t_vec_real>({ h, k, l });
 		return CalcEnergies(Qvec, only_energies);
 	}
+
 
 
 	/**
@@ -1874,6 +1922,7 @@ public:
 			return 0.;
 		return min_iter->E;
 	}
+
 
 
 	/**
@@ -1918,6 +1967,7 @@ public:
 		std::ofstream ofstr{filename};
 		SaveDispersion(ofstr, h_start, k_start, l_start, h_end, k_end, l_end, num_qs);
 	}
+
 
 
 	/**
@@ -1965,6 +2015,7 @@ public:
 	}
 
 
+
 	/**
 	 * load a configuration from a file
 	 */
@@ -1987,6 +2038,7 @@ public:
 		const auto &magdyn = node.get_child("magdyn");
 		return Load(magdyn);
 	}
+
 
 
 	/**
@@ -2016,6 +2068,7 @@ public:
 				'\t', 1, std::string{"utf-8"}));
 		return true;
 	}
+
 
 
 	/**
@@ -2239,6 +2292,7 @@ public:
 	}
 
 
+
 	/**
 	 * save a configuration to a property tree
 	 */
@@ -2356,6 +2410,7 @@ protected:
 
 		return std::make_tuple(u, v);
 	}
+
 
 
 	/**

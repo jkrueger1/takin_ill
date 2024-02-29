@@ -356,8 +356,7 @@ protected:
 	void MoveTabItemDown(QTableWidget *pTab);
 	void ShowTableContextMenu(
 		QTableWidget *pTab, QMenu *pMenu, QMenu *pMenuNoItem, const QPoint& pt);
-	std::vector<int> GetSelectedRows(
-		QTableWidget *pTab, bool sort_reversed = false) const;
+	std::vector<int> GetSelectedRows(QTableWidget *pTab, bool sort_reversed = false) const;
 
 	// add a site to the table
 	void AddSiteTabItem(int row = -1,
@@ -499,7 +498,6 @@ private:
 	std::size_t m_curSiteCtr = 0;
 	std::size_t m_curCouplingCtr = 0;
 
-	bool m_ignoreTableChanges = true;
 	bool m_ignoreCalc = false;
 	bool m_ignoreSitesCalc = false;
 	bool m_stopRequested = false;
