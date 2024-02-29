@@ -164,6 +164,7 @@ void MagDynDlg::CreateSitesPanel()
 
 	m_sitestab = new QTableWidget(m_sitespanel);
 	m_sitestab->setShowGrid(true);
+	m_sitestab->setAlternatingRowColors(true);
 	m_sitestab->setSortingEnabled(true);
 	m_sitestab->setMouseTracking(true);
 	m_sitestab->setSelectionBehavior(QTableWidget::SelectRows);
@@ -451,6 +452,7 @@ void MagDynDlg::CreateExchangeTermsPanel()
 
 	m_termstab = new QTableWidget(m_termspanel);
 	m_termstab->setShowGrid(true);
+	m_termstab->setAlternatingRowColors(true);
 	m_termstab->setSortingEnabled(true);
 	m_termstab->setMouseTracking(true);
 	m_termstab->setSelectionBehavior(QTableWidget::SelectRows);
@@ -822,6 +824,7 @@ void MagDynDlg::CreateVariablesPanel()
 
 	m_varstab = new QTableWidget(m_varspanel);
 	m_varstab->setShowGrid(true);
+	m_varstab->setAlternatingRowColors(true);
 	m_varstab->setSortingEnabled(true);
 	m_varstab->setMouseTracking(true);
 	m_varstab->setSelectionBehavior(QTableWidget::SelectRows);
@@ -830,7 +833,7 @@ void MagDynDlg::CreateVariablesPanel()
 
 	m_varstab->verticalHeader()->setDefaultSectionSize(
 		fontMetrics().lineSpacing() + 4);
-	m_varstab->verticalHeader()->setVisible(false);
+	m_varstab->verticalHeader()->setVisible(true);
 
 	m_varstab->setColumnCount(NUM_VARS_COLS);
 	m_varstab->setHorizontalHeaderItem(
@@ -1018,6 +1021,7 @@ void MagDynDlg::CreateSampleEnvPanel()
 	// table with saved fields
 	m_fieldstab = new QTableWidget(m_sampleenviropanel);
 	m_fieldstab->setShowGrid(true);
+	m_fieldstab->setAlternatingRowColors(true);
 	m_fieldstab->setSortingEnabled(true);
 	m_fieldstab->setMouseTracking(true);
 	m_fieldstab->setSelectionBehavior(QTableWidget::SelectRows);
@@ -1549,6 +1553,7 @@ void MagDynDlg::CreateCoordinatesPanel()
 	// table with saved fields
 	m_coordinatestab = new QTableWidget(m_coordinatespanel);
 	m_coordinatestab->setShowGrid(true);
+	m_coordinatestab->setAlternatingRowColors(true);
 	m_coordinatestab->setSortingEnabled(true);
 	m_coordinatestab->setMouseTracking(true);
 	m_coordinatestab->setSelectionBehavior(QTableWidget::SelectRows);
