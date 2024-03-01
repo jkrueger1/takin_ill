@@ -49,6 +49,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <cstdint>
 
 #include <boost/container_hash/hash.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -667,7 +668,7 @@ public:
 
 		for(const ExchangeTerm& term : GetExchangeTerms())
 		{
-			for(t_size i=0; i<3; ++i)
+			for(std::uint8_t i = 0; i < 3; ++i)
 			{
 				min[i] = std::min(min[i], term.dist_calc[i]);
 				max[i] = std::max(max[i], term.dist_calc[i]);
@@ -798,7 +799,7 @@ public:
 			// generate new dmi vectors
 			t_vec_real dmi = tl2::zero<t_vec_real>(4);
 
-			for(int dmi_idx = 0; dmi_idx < 3; ++dmi_idx)
+			for(std::uint8_t dmi_idx = 0; dmi_idx < 3; ++dmi_idx)
 			{
 				if(term.dmi[dmi_idx] == "")
 					continue;
@@ -821,9 +822,9 @@ public:
 			// generate new general J matrices
 			t_real Jgen_arr[3][3]{};
 
-			for(int J_idx1 = 0; J_idx1 < 3; ++J_idx1)
+			for(std::uint8_t J_idx1 = 0; J_idx1 < 3; ++J_idx1)
 			{
-				for(int J_idx2 = 0; J_idx2 < 3; ++J_idx2)
+				for(std::uint8_t J_idx2 = 0; J_idx2 < 3; ++J_idx2)
 				{
 					if(term.Jgen[J_idx1][J_idx2] == "")
 						continue;
@@ -873,10 +874,10 @@ public:
 				newterm.dist[1] = tl2::var_to_str(newterm.dist_calc[1]);
 				newterm.dist[2] = tl2::var_to_str(newterm.dist_calc[2]);
 
-				for(int idx1 = 0; idx1 < 3; ++idx1)
+				for(std::uint8_t idx1 = 0; idx1 < 3; ++idx1)
 				{
 					newterm.dmi[idx1] = tl2::var_to_str(newdmis[op_idx][idx1]);
-					for(int idx2 = 0; idx2 < 3; ++idx2)
+					for(std::uint8_t idx2 = 0; idx2 < 3; ++idx2)
 						newterm.Jgen[idx1][idx2] = tl2::var_to_str(newJgens[op_idx](idx1, idx2));
 				}
 				newterm.name += "_" + tl2::var_to_str(op_idx + 1);
@@ -936,11 +937,11 @@ public:
 		std::vector<t_vec_real> sc_vecs;
 		sc_vecs.reserve(_sc_max * _sc_max * _sc_max * 2 * 2 * 2);
 		t_real sc_max = t_real(_sc_max);
-		for(t_real sc_h = -sc_max; sc_h<=sc_max; sc_h += 1.)
+		for(t_real sc_h = -sc_max; sc_h <= sc_max; sc_h += 1.)
 		{
-			for(t_real sc_k = -sc_max; sc_k<=sc_max; sc_k += 1.)
+			for(t_real sc_k = -sc_max; sc_k <= sc_max; sc_k += 1.)
 			{
-				for(t_real sc_l = -sc_max; sc_l<=sc_max; sc_l += 1.)
+				for(t_real sc_l = -sc_max; sc_l <= sc_max; sc_l += 1.)
 				{
 					sc_vecs.emplace_back(
 						tl2::create<t_vec_real>({ sc_h, sc_k, sc_l }));
@@ -950,9 +951,9 @@ public:
 
 		for(const t_vec_real& sc_vec : sc_vecs)
 		{
-			for(t_size idx1=0; idx1<GetMagneticSitesCount()-1; ++idx1)
+			for(t_size idx1 = 0; idx1 < GetMagneticSitesCount()-1; ++idx1)
 			{
-				for(t_size idx2=idx1+1; idx2<GetMagneticSitesCount(); ++idx2)
+				for(t_size idx2 = idx1+1; idx2 < GetMagneticSitesCount(); ++idx2)
 				{
 					PossibleCoupling coupling;
 
@@ -1103,10 +1104,10 @@ public:
 				site.spin_ortho_calc = tl2::zero<t_vec>(3);
 				site.spin_ortho_conj_calc = tl2::zero<t_vec>(3);
 
-				for(t_size idx=0; idx<3; ++idx)
+				for(std::uint8_t idx = 0; idx < 3; ++idx)
 				{
 					// position
-					if(site.pos[idx].size())
+					if(site.pos[idx] != "")
 					{
 						if(parser.parse(site.pos[idx]))
 						{
@@ -1123,7 +1124,7 @@ public:
 					}
 
 					// spin direction
-					if(site.spin_dir[idx].size())
+					if(site.spin_dir[idx] != "")
 					{
 						if(parser.parse(site.spin_dir[idx]))
 						{
@@ -1140,7 +1141,7 @@ public:
 					}
 
 					// orthogonal spin direction
-					if(site.spin_ortho[idx].size())
+					if(site.spin_ortho[idx] != "")
 					{
 						if(parser.parse(site.spin_ortho[idx]))
 						{
@@ -1255,10 +1256,10 @@ public:
 				// general exchange interaction
 				term.Jgen_calc = tl2::zero<t_mat>(3, 3);
 
-				for(t_size i=0; i<term.Jgen_calc.size1(); ++i)
+				for(std::uint8_t i = 0; i < 3; ++i)
 				{
 					// distance
-					if(term.dist[i].size())
+					if(term.dist[i] != "")
 					{
 						if(parser.parse(term.dist[i]))
 						{
@@ -1274,7 +1275,7 @@ public:
 					}
 
 					// dmi
-					if(term.dmi[i].size())
+					if(term.dmi[i] != "")
 					{
 						if(parser.parse(term.dmi[i]))
 						{
@@ -1290,10 +1291,9 @@ public:
 					}
 
 					// general exchange interaction
-					for(t_size j=0; j<term.Jgen_calc.size2(); ++j)
+					for(std::uint8_t j = 0; j < 3; ++j)
 					{
-						// empty string?
-						if(!term.Jgen[i][j].size())
+						if(term.Jgen[i][j] == "")
 							continue;
 
 						if(parser.parse(term.Jgen[i][j]))
@@ -1423,8 +1423,8 @@ public:
 	 */
 	t_mat CalcHamiltonian(const t_vec_real& Qvec) const
 	{
-		// no (or no valid) sites given
-		if(GetMagneticSitesCount() == 0)
+		const t_size N = GetMagneticSitesCount();
+		if(N == 0)
 			return t_mat{};
 
 		// build the interaction matrices J(Q) and J(-Q) of
@@ -1432,30 +1432,32 @@ public:
 		auto [J_Q, J_Q0] = CalcReciprocalJs(Qvec);
 
 		// create the hamiltonian of equation (25) and (26) from (Toth 2015)
-		t_mat A = tl2::create<t_mat>(GetMagneticSitesCount(), GetMagneticSitesCount());
-		t_mat A_conj_mQ = tl2::create<t_mat>(GetMagneticSitesCount(), GetMagneticSitesCount());
-		t_mat B = tl2::create<t_mat>(GetMagneticSitesCount(), GetMagneticSitesCount());
-		t_mat C = tl2::zero<t_mat>(GetMagneticSitesCount(), GetMagneticSitesCount());
+		t_mat A = tl2::create<t_mat>(N, N);
+		t_mat A_conj_mQ = tl2::create<t_mat>(N, N);
+		t_mat B = tl2::create<t_mat>(N, N);
+		t_mat C = tl2::zero<t_mat>(N, N);
 
 		bool use_field = !tl2::equals_0<t_real>(m_field.mag, m_eps)
 			&& m_field.dir.size() == 3;
 
 		// iterate magnetic sites
-		for(t_size i=0; i<GetMagneticSitesCount(); ++i)
+		for(t_size i = 0; i < N; ++i)
 		{
-			// get the pre-calculated u and v vectors for the commensurate case
-			const t_vec& u_i = GetMagneticSite(i).spin_ortho_calc;
-			const t_vec& u_conj_i = GetMagneticSite(i).spin_ortho_conj_calc;
-			const t_vec& v_i = GetMagneticSite(i).spin_dir_calc;
-			t_real S_i = GetMagneticSite(i).spin_mag_calc;
+			const MagneticSite& s_i = GetMagneticSite(i);
 
-			for(t_size j=0; j<GetMagneticSitesCount(); ++j)
+			// get the pre-calculated u and v vectors for the commensurate case
+			const t_vec& u_i = s_i.spin_ortho_calc;
+			const t_vec& u_conj_i = s_i.spin_ortho_conj_calc;
+			const t_vec& v_i = s_i.spin_dir_calc;
+
+			for(t_size j = 0; j < N; ++j)
 			{
+				const MagneticSite& s_j = GetMagneticSite(j);
+
 				// get the pre-calculated u and v vectors for the commensurate case
-				const t_vec& u_j = GetMagneticSite(j).spin_ortho_calc;
-				const t_vec& u_conj_j = GetMagneticSite(j).spin_ortho_conj_calc;
-				const t_vec& v_j = GetMagneticSite(j).spin_dir_calc;
-				t_real S_j = GetMagneticSite(j).spin_mag_calc;
+				const t_vec& u_j = s_j.spin_ortho_calc;
+				const t_vec& u_conj_j = s_j.spin_ortho_conj_calc;
+				const t_vec& v_j = s_j.spin_dir_calc;
 
 				// get the pre-calculated exchange matrices for the (i, j) coupling
 				const t_indices indices_ij = std::make_pair(i, j);
@@ -1468,13 +1470,13 @@ public:
 
 				if(J_Q33 && J_Q033)
 				{
-					t_real SiSj = 0.5 * std::sqrt(S_i*S_j);
+					t_real SiSj = 0.5 * std::sqrt(s_i.spin_mag_calc * s_j.spin_mag_calc);
 
 					// equation (26) from (Toth 2015)
 					A(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, (*J_Q33) * u_conj_j);
 					A_conj_mQ(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_conj_i, (*J_Q33) * u_j);
 					B(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, (*J_Q33) * u_j);
-					C(i, i) += S_j * tl2::inner_noconj<t_vec>(v_i, (*J_Q033) * v_j);
+					C(i, i) += s_j.spin_mag_calc * tl2::inner_noconj<t_vec>(v_i, (*J_Q033) * v_j);
 				}
 			}  // end of iteration over j sites
 
@@ -1483,7 +1485,7 @@ public:
 			{
 				t_vec B = tl2::convert<t_vec>(-m_field.dir) * m_field.mag;
 
-				t_vec gv = GetMagneticSite(i).g * v_i;
+				t_vec gv = s_i.g * v_i;
 				t_cplx Bgv = tl2::inner_noconj<t_vec>(B, gv);
 
 				// bohr magneton in [meV/T]
@@ -1496,11 +1498,11 @@ public:
 		}  // end of iteration over i sites
 
 		// equation (25) from (Toth 2015)
-		t_mat H = tl2::zero<t_mat>(GetMagneticSitesCount()*2, GetMagneticSitesCount()*2);
-		tl2::set_submat(H, A - C, 0, 0);
-		tl2::set_submat(H, B, 0, GetMagneticSitesCount());
-		tl2::set_submat(H, tl2::herm(B), GetMagneticSitesCount(), 0);
-		tl2::set_submat(H, A_conj_mQ - C, GetMagneticSitesCount(), GetMagneticSitesCount());
+		t_mat H = tl2::zero<t_mat>(N*2, N*2);
+		tl2::set_submat(H, A - C,         0, 0);
+		tl2::set_submat(H, B,             0, N);
+		tl2::set_submat(H, tl2::herm(B),  N, 0);
+		tl2::set_submat(H, A_conj_mQ - C, N, N);
 
 		return H;
 	}
@@ -1515,14 +1517,15 @@ public:
 		t_mat _H, const t_vec_real& Qvec,
 		bool only_energies = false) const
 	{
-		if(GetMagneticSitesCount() == 0 || _H.size1() == 0)
+		const t_size N = GetMagneticSitesCount();
+		if(N == 0 || _H.size1() == 0)
 			return {};
 
 		// equation (30) from (Toth 2015)
-		t_mat g_sign = tl2::zero<t_mat>(GetMagneticSitesCount()*2, GetMagneticSitesCount()*2);
-		for(t_size i=0; i<GetMagneticSitesCount(); ++i)
+		t_mat g_sign = tl2::zero<t_mat>(N*2, N*2);
+		for(t_size i = 0; i < N; ++i)
 			g_sign(i, i) = 1.;
-		for(t_size i=GetMagneticSitesCount(); i<2*GetMagneticSitesCount(); ++i)
+		for(t_size i = N; i < 2*N; ++i)
 			g_sign(i, i) = -1.;
 
 		// equation (31) from (Toth 2015)
@@ -1549,7 +1552,7 @@ public:
 				}
 
 				// try forcing the hamilton to be positive definite
-				for(t_size i=0; i<2*GetMagneticSitesCount(); ++i)
+				for(t_size i = 0; i < 2*N; ++i)
 					_H(i, i) += m_delta_chol;
 			}
 		}
@@ -1616,7 +1619,8 @@ public:
 		const t_mat& H_mat, const t_mat& C_mat, const t_mat& g_sign,
 		const t_vec_real& Qvec, const std::vector<t_vec>& evecs) const
 	{
-		if(GetMagneticSitesCount() == 0)
+		const t_size N = GetMagneticSitesCount();
+		if(N == 0)
 			return;
 
 		// get the sorting of the energies
@@ -1634,12 +1638,12 @@ public:
 		// equation (32) from (Toth 2015)
 		t_mat L_mat = evec_mat_herm * H_mat * evec_mat; // energies
 		t_mat E_sqrt = g_sign * L_mat;                  // abs. energies
-		for(t_size i=0; i<E_sqrt.size1(); ++i)
+		for(t_size i = 0; i < E_sqrt.size1(); ++i)
 			E_sqrt(i, i) = std::sqrt(E_sqrt/*L_mat*/(i, i)); // sqrt. of abs. energies
 
 		// re-create energies, to be consistent with the weights
 		energies_and_correlations.clear();
-		for(t_size i=0; i<L_mat.size1(); ++i)
+		for(t_size i = 0; i < L_mat.size1(); ++i)
 		{
 			EnergyAndWeight EandS
 			{
@@ -1684,81 +1688,71 @@ public:
 #endif
 
 		// building the spin correlation functions of equation (47) from (Toth 2015)
-		for(int x_idx=0; x_idx<3; ++x_idx)
-		for(int y_idx=0; y_idx<3; ++y_idx)
+		for(std::uint8_t x_idx = 0; x_idx < 3; ++x_idx)
+		for(std::uint8_t y_idx = 0; y_idx < 3; ++y_idx)
 		{
 			// equations (44) from (Toth 2015)
-			auto create_matrices = [this](
-				t_mat& V, t_mat& W, t_mat& Y, t_mat& Z)
+			auto create_matrices = [N](t_mat& V, t_mat& W, t_mat& Y, t_mat& Z)
 			{
-				V = tl2::create<t_mat>(GetMagneticSitesCount(), GetMagneticSitesCount());
-				W = tl2::create<t_mat>(GetMagneticSitesCount(), GetMagneticSitesCount());
-				Y = tl2::create<t_mat>(GetMagneticSitesCount(), GetMagneticSitesCount());
-				Z = tl2::create<t_mat>(GetMagneticSitesCount(), GetMagneticSitesCount());
+				V = tl2::create<t_mat>(N, N);
+				W = tl2::create<t_mat>(N, N);
+				Y = tl2::create<t_mat>(N, N);
+				Z = tl2::create<t_mat>(N, N);
 			};
 
 			t_mat V, W, Y, Z;
 			create_matrices(V, W, Y, Z);
 
-			for(t_size i=0; i<GetMagneticSitesCount(); ++i)
-			for(t_size j=0; j<GetMagneticSitesCount(); ++j)
+			for(t_size i = 0; i < N; ++i)
+			for(t_size j = 0; j < N; ++j)
 			{
-				auto calc_mat_elems = [this, i, j, x_idx, y_idx](
-					const t_vec_real& Qvec,
-					t_mat& Y, t_mat& V, t_mat& Z, t_mat& W)
-				{
-					// get the sites and spins
-					const t_vec_real& pos_i = GetMagneticSite(i).pos_calc;
-					const t_vec_real& pos_j = GetMagneticSite(j).pos_calc;
-					t_real S_i = GetMagneticSite(i).spin_mag_calc;
-					t_real S_j = GetMagneticSite(j).spin_mag_calc;
+				// get the sites
+				const MagneticSite& s_i = GetMagneticSite(i);
+				const MagneticSite& s_j = GetMagneticSite(j);
 
-					// get the pre-calculated u vectors
-					const t_vec& u_i = GetMagneticSite(i).spin_ortho_calc;
-					const t_vec& u_j = GetMagneticSite(j).spin_ortho_calc;
-					const t_vec& u_conj_i = GetMagneticSite(i).spin_ortho_conj_calc;
-					const t_vec& u_conj_j = GetMagneticSite(j).spin_ortho_conj_calc;
+				// get the pre-calculated u vectors
+				const t_vec& u_i = s_i.spin_ortho_calc;
+				const t_vec& u_j = s_j.spin_ortho_calc;
+				const t_vec& u_conj_i = s_i.spin_ortho_conj_calc;
+				const t_vec& u_conj_j = s_j.spin_ortho_conj_calc;
 
-					// pre-factors of equation (44) from (Toth 2015)
-					t_real SiSj = 4. * std::sqrt(S_i*S_j);
-					t_cplx phase = std::exp(-m_phase_sign * s_imag * s_twopi *
-						tl2::inner<t_vec_real>(pos_j - pos_i, Qvec));
+				// pre-factors of equation (44) from (Toth 2015)
+				t_real SiSj = 4. * std::sqrt(s_i.spin_mag_calc * s_j.spin_mag_calc);
+				t_cplx phase = std::exp(-m_phase_sign * s_imag * s_twopi *
+					tl2::inner<t_vec_real>(s_j.pos_calc - s_i.pos_calc, Qvec));
 
-					// matrix elements of equation (44) from (Toth 2015)
-					Y(i, j) = phase * SiSj * u_i[x_idx] * u_conj_j[y_idx];
-					V(i, j) = phase * SiSj * u_conj_i[x_idx] * u_conj_j[y_idx];
-					Z(i, j) = phase * SiSj * u_i[x_idx] * u_j[y_idx];
-					W(i, j) = phase * SiSj * u_conj_i[x_idx] * u_j[y_idx];
+				// matrix elements of equation (44) from (Toth 2015)
+				Y(i, j) = phase * SiSj * u_i[x_idx] * u_conj_j[y_idx];
+				V(i, j) = phase * SiSj * u_conj_i[x_idx] * u_conj_j[y_idx];
+				Z(i, j) = phase * SiSj * u_i[x_idx] * u_j[y_idx];
+				W(i, j) = phase * SiSj * u_conj_i[x_idx] * u_j[y_idx];
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_PY_OUTPUT__
-					std::cout << "Y[" << i << ", " << j << ", "
-						<< x_idx << ", " << y_idx << "] = "
-						<< Y(i, j).real() << " + " << Y(i, j).imag() << "j\n"
-						<< "V[" << i << ", " << j << ", "
-						<< x_idx << ", " << y_idx << "] = "
-						<< V(i, j).real() << " + " << V(i, j).imag() << "j\n"
-						<< "Z[" << i << ", " << j << ", "
-						<< x_idx << ", " << y_idx << "] = "
-						<< Z(i, j).real() << " + " << Z(i, j).imag() << "j\n"
-						<< "W[" << i << ", " << j << ", "
-						<< x_idx << ", " << y_idx << "] = "
-						<< W(i, j).real() << " + " << W(i, j).imag() << "j"
-						<< std::endl;
+				std::cout << "Y[" << i << ", " << j << ", "
+					<< x_idx << ", " << y_idx << "] = "
+					<< Y(i, j).real() << " + " << Y(i, j).imag() << "j\n"
+					<< "V[" << i << ", " << j << ", "
+					<< x_idx << ", " << y_idx << "] = "
+					<< V(i, j).real() << " + " << V(i, j).imag() << "j\n"
+					<< "Z[" << i << ", " << j << ", "
+					<< x_idx << ", " << y_idx << "] = "
+					<< Z(i, j).real() << " + " << Z(i, j).imag() << "j\n"
+					<< "W[" << i << ", " << j << ", "
+					<< x_idx << ", " << y_idx << "] = "
+					<< W(i, j).real() << " + " << W(i, j).imag() << "j"
+					<< std::endl;
 #endif
-				};
-
-				calc_mat_elems(Qvec, Y, V, Z, W);
 			} // end of iteration over sites
 
-			auto calc_S = [this, x_idx, y_idx, &trafo, &trafo_herm, &energies_and_correlations]
+			auto calc_S = [N, x_idx, y_idx, &trafo, &trafo_herm, &energies_and_correlations]
 				(t_mat EnergyAndWeight::*S, const t_mat& Y, const t_mat& V, const t_mat& Z, const t_mat& W)
 			{
 				// equation (47) from (Toth 2015)
-				t_mat M = tl2::create<t_mat>(GetMagneticSitesCount()*2, GetMagneticSitesCount()*2);
+				t_mat M = tl2::create<t_mat>(N*2, N*2);
 				tl2::set_submat(M, Y, 0, 0);
-				tl2::set_submat(M, V, GetMagneticSitesCount(), 0);
-				tl2::set_submat(M, Z, 0, GetMagneticSitesCount());
-				tl2::set_submat(M, W, GetMagneticSitesCount(), GetMagneticSitesCount());
+				tl2::set_submat(M, V, N, 0);
+				tl2::set_submat(M, Z, 0, N);
+				tl2::set_submat(M, W, N, N);
 
 				t_mat M_trafo = trafo_herm * M * trafo;
 
@@ -1768,10 +1762,10 @@ public:
 				std::cout << std::endl;
 #endif
 
-				for(t_size i=0; i<energies_and_correlations.size(); ++i)
+				for(t_size i = 0; i < energies_and_correlations.size(); ++i)
 				{
 					(energies_and_correlations[i].*S)(x_idx, y_idx) +=
-						M_trafo(i, i) / t_real(2*GetMagneticSitesCount());
+						M_trafo(i, i) / t_real(2*N);
 				}
 			};
 
@@ -1812,7 +1806,7 @@ public:
 			E_and_S.weight_full = std::abs(tl2::trace<t_mat>(E_and_S.S).real());
 
 			// polarisation channels
-			for(int i=0; i<3; ++i)
+			for(std::uint8_t i = 0; i < 3; ++i)
 			{
 				t_mat pol = get_polarisation<t_mat>(i, false);
 				t_mat Sperp = pol * E_and_S.S_perp;
@@ -1862,7 +1856,7 @@ public:
 				iter->weight += curState.weight;
 				iter->weight_full += curState.weight_full;
 
-				for(int i=0; i<3; ++i)
+				for(std::uint8_t i = 0; i < 3; ++i)
 				{
 					iter->weight_channel[i] += curState.weight_channel[i];
 					iter->weight_channel_full[i] += curState.weight_channel_full[i];
@@ -1994,12 +1988,13 @@ public:
 			if(!CheckMagneticSite(term.site1_calc) || !CheckMagneticSite(term.site2_calc))
 				continue;
 
+			const MagneticSite& s_i = GetMagneticSite(term.site1_calc);
+			const MagneticSite& s_j = GetMagneticSite(term.site2_calc);
+
 			t_mat J = CalcRealJ(term);  // Q=0 -> no rotation needed
 
-			t_vec Si = GetMagneticSite(term.site1_calc).spin_mag_calc *
-				GetMagneticSite(term.site1_calc).spin_dir_calc;
-			t_vec Sj = GetMagneticSite(term.site2_calc).spin_mag_calc *
-				GetMagneticSite(term.site2_calc).spin_dir_calc;
+			t_vec Si = s_i.spin_mag_calc * s_i.spin_dir_calc;
+			t_vec Sj = s_j.spin_mag_calc * s_j.spin_dir_calc;
 
 			E += tl2::inner_noconj<t_vec>(Si, J * Sj).real();
 		}
@@ -2048,7 +2043,7 @@ public:
 			<< std::setw(m_prec*2) << std::left << "w_nsf"
 			<< std::endl;
 
-		for(t_size i=0; i<num_qs; ++i)
+		for(t_size i = 0; i < num_qs; ++i)
 		{
 			t_real h = std::lerp(h_start, h_end, t_real(i)/t_real(num_qs-1));
 			t_real k = std::lerp(k_start, k_end, t_real(i)/t_real(num_qs-1));
@@ -2282,12 +2277,12 @@ public:
 				exchange_term.J = term.second.get<std::string>("interaction", "0");
 
 				static const std::array<std::string, 3> comps{{"x", "y", "z"}};
-				for(t_size i=0; i<3; ++i)
+				for(std::uint8_t i = 0; i < 3; ++i)
 				{
 					exchange_term.dmi[i] = term.second.get<std::string>(
 						std::string("dmi_") + comps[i], "0");
 
-					for(t_size j=0; j<3; ++j)
+					for(std::uint8_t j = 0; j < 3; ++j)
 					{
 						exchange_term.Jgen[i][j] = term.second.get<std::string>(
 							std::string("gen_") + comps[i] + comps[j], "0");
@@ -2441,12 +2436,12 @@ public:
 			itemNode.put<std::string>("interaction", term.J);
 
 			static const std::array<std::string, 3> comps{{"x", "y", "z"}};
-			for(t_size i=0; i<3; ++i)
+			for(std::uint8_t i = 0; i < 3; ++i)
 			{
 				itemNode.put<std::string>(std::string("dmi_") +
 					comps[i], term.dmi[i]);
 
-				for(t_size j=0; j<3; ++j)
+				for(std::uint8_t j = 0; j < 3; ++j)
 				{
 					itemNode.put<std::string>(std::string("gen_") +
 						comps[i] + comps[j], term.Jgen[i][j]);
