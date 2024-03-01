@@ -162,8 +162,8 @@ struct t_MagneticSite
 
 	t_vec_real pos{};            // magnetic site position
 
-	std::string spin_dir[3];     // expression for spin direction
-	std::string spin_ortho[3];   // spin orthogonal plane
+	std::string spin_dir[3]{};   // spin direction
+	std::string spin_ortho[3]{}; // spin orthogonal vector
 
 	t_real spin_mag{};           // spin magnitude
 	t_mat g{};                   // g factor
@@ -171,11 +171,9 @@ struct t_MagneticSite
 
 	// ------------------------------------------------------------------------
 	// calculated properties
-	t_vec spin_dir_calc{};       // spin direction
-
-	t_vec u_calc{};              // spin orthogonal vector
-	t_vec u_conj_calc{};
-	t_vec v_calc{};              // spin vector
+	t_vec spin_dir_calc{};       // spin vector
+	t_vec spin_ortho_calc{};     // spin orthogonal vector
+	t_vec spin_ortho_conj_calc{};
 	// ------------------------------------------------------------------------
 };
 
@@ -189,22 +187,24 @@ template<class t_mat, class t_vec, class t_vec_real,
 struct t_ExchangeTerm
 {
 	// ------------------------------------------------------------------------
-	// input properties
+	// input properties (parsable expressions)
 	std::string name{};          // identifier
 
 	std::string site1{};         // name of first magnetic site
 	std::string site2{};         // name of second magnetic site
-	t_vec_real dist{};           // distance between unit cells
+	std::string dist[3]{};       // distance between unit cells
 
-	std::string J{};             // parsable expression for Heisenberg interaction
-	std::string dmi[3]{};        // parsable expression for Dzyaloshinskij-Moriya interaction
-	std::string Jgen[3][3]{};    // parsable expression for a general exchange interaction
+	std::string J{};             // Heisenberg interaction
+	std::string dmi[3]{};        // Dzyaloshinskij-Moriya interaction
+	std::string Jgen[3][3]{};    // general exchange interaction
 	// ------------------------------------------------------------------------
 
 	// ------------------------------------------------------------------------
 	// calculated properties
 	t_size site1_calc{};         // index of first magnetic site
 	t_size site2_calc{};         // index of second magnetic site
+	t_vec_real dist_calc{};      // distance between unit cells
+
 	t_cplx J_calc{};             // Heisenberg interaction
 	t_vec dmi_calc{};            // Dzyaloshinskij-Moriya interaction
 	t_mat Jgen_calc{};           // general exchange interaction
@@ -665,8 +665,8 @@ public:
 		{
 			for(t_size i=0; i<3; ++i)
 			{
-				min[i] = std::min(min[i], term.dist[i]);
-				max[i] = std::max(max[i], term.dist[i]);
+				min[i] = std::min(min[i], term.dist_calc[i]);
+				max[i] = std::max(max[i], term.dist_calc[i]);
 			}
 		}
 
@@ -761,7 +761,7 @@ public:
 		CalcMagneticSites();
 		CalcExchangeTerms();
 		ExchangeTerms newterms;
-		tl2::ExprParser parser = GetExprParser();
+		tl2::ExprParser<t_cplx> parser = GetExprParser();
 
 		// create unit cell site vectors
 		std::vector<t_vec_real> sites_uc;
@@ -778,7 +778,7 @@ public:
 
 			// super cell distance vector
 			t_vec_real dist_sc = tl2::create<t_vec_real>({
-				term.dist[0], term.dist[1], term.dist[2], 0. });
+				term.dist_calc[0], term.dist_calc[1], term.dist_calc[2], 0. });
 
 			// generate new (possibly supercell) sites with symop
 			auto sites1_sc = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
@@ -861,7 +861,11 @@ public:
 				newterm.site2_calc = site2_sc_idx;
 				newterm.site1 = GetMagneticSite(newterm.site1_calc).name;
 				newterm.site2 = GetMagneticSite(newterm.site2_calc).name;
-				newterm.dist = sc2 - sc1;
+				newterm.dist_calc = sc2 - sc1;
+				newterm.dist[0] = tl2::var_to_str(newterm.dist_calc[0]);
+				newterm.dist[1] = tl2::var_to_str(newterm.dist_calc[1]);
+				newterm.dist[2] = tl2::var_to_str(newterm.dist_calc[2]);
+
 				for(int idx1 = 0; idx1 < 3; ++idx1)
 				{
 					newterm.dmi[idx1] = tl2::var_to_str(newdmis[op_idx][idx1]);
@@ -985,7 +989,10 @@ public:
 			newterm.site2_calc = coupling.idx2_uc;
 			newterm.site1 = GetMagneticSite(newterm.site1_calc).name;
 			newterm.site2 = GetMagneticSite(newterm.site2_calc).name;
-			newterm.dist = coupling.sc_vec;
+			newterm.dist_calc = coupling.sc_vec;
+			newterm.dist[0] = tl2::var_to_str(newterm.dist_calc[0]);
+			newterm.dist[1] = tl2::var_to_str(newterm.dist_calc[1]);
+			newterm.dist[2] = tl2::var_to_str(newterm.dist_calc[2]);
 			newterm.J = "0";
 			newterm.name += "coupling_" + tl2::var_to_str(coupling_idx + 1);
 			newterms.emplace_back(std::move(newterm));
@@ -1023,7 +1030,7 @@ public:
 			for(auto iter2 = std::next(iter1, 1); iter2 != m_exchange_terms.end();)
 			{
 				bool same_uc = (iter1->site1 == iter2->site1 && iter1->site2 == iter2->site2);
-				bool same_sc = tl2::equals<t_vec_real>(iter1->dist, iter2->dist, m_eps);
+				bool same_sc = tl2::equals<t_vec_real>(iter1->dist_calc, iter2->dist_calc, m_eps);
 
 				if(same_uc && same_sc)
 					iter2 = m_exchange_terms.erase(iter2);
@@ -1040,7 +1047,8 @@ public:
 	// calculation functions
 	// --------------------------------------------------------------------
 	/**
-	 * calculate the spin rotation trafo for the magnetic sites
+	 * calculate the spin rotation trafo for the magnetic sites and parse
+	 * any given expressions
 	 */
 	void CalcMagneticSites()
 	{
@@ -1070,7 +1078,7 @@ public:
 #endif
 		}
 
-		tl2::ExprParser parser = GetExprParser();
+		tl2::ExprParser<t_cplx> parser = GetExprParser();
 
 		for(MagneticSite& site : GetMagneticSites())
 		{
@@ -1079,9 +1087,8 @@ public:
 				bool has_explicit_uv = true;
 
 				site.spin_dir_calc = tl2::zero<t_vec>(3);
-				site.v_calc = tl2::zero<t_vec>(3);
-				site.u_calc = tl2::zero<t_vec>(3);
-				site.u_conj_calc = tl2::zero<t_vec>(3);
+				site.spin_ortho_calc = tl2::zero<t_vec>(3);
+				site.spin_ortho_conj_calc = tl2::zero<t_vec>(3);
 
 				for(t_size dir_idx=0; dir_idx<3; ++dir_idx)
 				{
@@ -1091,7 +1098,6 @@ public:
 						if(bool dir_ok = parser.parse(site.spin_dir[dir_idx]); dir_ok)
 						{
 							site.spin_dir_calc[dir_idx] = parser.eval();
-							site.v_calc[dir_idx] = site.spin_dir_calc[dir_idx];
 						}
 						else
 						{
@@ -1108,8 +1114,8 @@ public:
 					{
 						if(bool dir_ok = parser.parse(site.spin_ortho[dir_idx]); dir_ok)
 						{
-							site.u_calc[dir_idx] = parser.eval();
-							site.u_conj_calc[dir_idx] = std::conj(site.u_calc[dir_idx]);
+							site.spin_ortho_calc[dir_idx] = parser.eval();
+							site.spin_ortho_conj_calc[dir_idx] = std::conj(site.spin_ortho_calc[dir_idx]);
 						}
 						else
 						{
@@ -1131,14 +1137,14 @@ public:
 				// spin rotation of equation (9) from (Toth 2015)
 				if(m_field.align_spins)
 				{
-					std::tie(site.u_calc, site.v_calc) = R_to_uv(m_rot_field);
+					std::tie(site.spin_ortho_calc, site.spin_dir_calc) = R_to_uv(m_rot_field);
 				}
 				else
 				{
 					if(!has_explicit_uv)
 					{
 						// calculate u and v from the spin rotation
-						std::tie(site.u_calc, site.v_calc) =
+						std::tie(site.spin_ortho_calc, site.spin_dir_calc) =
 							spin_to_uv(site.spin_dir_calc);
 					}
 
@@ -1147,15 +1153,15 @@ public:
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
 					std::cout << "Site " << site.name << " u = "
-						<< site.u_calc[0] << " " << site.u_calc[1] << " " << site.u_calc[2]
+						<< site.spin_ortho_calc[0] << " " << site.spin_ortho_calc[1] << " " << site.spin_ortho_calc[2]
 						<< std::endl;
 					std::cout << "Site " << site.name << " v = "
-						<< site.v_calc[0] << " " << site.v_calc[1] << " " << site.v_calc[2]
+						<< site.spin_dir_calc[0] << " " << site.spin_dir_calc[1] << " " << site.spin_dir_calc[2]
 						<< std::endl;
 #endif
 				}
 
-				site.u_conj_calc = tl2::conj(site.u_calc);
+				site.spin_ortho_conj_calc = tl2::conj(site.spin_ortho_calc);
 			}
 			catch(const std::exception& ex)
 			{
@@ -1174,7 +1180,7 @@ public:
 		if(GetExchangeTermsCount() == 0)
 			return;
 
-		tl2::ExprParser parser = GetExprParser();
+		tl2::ExprParser<t_cplx> parser = GetExprParser();
 
 		for(ExchangeTerm& term : GetExchangeTerms())
 		{
@@ -1195,6 +1201,28 @@ public:
 					std::cerr << "Error: Unknown site 2 name \"" << term.site2 << "\"."
 						<< " in coupling \"" << term.name << "\"." << std::endl;
 					continue;
+				}
+
+				// distance
+				term.dist_calc = tl2::zero<t_vec_real>(3);
+
+				for(t_size dist_idx=0; dist_idx<3; ++dist_idx)
+				{
+					// empty string?
+					if(!term.dist[dist_idx].size())
+						continue;
+
+					if(parser.parse(term.dist[dist_idx]))
+					{
+						term.dist_calc[dist_idx] = parser.eval().real();
+					}
+					else
+					{
+						std::cerr << "Error parsing distance term \""
+							<< term.dist[dist_idx]
+							<< "\" (index " << dist_idx << ")"
+							<< "." << std::endl;
+					}
 				}
 
 				// symmetric interaction
@@ -1287,7 +1315,7 @@ public:
 		// equations (21), (6), (2) as well as section 10 from (Toth 2015)
 		if(IsIncommensurate())
 		{
-			t_real rot_UC_angle = s_twopi * tl2::inner<t_vec_real>(m_ordering, term.dist);
+			t_real rot_UC_angle = s_twopi * tl2::inner<t_vec_real>(m_ordering, term.dist_calc);
 			if(!tl2::equals_0<t_real>(rot_UC_angle, m_eps))
 			{
 				t_mat rot_UC = tl2::convert<t_mat>(
@@ -1345,12 +1373,12 @@ public:
 			// equations (14), (12), (11), and (52) from (Toth 2015)
 			insert_or_add(J_Q, indices, J *
 				std::exp(m_phase_sign * s_imag * s_twopi *
-					tl2::inner<t_vec_real>(term.dist, Qvec)));
+					tl2::inner<t_vec_real>(term.dist_calc, Qvec)));
 
 			t_mat J_T = tl2::trans(J);
 			insert_or_add(J_Q, indices_t, J_T *
 				std::exp(m_phase_sign * s_imag * s_twopi *
-					tl2::inner<t_vec_real>(term.dist, -Qvec)));
+					tl2::inner<t_vec_real>(term.dist_calc, -Qvec)));
 
 			insert_or_add(J_Q0, indices, J);
 			insert_or_add(J_Q0, indices_t, J_T);
@@ -1389,17 +1417,17 @@ public:
 		for(t_size i=0; i<GetMagneticSitesCount(); ++i)
 		{
 			// get the pre-calculated u and v vectors for the commensurate case
-			const t_vec& u_i = GetMagneticSite(i).u_calc;
-			const t_vec& u_conj_i = GetMagneticSite(i).u_conj_calc;
-			const t_vec& v_i = GetMagneticSite(i).v_calc;
+			const t_vec& u_i = GetMagneticSite(i).spin_ortho_calc;
+			const t_vec& u_conj_i = GetMagneticSite(i).spin_ortho_conj_calc;
+			const t_vec& v_i = GetMagneticSite(i).spin_dir_calc;
 			t_real S_i = GetMagneticSite(i).spin_mag;
 
 			for(t_size j=0; j<GetMagneticSitesCount(); ++j)
 			{
 				// get the pre-calculated u and v vectors for the commensurate case
-				const t_vec& u_j = GetMagneticSite(j).u_calc;
-				const t_vec& u_conj_j = GetMagneticSite(j).u_conj_calc;
-				const t_vec& v_j = GetMagneticSite(j).v_calc;
+				const t_vec& u_j = GetMagneticSite(j).spin_ortho_calc;
+				const t_vec& u_conj_j = GetMagneticSite(j).spin_ortho_conj_calc;
+				const t_vec& v_j = GetMagneticSite(j).spin_dir_calc;
 				t_real S_j = GetMagneticSite(j).spin_mag;
 
 				// get the pre-calculated exchange matrices for the (i, j) coupling
@@ -1659,10 +1687,10 @@ public:
 					t_real S_j = GetMagneticSite(j).spin_mag;
 
 					// get the pre-calculated u vectors
-					const t_vec& u_i = GetMagneticSite(i).u_calc;
-					const t_vec& u_j = GetMagneticSite(j).u_calc;
-					const t_vec& u_conj_i = GetMagneticSite(i).u_conj_calc;
-					const t_vec& u_conj_j = GetMagneticSite(j).u_conj_calc;
+					const t_vec& u_i = GetMagneticSite(i).spin_ortho_calc;
+					const t_vec& u_j = GetMagneticSite(j).spin_ortho_calc;
+					const t_vec& u_conj_i = GetMagneticSite(i).spin_ortho_conj_calc;
+					const t_vec& u_conj_j = GetMagneticSite(j).spin_ortho_conj_calc;
 
 					// pre-factors of equation (44) from (Toth 2015)
 					t_real SiSj = 4. * std::sqrt(S_i*S_j);
@@ -1941,8 +1969,8 @@ public:
 
 			t_mat J = CalcRealJ(term);  // Q=0 -> no rotation needed
 
-			t_vec Si = GetMagneticSite(term.site1_calc).spin_mag * GetMagneticSite(term.site1_calc).v_calc;
-			t_vec Sj = GetMagneticSite(term.site2_calc).spin_mag * GetMagneticSite(term.site2_calc).v_calc;
+			t_vec Si = GetMagneticSite(term.site1_calc).spin_mag * GetMagneticSite(term.site1_calc).spin_dir_calc;
+			t_vec Sj = GetMagneticSite(term.site2_calc).spin_mag * GetMagneticSite(term.site2_calc).spin_dir_calc;
 
 			E += tl2::inner_noconj<t_vec>(Si, J * Sj).real();
 		}
@@ -2207,12 +2235,16 @@ public:
 					exchange_term.site2 = GetMagneticSite(exchange_term.site2_calc).name;
 				}
 
-				exchange_term.dist = tl2::create<t_vec_real>(
+				exchange_term.dist_calc = tl2::create<t_vec_real>(
 				{
 					term.second.get<t_real>("distance_x", 0.),
 					term.second.get<t_real>("distance_y", 0.),
 					term.second.get<t_real>("distance_z", 0.),
 				});
+
+				exchange_term.dist[0] = term.second.get<std::string>("distance_x", "0");
+				exchange_term.dist[1] = term.second.get<std::string>("distance_y", "0");
+				exchange_term.dist[2] = term.second.get<std::string>("distance_z", "0");
 
 				exchange_term.J = term.second.get<std::string>("interaction", "0");
 
@@ -2369,9 +2401,9 @@ public:
 			itemNode.put<std::string>("atom_1_name", term.site1);
 			itemNode.put<std::string>("atom_2_name", term.site2);
 
-			itemNode.put<t_real>("distance_x", term.dist[0]);
-			itemNode.put<t_real>("distance_y", term.dist[1]);
-			itemNode.put<t_real>("distance_z", term.dist[2]);
+			itemNode.put<std::string>("distance_x", term.dist[0]);
+			itemNode.put<std::string>("distance_y", term.dist[1]);
+			itemNode.put<std::string>("distance_z", term.dist[2]);
 
 			itemNode.put<std::string>("interaction", term.J);
 
@@ -2394,6 +2426,7 @@ public:
 		return true;
 	}
 	// --------------------------------------------------------------------
+
 
 
 protected:
@@ -2432,6 +2465,7 @@ protected:
 		t_mat rot = tl2::convert<t_mat, t_mat_real>(_rot);
 		return R_to_uv(rot);
 	}
+
 
 
 private:

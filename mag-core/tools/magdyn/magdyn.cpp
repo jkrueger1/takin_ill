@@ -334,7 +334,7 @@ SitesComboBox* MagDynDlg::CreateSitesComboBox(const std::string& selected_site)
 void MagDynDlg::AddTermTabItem(int row,
 	const std::string& _name,
 	const std::string& atom_1, const std::string& atom_2,
-	t_real dist_x, t_real dist_y, t_real dist_z,
+	const std::string& dist_x, const std::string& dist_y, const std::string& dist_z,
 	const std::string& J,
 	const std::string& dmi_x, const std::string& dmi_y, const std::string& dmi_z,
 	[[__maybe_unused__]] const std::string& gen_xx,

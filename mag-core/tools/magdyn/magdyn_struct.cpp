@@ -583,14 +583,13 @@ void MagDynDlg::SyncToKernel()
 
 		t_magdyn::ExchangeTerm term;
 		term.name = name->text().toStdString();
+
 		term.site1 = site_1->currentText().toStdString();
 		term.site2 = site_2->currentText().toStdString();
-		term.dist = tl2::create<t_vec_real>(
-		{
-			dist_x->GetValue(),
-			dist_y->GetValue(),
-			dist_z->GetValue(),
-		});
+
+		term.dist[0] = dist_x->text().toStdString();
+		term.dist[1] = dist_y->text().toStdString();
+		term.dist[2] = dist_z->text().toStdString();
 
 		term.J = interaction->text().toStdString();
 
@@ -715,7 +714,7 @@ void MagDynDlg::ImportCouplings(const std::vector<TableImportCoupling>& coupling
 	for(const TableImportCoupling& coupling : couplings)
 	{
 		t_size atom_1 = 0, atom_2 = 0;
-		t_real dist_x = 0, dist_y = 0, dist_z = 0;
+		std::string dist_x = "0", dist_y = "0", dist_z = "0";
 		std::string J = "0";
 		std::string dmi_x = "0", dmi_y = "0", dmi_z = "0";
 
@@ -723,9 +722,9 @@ void MagDynDlg::ImportCouplings(const std::vector<TableImportCoupling>& coupling
 		if(coupling.name) name = *coupling.name;
 		if(coupling.atomidx1) atom_1 = *coupling.atomidx1;
 		if(coupling.atomidx2) atom_2 = *coupling.atomidx2;
-		if(coupling.dx) dist_x = *coupling.dx;
-		if(coupling.dy) dist_y = *coupling.dy;
-		if(coupling.dz) dist_z = *coupling.dz;
+		if(coupling.dx) dist_x = tl2::var_to_str(*coupling.dx);
+		if(coupling.dy) dist_y = tl2::var_to_str(*coupling.dy);
+		if(coupling.dz) dist_z = tl2::var_to_str(*coupling.dz);
 		if(coupling.J) J = tl2::var_to_str(*coupling.J);
 		if(coupling.dmix) dmi_x = tl2::var_to_str(*coupling.dmix);
 		if(coupling.dmiy) dmi_y = tl2::var_to_str(*coupling.dmiy);

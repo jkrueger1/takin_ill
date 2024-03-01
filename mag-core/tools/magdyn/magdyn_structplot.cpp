@@ -507,9 +507,9 @@ void MagDynDlg::StructPlotSync()
 		const auto& site1 = sites[term.site1_calc];
 		const auto& site2 = sites[term.site2_calc];
 
-		t_real_gl sc_x = t_real_gl(term.dist[0]);
-		t_real_gl sc_y = t_real_gl(term.dist[1]);
-		t_real_gl sc_z = t_real_gl(term.dist[2]);
+		t_real_gl sc_x = t_real_gl(term.dist_calc[0]);
+		t_real_gl sc_y = t_real_gl(term.dist_calc[1]);
+		t_real_gl sc_z = t_real_gl(term.dist_calc[2]);
 
 		// get colour
 		t_real_gl rgb[3] {0., 0.75, 0.};

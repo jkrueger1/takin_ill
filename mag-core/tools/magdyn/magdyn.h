@@ -405,7 +405,7 @@ protected:
 	void AddTermTabItem(int row = -1,
 		const std::string& name = "",
 		const std::string& atom_1 = "", const std::string& atom_2 = "",
-		t_real dist_x = 0., t_real dist_y = 0., t_real dist_z = 0.,
+		const std::string& dist_x = "0", const std::string& dist_y = "0", const std::string& dist_z = "0",
 		const std::string& J = "0",
 		const std::string& dmi_x = "0", const std::string& dmi_y = "0", const std::string& dmi_z = "0",
 		const std::string& gen_xx = "0", const std::string& gen_xy = "0", const std::string& gen_xz = "0",
