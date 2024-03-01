@@ -507,10 +507,10 @@ bool MagDynDlg::ImportStructure(const QString& filename)
 			for(const auto &nucl : *nuclei)
 			{
 				std::string name = nucl.second.get<std::string>("name", "n/a");
-				t_real x = nucl.second.get<t_real>("x", 0.);
-				t_real y = nucl.second.get<t_real>("y", 0.);
-				t_real z = nucl.second.get<t_real>("z", 0.);
-				t_real M_mag = nucl.second.get<t_real>("M_mag", 1.);
+				std::string x = nucl.second.get<std::string>("x", "0");
+				std::string y = nucl.second.get<std::string>("y", "0");
+				std::string z = nucl.second.get<std::string>("z", "0");
+				std::string M_mag = nucl.second.get<std::string>("M_mag", "1");
 				std::string ReMx = nucl.second.get<std::string>("ReMx", "0");
 				std::string ReMy = nucl.second.get<std::string>("ReMy", "0");
 				std::string ReMz = nucl.second.get<std::string>("ReMz", "1");

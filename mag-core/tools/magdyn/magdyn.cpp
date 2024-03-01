@@ -130,9 +130,9 @@ MagDynDlg::~MagDynDlg()
  */
 void MagDynDlg::AddSiteTabItem(int row,
 	const std::string& _name,
-	t_real x, t_real y, t_real z,
+	const std::string& x, const std::string& y, const std::string& z,
 	const std::string& sx, const std::string& sy, const std::string& sz,
-	t_real S,
+	const std::string& S,
 	[[__maybe_unused__]] const std::string& sox,
 	[[__maybe_unused__]] const std::string& soy,
 	[[__maybe_unused__]] const std::string& soz,

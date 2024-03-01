@@ -488,17 +488,15 @@ void MagDynDlg::SyncToKernel()
 		site.name = name->text().toStdString();
 		site.g = -2. * tl2::unit<t_mat>(3);
 
-		site.pos = tl2::create<t_vec_real>(
-		{
-			pos_x->GetValue(),
-			pos_y->GetValue(),
-			pos_z->GetValue(),
-		});
+		site.pos[0] = pos_x->text().toStdString();
+		site.pos[1] = pos_y->text().toStdString();
+		site.pos[2] = pos_z->text().toStdString();
 
-		site.spin_mag = spin_mag->GetValue();
+		site.spin_mag = spin_mag->text().toStdString();
 		site.spin_dir[0] = spin_x->text().toStdString();
 		site.spin_dir[1] = spin_y->text().toStdString();
 		site.spin_dir[2] = spin_z->text().toStdString();
+
 		site.spin_ortho[0] = "";
 		site.spin_ortho[1] = "";
 		site.spin_ortho[2] = "";
@@ -666,19 +664,19 @@ void MagDynDlg::ImportAtoms(const std::vector<TableImportAtom>& atompos_vec)
 
 	for(const TableImportAtom& atompos : atompos_vec)
 	{
-		t_real pos_x = 0, pos_y = 0, pos_z = 0;
+		std::string pos_x = "0", pos_y = "0", pos_z = "0";
 		std::string spin_x = "0", spin_y = "0", spin_z = "1";
-		t_real spin_mag = 1;
+		std::string spin_mag = "1";
 
 		std::string name = "";
 		if(atompos.name) name = *atompos.name;
-		if(atompos.x) pos_x = *atompos.x;
-		if(atompos.y) pos_y = *atompos.y;
-		if(atompos.z) pos_z = *atompos.z;
+		if(atompos.x) pos_x = tl2::var_to_str(*atompos.x);
+		if(atompos.y) pos_y = tl2::var_to_str(*atompos.y);
+		if(atompos.z) pos_z = tl2::var_to_str(*atompos.z);
 		if(atompos.Sx) spin_x = tl2::var_to_str(*atompos.Sx);
 		if(atompos.Sy) spin_y = tl2::var_to_str(*atompos.Sy);
 		if(atompos.Sz) spin_z = tl2::var_to_str(*atompos.Sz);
-		if(atompos.Smag) spin_mag = *atompos.Smag;
+		if(atompos.Smag) spin_mag = tl2::var_to_str(*atompos.Smag);
 
 		if(name == "")
 		{

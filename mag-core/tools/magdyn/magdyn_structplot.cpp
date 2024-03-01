@@ -430,9 +430,9 @@ void MagDynDlg::StructPlotSync()
 		}
 
 		t_vec_gl pos_vec = tl2::create<t_vec_gl>({
-			t_real_gl(site.pos[0]) + sc_x,
-			t_real_gl(site.pos[1]) + sc_y,
-			t_real_gl(site.pos[2]) + sc_z,
+			t_real_gl(site.pos_calc[0]) + sc_x,
+			t_real_gl(site.pos_calc[1]) + sc_y,
+			t_real_gl(site.pos_calc[2]) + sc_z,
 		});
 
 		t_vec_gl spin_vec;
@@ -441,17 +441,17 @@ void MagDynDlg::StructPlotSync()
 		if(field.align_spins)
 		{
 			spin_vec = tl2::create<t_vec_gl>({
-				t_real_gl(-field.dir[0] * site.spin_mag),
-				t_real_gl(-field.dir[1] * site.spin_mag),
-				t_real_gl(-field.dir[2] * site.spin_mag),
+				t_real_gl(-field.dir[0] * site.spin_mag_calc),
+				t_real_gl(-field.dir[1] * site.spin_mag_calc),
+				t_real_gl(-field.dir[2] * site.spin_mag_calc),
 			});
 		}
 		else
 		{
 			spin_vec = tl2::create<t_vec_gl>({
-				t_real_gl(site.spin_dir_calc[0].real() * site.spin_mag),
-				t_real_gl(site.spin_dir_calc[1].real() * site.spin_mag),
-				t_real_gl(site.spin_dir_calc[2].real() * site.spin_mag),
+				t_real_gl(site.spin_dir_calc[0].real() * site.spin_mag_calc),
+				t_real_gl(site.spin_dir_calc[1].real() * site.spin_mag_calc),
+				t_real_gl(site.spin_dir_calc[2].real() * site.spin_mag_calc),
 			});
 
 			if(is_incommensurate)
@@ -529,16 +529,16 @@ void MagDynDlg::StructPlotSync()
 
 		// connection from unit cell magnetic site...
 		const t_vec_gl pos1_vec = tl2::create<t_vec_gl>({
-			t_real_gl(site1.pos[0]),
-			t_real_gl(site1.pos[1]),
-			t_real_gl(site1.pos[2]),
+			t_real_gl(site1.pos_calc[0]),
+			t_real_gl(site1.pos_calc[1]),
+			t_real_gl(site1.pos_calc[2]),
 		});
 
 		// ... to magnetic site in super cell
 		const t_vec_gl pos2_vec = tl2::create<t_vec_gl>({
-			t_real_gl(site2.pos[0]) + sc_x,
-			t_real_gl(site2.pos[1]) + sc_y,
-			t_real_gl(site2.pos[2]) + sc_z,
+			t_real_gl(site2.pos_calc[0]) + sc_x,
+			t_real_gl(site2.pos_calc[1]) + sc_y,
+			t_real_gl(site2.pos_calc[2]) + sc_z,
 		});
 
 		// add the supercell site if it hasn't been inserted yet

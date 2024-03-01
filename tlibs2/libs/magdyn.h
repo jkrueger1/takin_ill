@@ -160,20 +160,24 @@ struct t_MagneticSite
 	// input properties
 	std::string name{};          // identifier
 
-	t_vec_real pos{};            // magnetic site position
+	std::string pos[3]{};        // magnetic site position
 
 	std::string spin_dir[3]{};   // spin direction
 	std::string spin_ortho[3]{}; // spin orthogonal vector
 
-	t_real spin_mag{};           // spin magnitude
+	std::string spin_mag{};      // spin magnitude
 	t_mat g{};                   // g factor
 	// ------------------------------------------------------------------------
 
 	// ------------------------------------------------------------------------
 	// calculated properties
+	t_vec_real pos_calc{};       // magnetic site position
+
 	t_vec spin_dir_calc{};       // spin vector
 	t_vec spin_ortho_calc{};     // spin orthogonal vector
 	t_vec spin_ortho_conj_calc{};
+
+	t_real spin_mag_calc{};      // spin magnitude
 	// ------------------------------------------------------------------------
 };
 
@@ -735,12 +739,15 @@ public:
 		for(const MagneticSite& site : GetMagneticSites())
 		{
 			auto positions = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
-				site.pos, symops, m_eps);
+				site.pos_calc, symops, m_eps);
 
 			for(const t_vec_real& position : positions)
 			{
 				MagneticSite newsite = site;
-				newsite.pos = position;
+				newsite.pos_calc = position;
+				newsite.pos[0] = tl2::var_to_str(newsite.pos_calc[0]);
+				newsite.pos[1] = tl2::var_to_str(newsite.pos_calc[1]);
+				newsite.pos[2] = tl2::var_to_str(newsite.pos_calc[2]);
 
 				newsites.emplace_back(std::move(newsite));
 			}
@@ -768,7 +775,7 @@ public:
 		sites_uc.reserve(GetMagneticSitesCount());
 		for(const MagneticSite& site : GetMagneticSites())
 			sites_uc.push_back(tl2::create<t_vec_real>({
-				site.pos[0], site.pos[1], site.pos[2], 1. }));
+				site.pos_calc[0], site.pos_calc[1], site.pos_calc[2], 1. }));
 
 		for(const ExchangeTerm& term : GetExchangeTerms())
 		{
@@ -952,8 +959,8 @@ public:
 					coupling.idx1_uc = idx1;
 					coupling.idx2_uc = idx2;
 
-					coupling.pos1_uc = GetMagneticSite(idx1).pos;
-					coupling.pos2_uc = GetMagneticSite(idx2).pos;
+					coupling.pos1_uc = GetMagneticSite(idx1).pos_calc;
+					coupling.pos2_uc = GetMagneticSite(idx2).pos_calc;
 
 					coupling.sc_vec = sc_vec;
 					coupling.pos2_sc = coupling.pos2_uc + sc_vec;
@@ -1013,7 +1020,7 @@ public:
 		{
 			for(auto iter2 = std::next(iter1, 1); iter2 != m_sites.end();)
 			{
-				if(tl2::equals<t_vec_real>(iter1->pos, iter2->pos, m_eps))
+				if(tl2::equals<t_vec_real>(iter1->pos_calc, iter2->pos_calc, m_eps))
 					iter2 = m_sites.erase(iter2);
 				else
 					std::advance(iter2, 1);
@@ -1084,47 +1091,70 @@ public:
 		{
 			try
 			{
+				// spin magnitude
+				if(parser.parse(site.spin_mag))
+					site.spin_mag_calc = parser.eval().real();
+
+				// spin direction and orthogonal plane
 				bool has_explicit_uv = true;
 
+				site.pos_calc = tl2::zero<t_vec_real>(3);
 				site.spin_dir_calc = tl2::zero<t_vec>(3);
 				site.spin_ortho_calc = tl2::zero<t_vec>(3);
 				site.spin_ortho_conj_calc = tl2::zero<t_vec>(3);
 
-				for(t_size dir_idx=0; dir_idx<3; ++dir_idx)
+				for(t_size idx=0; idx<3; ++idx)
 				{
-					// non-empty spin direction string?
-					if(site.spin_dir[dir_idx].size())
+					// position
+					if(site.pos[idx].size())
 					{
-						if(bool dir_ok = parser.parse(site.spin_dir[dir_idx]); dir_ok)
+						if(parser.parse(site.pos[idx]))
 						{
-							site.spin_dir_calc[dir_idx] = parser.eval();
+							site.pos_calc[idx] = parser.eval().real();
 						}
 						else
 						{
-							std::cerr << "Error parsing spin direction \""
-								<< site.spin_dir[dir_idx] << "\""
+							std::cerr << "Error parsing position \""
+								<< site.pos[idx] << "\""
 								<< " for site \"" << site.name << "\""
-								<< " and component " << dir_idx
+								<< " and component " << idx
 								<< "." << std::endl;
 						}
 					}
 
-					// non-empty spin-plane string?
-					if(site.spin_ortho[dir_idx].size())
+					// spin direction
+					if(site.spin_dir[idx].size())
 					{
-						if(bool dir_ok = parser.parse(site.spin_ortho[dir_idx]); dir_ok)
+						if(parser.parse(site.spin_dir[idx]))
 						{
-							site.spin_ortho_calc[dir_idx] = parser.eval();
-							site.spin_ortho_conj_calc[dir_idx] = std::conj(site.spin_ortho_calc[dir_idx]);
+							site.spin_dir_calc[idx] = parser.eval();
+						}
+						else
+						{
+							std::cerr << "Error parsing spin direction \""
+								<< site.spin_dir[idx] << "\""
+								<< " for site \"" << site.name << "\""
+								<< " and component " << idx
+								<< "." << std::endl;
+						}
+					}
+
+					// orthogonal spin direction
+					if(site.spin_ortho[idx].size())
+					{
+						if(parser.parse(site.spin_ortho[idx]))
+						{
+							site.spin_ortho_calc[idx] = parser.eval();
+							site.spin_ortho_conj_calc[idx] = std::conj(site.spin_ortho_calc[idx]);
 						}
 						else
 						{
 							has_explicit_uv = false;
 
 							std::cerr << "Error parsing spin orthogonal plane \""
-								<< site.spin_ortho[dir_idx] << "\""
+								<< site.spin_ortho[idx] << "\""
 								<< " for site \"" << site.name << "\""
-								<< " and component " << dir_idx
+								<< " and component " << idx
 								<< "." << std::endl;
 						}
 					}
@@ -1203,28 +1233,6 @@ public:
 					continue;
 				}
 
-				// distance
-				term.dist_calc = tl2::zero<t_vec_real>(3);
-
-				for(t_size dist_idx=0; dist_idx<3; ++dist_idx)
-				{
-					// empty string?
-					if(!term.dist[dist_idx].size())
-						continue;
-
-					if(parser.parse(term.dist[dist_idx]))
-					{
-						term.dist_calc[dist_idx] = parser.eval().real();
-					}
-					else
-					{
-						std::cerr << "Error parsing distance term \""
-							<< term.dist[dist_idx]
-							<< "\" (index " << dist_idx << ")"
-							<< "." << std::endl;
-					}
-				}
-
 				// symmetric interaction
 				if(parser.parse(term.J))
 				{
@@ -1238,48 +1246,67 @@ public:
 						<< std::endl;
 				}
 
+				// distance
+				term.dist_calc = tl2::zero<t_vec_real>(3);
+
 				// dmi interaction
 				term.dmi_calc = tl2::zero<t_vec>(3);
-
-				for(t_size dmi_idx=0; dmi_idx<3; ++dmi_idx)
-				{
-					// empty string?
-					if(!term.dmi[dmi_idx].size())
-						continue;
-
-					if(parser.parse(term.dmi[dmi_idx]))
-					{
-						term.dmi_calc[dmi_idx] = parser.eval();
-					}
-					else
-					{
-						std::cerr << "Error parsing DMI term \""
-							<< term.dmi[dmi_idx]
-							<< "\" (index " << dmi_idx << ")"
-							<< "." << std::endl;
-					}
-				}
 
 				// general exchange interaction
 				term.Jgen_calc = tl2::zero<t_mat>(3, 3);
 
 				for(t_size i=0; i<term.Jgen_calc.size1(); ++i)
-				for(t_size j=0; j<term.Jgen_calc.size2(); ++j)
 				{
-					// empty string?
-					if(!term.Jgen[i][j].size())
-						continue;
-
-					if(parser.parse(term.Jgen[i][j]))
+					// distance
+					if(term.dist[i].size())
 					{
-						term.Jgen_calc(i, j) = parser.eval();
+						if(parser.parse(term.dist[i]))
+						{
+							term.dist_calc[i] = parser.eval().real();
+						}
+						else
+						{
+							std::cerr << "Error parsing distance term \""
+								<< term.dist[i]
+								<< "\" (index " << i << ")"
+								<< "." << std::endl;
+						}
 					}
-					else
+
+					// dmi
+					if(term.dmi[i].size())
 					{
-						std::cerr << "Error parsing general term \""
-							<< term.Jgen[i][j]
-							<< "\" (indices " << i << ", " << j << ")"
-							<< "." << std::endl;
+						if(parser.parse(term.dmi[i]))
+						{
+							term.dmi_calc[i] = parser.eval();
+						}
+						else
+						{
+							std::cerr << "Error parsing DMI term \""
+								<< term.dmi[i]
+								<< "\" (index " << i << ")"
+								<< "." << std::endl;
+						}
+					}
+
+					// general exchange interaction
+					for(t_size j=0; j<term.Jgen_calc.size2(); ++j)
+					{
+						// empty string?
+						if(!term.Jgen[i][j].size())
+							continue;
+
+						if(parser.parse(term.Jgen[i][j]))
+						{
+							term.Jgen_calc(i, j) = parser.eval();
+						}
+						else
+						{
+							std::cerr << "Error parsing general term \""
+								<< term.Jgen[i][j]
+								<< "\" (indices " << i << ", " << j << ")"
+								<< "." << std::endl;
+						}
 					}
 				}
 			}
@@ -1420,7 +1447,7 @@ public:
 			const t_vec& u_i = GetMagneticSite(i).spin_ortho_calc;
 			const t_vec& u_conj_i = GetMagneticSite(i).spin_ortho_conj_calc;
 			const t_vec& v_i = GetMagneticSite(i).spin_dir_calc;
-			t_real S_i = GetMagneticSite(i).spin_mag;
+			t_real S_i = GetMagneticSite(i).spin_mag_calc;
 
 			for(t_size j=0; j<GetMagneticSitesCount(); ++j)
 			{
@@ -1428,7 +1455,7 @@ public:
 				const t_vec& u_j = GetMagneticSite(j).spin_ortho_calc;
 				const t_vec& u_conj_j = GetMagneticSite(j).spin_ortho_conj_calc;
 				const t_vec& v_j = GetMagneticSite(j).spin_dir_calc;
-				t_real S_j = GetMagneticSite(j).spin_mag;
+				t_real S_j = GetMagneticSite(j).spin_mag_calc;
 
 				// get the pre-calculated exchange matrices for the (i, j) coupling
 				const t_indices indices_ij = std::make_pair(i, j);
@@ -1681,10 +1708,10 @@ public:
 					t_mat& Y, t_mat& V, t_mat& Z, t_mat& W)
 				{
 					// get the sites and spins
-					const t_vec_real& pos_i = GetMagneticSite(i).pos;
-					const t_vec_real& pos_j = GetMagneticSite(j).pos;
-					t_real S_i = GetMagneticSite(i).spin_mag;
-					t_real S_j = GetMagneticSite(j).spin_mag;
+					const t_vec_real& pos_i = GetMagneticSite(i).pos_calc;
+					const t_vec_real& pos_j = GetMagneticSite(j).pos_calc;
+					t_real S_i = GetMagneticSite(i).spin_mag_calc;
+					t_real S_j = GetMagneticSite(j).spin_mag_calc;
 
 					// get the pre-calculated u vectors
 					const t_vec& u_i = GetMagneticSite(i).spin_ortho_calc;
@@ -1969,8 +1996,10 @@ public:
 
 			t_mat J = CalcRealJ(term);  // Q=0 -> no rotation needed
 
-			t_vec Si = GetMagneticSite(term.site1_calc).spin_mag * GetMagneticSite(term.site1_calc).spin_dir_calc;
-			t_vec Sj = GetMagneticSite(term.site2_calc).spin_mag * GetMagneticSite(term.site2_calc).spin_dir_calc;
+			t_vec Si = GetMagneticSite(term.site1_calc).spin_mag_calc *
+				GetMagneticSite(term.site1_calc).spin_dir_calc;
+			t_vec Sj = GetMagneticSite(term.site2_calc).spin_mag_calc *
+				GetMagneticSite(term.site2_calc).spin_dir_calc;
 
 			E += tl2::inner_noconj<t_vec>(Si, J * Sj).real();
 		}
@@ -2148,12 +2177,16 @@ public:
 					seen_names.insert(magnetic_site.name);
 				}
 
-				magnetic_site.pos = tl2::create<t_vec_real>(
+				magnetic_site.pos_calc = tl2::create<t_vec_real>(
 				{
 					site.second.get<t_real>("position_x", 0.),
 					site.second.get<t_real>("position_y", 0.),
 					site.second.get<t_real>("position_z", 0.),
 				});
+
+				magnetic_site.pos[0] = site.second.get<std::string>("position_x", "0");
+				magnetic_site.pos[1] = site.second.get<std::string>("position_y", "0");
+				magnetic_site.pos[2] = site.second.get<std::string>("position_z", "0");
 
 				magnetic_site.spin_dir[0] = site.second.get<std::string>("spin_x", "0");
 				magnetic_site.spin_dir[1] = site.second.get<std::string>("spin_y", "0");
@@ -2163,7 +2196,7 @@ public:
 				magnetic_site.spin_ortho[1] = site.second.get<std::string>("spin_ortho_y", "");
 				magnetic_site.spin_ortho[2] = site.second.get<std::string>("spin_ortho_z", "");
 
-				magnetic_site.spin_mag = site.second.get<t_real>("spin_magnitude", 1.);
+				magnetic_site.spin_mag = site.second.get<std::string>("spin_magnitude", "1");
 				magnetic_site.g = -2. * tl2::unit<t_mat>(3);
 
 				AddMagneticSite(std::move(magnetic_site));
@@ -2372,9 +2405,9 @@ public:
 			boost::property_tree::ptree itemNode;
 			itemNode.put<std::string>("name", site.name);
 
-			itemNode.put<t_real>("position_x", site.pos[0]);
-			itemNode.put<t_real>("position_y", site.pos[1]);
-			itemNode.put<t_real>("position_z", site.pos[2]);
+			itemNode.put<std::string>("position_x", site.pos[0]);
+			itemNode.put<std::string>("position_y", site.pos[1]);
+			itemNode.put<std::string>("position_z", site.pos[2]);
 
 			itemNode.put<std::string>("spin_x", site.spin_dir[0]);
 			itemNode.put<std::string>("spin_y", site.spin_dir[1]);
@@ -2384,7 +2417,7 @@ public:
 			itemNode.put<std::string>("spin_ortho_y", site.spin_ortho[1]);
 			itemNode.put<std::string>("spin_ortho_z", site.spin_ortho[2]);
 
-			itemNode.put<t_real>("spin_magnitude", site.spin_mag);
+			itemNode.put<std::string>("spin_magnitude", site.spin_mag);
 
 			node.add_child("atom_sites.site", itemNode);
 		}
