@@ -35,6 +35,7 @@
 #include <QtWidgets/QDoubleSpinBox>
 
 
+
 class TrafoCalculator : public QDialog
 { Q_OBJECT
 public:

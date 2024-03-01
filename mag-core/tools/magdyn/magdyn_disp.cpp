@@ -46,6 +46,7 @@ namespace asio = boost::asio;
 using namespace tl2_ops;
 
 
+
 /**
  * clears the dispersion graph
  */
@@ -73,6 +74,7 @@ void MagDynDlg::ClearDispersion(bool replot)
 
 	m_Q_idx = 0;
 }
+
 
 
 /**
@@ -167,6 +169,7 @@ void MagDynDlg::PlotDispersion()
 
 	m_plot->replot();
 }
+
 
 
 /**
@@ -391,6 +394,7 @@ void MagDynDlg::CalcDispersion()
 
 	PlotDispersion();
 }
+
 
 
 /**
@@ -646,6 +650,7 @@ void MagDynDlg::CalcHamiltonian()
 }
 
 
+
 /**
  * set the current dispersion path and the hamiltonian to the given one
  */
@@ -676,6 +681,7 @@ void MagDynDlg::SetCoordinates(const t_vec_real& Qi, const t_vec_real& Qf, bool 
 	m_q[1]->setValue(Qi[1]);
 	m_q[2]->setValue(Qi[2]);
 }
+
 
 
 /**
@@ -764,6 +770,7 @@ void MagDynDlg::SetCurrentCoordinate(int which)
 }
 
 
+
 /**
  * mouse move event of the plot
  */
@@ -779,6 +786,7 @@ void MagDynDlg::PlotMouseMove(QMouseEvent* evt)
 	status = status.arg(Q, 0, 'g', g_prec_gui).arg(E, 0, 'g', g_prec_gui);
 	m_status->setText(status);
 }
+
 
 
 /**

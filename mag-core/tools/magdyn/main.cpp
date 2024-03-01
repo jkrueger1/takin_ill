@@ -41,6 +41,7 @@ namespace args = boost::program_options;
 namespace pt = boost::property_tree;
 
 
+
 /**
  * starts the gui program
  */
@@ -74,6 +75,7 @@ static int gui_main(int argc, char** argv, const std::string& model_file,
 
 	return app->exec();
 }
+
 
 
 /**
@@ -185,6 +187,7 @@ static int cli_main(const std::string& model_file, const std::string& results_fi
 
 	return 0;
 }
+
 
 
 int main(int argc, char** argv)

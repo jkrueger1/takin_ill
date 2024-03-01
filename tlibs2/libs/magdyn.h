@@ -744,13 +744,14 @@ public:
 			const auto positions = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
 				site.pos_calc, symops, m_eps);
 
-			for(const t_vec_real& position : positions)
+			for(t_size idx = 0; idx < positions.size(); ++idx)
 			{
 				MagneticSite newsite = site;
-				newsite.pos_calc = position;
+				newsite.pos_calc = positions[idx];
 				newsite.pos[0] = tl2::var_to_str(newsite.pos_calc[0]);
 				newsite.pos[1] = tl2::var_to_str(newsite.pos_calc[1]);
 				newsite.pos[2] = tl2::var_to_str(newsite.pos_calc[2]);
+				newsite.name += "_" + tl2::var_to_str(idx + 1);
 
 				newsites.emplace_back(std::move(newsite));
 			}

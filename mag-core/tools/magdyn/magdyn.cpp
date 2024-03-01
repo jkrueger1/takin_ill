@@ -104,6 +104,12 @@ MagDynDlg::~MagDynDlg()
 {
 	Clear();
 
+	if(m_settings_dlg)
+	{
+		delete m_settings_dlg;
+		m_settings_dlg = nullptr;
+	}
+
 	if(m_structplot_dlg)
 	{
 		delete m_structplot_dlg;
@@ -128,8 +134,8 @@ MagDynDlg::~MagDynDlg()
 /**
  * add an atom site
  */
-void MagDynDlg::AddSiteTabItem(int row,
-	const std::string& _name,
+void MagDynDlg::AddSiteTabItem(
+	int row, const std::string& _name,
 	const std::string& x, const std::string& y, const std::string& z,
 	const std::string& sx, const std::string& sy, const std::string& sz,
 	const std::string& S,
@@ -331,8 +337,8 @@ SitesComboBox* MagDynDlg::CreateSitesComboBox(const std::string& selected_site)
 /**
  * add an exchange term
  */
-void MagDynDlg::AddTermTabItem(int row,
-	const std::string& _name,
+void MagDynDlg::AddTermTabItem(
+	int row, const std::string& _name,
 	const std::string& atom_1, const std::string& atom_2,
 	const std::string& dist_x, const std::string& dist_y, const std::string& dist_z,
 	const std::string& J,
@@ -451,8 +457,8 @@ void MagDynDlg::AddTermTabItem(int row,
 /**
  * add a variable
  */
-void MagDynDlg::AddVariableTabItem(int row,
-	const std::string& name, const t_cplx& value)
+void MagDynDlg::AddVariableTabItem(
+	int row, const std::string& name, const t_cplx& value)
 {
 	bool bclone = 0;
 	m_varstab->blockSignals(true);
@@ -508,7 +514,8 @@ void MagDynDlg::AddVariableTabItem(int row,
 /**
  * add a magnetic field
  */
-void MagDynDlg::AddFieldTabItem(int row,
+void MagDynDlg::AddFieldTabItem(
+	int row,
 	t_real Bh, t_real Bk, t_real Bl,
 	t_real Bmag)
 {
@@ -561,7 +568,8 @@ void MagDynDlg::AddFieldTabItem(int row,
 /**
  * add a coordinate path
  */
-void MagDynDlg::AddCoordinateTabItem(int row,
+void MagDynDlg::AddCoordinateTabItem(
+	int row,
 	t_real hi, t_real ki, t_real li,
 	t_real hf, t_real kf, t_real lf)
 {

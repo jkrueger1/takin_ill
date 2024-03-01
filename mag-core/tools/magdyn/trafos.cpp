@@ -39,6 +39,7 @@
 #include "defs.h"
 
 
+
 TrafoCalculator::TrafoCalculator(QWidget* pParent, QSettings *sett)
 	: QDialog{pParent}, m_sett(sett)
 {
@@ -153,6 +154,7 @@ TrafoCalculator::TrafoCalculator(QWidget* pParent, QSettings *sett)
 }
 
 
+
 void TrafoCalculator::CalculateRotation()
 {
 	using namespace tl2_ops;
@@ -220,6 +222,7 @@ void TrafoCalculator::CalculateRotation()
 
 	m_textRotation->setHtml(ostrResult.str().c_str());
 }
+
 
 
 /**

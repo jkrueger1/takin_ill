@@ -65,6 +65,7 @@ extern int g_prec;
 static const std::string g_b64_prefix = "__base64__";
 
 
+
 void MagDynDlg::Clear()
 {
 	BOOST_SCOPE_EXIT(this_)
@@ -119,6 +120,7 @@ void MagDynDlg::Clear()
 }
 
 
+
 /**
  * set the currently open file and the corresponding window title
  */
@@ -133,6 +135,7 @@ void MagDynDlg::SetCurrentFile(const QString& filename)
 }
 
 
+
 /**
  * set the currently open file and its directory
  */
@@ -145,6 +148,7 @@ void MagDynDlg::SetCurrentFileAndDir(const QString& filename)
 	m_recent.AddRecentFile(filename);
 	SetCurrentFile(filename);
 }
+
 
 
 // --------------------------------------------------------------------------------
@@ -164,6 +168,7 @@ void MagDynDlg::Load()
 	if(Load(filename))
 		SetCurrentFileAndDir(filename);
 }
+
 
 
 /**
@@ -430,6 +435,7 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 // --------------------------------------------------------------------------------
 
 
+
 // --------------------------------------------------------------------------------
 /**
  * import magnetic structure configuration
@@ -450,6 +456,7 @@ void MagDynDlg::ImportStructure()
 		m_recent_struct.AddRecentFile(filename);
 	}
 }
+
 
 
 /**
@@ -556,6 +563,7 @@ bool MagDynDlg::ImportStructure(const QString& filename)
 // --------------------------------------------------------------------------------
 
 
+
 /**
  * save current magnetic structure configuration
  */
@@ -567,6 +575,7 @@ void MagDynDlg::Save()
 	else
 		Save(curFile);
 }
+
 
 
 /**
@@ -583,6 +592,7 @@ void MagDynDlg::SaveAs()
 	if(Save(filename))
 		SetCurrentFileAndDir(filename);
 }
+
 
 
 /**
@@ -781,6 +791,7 @@ bool MagDynDlg::Save(const QString& filename)
 }
 
 
+
 /**
  * save the plot as pdf
  */
@@ -798,6 +809,7 @@ void MagDynDlg::SavePlotFigure()
 
 	m_plot->savePdf(filename);
 }
+
 
 
 /**
@@ -835,6 +847,7 @@ void MagDynDlg::SaveDispersion()
 }
 
 
+
 /**
  * show dialog and export S(Q, E) into a grid
  */
@@ -857,6 +870,7 @@ void MagDynDlg::ExportSQE()
 	if(ExportSQE(filename))
 		m_sett->setValue("dir", QFileInfo(filename).path());
 }
+
 
 
 /**

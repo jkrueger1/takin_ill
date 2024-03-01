@@ -35,6 +35,7 @@
 #include "tlibs2/libs/maths.h"
 
 
+
 /**
  * a graph with weight factors per data point
  */
@@ -49,8 +50,10 @@ public:
 	}
 
 
+
 	virtual ~GraphWithWeights()
 	{}
+
 
 
 	/**
@@ -64,6 +67,7 @@ public:
 	}
 
 
+
 	void SetWeightScale(qreal sc, qreal min, qreal max)
 	{
 		m_weight_scale = sc;
@@ -72,16 +76,19 @@ public:
 	}
 
 
+
 	void SetWeightAsPointSize(bool b)
 	{
 		m_weight_as_point_size = b;
 	}
 
 
+
 	void SetWeightAsAlpha(bool b)
 	{
 		m_weight_as_alpha = b;
 	}
+
 
 
 	/**
@@ -178,6 +185,7 @@ public:
 		// restore original symbol size
 		style.setSize(size_saved);
 	}
+
 
 
 private:

@@ -116,6 +116,7 @@ void MagDynDlg::ShowStructurePlot()
 }
 
 
+
 /**
  * structure plot picker intersection
  */
@@ -155,6 +156,7 @@ void MagDynDlg::StructPlotPickerIntersection(
 }
 
 
+
 /**
  * delete currently selected magnetic site or bond
  */
@@ -176,6 +178,7 @@ void MagDynDlg::StructPlotDelete()
 }
 
 
+
 /**
  * show or hide the coordinate system
  */
@@ -189,6 +192,7 @@ void MagDynDlg::StructPlotShowCoordCross(bool show)
 }
 
 
+
 /**
  * show or hide the object labels
  */
@@ -197,6 +201,7 @@ void MagDynDlg::StructPlotShowLabels(bool show)
 	m_structplot->GetRenderer()->SetLabelsVisible(show);
 	m_structplot->update();
 }
+
 
 
 /**
@@ -214,6 +219,7 @@ void MagDynDlg::StructPlotCentreCamera()
 }
 
 
+
 /**
  * structure plot mouse button clicked
  */
@@ -229,6 +235,7 @@ void MagDynDlg::StructPlotMouseClick(
 		m_structplot_context->popup(pt);
 	}
 }
+
 
 
 /**
@@ -263,6 +270,7 @@ void MagDynDlg::StructPlotMouseDown(
 }
 
 
+
 /**
  * structure plot mouse button released
  */
@@ -272,6 +280,7 @@ void MagDynDlg::StructPlotMouseUp(
 	[[maybe_unused]] bool right)
 {
 }
+
 
 
 /**
@@ -316,6 +325,7 @@ void MagDynDlg::StructPlotAfterGLInitialisation()
 }
 
 
+
 /**
  * get the sites and exchange terms and
  * transfer them to the structure plotter
@@ -332,7 +342,6 @@ void MagDynDlg::StructPlotSync()
 	const auto& ordering = m_dyn.GetOrderingWavevector();
 	const auto& rotaxis = m_dyn.GetRotationAxis();
 	const bool is_incommensurate = m_dyn.IsIncommensurate();
-	//const auto [sc_min, sc_max] = m_dyn.GetSupercellMinMax();
 
 
 	// clear old magnetic sites
