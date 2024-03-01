@@ -69,6 +69,7 @@
 //#define __TLIBS2_MAGDYN_DEBUG_PY_OUTPUT__
 
 
+
 namespace tl2_mag {
 
 // ----------------------------------------------------------------------------
@@ -86,7 +87,7 @@ void rotate_spin_incommensurate(t_vec& spin_vec,
 	const t_vec& sc_vec, const t_vec& ordering, const t_vec& rotaxis,
 	t_real eps = std::numeric_limits<t_real>::epsilon())
 {
-	t_real sc_angle = t_real(2) * tl2::pi<t_real> *
+	const t_real sc_angle = t_real(2) * tl2::pi<t_real> *
 		tl2::inner<t_vec>(ordering, sc_vec);
 
 	if(!tl2::equals_0<t_real>(sc_angle, t_real(eps)))
@@ -300,6 +301,7 @@ public:
 	// --------------------------------------------------------------------
 
 
+
 public:
 	MagDyn() = default;
 	~MagDyn() = default;
@@ -467,8 +469,7 @@ public:
 			parser.SetAutoregisterVariables(false);
 			if(parser.parse(name))
 			{
-				t_size idx = parser.eval();
-				if(idx < GetMagneticSitesCount())
+				if(t_size idx = parser.eval(); idx < GetMagneticSitesCount())
 					return idx;
 			}
 		}
@@ -504,8 +505,7 @@ public:
 			parser.SetAutoregisterVariables(false);
 			if(parser.parse(name))
 			{
-				t_size idx = parser.eval();
-				if(idx < GetExchangeTermsCount())
+				if(t_size idx = parser.eval(); idx < GetExchangeTermsCount())
 					return idx;
 			}
 		}
@@ -544,7 +544,7 @@ public:
 		m_field = field;
 
 		// normalise direction vector
-		t_real len = tl2::norm<t_vec_real>(m_field.dir);
+		const t_real len = tl2::norm<t_vec_real>(m_field.dir);
 		if(!tl2::equals_0<t_real>(len, m_eps))
 			m_field.dir /= len;
 	}
@@ -553,7 +553,7 @@ public:
 
 	void RotateExternalField(const t_vec_real& axis, t_real angle)
 	{
-		t_mat_real rot = tl2::rotation<t_mat_real, t_vec_real>(
+		const t_mat_real rot = tl2::rotation<t_mat_real, t_vec_real>(
 			axis, angle, false);
 		m_field.dir = rot * m_field.dir;
 	}
@@ -587,7 +587,9 @@ public:
 	void SetRotationAxis(const t_vec_real& axis)
 	{
 		m_rotaxis = axis;
-		t_real len = tl2::norm<t_vec_real>(m_rotaxis);
+
+		// normalise
+		const t_real len = tl2::norm<t_vec_real>(m_rotaxis);
 		if(!tl2::equals_0<t_real>(len, m_eps))
 			m_rotaxis /= len;
 	}
@@ -739,7 +741,7 @@ public:
 
 		for(const MagneticSite& site : GetMagneticSites())
 		{
-			auto positions = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
+			const auto positions = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
 				site.pos_calc, symops, m_eps);
 
 			for(const t_vec_real& position : positions)
@@ -816,7 +818,7 @@ public:
 				}
 			}
 
-			auto newdmis = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
+			const auto newdmis = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
 				dmi, symops, m_eps, false, true);
 
 			// generate new general J matrices
@@ -849,14 +851,16 @@ public:
 				Jgen_arr[2][0], Jgen_arr[2][1], Jgen_arr[2][2], 0,
 				0,              0,              0,              0 });
 
-			auto newJgens = tl2::apply_ops_hom<t_mat_real, t_real>(Jgen, symops);
+			const auto newJgens = tl2::apply_ops_hom<t_mat_real, t_real>(Jgen, symops);
 
 			// iterate and insert generated couplings
 			for(t_size op_idx = 0; op_idx < sites1_sc.size(); ++op_idx)
 			{
 				// get position of the site in the supercell
-				auto [sc1_ok, site1_sc_idx, sc1] = tl2::get_supercell(sites1_sc[op_idx], sites_uc, 3, m_eps);
-				auto [sc2_ok, site2_sc_idx, sc2] = tl2::get_supercell(sites2_sc[op_idx], sites_uc, 3, m_eps);
+				const auto [sc1_ok, site1_sc_idx, sc1] = tl2::get_supercell(
+					sites1_sc[op_idx], sites_uc, 3, m_eps);
+				const auto [sc2_ok, site2_sc_idx, sc2] = tl2::get_supercell(
+					sites2_sc[op_idx], sites_uc, 3, m_eps);
 
 				if(!sc1_ok || !sc2_ok)
 				{
@@ -934,23 +938,14 @@ public:
 		t_mat_real A = tl2::A_matrix<t_mat_real>(a, b, c, alpha, beta, gamma);
 
 		// generate a list of supercell vectors
-		std::vector<t_vec_real> sc_vecs;
-		sc_vecs.reserve(_sc_max * _sc_max * _sc_max * 2 * 2 * 2);
 		t_real sc_max = t_real(_sc_max);
 		for(t_real sc_h = -sc_max; sc_h <= sc_max; sc_h += 1.)
+		for(t_real sc_k = -sc_max; sc_k <= sc_max; sc_k += 1.)
+		for(t_real sc_l = -sc_max; sc_l <= sc_max; sc_l += 1.)
 		{
-			for(t_real sc_k = -sc_max; sc_k <= sc_max; sc_k += 1.)
-			{
-				for(t_real sc_l = -sc_max; sc_l <= sc_max; sc_l += 1.)
-				{
-					sc_vecs.emplace_back(
-						tl2::create<t_vec_real>({ sc_h, sc_k, sc_l }));
-				}
-			}
-		}
+			// super cell vector
+			const t_vec_real sc_vec = tl2::create<t_vec_real>({ sc_h, sc_k, sc_l });
 
-		for(const t_vec_real& sc_vec : sc_vecs)
-		{
 			for(t_size idx1 = 0; idx1 < GetMagneticSitesCount()-1; ++idx1)
 			{
 				for(t_size idx2 = idx1+1; idx2 < GetMagneticSitesCount(); ++idx2)
@@ -1237,8 +1232,7 @@ public:
 				// symmetric interaction
 				if(parser.parse(term.J))
 				{
-					t_cplx J = parser.eval();
-					term.J_calc = J;
+					term.J_calc = parser.eval();
 				}
 				else
 				{
@@ -1342,7 +1336,9 @@ public:
 		// equations (21), (6), (2) as well as section 10 from (Toth 2015)
 		if(IsIncommensurate())
 		{
-			t_real rot_UC_angle = s_twopi * tl2::inner<t_vec_real>(m_ordering, term.dist_calc);
+			const t_real rot_UC_angle =
+				s_twopi * tl2::inner<t_vec_real>(m_ordering, term.dist_calc);
+
 			if(!tl2::equals_0<t_real>(rot_UC_angle, m_eps))
 			{
 				t_mat rot_UC = tl2::convert<t_mat>(
@@ -1392,10 +1388,10 @@ public:
 			const t_indices indices = std::make_pair(term.site1_calc, term.site2_calc);
 			const t_indices indices_t = std::make_pair(term.site2_calc, term.site1_calc);
 
-			t_mat J = CalcRealJ(term);
+			const t_mat J = CalcRealJ(term);
 			if(J.size1() == 0 || J.size2() == 0)
 				continue;
-			t_mat J_T = tl2::trans(J);
+			const t_mat J_T = tl2::trans(J);
 
 			// get J in reciprocal space by fourier trafo
 			// equations (14), (12), (11), and (52) from (Toth 2015)
@@ -1427,7 +1423,7 @@ public:
 
 		// build the interaction matrices J(Q) and J(-Q) of
 		// equations (12) and (14) from (Toth 2015)
-		auto [J_Q, J_Q0] = CalcReciprocalJs(Qvec);
+		const auto [J_Q, J_Q0] = CalcReciprocalJs(Qvec);
 
 		// create the hamiltonian of equation (25) and (26) from (Toth 2015)
 		t_mat A = tl2::create<t_mat>(N, N);
@@ -1468,23 +1464,22 @@ public:
 
 				if(J_Q33 && J_Q033)
 				{
-					t_real SiSj = 0.5 * std::sqrt(s_i.spin_mag_calc * s_j.spin_mag_calc);
+					const t_real S_mag = 0.5 * std::sqrt(s_i.spin_mag_calc * s_j.spin_mag_calc);
 
 					// equation (26) from (Toth 2015)
-					A(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, (*J_Q33) * u_conj_j);
-					A_conj_mQ(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_conj_i, (*J_Q33) * u_j);
-					B(i, j) = SiSj * tl2::inner_noconj<t_vec>(u_i, (*J_Q33) * u_j);
-					C(i, i) += s_j.spin_mag_calc * tl2::inner_noconj<t_vec>(v_i, (*J_Q033) * v_j);
+					A(i, j)         = S_mag * tl2::inner_noconj<t_vec>(u_i,      (*J_Q33) * u_conj_j);
+					A_conj_mQ(i, j) = S_mag * tl2::inner_noconj<t_vec>(u_conj_i, (*J_Q33) * u_j);
+					B(i, j)         = S_mag * tl2::inner_noconj<t_vec>(u_i,      (*J_Q33) * u_j);
+					C(i, i)        += s_j.spin_mag_calc * tl2::inner_noconj<t_vec>(v_i, (*J_Q033) * v_j);
 				}
 			}  // end of iteration over j sites
 
 			// include external field, equation (28) from (Toth 2015)
 			if(use_field)
 			{
-				t_vec B = tl2::convert<t_vec>(-m_field.dir) * m_field.mag;
-
-				t_vec gv = s_i.g * v_i;
-				t_cplx Bgv = tl2::inner_noconj<t_vec>(B, gv);
+				const t_vec field = tl2::convert<t_vec>(-m_field.dir) * m_field.mag;
+				const t_vec gv = s_i.g * v_i;
+				const t_cplx Bgv = tl2::inner_noconj<t_vec>(field, gv);
 
 				// bohr magneton in [meV/T]
 				constexpr const t_real muB = tl2::mu_B<t_real>
@@ -1531,7 +1526,7 @@ public:
 		t_size chol_try = 0;
 		for(; chol_try<m_tries_chol; ++chol_try)
 		{
-			auto [chol_ok, _C] = tl2_la::chol<t_mat>(_H);
+			const auto [chol_ok, _C] = tl2_la::chol<t_mat>(_H);
 
 			if(chol_ok)
 			{
@@ -1564,9 +1559,9 @@ public:
 		}
 
 		// see p. 5 in (Toth 2015)
-		t_mat H_mat = C_mat * g_sign * tl2::herm<t_mat>(C_mat);
+		const t_mat H_mat = C_mat * g_sign * tl2::herm<t_mat>(C_mat);
 
-		bool is_herm = tl2::is_symm_or_herm<t_mat, t_real>(H_mat, m_eps);
+		const bool is_herm = tl2::is_symm_or_herm<t_mat, t_real>(H_mat, m_eps);
 		if(!is_herm)
 		{
 			using namespace tl2_ops;
@@ -1576,7 +1571,7 @@ public:
 
 		// eigenvalues of the hamiltonian correspond to the energies
 		// eigenvectors correspond to the spectral weights
-		auto [evecs_ok, evals, evecs] =
+		const auto [evecs_ok, evals, evecs] =
 			tl2_la::eigenvec<t_mat, t_vec, t_cplx, t_real>(
 				H_mat, only_energies, is_herm, true);
 		if(!evecs_ok)
@@ -1593,7 +1588,7 @@ public:
 		// register energies
 		for(const auto& eval : evals)
 		{
-			EnergyAndWeight EandS { .E = eval.real(), };
+			const EnergyAndWeight EandS { .E = eval.real(), };
 			energies_and_correlations.emplace_back(std::move(EandS));
 		}
 
@@ -1622,7 +1617,7 @@ public:
 			return;
 
 		// get the sorting of the energies
-		std::vector<t_size> sorting = tl2::get_perm(
+		const std::vector<t_size> sorting = tl2::get_perm(
 			energies_and_correlations.size(),
 			[&energies_and_correlations](t_size idx1, t_size idx2) -> bool
 		{
@@ -1630,11 +1625,11 @@ public:
 				energies_and_correlations[idx2].E;
 		});
 
-		t_mat evec_mat = tl2::create<t_mat>(tl2::reorder(evecs, sorting));
-		t_mat evec_mat_herm = tl2::herm(evec_mat);
+		const t_mat evec_mat = tl2::create<t_mat>(tl2::reorder(evecs, sorting));
+		const t_mat evec_mat_herm = tl2::herm(evec_mat);
 
 		// equation (32) from (Toth 2015)
-		t_mat L_mat = evec_mat_herm * H_mat * evec_mat; // energies
+		const t_mat L_mat = evec_mat_herm * H_mat * evec_mat; // energies
 		t_mat E_sqrt = g_sign * L_mat;                  // abs. energies
 		for(t_size i = 0; i < E_sqrt.size1(); ++i)
 			E_sqrt(i, i) = std::sqrt(E_sqrt/*L_mat*/(i, i)); // sqrt. of abs. energies
@@ -1643,7 +1638,7 @@ public:
 		energies_and_correlations.clear();
 		for(t_size i = 0; i < L_mat.size1(); ++i)
 		{
-			EnergyAndWeight EandS
+			const EnergyAndWeight EandS
 			{
 				.E = L_mat(i, i).real(),
 				.S = tl2::zero<t_mat>(3, 3),
@@ -1653,7 +1648,7 @@ public:
 			energies_and_correlations.emplace_back(std::move(EandS));
 		}
 
-		auto [C_inv, inv_ok] = tl2::inv(C_mat);
+		const auto [C_inv, inv_ok] = tl2::inv(C_mat);
 		if(!inv_ok)
 		{
 			using namespace tl2_ops;
@@ -1662,8 +1657,8 @@ public:
 		}
 
 		// equation (34) from (Toth 2015)
-		t_mat trafo = C_inv * evec_mat * E_sqrt;
-		t_mat trafo_herm = tl2::herm(trafo);
+		const t_mat trafo = C_inv * evec_mat * E_sqrt;
+		const t_mat trafo_herm = tl2::herm(trafo);
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
 		t_mat D_mat = trafo_herm * H_mat * trafo;
@@ -1690,16 +1685,10 @@ public:
 		for(std::uint8_t y_idx = 0; y_idx < 3; ++y_idx)
 		{
 			// equations (44) from (Toth 2015)
-			auto create_matrices = [N](t_mat& V, t_mat& W, t_mat& Y, t_mat& Z)
-			{
-				V = tl2::create<t_mat>(N, N);
-				W = tl2::create<t_mat>(N, N);
-				Y = tl2::create<t_mat>(N, N);
-				Z = tl2::create<t_mat>(N, N);
-			};
-
-			t_mat V, W, Y, Z;
-			create_matrices(V, W, Y, Z);
+			t_mat V = tl2::create<t_mat>(N, N);
+			t_mat W = tl2::create<t_mat>(N, N);
+			t_mat Y = tl2::create<t_mat>(N, N);
+			t_mat Z = tl2::create<t_mat>(N, N);
 
 			for(t_size i = 0; i < N; ++i)
 			for(t_size j = 0; j < N; ++j)
@@ -1715,15 +1704,15 @@ public:
 				const t_vec& u_conj_j = s_j.spin_ortho_conj_calc;
 
 				// pre-factors of equation (44) from (Toth 2015)
-				t_real SiSj = 4. * std::sqrt(s_i.spin_mag_calc * s_j.spin_mag_calc);
-				t_cplx phase = std::exp(-m_phase_sign * s_imag * s_twopi *
+				const t_real S_mag = 4. * std::sqrt(s_i.spin_mag_calc * s_j.spin_mag_calc);
+				const t_cplx phase = std::exp(-m_phase_sign * s_imag * s_twopi *
 					tl2::inner<t_vec_real>(s_j.pos_calc - s_i.pos_calc, Qvec));
 
 				// matrix elements of equation (44) from (Toth 2015)
-				Y(i, j) = phase * SiSj * u_i[x_idx] * u_conj_j[y_idx];
-				V(i, j) = phase * SiSj * u_conj_i[x_idx] * u_conj_j[y_idx];
-				Z(i, j) = phase * SiSj * u_i[x_idx] * u_j[y_idx];
-				W(i, j) = phase * SiSj * u_conj_i[x_idx] * u_j[y_idx];
+				Y(i, j) = phase * S_mag * u_i[x_idx]      * u_conj_j[y_idx];
+				V(i, j) = phase * S_mag * u_conj_i[x_idx] * u_conj_j[y_idx];
+				Z(i, j) = phase * S_mag * u_i[x_idx]      * u_j[y_idx];
+				W(i, j) = phase * S_mag * u_conj_i[x_idx] * u_j[y_idx];
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_PY_OUTPUT__
 				std::cout << "Y[" << i << ", " << j << ", "
@@ -1742,32 +1731,26 @@ public:
 #endif
 			} // end of iteration over sites
 
-			auto calc_S = [N, x_idx, y_idx, &trafo, &trafo_herm, &energies_and_correlations]
-				(t_mat EnergyAndWeight::*S, const t_mat& Y, const t_mat& V, const t_mat& Z, const t_mat& W)
-			{
-				// equation (47) from (Toth 2015)
-				t_mat M = tl2::create<t_mat>(N*2, N*2);
-				tl2::set_submat(M, Y, 0, 0);
-				tl2::set_submat(M, V, N, 0);
-				tl2::set_submat(M, Z, 0, N);
-				tl2::set_submat(M, W, N, N);
+			// equation (47) from (Toth 2015)
+			t_mat M = tl2::create<t_mat>(N*2, N*2);
+			tl2::set_submat(M, Y, 0, 0);
+			tl2::set_submat(M, V, N, 0);
+			tl2::set_submat(M, Z, 0, N);
+			tl2::set_submat(M, W, N, N);
 
-				t_mat M_trafo = trafo_herm * M * trafo;
+			const t_mat M_trafo = trafo_herm * M * trafo;
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
-				std::cout << "M_trafo for x=" << x_idx << ", y=" << y_idx << ":\n";
-				tl2::niceprint(std::cout, M_trafo, 1e-4, 4);
-				std::cout << std::endl;
+			std::cout << "M_trafo for x=" << x_idx << ", y=" << y_idx << ":\n";
+			tl2::niceprint(std::cout, M_trafo, 1e-4, 4);
+			std::cout << std::endl;
 #endif
 
-				for(t_size i = 0; i < energies_and_correlations.size(); ++i)
-				{
-					(energies_and_correlations[i].*S)(x_idx, y_idx) +=
-						M_trafo(i, i) / t_real(2*N);
-				}
-			};
-
-			calc_S(&EnergyAndWeight::S, Y, V, Z, W);
+			for(t_size i = 0; i < energies_and_correlations.size(); ++i)
+			{
+				(energies_and_correlations[i].S)(x_idx, y_idx) +=
+					M_trafo(i, i) / t_real(2*N);
+			}
 		} // end of coordinate iteration
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_PY_OUTPUT__
@@ -1806,9 +1789,9 @@ public:
 			// polarisation channels
 			for(std::uint8_t i = 0; i < 3; ++i)
 			{
-				t_mat pol = get_polarisation<t_mat>(i, false);
-				t_mat Sperp = pol * E_and_S.S_perp;
-				t_mat S = pol * E_and_S.S;
+				const t_mat pol = get_polarisation<t_mat>(i, false);
+				const t_mat Sperp = pol * E_and_S.S_perp;
+				const t_mat S = pol * E_and_S.S;
 
 				E_and_S.weight_channel[i] = std::abs(tl2::trace<t_mat>(Sperp).real());
 				E_and_S.weight_channel_full[i] = std::abs(tl2::trace<t_mat>(S).real());
@@ -1829,7 +1812,7 @@ public:
 
 		for(const auto& curState : energies_and_correlations)
 		{
-			t_real curE = curState.E;
+			const t_real curE = curState.E;
 
 			auto iter = std::find_if(
 				new_energies_and_correlations.begin(),
@@ -1878,14 +1861,14 @@ public:
 		std::vector<EnergyAndWeight> EandWs;
 		if(m_calc_H)
 		{
-			t_mat H = CalcHamiltonian(Qvec);
+			const t_mat H = CalcHamiltonian(Qvec);
 			EandWs = CalcEnergiesFromHamiltonian(H, Qvec, only_energies);
 		}
 
 		if(IsIncommensurate())
 		{
 			// equations (39) and (40) from (Toth 2015)
-			t_mat proj_norm = tl2::convert<t_mat>(
+			const t_mat proj_norm = tl2::convert<t_mat>(
 				tl2::projector<t_mat_real, t_vec_real>(
 					m_rotaxis, true));
 
@@ -1894,20 +1877,20 @@ public:
 			rot_incomm -= proj_norm;
 			rot_incomm *= 0.5;
 
-			t_mat rot_incomm_conj = tl2::conj(rot_incomm);
+			const t_mat rot_incomm_conj = tl2::conj(rot_incomm);
 
 			std::vector<EnergyAndWeight> EandWs_p, EandWs_m;
 
 			if(m_calc_Hp)
 			{
-				t_mat H_p = CalcHamiltonian(Qvec + m_ordering);
+				const t_mat H_p = CalcHamiltonian(Qvec + m_ordering);
 				EandWs_p = CalcEnergiesFromHamiltonian(
 					H_p, Qvec + m_ordering, only_energies);
 			}
 
 			if(m_calc_Hm)
 			{
-				t_mat H_m = CalcHamiltonian(Qvec - m_ordering);
+				const t_mat H_m = CalcHamiltonian(Qvec - m_ordering);
 				EandWs_m = CalcEnergiesFromHamiltonian(
 					H_m, Qvec - m_ordering, only_energies);
 			}
@@ -1957,8 +1940,11 @@ public:
 	 */
 	t_real CalcMinimumEnergy() const
 	{
-		auto energies_and_correlations = CalcEnergies(0., 0., 0., true);
-		auto min_iter = std::min_element(
+		// energies at (000)
+		const auto energies_and_correlations = CalcEnergies(0., 0., 0., true);
+
+		// get minimum
+		const auto min_iter = std::min_element(
 			energies_and_correlations.begin(), energies_and_correlations.end(),
 			[](const auto& E_and_S_1, const auto& E_and_S_2) -> bool
 		{
@@ -1989,10 +1975,10 @@ public:
 			const MagneticSite& s_i = GetMagneticSite(term.site1_calc);
 			const MagneticSite& s_j = GetMagneticSite(term.site2_calc);
 
-			t_mat J = CalcRealJ(term);  // Q=0 -> no rotation needed
+			const t_mat J = CalcRealJ(term);  // Q=0 -> no rotation needed
 
-			t_vec Si = s_i.spin_mag_calc * s_i.spin_dir_calc;
-			t_vec Sj = s_j.spin_mag_calc * s_j.spin_dir_calc;
+			const t_vec Si = s_i.spin_mag_calc * s_i.spin_dir_calc;
+			const t_vec Sj = s_j.spin_mag_calc * s_j.spin_dir_calc;
 
 			E += tl2::inner_noconj<t_vec>(Si, J * Sj).real();
 		}
@@ -2043,11 +2029,13 @@ public:
 
 		for(t_size i = 0; i < num_qs; ++i)
 		{
-			t_real h = std::lerp(h_start, h_end, t_real(i)/t_real(num_qs-1));
-			t_real k = std::lerp(k_start, k_end, t_real(i)/t_real(num_qs-1));
-			t_real l = std::lerp(l_start, l_end, t_real(i)/t_real(num_qs-1));
+			// get Q
+			const t_real h = std::lerp(h_start, h_end, t_real(i)/t_real(num_qs-1));
+			const t_real k = std::lerp(k_start, k_end, t_real(i)/t_real(num_qs-1));
+			const t_real l = std::lerp(l_start, l_end, t_real(i)/t_real(num_qs-1));
 
-			auto energies_and_correlations = CalcEnergies(h, k, l, false);
+			// get E and S(Q, E)
+			const auto energies_and_correlations = CalcEnergies(h, k, l, false);
 			for(const auto& E_and_S : energies_and_correlations)
 			{
 				ostr
@@ -2463,9 +2451,9 @@ protected:
 	 */
 	std::tuple<t_vec, t_vec> R_to_uv(const t_mat& R)
 	{
-		t_vec u = tl2::col<t_mat, t_vec>(R, 0)
-			+ s_imag * tl2::col<t_mat, t_vec>(R, 1);
-		t_vec v = tl2::col<t_mat, t_vec>(R, 2);
+		const t_vec u = tl2::col<t_mat, t_vec>(R, 0)
+			 + s_imag * tl2::col<t_mat, t_vec>(R, 1);
+		const t_vec v = tl2::col<t_mat, t_vec>(R, 2);
 
 		return std::make_tuple(u, v);
 	}
@@ -2478,17 +2466,17 @@ protected:
 	 */
 	std::tuple<t_vec, t_vec> spin_to_uv(const t_vec& spin_dir)
 	{
-		auto [spin_re, spin_im] = tl2::split_cplx<t_vec, t_vec_real>(spin_dir);
+		const auto [spin_re, spin_im] = tl2::split_cplx<t_vec, t_vec_real>(spin_dir);
 
 		if(!tl2::equals_0<t_vec_real>(spin_im, m_eps))
 			std::cerr << "Warning: Spin vector should be purely real." << std::endl;
 
 		// only use real part, imaginary part should be zero
 		//spin_re /= tl2::norm<t_vec_real>(spin_re);
-		t_mat_real _rot = tl2::rotation<t_mat_real, t_vec_real>(
+		const t_mat_real _rot = tl2::rotation<t_mat_real, t_vec_real>(
 			spin_re, m_zdir, &m_rotaxis, m_eps);
 
-		t_mat rot = tl2::convert<t_mat, t_mat_real>(_rot);
+		const t_mat rot = tl2::convert<t_mat, t_mat_real>(_rot);
 		return R_to_uv(rot);
 	}
 
