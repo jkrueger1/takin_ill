@@ -384,9 +384,10 @@ protected:
 	// general table operations
 	void MoveTabItemUp(QTableWidget *pTab);
 	void MoveTabItemDown(QTableWidget *pTab);
-	void ShowTableContextMenu(
-		QTableWidget *pTab, QMenu *pMenu, QMenu *pMenuNoItem, const QPoint& pt);
-	std::vector<int> GetSelectedRows(QTableWidget *pTab, bool sort_reversed = false) const;
+	void ShowTableContextMenu(QTableWidget *pTab,
+		QMenu *pMenu, QMenu *pMenuNoItem, const QPoint& pt);
+	std::vector<int> GetSelectedRows(QTableWidget *pTab,
+		bool sort_reversed = false) const;
 
 	// add a site to the table
 	void AddSiteTabItem(int row = -1,

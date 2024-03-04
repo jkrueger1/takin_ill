@@ -119,7 +119,7 @@ add_executable(takin_magdyn
 	main.cpp graph.h
 	magdyn.cpp magdyn.h
 	magdyn_struct.cpp magdyn_structplot.cpp
-	magdyn_gui.cpp magdyn_file.cpp
+	magdyn_gui.cpp magdyn_tables.cpp magdyn_file.cpp
 	magdyn_kernel.cpp magdyn_disp.cpp
 	defs.cpp defs.h settings.h
 	table_import.cpp table_import.h
