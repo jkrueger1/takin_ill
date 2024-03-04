@@ -261,8 +261,10 @@ void MagDynDlg::SyncSiteComboBox(SitesComboBox* combo, const std::string& select
 
 	combo->clear();
 
-	// iterate sites to get their names
 	int selected_idx = -1;
+	int selected_idx_alt = -1;  // alternate selection in case of renamed site
+
+	// iterate sites to get their names
 	std::unordered_set<std::string> seen_names;
 	for(int row=0; row<m_sitestab->rowCount(); ++row)
 	{
@@ -281,14 +283,30 @@ void MagDynDlg::SyncSiteComboBox(SitesComboBox* combo, const std::string& select
 		// check if this item has to be selected
 		if(name->text().toStdString() == selected_site)
 			selected_idx = row;
+
+		// check if the selection corresponds to the site's previous name
+		std::string old_name = name->data(Qt::UserRole).toString().toStdString();
+		if(old_name != "" && old_name == selected_site)
+			selected_idx_alt = row;
 	}
 
 	combo->addItem("<invalid>");
 
 	if(selected_idx >= 0)
+	{
+		// select the site
 		combo->setCurrentIndex(selected_idx);
+	}
+	else if(selected_idx_alt >= 0)
+	{
+		// use alternate selection in case of a renamed site
+		combo->setCurrentIndex(selected_idx_alt);
+	}
 	else
+	{
+		// set selection to invalid
 		combo->setCurrentIndex(combo->count() - 1);
+	}
 }
 
 
@@ -815,9 +833,35 @@ std::vector<int> MagDynDlg::GetSelectedRows(
 /**
  * item contents changed
  */
-void MagDynDlg::SitesTableItemChanged(QTableWidgetItem * /*item*/)
+void MagDynDlg::SitesTableItemChanged(QTableWidgetItem *item)
 {
+	if(!item)
+		return;
+
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_sitestab->blockSignals(false);
+	} BOOST_SCOPE_EXIT_END
+	m_sitestab->blockSignals(true);
+
+	if(m_sitestab->column(item) == COL_SITE_NAME)
+	{
+		// site was renamed
+		int row = m_sitestab->row(item);
+		if(row >= 0 && row < m_sitestab->rowCount() && row < (int)m_dyn.GetMagneticSitesCount())
+		{
+			// get the previous name of the item
+			std::string old_name = m_dyn.GetMagneticSite(row).name;
+
+			// and set it as alternate site name
+			item->setData(Qt::UserRole, QString(old_name.c_str()));
+		}
+	}
+
 	SyncSiteComboBoxes();
+
+	// clear alternate name
+	item->setData(Qt::UserRole, QVariant());
 
 	if(m_autocalc->isChecked())
 		CalcAll();
