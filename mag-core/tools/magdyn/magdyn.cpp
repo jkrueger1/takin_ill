@@ -844,17 +844,43 @@ void MagDynDlg::SitesTableItemChanged(QTableWidgetItem *item)
 	} BOOST_SCOPE_EXIT_END
 	m_sitestab->blockSignals(true);
 
+	// was the site renamed?
 	if(m_sitestab->column(item) == COL_SITE_NAME)
 	{
-		// site was renamed
 		int row = m_sitestab->row(item);
 		if(row >= 0 && row < m_sitestab->rowCount() && row < (int)m_dyn.GetMagneticSitesCount())
 		{
-			// get the previous name of the item
+			// get the previous name of the site
 			std::string old_name = m_dyn.GetMagneticSite(row).name;
-
-			// and set it as alternate site name
+			// and set it as temporary, alternate site name
 			item->setData(Qt::UserRole, QString(old_name.c_str()));
+
+
+			// check if the new name is unique and non-empty
+			std::string new_name_base = item->text().toStdString();
+			std::string new_name = new_name_base;
+			if(tl2::trimmed(new_name) == "")
+				new_name_base = new_name = "site";
+
+			// hash all other names
+			std::unordered_set<std::string> used_names;
+			for(int idx=0; idx<m_sitestab->rowCount(); ++idx)
+			{
+				auto *name = m_sitestab->item(idx, COL_SITE_NAME);
+				if(!name || idx == row)
+					continue;
+
+				used_names.emplace(name->text().toStdString());
+			}
+
+			// possibly add a suffix to make the new name unique
+			std::size_t ctr = 1;
+			while(used_names.find(new_name) != used_names.end())
+				new_name = new_name_base + "_" + tl2::var_to_str(ctr++);
+
+			// rename the site if needed
+			if(new_name != item->text().toStdString())
+				item->setText(new_name.c_str());
 		}
 	}
 
