@@ -171,7 +171,7 @@ void MagDynDlg::AddSiteTabItem(
 	else if(row == -4 && m_sites_cursor_row >= 0)	// use row from member variable +1
 	{
 		row = m_sites_cursor_row + 1;
-		bclone = 1;
+		bclone = true;
 	}
 
 	m_sitestab->setSortingEnabled(false);
@@ -372,7 +372,7 @@ void MagDynDlg::AddTermTabItem(
 	[[__maybe_unused__]] const std::string& gen_zz,
 	const std::string& rgb)
 {
-	bool bclone = 0;
+	bool bclone = false;
 	m_termstab->blockSignals(true);
 	BOOST_SCOPE_EXIT(this_)
 	{
@@ -399,7 +399,7 @@ void MagDynDlg::AddTermTabItem(
 	else if(row == -4 && m_terms_cursor_row >= 0)	// use row from member variable +1
 	{
 		row = m_terms_cursor_row + 1;
-		bclone = 1;
+		bclone = true;
 	}
 
 	m_termstab->setSortingEnabled(false);
@@ -411,6 +411,17 @@ void MagDynDlg::AddTermTabItem(
 		{
 			m_termstab->setItem(row, thecol,
 				m_termstab->item(m_terms_cursor_row, thecol)->clone());
+
+			// also clone site selection combo boxes
+			if(thecol == COL_XCH_ATOM1_IDX || thecol == COL_XCH_ATOM2_IDX)
+			{
+				SitesComboBox *combo_old = reinterpret_cast<SitesComboBox*>(
+					m_termstab->cellWidget(m_terms_cursor_row, thecol));
+				SitesComboBox *combo = CreateSitesComboBox(
+					combo_old->currentText().toStdString());
+				m_termstab->setCellWidget(row, thecol, combo);
+				m_termstab->setItem(row, thecol, combo);
+			}
 		}
 	}
 	else
@@ -478,7 +489,7 @@ void MagDynDlg::AddTermTabItem(
 void MagDynDlg::AddVariableTabItem(
 	int row, const std::string& name, const t_cplx& value)
 {
-	bool bclone = 0;
+	bool bclone = false;
 	m_varstab->blockSignals(true);
 	BOOST_SCOPE_EXIT(this_)
 	{
@@ -496,7 +507,7 @@ void MagDynDlg::AddVariableTabItem(
 	else if(row == -4 && m_variables_cursor_row >= 0)	// use row from member variable +1
 	{
 		row = m_variables_cursor_row + 1;
-		bclone = 1;
+		bclone = true;
 	}
 
 	m_varstab->setSortingEnabled(false);
@@ -537,7 +548,7 @@ void MagDynDlg::AddFieldTabItem(
 	t_real Bh, t_real Bk, t_real Bl,
 	t_real Bmag)
 {
-	bool bclone = 0;
+	bool bclone = false;
 
 	if(row == -1)	// append to end of table
 		row = m_fieldstab->rowCount();
@@ -548,7 +559,7 @@ void MagDynDlg::AddFieldTabItem(
 	else if(row == -4 && m_fields_cursor_row >= 0)	// use row from member variable +1
 	{
 		row = m_fields_cursor_row + 1;
-		bclone = 1;
+		bclone = true;
 	}
 
 	m_fieldstab->setSortingEnabled(false);
@@ -591,7 +602,7 @@ void MagDynDlg::AddCoordinateTabItem(
 	t_real hi, t_real ki, t_real li,
 	t_real hf, t_real kf, t_real lf)
 {
-	bool bclone = 0;
+	bool bclone = false;
 
 	if(row == -1)	// append to end of table
 		row = m_coordinatestab->rowCount();
@@ -602,7 +613,7 @@ void MagDynDlg::AddCoordinateTabItem(
 	else if(row == -4 && m_coordinates_cursor_row >= 0)	// use row from member variable +1
 	{
 		row = m_coordinates_cursor_row + 1;
-		bclone = 1;
+		bclone = true;
 	}
 
 	m_coordinatestab->setSortingEnabled(false);
@@ -721,7 +732,20 @@ void MagDynDlg::MoveTabItemUp(QTableWidget *pTab)
 
 		pTab->insertRow(row-1);
 		for(int col=0; col<pTab->columnCount(); ++col)
+		{
 			pTab->setItem(row-1, col, pTab->item(row+1, col)->clone());
+
+			// also clone site selection combo boxes
+			if(pTab == m_termstab && (col == COL_XCH_ATOM1_IDX || col == COL_XCH_ATOM2_IDX))
+			{
+				SitesComboBox *combo_old = reinterpret_cast<SitesComboBox*>(
+					pTab->cellWidget(row+1, col));
+				SitesComboBox *combo = CreateSitesComboBox(
+					combo_old->currentText().toStdString());
+				pTab->setCellWidget(row-1, col, combo);
+				pTab->setItem(row-1, col, combo);
+			}
+		}
 		pTab->removeRow(row+1);
 	}
 
@@ -771,7 +795,20 @@ void MagDynDlg::MoveTabItemDown(QTableWidget *pTab)
 
 		pTab->insertRow(row+2);
 		for(int col=0; col<pTab->columnCount(); ++col)
+		{
 			pTab->setItem(row+2, col, pTab->item(row, col)->clone());
+
+			// also clone site selection combo boxes
+			if(pTab == m_termstab && (col == COL_XCH_ATOM1_IDX || col == COL_XCH_ATOM2_IDX))
+			{
+				SitesComboBox *combo_old = reinterpret_cast<SitesComboBox*>(
+					pTab->cellWidget(row, col));
+				SitesComboBox *combo = CreateSitesComboBox(
+					combo_old->currentText().toStdString());
+				pTab->setCellWidget(row+2, col, combo);
+				pTab->setItem(row+2, col, combo);
+			}
+		}
 		pTab->removeRow(row);
 	}
 
