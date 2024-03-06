@@ -771,7 +771,50 @@ std::vector<int> MagDynDlg::GetSelectedRows(
 
 
 /**
- * item contents changed
+ * set a unique name for the given table item
+ */
+static void set_unique_tab_item_name(
+	QTableWidget *tab, QTableWidgetItem *item, int name_col, const std::string& prefix)
+{
+	// was the item renamed?
+	if(tab->column(item) != name_col)
+		return;
+
+	int row = tab->row(item);
+	if(row < 0 || row >= tab->rowCount())
+		return;
+
+	// check if the new name is unique and non-empty
+	std::string new_name_base = item->text().toStdString();
+	std::string new_name = new_name_base;
+	if(tl2::trimmed(new_name) == "")
+		new_name_base = new_name = prefix;
+
+	// hash all other names
+	std::unordered_set<std::string> used_names;
+	for(int idx = 0; idx < tab->rowCount(); ++idx)
+	{
+		auto *name = tab->item(idx, name_col);
+		if(!name || idx == row)
+			continue;
+
+		used_names.emplace(name->text().toStdString());
+	}
+
+	// possibly add a suffix to make the new name unique
+	std::size_t ctr = 1;
+	while(used_names.find(new_name) != used_names.end())
+		new_name = new_name_base + "_" + tl2::var_to_str(ctr++);
+
+	// rename the site if needed
+	if(new_name != item->text().toStdString())
+		item->setText(new_name.c_str());
+}
+
+
+
+/**
+ * sites table item contents changed
  */
 void MagDynDlg::SitesTableItemChanged(QTableWidgetItem *item)
 {
@@ -795,32 +838,7 @@ void MagDynDlg::SitesTableItemChanged(QTableWidgetItem *item)
 			// and set it as temporary, alternate site name
 			item->setData(Qt::UserRole, QString(old_name.c_str()));
 
-
-			// check if the new name is unique and non-empty
-			std::string new_name_base = item->text().toStdString();
-			std::string new_name = new_name_base;
-			if(tl2::trimmed(new_name) == "")
-				new_name_base = new_name = "site";
-
-			// hash all other names
-			std::unordered_set<std::string> used_names;
-			for(int idx=0; idx<m_sitestab->rowCount(); ++idx)
-			{
-				auto *name = m_sitestab->item(idx, COL_SITE_NAME);
-				if(!name || idx == row)
-					continue;
-
-				used_names.emplace(name->text().toStdString());
-			}
-
-			// possibly add a suffix to make the new name unique
-			std::size_t ctr = 1;
-			while(used_names.find(new_name) != used_names.end())
-				new_name = new_name_base + "_" + tl2::var_to_str(ctr++);
-
-			// rename the site if needed
-			if(new_name != item->text().toStdString())
-				item->setText(new_name.c_str());
+			set_unique_tab_item_name(m_sitestab, item, COL_SITE_NAME, "site");
 		}
 	}
 
@@ -836,10 +854,18 @@ void MagDynDlg::SitesTableItemChanged(QTableWidgetItem *item)
 
 
 /**
- * item contents changed
+ * coupling table item contents changed
  */
-void MagDynDlg::TermsTableItemChanged(QTableWidgetItem * /*item*/)
+void MagDynDlg::TermsTableItemChanged(QTableWidgetItem *item)
 {
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_termstab->blockSignals(false);
+	} BOOST_SCOPE_EXIT_END
+	m_termstab->blockSignals(true);
+
+	set_unique_tab_item_name(m_termstab, item, COL_XCH_NAME, "coupling");
+
 	if(m_autocalc->isChecked())
 		CalcAll();
 }
@@ -847,10 +873,18 @@ void MagDynDlg::TermsTableItemChanged(QTableWidgetItem * /*item*/)
 
 
 /**
- * item contents changed
+ * variable table item contents changed
  */
-void MagDynDlg::VariablesTableItemChanged(QTableWidgetItem * /*item*/)
+void MagDynDlg::VariablesTableItemChanged(QTableWidgetItem *item)
 {
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_varstab->blockSignals(false);
+	} BOOST_SCOPE_EXIT_END
+	m_varstab->blockSignals(true);
+
+	set_unique_tab_item_name(m_varstab, item, COL_VARS_NAME, "var");
+
 	if(m_autocalc->isChecked())
 		CalcAll();
 }
