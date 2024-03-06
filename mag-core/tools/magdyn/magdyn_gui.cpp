@@ -1895,8 +1895,9 @@ void MagDynDlg::CreateInfoDlg()
 	labelDate->setAlignment(Qt::AlignHCenter);
 
 	auto labelPaper = new QLabel(
-		"This program implements the formalism given in "
-		"<a href=\"https://doi.org/10.1088/0953-8984/27/16/166002\">this paper</a>.",
+		"This program implements the formalism from <br>"
+		"<a href=\"https://doi.org/10.1088/0953-8984/27/16/166002\">this paper</a> "
+		"(which is also available <a href=\"https://doi.org/10.48550/arXiv.1402.6069\">here</a>).",
 		infopanel);
 	labelPaper->setOpenExternalLinks(true);
 
