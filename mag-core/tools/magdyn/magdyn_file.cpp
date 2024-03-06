@@ -106,10 +106,10 @@ void MagDynDlg::Clear()
 
 	m_notes->clear();
 
-	m_curSiteCtr = m_curCouplingCtr = 0;
+	m_curSiteCtr = m_curCouplingCtr = m_curVarCtr = 0;
 
 	// reset some options
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		m_hamiltonian_comp[i]->setChecked(true);
 		m_plot_channel[i]->setChecked(true);

@@ -285,13 +285,13 @@ void MagDynDlg::AddTermTabItem(
 	} BOOST_SCOPE_EXIT_END
 
 	std::string name = _name;
-        if(name == "")
-        {
+	if(name == "")
+	{
 		// default coupling name
-                std::ostringstream ostrName;
-                ostrName << "coupling_" << (++m_curCouplingCtr);
-                name = ostrName.str();
-        }
+		std::ostringstream ostrName;
+		ostrName << "coupling_" << (++m_curCouplingCtr);
+		name = ostrName.str();
+	}
 
 	if(row == -1)	// append to end of table
 		row = m_termstab->rowCount();
@@ -389,8 +389,7 @@ void MagDynDlg::AddTermTabItem(
 /**
  * add a variable
  */
-void MagDynDlg::AddVariableTabItem(
-	int row, const std::string& name, const t_cplx& value)
+void MagDynDlg::AddVariableTabItem(int row, const std::string& _name, const t_cplx& value)
 {
 	bool bclone = false;
 	m_varstab->blockSignals(true);
@@ -400,6 +399,15 @@ void MagDynDlg::AddVariableTabItem(
 		if(this_->m_autocalc->isChecked())
 			this_->CalcAll();
 	} BOOST_SCOPE_EXIT_END
+
+	std::string name = _name;
+	if(name == "")
+	{
+		// default variable name
+		std::ostringstream ostrName;
+		ostrName << "var_" << (++m_curVarCtr);
+		name = ostrName.str();
+	}
 
 	if(row == -1)	// append to end of table
 		row = m_varstab->rowCount();

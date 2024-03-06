@@ -420,7 +420,7 @@ protected:
 
 	// add a variable to the table
 	void AddVariableTabItem(int row = -1,
-		const std::string& name = "var",
+		const std::string& name = "",
 		const t_cplx& var = t_cplx{0, 0});
 
 	// add a coordinate to the table
@@ -525,9 +525,10 @@ private:
 	int m_fields_cursor_row = -1;
 	int m_coordinates_cursor_row = -1;
 
-	// site/coupling counter for newly inserted items
+	// counter for newly inserted table items
 	std::size_t m_curSiteCtr = 0;
 	std::size_t m_curCouplingCtr = 0;
+	std::size_t m_curVarCtr = 0;
 
 	bool m_ignoreCalc = false;
 	bool m_ignoreSitesCalc = false;
