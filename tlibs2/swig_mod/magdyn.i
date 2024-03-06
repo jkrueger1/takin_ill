@@ -47,12 +47,16 @@
 %template(ArrD4) std::array<double, 4>;
 %template(ArrCplx3) std::array<std::complex<double>, 3>;
 %template(ArrCplx4) std::array<std::complex<double>, 4>;
+%template(ArrStr3) std::array<std::string, 3>;
+%template(ArrStr33) std::array<std::array<std::string, 3>, 3>;
 
 
 // ----------------------------------------------------------------------------
 // matrix and vector containers
 // ----------------------------------------------------------------------------
 //%include "maths.h"
+
+// TODO: add these as soon as swig supports concepts
 
 //%template(VectorD) tl2::vec<double>;
 //%template(VectorCplx) tl2::vec<std::complex<double>>;

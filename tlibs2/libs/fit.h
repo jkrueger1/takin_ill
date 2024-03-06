@@ -69,6 +69,7 @@ using t_real_min = std::invoke_result_t<
 	decltype(&ROOT::Minuit2::MnFcn::Up), ROOT::Minuit2::MnFcn>;
 
 
+
 // ----------------------------------------------------------------------------
 // function models
 
@@ -84,6 +85,7 @@ public:
 };
 
 
+
 /**
  * interface using supplied functions
  * iNumArgs also includes the "x" parameter to the function, m_vecVals does not
@@ -97,7 +99,7 @@ protected:
 	bool m_bSeparateFreeParam = 1;	// separate "x" from parameters (for fitter)
 
 public:
-	FitterLamFuncModel(t_func func, bool bSeparateX=1)
+	FitterLamFuncModel(t_func func, bool bSeparateX = true)
 		: m_func{func}, m_vecVals{}, m_bSeparateFreeParam{bSeparateX}
 	{
 		m_vecVals.resize(m_bSeparateFreeParam ? iNumArgs-1 : iNumArgs);
@@ -138,6 +140,7 @@ public:
 		return pMod;
 	}
 };
+
 
 
 /**
@@ -218,7 +221,7 @@ protected:
 	const t_real* m_pdy = nullptr;
 
 	t_real_min m_dSigma = 1.;
-	bool m_bDebug = 0;
+	bool m_bDebug = false;
 
 
 public:
@@ -279,6 +282,7 @@ public:
 };
 
 
+
 /**
  * function adaptor for minimisation
  */
@@ -325,6 +329,7 @@ public:
 // ----------------------------------------------------------------------------
 
 
+
 /**
  * fit function to x,y,dy data points
  */
@@ -340,7 +345,7 @@ bool fit(t_func&& func,
 	std::vector<t_real>& vecErrs,
 	const std::vector<bool>* pVecFixed = nullptr,
 
-	bool bDebug=1) noexcept
+	bool bDebug = true) noexcept
 {
 	try
 	{
@@ -411,6 +416,7 @@ bool fit(t_func&& func,
 }
 
 
+
 /**
  * fit expression to x,y,dy data points
  */
@@ -427,7 +433,7 @@ bool fit_expr(const std::string& func,
 	std::vector<t_real>& vecErrs,
 	const std::vector<bool>* pVecFixed = nullptr,
 
-	bool bDebug=1) noexcept
+	bool bDebug = true) noexcept
 {
 	try
 	{
@@ -498,13 +504,14 @@ bool fit_expr(const std::string& func,
 }
 
 
+
 /**
  * find function minimum
  */
-template<class t_real=t_real_min, std::size_t iNumArgs, typename t_func>
+template<class t_real = t_real_min, std::size_t iNumArgs, typename t_func>
 bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
 	std::vector<t_real>& vecVals, std::vector<t_real>& vecErrs,
-	const std::vector<bool>* pVecFixed = nullptr, bool bDebug=1) noexcept
+	const std::vector<bool>* pVecFixed = nullptr, bool bDebug = true) noexcept
 {
 	try
 	{
@@ -551,13 +558,14 @@ bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
 }
 
 
+
 /**
  * find function minimum for an expression
  */
 template<class t_real = t_real_min>
 bool minimise_expr(const std::string& func, const std::vector<std::string>& vecParamNames,
 	std::vector<t_real>& vecVals, std::vector<t_real>& vecErrs,
-	const std::vector<bool>* pVecFixed = nullptr, bool bDebug=1) noexcept
+	const std::vector<bool>* pVecFixed = nullptr, bool bDebug = true) noexcept
 {
 	try
 	{
@@ -621,6 +629,8 @@ template<typename T> T bernstein(int i, int n, T t)
 	return bino * pow(t, i) * pow(1-t, n-i);
 }
 
+
+
 /**
  * @see http://mathworld.wolfram.com/BezierCurve.html
  */
@@ -638,6 +648,7 @@ t_vec bezier(const t_vec* P, std::size_t N, T t)
 
 	return vec;
 }
+
 
 
 /**
@@ -666,6 +677,7 @@ T bspline_base(int i, int j, T t, const std::vector<T>& knots)
 }
 
 
+
 /**
  * @see http://mathworld.wolfram.com/B-Spline.html
  */
@@ -686,6 +698,7 @@ t_vec bspline(const t_vec* P, std::size_t N, T t, const std::vector<T>& knots)
 
 	return vec;
 }
+
 
 
 // ----------------------------------------------------------------------------
@@ -717,6 +730,7 @@ class Bezier
 			return bezier<t_vec, T>(m_pvecs.get(), m_iN, t);
 		}
 };
+
 
 
 template<class t_vec, typename T=typename t_vec::value_type>
@@ -777,6 +791,7 @@ class BSpline
 
 		void SetEps(T eps) { m_eps = eps; }
 };
+
 
 
 template<class t_vec, typename T=typename t_vec::value_type>
@@ -841,11 +856,13 @@ template<class T, std::size_t N> struct __sort_obj
 };
 
 
+
 template<class T, std::size_t N>
 bool __comp_fkt(const __sort_obj<T, N>& t0, const __sort_obj<T, N>& t1)
 {
 	return t0.vec[0] < t1.vec[0];
 }
+
 
 
 /**
@@ -875,6 +892,7 @@ void __sort_2(Iter begin1, Iter end1, Iter begin2)
 }
 
 
+
 /**
  * find the zeros of a curve
  */
@@ -892,6 +910,7 @@ std::vector<std::size_t> find_zeroes(const t_cont& cont)
 
 	return indices;
 }
+
 
 
 /**

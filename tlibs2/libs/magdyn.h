@@ -151,6 +151,12 @@ t_mat get_polarisation(int channel = 0, bool in_chiral_basis = true)
 // ----------------------------------------------------------------------------
 // input- and output struct templates
 // ----------------------------------------------------------------------------
+
+using t_strarr3 = std::array<std::string, 3>;
+using t_strarr33 = std::array<std::array<std::string, 3>, 3>;
+
+
+
 /**
  * magnetic sites
  */
@@ -162,10 +168,10 @@ struct t_MagneticSite
 	// input properties
 	std::string name{};          // identifier
 
-	std::string pos[3]{};        // magnetic site position
+	t_strarr3 pos{};             // magnetic site position
 
-	std::string spin_dir[3]{};   // spin direction
-	std::string spin_ortho[3]{}; // spin orthogonal vector
+	t_strarr3 spin_dir{};        // spin direction
+	t_strarr3 spin_ortho{};      // spin orthogonal vector
 
 	std::string spin_mag{};      // spin magnitude
 	t_mat g{};                   // g factor
@@ -198,11 +204,11 @@ struct t_ExchangeTerm
 
 	std::string site1{};         // name of first magnetic site
 	std::string site2{};         // name of second magnetic site
-	std::string dist[3]{};       // distance between unit cells
+	t_strarr3 dist{};            // distance between unit cells
 
 	std::string J{};             // Heisenberg interaction
-	std::string dmi[3]{};        // Dzyaloshinskij-Moriya interaction
-	std::string Jgen[3][3]{};    // general exchange interaction
+	t_strarr3 dmi{};             // Dzyaloshinskij-Moriya interaction
+	t_strarr33 Jgen{};           // general exchange interaction
 	// ------------------------------------------------------------------------
 
 	// ------------------------------------------------------------------------
@@ -1096,6 +1102,8 @@ public:
 				site.spin_dir_calc = tl2::zero<t_vec>(3);
 				site.spin_ortho_calc = tl2::zero<t_vec>(3);
 				site.spin_ortho_conj_calc = tl2::zero<t_vec>(3);
+				if(site.g.size1() == 0 || site.g.size2() == 0)
+					site.g = -2. * tl2::unit<t_mat>(3);
 
 				// spin magnitude
 				if(parser.parse(site.spin_mag))
