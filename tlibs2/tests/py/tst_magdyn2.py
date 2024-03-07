@@ -25,6 +25,10 @@
 # ----------------------------------------------------------------------------
 #
 
+import numpy
+import tl2_magdyn
+
+
 # options
 save_dispersion = False
 print_dispersion = False
@@ -42,16 +46,20 @@ only_positive_energies = True
 num_Q_points = 256
 
 
-
-import numpy
-import tl2_magdyn
-
-
 # create the magdyn object
 mag = tl2_magdyn.MagDynD()
 
 
+# add a variable
+var = tl2_magdyn.VariableD()
+var.name = "J"
+var.value = -1
+mag.AddVariable(var)
+
+
 # add magnetic sites
+# all values have to be passed as strings
+# (these can contain the variables registered above)
 site = tl2_magdyn.MagneticSiteD()
 site.name = "site_1"
 site.pos[0] = "0"; site.pos[1] = "0"; site.pos[2] = "0"
@@ -61,11 +69,13 @@ mag.AddMagneticSite(site)
 
 
 # add couplings between the sites
+# all values have to be passed as strings
+# (these can contain the variables registered above)
 coupling = tl2_magdyn.ExchangeTermD()
 coupling.name = "coupling_1"
 coupling.site1 = "site_1"; coupling.site2 = "site_1"
 coupling.dist[0] = "1"; coupling.dist[1] = "0"; coupling.dist[2] = "0"
-coupling.J = "-1"
+coupling.J = "J"
 mag.AddExchangeTerm(coupling)
 
 

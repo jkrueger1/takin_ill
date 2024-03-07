@@ -42,11 +42,13 @@
 using namespace tl2_ops;
 
 
+
 template<class t_str = std::string>
 t_str get_gemmi_version()
 {
 	return GEMMI_VERSION;
 }
+
 
 
 template<class t_real = double>
@@ -55,6 +57,7 @@ struct Lattice
 	t_real a, b, c;
 	t_real alpha, beta, gamma;
 };
+
 
 
 /**
@@ -71,6 +74,7 @@ void remove_quotes(t_str& str)
 	if(str[str.size()-1] == '\'' || str[str.size()-1] == '\"')
 		str.erase(str.begin()+str.size()-1);
 }
+
 
 
 /**
@@ -99,7 +103,7 @@ get_cif_atoms(gemmi::cif::Block& block)
 
 		auto tabAtoms = block.find("_atom_site", {loopName, "_fract_x", "_fract_y", "_fract_z"});
 
-		for(std::size_t row=0; row<tabAtoms.length(); ++row)
+		for(std::size_t row = 0; row < tabAtoms.length(); ++row)
 		{
 			auto name = boost::trim_copy(tabAtoms[row][0]);
 			remove_quotes(name);
@@ -119,6 +123,7 @@ get_cif_atoms(gemmi::cif::Block& block)
 
 	return std::make_tuple(atoms, atomnames);
 }
+
 
 
 /**
@@ -143,7 +148,7 @@ std::vector<t_mat> get_cif_ops(gemmi::cif::Block& block)
 		//std::cerr << "Trying symop loop name " << loopName << std::endl;
 	 	auto colOps = block.find_values(loopName);
 
-		for(std::size_t row=0; row<std::size_t(colOps.length()); ++row)
+		for(std::size_t row = 0; row < std::size_t(colOps.length()); ++row)
 		{
 			auto therow = boost::trim_copy(colOps[row]);
 			remove_quotes(therow);
@@ -167,6 +172,7 @@ std::vector<t_mat> get_cif_ops(gemmi::cif::Block& block)
 
 	return ops;
 }
+
 
 
 /**
@@ -198,6 +204,7 @@ std::vector<t_mat> get_sg_ops(const std::string& sgname)
 }
 
 
+
 /**
  * gets the symmetry operations from the CIF's space group
  * (use tl2::equals_all to check if space group operations are the same)
@@ -216,6 +223,7 @@ std::vector<t_mat> get_cif_sg_ops(gemmi::cif::Block& block)
 }
 
 
+
 /**
  * loads the lattice parameters and the atom positions from a CIF
  */
@@ -227,7 +235,7 @@ std::tuple<
 	std::vector<std::string>,         // atom names
 	Lattice<t_real>,                  // lattice
 	std::vector<t_mat>>               // symops
-load_cif(const std::string& filename, t_real eps=1e-6)
+load_cif(const std::string& filename, t_real eps = 1e-6)
 {
 	auto ifstr = std::ifstream(filename);
 	if(!ifstr)
@@ -295,6 +303,7 @@ load_cif(const std::string& filename, t_real eps=1e-6)
 }
 
 
+
 /**
  * gets space group description strings and symmetry operations
  */
@@ -304,16 +313,18 @@ std::vector<std::tuple<
 	std::string,        // description
 	std::vector<t_mat>  // symops
 	>>
-get_sgs(bool bAddNr=true, bool bAddHall=true)
+get_sgs(bool bAddNr = true, bool bAddHall = true)
 {
 	std::vector<std::tuple<int, std::string, std::vector<t_mat>>> sgs;
 
 	for(const auto &sg : gemmi::spacegroup_tables::main)
 	{
 		std::ostringstream ostrDescr;
-		if(bAddNr) ostrDescr << "#" << sg.number << ": ";
+		if(bAddNr)
+			ostrDescr << "#" << sg.number << ": ";
 		ostrDescr << sg.hm;
-		if(bAddHall) ostrDescr << " (" << sg.hall << ")";
+		if(bAddHall)
+			ostrDescr << " (" << sg.hall << ")";
 
 		std::vector<t_mat> ops;
 		for(const auto &op : sg.operations().all_ops_sorted())
@@ -348,6 +359,7 @@ get_sgs(bool bAddNr=true, bool bAddHall=true)
 }
 
 
+
 /**
  * finds all space groups which transform the initial positions into the final ones
  */
@@ -359,7 +371,7 @@ std::vector<std::tuple<
 	>>
 find_matching_sgs(
 	const std::vector<t_vec>& posInit, const std::vector<t_vec>& _posFinal,
-	t_real eps=1e-6)
+	t_real eps = 1e-6)
 {
 	std::vector<t_vec> posFinal = tl2::keep_atoms_in_uc<t_vec, t_real>(_posFinal);
 
@@ -393,6 +405,7 @@ find_matching_sgs(
 }
 
 
+
 /**
  * checks for allowed Bragg reflections
  *
@@ -412,7 +425,7 @@ std::pair<bool, std::size_t>
 is_reflection_allowed(const t_vec& Q, const t_cont<t_mat>& symops, t_real eps)
 requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
 {
-	for(std::size_t opidx=0; opidx<symops.size(); ++opidx)
+	for(std::size_t opidx = 0; opidx < symops.size(); ++opidx)
 	{
 		const t_mat& mat = symops[opidx];
 		t_mat rot = tl2::submat<t_mat>(mat, 0,0, 3,3); // rotation part of the symop
