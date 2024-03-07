@@ -5,11 +5,9 @@
 # @license GPLv3, see 'LICENSE' file
 #
 # ----------------------------------------------------------------------------
-# tlibs
-# Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+# mag-core (part of the Takin software suite)
+# Copyright (C) 2018-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
 #                          Grenoble, France).
-# Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
-#                          (TUM), Garching, Germany).
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,7 +24,7 @@
 #
 
 import numpy
-import tl2_magdyn
+import magdyn
 
 
 # options
@@ -47,11 +45,11 @@ num_Q_points = 256
 
 
 # create the magdyn object
-mag = tl2_magdyn.MagDynD()
+mag = magdyn.MagDyn()
 
 
 # add a variable
-var = tl2_magdyn.VariableD()
+var = magdyn.Variable()
 var.name = "J"
 var.value = -1
 mag.AddVariable(var)
@@ -60,7 +58,7 @@ mag.AddVariable(var)
 # add magnetic sites
 # all values have to be passed as strings
 # (these can contain the variables registered above)
-site = tl2_magdyn.MagneticSiteD()
+site = magdyn.MagneticSite()
 site.name = "site_1"
 site.pos[0] = "0"; site.pos[1] = "0"; site.pos[2] = "0"
 site.spin_dir[0] = "0"; site.spin_dir[1] = "0"; site.spin_dir[2] = "1"
@@ -71,7 +69,7 @@ mag.AddMagneticSite(site)
 # add couplings between the sites
 # all values have to be passed as strings
 # (these can contain the variables registered above)
-coupling = tl2_magdyn.ExchangeTermD()
+coupling = magdyn.ExchangeTerm()
 coupling.name = "coupling_1"
 coupling.site1 = "site_1"; coupling.site2 = "site_1"
 coupling.dist[0] = "1"; coupling.dist[1] = "0"; coupling.dist[2] = "0"

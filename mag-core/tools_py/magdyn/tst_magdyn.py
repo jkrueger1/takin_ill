@@ -5,11 +5,9 @@
 # @license GPLv3, see 'LICENSE' file
 #
 # ----------------------------------------------------------------------------
-# tlibs
-# Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+# mag-core (part of the Takin software suite)
+# Copyright (C) 2018-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
 #                          Grenoble, France).
-# Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
-#                          (TUM), Garching, Germany).
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +22,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # ----------------------------------------------------------------------------
 #
+
+import numpy
+import magdyn
+
 
 # options
 save_dispersion = False
@@ -42,16 +44,12 @@ only_positive_energies = True
 num_Q_points = 256
 
 # files
-modelfile = "../../data/demos/magnon_Cu2OSeO3/model.magdyn"
+modelfile = "../../../data/demos/magnon_Cu2OSeO3/model.magdyn"
 dispfile = "disp.dat"
 
 
-import numpy
-import tl2_magdyn
-
-
 # create the magdyn object
-mag = tl2_magdyn.MagDynD()
+mag = magdyn.MagDyn()
 
 
 # load the model file

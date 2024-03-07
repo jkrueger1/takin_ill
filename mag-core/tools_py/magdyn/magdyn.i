@@ -1,15 +1,13 @@
 /**
- * tlibs2 -- swig interface for magdyn
+ * swig interface for magdyn
  * @author Tobias Weber <tweber@ill.fr>
  * @date 12-oct-2023
  * @license see 'LICENSE' file
  *
  * ----------------------------------------------------------------------------
- * tlibs
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * mag-core (part of the Takin software suite)
+ * Copyright (C) 2018-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
- * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
- *                          (TUM), Garching, Germany).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,9 +23,9 @@
  * ----------------------------------------------------------------------------
  */
 
-%module tl2_magdyn
+%module magdyn
 %{
-	#include "magdyn.h"
+	#include "../../tlibs2/libs/magdyn.h"
 %}
 
 
@@ -65,12 +63,12 @@
 // ----------------------------------------------------------------------------
 
 
-%include "magdyn.h"
+%include "../../tlibs2/libs/magdyn.h"
 
 // ----------------------------------------------------------------------------
 // input- and output structs (and vectors of them)
 // ----------------------------------------------------------------------------
-%template(MagneticSiteD) tl2_mag::t_MagneticSite<
+%template(MagneticSite) tl2_mag::t_MagneticSite<
 	tl2::mat<std::complex<double>>,
 	tl2::vec<std::complex<double>>,
 	tl2::vec<double>,
@@ -93,7 +91,7 @@
 		double>*
 	>;
 
-%template(ExchangeTermD) tl2_mag::t_ExchangeTerm<
+%template(ExchangeTerm) tl2_mag::t_ExchangeTerm<
 	tl2::mat<std::complex<double>>,
 	tl2::vec<std::complex<double>>,
 	tl2::vec<double>,
@@ -108,11 +106,11 @@
 		std::complex<double>>
 	>;
 
-%template(ExternalFieldD) tl2_mag::t_ExternalField<
+%template(ExternalField) tl2_mag::t_ExternalField<
 	tl2::vec<double>,
 	double>;
 
-%template(EnergyAndWeightD) tl2_mag::t_EnergyAndWeight<
+%template(EnergyAndWeight) tl2_mag::t_EnergyAndWeight<
 	tl2::mat<std::complex<double>>,
 	double>;
 %template(VecEnergyAndWeight) std::vector<
@@ -121,7 +119,7 @@
 		double>
 	>;
 
-%template(VariableD) tl2_mag::t_Variable<
+%template(Variable) tl2_mag::t_Variable<
 	std::complex<double>>;
 %template(VecVariable) std::vector<
 	tl2_mag::t_Variable<
@@ -133,7 +131,7 @@
 /**
  * main magdyn class
  */
-%template(MagDynD) tl2_mag::MagDyn<
+%template(MagDyn) tl2_mag::MagDyn<
 	tl2::mat<std::complex<double>>,
 	tl2::vec<std::complex<double>>,
 	tl2::mat<double>,

@@ -10,9 +10,7 @@
 *.so
 *.dylib
 *.dll
-!libs/tl2jl.dylib
-!tools/test/jl/tl2jl.dylib
-!tools/test/jl/tl2jl.so
+!tools_py/magdyn/_magdyn_py.so
 
 # Compiled Static libraries
 *.lai
@@ -38,6 +36,7 @@ data
 # Temporary files
 tmp/**
 build/**
+__pycache__/**
 tools/structfact/build/**
 tools/bz/build/**
 tools/cif2xml/build/**
@@ -48,6 +47,8 @@ tools/moldyn/build/**
 tools/magdyn/build/**
 tools/scanbrowser/build/**
 tools/setup/build/**
+tools_py/magdyn/build/**
+tools_py/instr/build/**
 *.pyc
 .DS_Store
 ._.DS_Store

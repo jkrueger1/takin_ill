@@ -2067,22 +2067,33 @@ public:
 	 */
 	bool Load(const std::string& filename)
 	{
-		// properties tree
-		boost::property_tree::ptree node;
-
-		// read xml file
-		std::ifstream ifstr{filename};
-		boost::property_tree::read_xml(ifstr, node);
-
-		// check signature
-		if(auto optInfo = node.get_optional<std::string>("magdyn.meta.info");
-			!optInfo || !(*optInfo==std::string{"magdyn_tool"}))
+		try
 		{
+			// properties tree
+			boost::property_tree::ptree node;
+
+			// read xml file
+			std::ifstream ifstr{filename};
+			boost::property_tree::read_xml(ifstr, node);
+
+			// check signature
+			if(auto optInfo = node.get_optional<std::string>("magdyn.meta.info");
+				!optInfo || !(*optInfo==std::string{"magdyn_tool"}))
+			{
+				return false;
+			}
+
+			const auto &magdyn = node.get_child("magdyn");
+			return Load(magdyn);
+		}
+		catch(const std::exception& ex)
+		{
+			std::cerr << "Error: Could not load \"" << filename << "\"."
+				<< " Reason: " << ex.what()
+				<< std::endl;
+
 			return false;
 		}
-
-		const auto &magdyn = node.get_child("magdyn");
-		return Load(magdyn);
 	}
 
 

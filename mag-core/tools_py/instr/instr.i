@@ -5,11 +5,9 @@
  * @license see 'LICENSE' file
  *
  * ----------------------------------------------------------------------------
- * tlibs
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * mag-core (part of the Takin software suite)
+ * Copyright (C) 2018-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
- * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
- *                          (TUM), Garching, Germany).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +25,7 @@
 
 %module tl2_instr
 %{
-	#include "instr.h"
+	#include "../../tlibs2/libs/instr.h"
 %}
 
 %include "std_vector.i"
@@ -48,6 +46,6 @@
 %template(ArrB3) std::array<bool,3>;
 %template(MapStrStr) std::unordered_map<std::string, std::string>;
 
-%include "instr.h"
+%include "../../tlibs2/libs/instr.h"
 
 %template(FileInstrBaseD) tl2::FileInstrBase<double>;

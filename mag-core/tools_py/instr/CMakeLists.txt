@@ -1,15 +1,13 @@
 #
-# tlibs2
+# instrument file loader py bindings
 # @author Tobias Weber <tweber@ill.fr>
-# @date 4-jun-2020
+# @date 2023-2024
 # @license GPLv3, see 'LICENSE' file
 #
 # ----------------------------------------------------------------------------
-# tlibs
-# Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+# mag-core (part of the Takin software suite)
+# Copyright (C) 2018-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
 #                          Grenoble, France).
-# Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
-#                          (TUM), Garching, Germany).
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,13 +23,15 @@
 # ----------------------------------------------------------------------------
 #
 
-project(tlibs2)
+project(instr_py)
 
 cmake_minimum_required(VERSION 3.0)
 cmake_policy(SET CMP0078 NEW)
 cmake_policy(SET CMP0086 NEW)
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH
+	"${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/cmake"
+	"${PROJECT_SOURCE_DIR}/../../tlibs2/cmake")
 
 
 message("Project: ${PROJECT_NAME}, build type: ${CMAKE_BUILD_TYPE}.")
@@ -43,7 +43,6 @@ endif()
 
 set(CMAKE_CXX_STANDARD 20)
 add_compile_options(-std=c++20)
-
 add_compile_options(-Wall -Wextra)
 
 
@@ -70,6 +69,7 @@ message("Using Python version ${Python3_VERSION}. Dist packages: ${Python3_SITEA
 
 include_directories(
 	"${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/libs"
+	"${PROJECT_SOURCE_DIR}/../.." "${PROJECT_SOURCE_DIR}/../../tlibs2"
 	"${Boost_INCLUDE_DIRS}" "${Boost_INCLUDE_DIRS}/.."
 	"${Python3_INCLUDE_DIRS}"
 )
@@ -82,27 +82,14 @@ find_package(SWIG REQUIRED)
 set(UseSWIG_TARGET_NAME_PREFERENCE STANDARD)
 include(${SWIG_USE_FILE})
 
-set_source_files_properties(swig_mod/instr.i PROPERTIES CPLUSPLUS TRUE)
-set_source_files_properties(swig_mod/instr.i PROPERTIES SWIG_FLAGS "-I ${PROJECT_SOURCE_DIR}/libs")
-set_source_files_properties(swig_mod/magdyn.i PROPERTIES CPLUSPLUS TRUE)
-set_source_files_properties(swig_mod/magdyn.i PROPERTIES SWIG_FLAGS "-I ${PROJECT_SOURCE_DIR}/libs")
+set_source_files_properties(instr.i PROPERTIES CPLUSPLUS TRUE)
+set_source_files_properties(instr.i PROPERTIES SWIG_FLAGS "-I ${PROJECT_SOURCE_DIR}/libs")
 
-swig_add_library(tl2_instr_py LANGUAGE python SOURCES swig_mod/instr.i libs/log.cpp)
-swig_add_library(tl2_magdyn_py LANGUAGE python SOURCES swig_mod/magdyn.i libs/log.cpp)
+swig_add_library(instr_py LANGUAGE python SOURCES instr.i ../../tlibs2/libs/log.cpp)
 
-target_link_libraries(tl2_instr_py Python3::Python)
-target_link_libraries(tl2_magdyn_py Python3::Python -llapacke)
+target_link_libraries(instr_py Python3::Python)
 
 # installation
-install(TARGETS tl2_instr_py LIBRARY DESTINATION "${Python3_SITEARCH}")
-install(FILES FILES "${CMAKE_BINARY_DIR}/tl2.py" DESTINATION "${Python3_SITEARCH}")
-# -----------------------------------------------------------------------------
-
-
-
-# -----------------------------------------------------------------------------
-# unit tests
-if(BUILD_TESTING)
-	add_subdirectory(tests)
-endif()
+install(TARGETS instr_py LIBRARY DESTINATION "${Python3_SITEARCH}")
+#install(FILES FILES "${CMAKE_BINARY_DIR}/tl2.py" DESTINATION "${Python3_SITEARCH}")
 # -----------------------------------------------------------------------------
