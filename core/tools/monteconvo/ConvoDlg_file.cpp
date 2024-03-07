@@ -208,6 +208,7 @@ void ConvoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 
 	m_bAllowSqwReinit = false;
 
+	// load the monteconvo configuration
 	for(std::size_t iCheck=0; iCheck<m_vecCheckBoxes.size(); ++iCheck)
 	{
 		boost::optional<int> obChecked = xml.QueryOpt<int>(strXmlRoot+m_vecCheckNames[iCheck]);
@@ -242,6 +243,7 @@ void ConvoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 	if(m_pFavDlg)
 		m_pFavDlg->Load(xml, strXmlRoot + "monteconvo/");
 
+	// load the S(Q, E) model and its parameters
 	boost::optional<std::string> opSqw = xml.QueryOpt<std::string>(strXmlRoot + "monteconvo/sqw");
 	if(opSqw)
 	{

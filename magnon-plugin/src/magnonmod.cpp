@@ -296,9 +296,9 @@ SqwBase* MagnonMod::shallow_copy() const
 // ----------------------------------------------------------------------------
 // SO interface
 
-static const char* g_help = R"RAWSTR(Magnon Dynamics Module.
+static const char* g_help = R"RAWSTR(Magnetic Dynamics Module.
 
-This module serves as an interface between the magnon dynamics calculator and the resolution-convolution simulator and fitter.
+This module serves as an interface between the magnon calculator ("Tools" -> "Magnetic Dynamics...") and the resolution-convolution simulator and fitter.
 
 Please refer to the Takin help for more information and tutorials.)RAWSTR";
 
