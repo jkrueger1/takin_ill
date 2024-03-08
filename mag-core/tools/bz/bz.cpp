@@ -43,7 +43,7 @@
 #include <boost/algorithm/string/replace.hpp>
 namespace algo = boost::algorithm;
 
-#include "../structfact/loadcif.h"
+#include "libs/loadcif.h"
 
 
 BZDlg::BZDlg(QWidget* pParent) : QDialog{pParent},

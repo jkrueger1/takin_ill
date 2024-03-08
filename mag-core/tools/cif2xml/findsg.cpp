@@ -23,7 +23,7 @@
  * ----------------------------------------------------------------------------
  */
 
-#include "../structfact/loadcif.h"
+#include "libs/loadcif.h"
 #include "tlibs2/libs/maths.h"
 
 #include <gemmi/version.hpp>

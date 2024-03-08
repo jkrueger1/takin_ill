@@ -33,7 +33,7 @@
 #include <optional>
 
 #include "tlibs2/libs/maths.h"
-#include "../structfact/loadcif.h"
+#include "libs/loadcif.h"
 
 #if __has_include("pathslib/libs/voronoi.h")
 	#include "pathslib/libs/voronoi.h"

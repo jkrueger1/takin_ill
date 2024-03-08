@@ -27,7 +27,7 @@
  */
 
 #include "browser.h"
-#include "../structfact/loadcif.h"
+#include "libs/loadcif.h"
 #include <QtWidgets/QMenuBar>
 #include <sstream>
 

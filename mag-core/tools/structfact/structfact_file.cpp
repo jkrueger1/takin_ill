@@ -41,7 +41,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 namespace pt = boost::property_tree;
 
-#include "loadcif.h"
+#include "libs/loadcif.h"
 #include "tlibs2/libs/maths.h"
 #include "tlibs2/libs/algos.h"
 

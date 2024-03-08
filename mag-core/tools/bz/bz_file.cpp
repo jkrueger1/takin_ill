@@ -46,7 +46,7 @@ namespace algo = boost::algorithm;
 
 #include <boost/scope_exit.hpp>
 
-#include "../structfact/loadcif.h"
+#include "libs/loadcif.h"
 #include "tlibs2/libs/algos.h"
 
 using namespace tl2_ops;

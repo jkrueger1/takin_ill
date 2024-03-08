@@ -45,14 +45,14 @@ include_directories(
 
 
 add_executable(takin_cif2xml
-	cif2xml.cpp ../structfact/loadcif.h)
+	cif2xml.cpp ../../libs/loadcif.h)
 target_link_libraries(takin_cif2xml
 #	-static-libstdc++ -static-libgcc
 )
 
 
 add_executable(takin_findsg
-	findsg.cpp ../structfact/loadcif.h)
+	findsg.cpp ../../libs/loadcif.h)
 target_link_libraries(takin_findsg)
 
 
