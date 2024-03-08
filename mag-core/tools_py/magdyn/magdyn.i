@@ -30,6 +30,7 @@
 
 
 %include "std_vector.i"
+%include "std_list.i"
 %include "std_array.i"
 %include "std_string.i"
 %include "std_complex.i"
@@ -40,6 +41,8 @@
 
 %template(VecD) std::vector<double>;
 %template(VecCplx) std::vector<std::complex<double>>;
+
+%template(LstStr) std::list<std::string>;
 
 %template(ArrD3) std::array<double, 3>;
 %template(ArrD4) std::array<double, 4>;
@@ -149,17 +152,22 @@
 // ----------------------------------------------------------------------------
 %inline
 %{
+	#include "../../libs/loadcif.h"
+
+
 	/**
 	 * types
 	 */
 	using t_str = std::string;
 	using t_real = double;
+	using t_mat = tl2::mat<std::complex<double>>;
+	using t_vec = tl2::vec<std::complex<double>>;
+	using t_mat_real = tl2::mat<double>;
+	using t_vec_real = tl2::vec<double>;
 	using t_cplx = std::complex<double>;
 
 	using t_MagDyn = tl2_mag::MagDyn<
-		tl2::mat<std::complex<double>>,
-		tl2::vec<std::complex<double>>,
-		tl2::mat<double>, tl2::vec<double>,
+		t_mat, t_vec, t_mat_real, t_vec_real,
 		t_cplx, t_real, std::size_t>;
 
 
@@ -366,5 +374,55 @@
 		magdyn.CalcMagneticSites();
 		magdyn.CalcExchangeTerms();
 	}
+
+
+	/**
+	 * get a list of all space groups
+	 */
+	std::list<std::string> get_spacegroups()
+	{
+		std::list<std::string> sg_names;
+
+		for(const auto& sg : get_sgs<t_mat_real>(true, false))
+			sg_names.push_back(std::get<1>(sg));
+
+		return sg_names;
+	}
+
+
+	/**
+	 * create symmetry equivalent site positions using a space group
+	 */
+	 void symmetrise_sites(t_MagDyn& magdyn, const std::string& spacegroup)
+	 {
+		std::vector<t_mat_real> ops = get_sg_ops<t_mat_real>(spacegroup);
+		if(ops.size() == 0)
+		{
+			std::cerr << "Error: Space group \"" << spacegroup << "\" was not found. "
+				<< "Please use get_spacegroups() to get a list."
+				<< std::endl;
+			return;
+		}
+
+		magdyn.SymmetriseMagneticSites(ops);
+	 }
+
+
+	/**
+	 * create symmetry equivalent exchange couplings using a space group
+	 */
+	 void symmetrise_couplings(t_MagDyn& magdyn, const std::string& spacegroup)
+	 {
+		std::vector<t_mat_real> ops = get_sg_ops<t_mat_real>(spacegroup);
+		if(ops.size() == 0)
+		{
+			std::cerr << "Error: Space group \"" << spacegroup << "\" was not found. "
+				<< "Please use get_spacegroups() to get a list."
+				<< std::endl;
+			return;
+		}
+
+		magdyn.SymmetriseExchangeTerms(ops);
+	 }
 %}
 // ----------------------------------------------------------------------------

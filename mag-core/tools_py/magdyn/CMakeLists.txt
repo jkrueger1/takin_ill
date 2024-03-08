@@ -72,6 +72,7 @@ include_directories(
 	"${PROJECT_SOURCE_DIR}/../.." "${PROJECT_SOURCE_DIR}/../../tlibs2"
 	"${Boost_INCLUDE_DIRS}" "${Boost_INCLUDE_DIRS}/.."
 	"${Python3_INCLUDE_DIRS}"
+	"${PROJECT_SOURCE_DIR}/../../ext/gemmi/include" "${PROJECT_SOURCE_DIR}/../../ext/gemmi/third_party"
 )
 
 

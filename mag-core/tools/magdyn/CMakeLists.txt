@@ -109,9 +109,9 @@ include_directories("${PROJECT_SOURCE_DIR}")
 
 include_directories(
 	SYSTEM "${Boost_INCLUDE_DIRS}" "${Boost_INCLUDE_DIRS}/.." "../.."
-	"ext" "ext/gemmi/include" "ext/gemmi/third_party"
-	"../../ext/gemmi/include" "../../ext/gemmi/third_party"
-	"../../ext/qcp"
+	"${PROJECT_SOURCE_DIR}/ext" "${PROJECT_SOURCE_DIR}/ext/gemmi/include" "${PROJECT_SOURCE_DIR}/ext/gemmi/third_party"
+	"${PROJECT_SOURCE_DIR}/../../ext/gemmi/include" "${PROJECT_SOURCE_DIR}/../../ext/gemmi/third_party"
+	"${PROJECT_SOURCE_DIR}/../../ext/qcp"
 )
 
 

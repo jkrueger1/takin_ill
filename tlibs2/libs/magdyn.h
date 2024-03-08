@@ -2122,7 +2122,7 @@ public:
 
 
 	/**
-	 * save a configuration to a file
+	 * save the configuration to a file
 	 */
 	bool Save(const std::string& filename) const
 	{
@@ -2134,6 +2134,9 @@ public:
 		node.put<std::string>("meta.date",
 			tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()));
 
+		if(!Save(node))
+			return false;
+
 		boost::property_tree::ptree root_node;
 		root_node.put_child("magdyn", node);
 
@@ -2143,7 +2146,7 @@ public:
 			return false;
 
 		ofstr.precision(m_prec);
-		boost::property_tree::write_xml(ofstr, node,
+		boost::property_tree::write_xml(ofstr, root_node,
 			boost::property_tree::xml_writer_make_settings(
 				'\t', 1, std::string{"utf-8"}));
 		return true;
@@ -2383,14 +2386,17 @@ public:
 
 
 	/**
-	 * save a configuration to a property tree
+	 * save the configuration to a property tree
 	 */
 	bool Save(boost::property_tree::ptree& node) const
 	{
 		// external field
-		node.put<t_real>("field.direction_h", m_field.dir[0]);
-		node.put<t_real>("field.direction_k", m_field.dir[1]);
-		node.put<t_real>("field.direction_l", m_field.dir[2]);
+		if(m_field.dir.size() == 3)
+		{
+			node.put<t_real>("field.direction_h", m_field.dir[0]);
+			node.put<t_real>("field.direction_k", m_field.dir[1]);
+			node.put<t_real>("field.direction_l", m_field.dir[2]);
+		}
 		node.put<t_real>("field.magnitude", m_field.mag);
 		node.put<bool>("field.align_spins", m_field.align_spins);
 

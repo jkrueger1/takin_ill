@@ -309,9 +309,9 @@ load_cif(const std::string& filename, t_real eps = 1e-6)
  */
 template<class t_mat, class t_real = typename t_mat::value_type>
 std::vector<std::tuple<
-	int,                // sg number
-	std::string,        // description
-	std::vector<t_mat>  // symops
+	int,                // 0: sg number
+	std::string,        // 1: description
+	std::vector<t_mat>  // 2: symops
 	>>
 get_sgs(bool bAddNr = true, bool bAddHall = true)
 {
