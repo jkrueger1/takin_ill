@@ -72,8 +72,15 @@ extern unsigned int g_maxnum_recents;
 // number precisions
 extern int g_prec, g_prec_gui;
 
-// epsilons
+// epsilon
 extern t_real g_eps;
+
+// bose cutoff energy
+extern t_real g_bose_cutoff;
+
+// settings for cholesky decomposition
+extern unsigned int g_cholesky_maxtries;
+extern t_real g_cholesky_delta;
 
 // optional features
 extern int g_allow_ortho_spin, g_allow_general_J;
@@ -95,7 +102,7 @@ void get_settings_from_takin_core();
 // ----------------------------------------------------------------------------
 #include "settings.h"
 
-constexpr std::array<SettingsVariable, 6> g_settingsvariables
+constexpr std::array<SettingsVariable, 9> g_settingsvariables
 {{
 	// epsilons and precisions
 	{
@@ -112,6 +119,23 @@ constexpr std::array<SettingsVariable, 6> g_settingsvariables
 		.description = "GUI number precision.",
 		.key = "prec_gui",
 		.value = &g_prec_gui,
+	},
+	{
+		.description = "Bose cutoff energy.",
+		.key = "bose_cutoff",
+		.value = &g_bose_cutoff,
+	},
+
+	// settings for cholesky decomposition
+	{
+		.description = "Cholesky maximum tries.",
+		.key = "cholesky_maxtries",
+		.value = &g_cholesky_maxtries,
+	},
+	{
+		.description = "Cholesky delta per trial.",
+		.key = "cholesky_delta",
+		.value = &g_cholesky_delta,
 	},
 
 	// file options

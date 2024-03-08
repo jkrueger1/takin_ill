@@ -43,6 +43,13 @@ int g_prec = 6;
 int g_prec_gui = 3;
 t_real g_eps = 1e-6;
 
+// bose cutoff energy
+t_real g_bose_cutoff = 0.025;
+
+// settings for cholesky decomposition
+unsigned int g_cholesky_maxtries = 50;
+t_real g_cholesky_delta = 0.0025;
+
 // optional features
 int g_allow_ortho_spin = 0;
 int g_allow_general_J = 1;

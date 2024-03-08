@@ -73,6 +73,9 @@ void MagDynDlg::InitSettings()
 	// calculator settings
 	m_dyn.SetEpsilon(g_eps);
 	m_dyn.SetPrecision(g_prec);
+	m_dyn.SetBoseCutoffEnergy(g_bose_cutoff);
+	m_dyn.SetCholeskyMaxTries(g_cholesky_maxtries);
+	m_dyn.SetCholeskyInc(g_cholesky_delta);
 
 	m_recent.SetMaxRecentFiles(g_maxnum_recents);
 	m_recent_struct.SetMaxRecentFiles(g_maxnum_recents);

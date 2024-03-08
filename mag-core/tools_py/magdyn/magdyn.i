@@ -216,6 +216,28 @@
 
 
 	/**
+	 * sets up an ordering wave vector
+	 */
+	void set_ordering(t_MagDyn& magdyn, t_real x, t_real y, t_real z)
+	{
+		t_vec_real vec = tl2::create<t_vec_real>({ x, y, z });
+		magdyn.SetOrderingWavevector(vec);
+	}
+
+
+
+	/**
+	 * sets up the rotation axis for the ordering wave vector
+	 */
+	void set_rotation(t_MagDyn& magdyn, t_real x, t_real y, t_real z)
+	{
+		t_vec_real vec = tl2::create<t_vec_real>({ x, y, z });
+		magdyn.SetRotationAxis(vec);
+	}
+
+
+
+	/**
 	 * adds a magnetic site
 	 * (using strings with expressions)
 	 */

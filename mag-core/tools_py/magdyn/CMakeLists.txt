@@ -23,9 +23,9 @@
 # ----------------------------------------------------------------------------
 #
 
+cmake_minimum_required(VERSION 3.5)
 project(magdyn_py)
 
-cmake_minimum_required(VERSION 3.0)
 cmake_policy(SET CMP0078 NEW)
 cmake_policy(SET CMP0086 NEW)
 
@@ -83,18 +83,14 @@ find_package(SWIG REQUIRED)
 set(UseSWIG_TARGET_NAME_PREFERENCE STANDARD)
 include(${SWIG_USE_FILE})
 
-#set_source_files_properties(instr.i PROPERTIES CPLUSPLUS TRUE)
-#set_source_files_properties(instr.i PROPERTIES SWIG_FLAGS "-I ${PROJECT_SOURCE_DIR}/libs")
 set_source_files_properties(magdyn.i PROPERTIES CPLUSPLUS TRUE)
 set_source_files_properties(magdyn.i PROPERTIES SWIG_FLAGS "-I ${PROJECT_SOURCE_DIR}/libs")
 
-#swig_add_library(instr_py LANGUAGE python SOURCES instr.i ../../tlibs2/libs/log.cpp)
 swig_add_library(magdyn_py LANGUAGE python SOURCES magdyn.i ../../tlibs2/libs/log.cpp)
-
-#target_link_libraries(instr_py Python3::Python)
 target_link_libraries(magdyn_py Python3::Python -llapacke)
 
 # installation
+get_property(MAGDYN_AUX_FILES TARGET magdyn_py PROPERTY SWIG_SUPPORT_FILES)
+install(FILES ${MAGDYN_AUX_FILES} DESTINATION "${Python3_SITEARCH}")
 install(TARGETS magdyn_py LIBRARY DESTINATION "${Python3_SITEARCH}")
-#install(FILES FILES "${CMAKE_BINARY_DIR}/tl2.py" DESTINATION "${Python3_SITEARCH}")
 # -----------------------------------------------------------------------------

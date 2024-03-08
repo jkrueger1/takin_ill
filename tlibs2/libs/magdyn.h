@@ -335,6 +335,7 @@ public:
 
 		// clear ordering wave vector
 		m_ordering = tl2::zero<t_vec_real>(3);
+		m_is_incommensurate = false;
 
 		// reset rotation axis
 		m_rotaxis = tl2::create<t_vec_real>({ 1., 0., 0. });
@@ -574,10 +575,28 @@ public:
 
 
 
+	/**
+	 * set the ordering wave vector (e.g., the helix pitch) for incommensurate structures
+	 */
 	void SetOrderingWavevector(const t_vec_real& ordering)
 	{
 		m_ordering = ordering;
 		m_is_incommensurate = !tl2::equals_0<t_vec_real>(m_ordering, m_eps);
+	}
+
+
+
+	/**
+	 * set the rotation axis for the ordering wave vector
+	 */
+	void SetRotationAxis(const t_vec_real& axis)
+	{
+		m_rotaxis = axis;
+
+		// normalise
+		const t_real len = tl2::norm<t_vec_real>(m_rotaxis);
+		if(!tl2::equals_0<t_real>(len, m_eps))
+			m_rotaxis /= len;
 	}
 
 
@@ -587,18 +606,6 @@ public:
 		m_calc_H = H;
 		m_calc_Hp = Hp;
 		m_calc_Hm = Hm;
-	}
-
-
-
-	void SetRotationAxis(const t_vec_real& axis)
-	{
-		m_rotaxis = axis;
-
-		// normalise
-		const t_real len = tl2::norm<t_vec_real>(m_rotaxis);
-		if(!tl2::equals_0<t_real>(len, m_eps))
-			m_rotaxis /= len;
 	}
 
 
