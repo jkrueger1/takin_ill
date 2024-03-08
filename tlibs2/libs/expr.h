@@ -764,8 +764,8 @@ protected:
 		{
 #ifdef TL2_USE_UNITS
 			register_const("pi", __pi<t_num>);
-			register_const("hbar",  t_num(hbar<t_num>/meV<t_num>/sec<t_num>));	// hbar in [meV s]
-			register_const("kB",  t_num(kB<t_num>/meV<t_num>*kelvin<t_num>));	// kB in [meV / K]
+			register_const("hbar",  t_num(hbar<t_num>/meV<t_num>/sec<t_num>));      // hbar in [meV s]
+			register_const("kB",  t_num(kB<t_num>/meV<t_num>*kelvin<t_num>));       // kB in [meV / K]
 #endif
 		}
 
@@ -774,10 +774,10 @@ protected:
 		{
 			using t_real = typename t_num::value_type;
 
-			register_const("imag", t_num(0, 1));					// imaginary unit
+			register_const("imag", t_num(0, 1));                                    // imaginary unit
 			register_const("pi", __pi<t_real>);
-			register_const("hbar",  t_real(hbar<t_real>/meV<t_real>/sec<t_real>));	// hbar in [meV s]
-			register_const("kB",  t_real(kB<t_real>/meV<t_real>*kelvin<t_real>));	// kB in [meV / K]
+			register_const("hbar",  t_real(hbar<t_real>/meV<t_real>/sec<t_real>));  // hbar in [meV s]
+			register_const("kB",  t_real(kB<t_real>/meV<t_real>*kelvin<t_real>));   // kB in [meV / K]
 		}
 
 		// integer constants

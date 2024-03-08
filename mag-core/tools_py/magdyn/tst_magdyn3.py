@@ -48,20 +48,23 @@ num_Q_points = 256
 mag = magdyn.MagDyn()
 
 
-# add variables
-magdyn.add_variable(mag, "J", -1.)
+# add variables (either register them with magdyn or use them directly)
+#magdyn.add_variable(mag, "J", -1.)
+J = -1
 
 
 # add magnetic sites
-# all values have to be passed as strings
-# (these can contain the variables registered above)
-magdyn.add_site(mag, "site_1",  "0", "0", "0",  "0", "0", "1",  "1")
+# the numeric values have to be passed as either all strings or all doubles
+# (the strings can contain the variables registered above)
+#magdyn.add_site(mag, "site_1",  "0", "0", "0",  "0", "0", "1",  "1")
+magdyn.add_site(mag, "site_1",  0, 0, 0,  0, 0, 1,  1)
 
 
 # add couplings between the sites
-# all values have to be passed as strings
-# (these can contain the variables registered above)
-magdyn.add_coupling(mag, "coupling_1",  "site_1", "site_1",  "1", "0", "0",  "J")
+# the numeric values have to be passed as either all strings or all doubles
+# (the strings can contain the variables registered above)
+#magdyn.add_coupling(mag, "coupling_1",  "site_1", "site_1",  "1", "0", "0",  "J")
+magdyn.add_coupling(mag, "coupling_1",  "site_1", "site_1",  1, 0, 0,  J)
 
 
 # explicitly re-calculate all sites and couplings if needed

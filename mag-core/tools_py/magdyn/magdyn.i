@@ -32,8 +32,8 @@
 %include "std_vector.i"
 %include "std_array.i"
 %include "std_string.i"
-%include "std_shared_ptr.i"
 %include "std_complex.i"
+%include "std_shared_ptr.i"
 
 
 %template(CplxD) std::complex<double>;
@@ -64,6 +64,7 @@
 
 
 %include "../../tlibs2/libs/magdyn.h"
+
 
 // ----------------------------------------------------------------------------
 // input- and output structs (and vectors of them)
@@ -208,6 +209,7 @@
 
 	/**
 	 * adds a magnetic site
+	 * (using strings with expressions)
 	 */
 	void add_site(t_MagDyn& magdyn,
 		const t_str& name,
@@ -234,7 +236,37 @@
 
 
 	/**
+	 * adds a magnetic site
+	 * (using scalar types)
+	 * TODO: remove this function and use std::variant<std::string, t_real> as soon as swig supports this
+	 */
+	void add_site(t_MagDyn& magdyn,
+		const t_str& name,
+		t_real x, t_real y, t_real z,
+		t_real sx = 0., t_real sy = 0., t_real sz = 1.,
+		t_real S = 1.)
+	{
+		typename t_MagDyn::MagneticSite site{};
+
+		site.name = name;
+
+		site.pos[0] = tl2::var_to_str(x);
+		site.pos[1] = tl2::var_to_str(y);
+		site.pos[2] = tl2::var_to_str(z);
+
+		site.spin_dir[0] = tl2::var_to_str(sx);
+		site.spin_dir[1] = tl2::var_to_str(sy);
+		site.spin_dir[2] = tl2::var_to_str(sz);
+		site.spin_mag = tl2::var_to_str(S);
+
+		magdyn.CalcMagneticSite(site);
+		magdyn.AddMagneticSite(std::move(site));
+	}
+
+
+	/**
 	 * adds a coupling term between two magnetic sites
+	 * (using strings with expressions)
 	 */
 	void add_coupling(t_MagDyn& magdyn,
 		const t_str& name,
@@ -272,6 +304,53 @@
 		coupling.Jgen[2][0] = Jzx;
 		coupling.Jgen[2][1] = Jzy;
 		coupling.Jgen[2][2] = Jzz;
+
+		magdyn.CalcExchangeTerm(coupling);
+		magdyn.AddExchangeTerm(std::move(coupling));
+	}
+
+
+	/**
+	 * adds a coupling term between two magnetic sites
+	 * (using scalar types)
+	 * TODO: remove this function and use std::variant<std::string, t_real> as soon as swig supports this
+	 */
+	void add_coupling(t_MagDyn& magdyn,
+		const t_str& name,
+		const t_str& site1, const t_str& site2,
+		t_real dx, t_real dy, t_real dz,
+		t_real J,
+		t_real dmix = 0., t_real dmiy = 0., t_real dmiz = 0.,
+		t_real Jxx = 0., t_real Jxy = 0., t_real Jxz = 0.,
+		t_real Jyx = 0., t_real Jyy = 0., t_real Jyz = 0.,
+		t_real Jzx = 0., t_real Jzy = 0., t_real Jzz = 0.)
+	{
+		typename t_MagDyn::ExchangeTerm coupling{};
+
+		coupling.name = name;
+
+		coupling.site1 = site1;
+		coupling.site2 = site2;
+
+		coupling.dist[0] = tl2::var_to_str(dx);
+		coupling.dist[1] = tl2::var_to_str(dy);
+		coupling.dist[2] = tl2::var_to_str(dz);
+
+		coupling.J = tl2::var_to_str(J);
+
+		coupling.dmi[0] = tl2::var_to_str(dmix);
+		coupling.dmi[1] = tl2::var_to_str(dmiy);
+		coupling.dmi[2] = tl2::var_to_str(dmiz);
+
+		coupling.Jgen[0][0] = tl2::var_to_str(Jxx);
+		coupling.Jgen[0][1] = tl2::var_to_str(Jxy);
+		coupling.Jgen[0][2] = tl2::var_to_str(Jxz);
+		coupling.Jgen[1][0] = tl2::var_to_str(Jyx);
+		coupling.Jgen[1][1] = tl2::var_to_str(Jyy);
+		coupling.Jgen[1][2] = tl2::var_to_str(Jyz);
+		coupling.Jgen[2][0] = tl2::var_to_str(Jzx);
+		coupling.Jgen[2][1] = tl2::var_to_str(Jzy);
+		coupling.Jgen[2][2] = tl2::var_to_str(Jzz);
 
 		magdyn.CalcExchangeTerm(coupling);
 		magdyn.AddExchangeTerm(std::move(coupling));
