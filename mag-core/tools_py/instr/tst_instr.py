@@ -1,5 +1,5 @@
 #
-# tlibs2 python interface test
+# tlibs2 py interface test
 # @author Tobias Weber <tweber@ill.fr>
 # @date 9-jun-2020
 # @license GPLv3, see 'LICENSE' file

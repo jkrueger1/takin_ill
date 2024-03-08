@@ -1,7 +1,7 @@
 #
-# tlibs2 python interface test
+# magdyn py interface test
 # @author Tobias Weber <tweber@ill.fr>
-# @date 12-oct-2023
+# @date march-2024
 # @license GPLv3, see 'LICENSE' file
 #
 # ----------------------------------------------------------------------------
@@ -48,7 +48,7 @@ num_Q_points = 256
 mag = magdyn.MagDyn()
 
 
-# add a variable
+# add variables
 var = magdyn.Variable()
 var.name = "J"
 var.value = -1

@@ -1,7 +1,7 @@
 #
 # magdyn py interface test
 # @author Tobias Weber <tweber@ill.fr>
-# @date 12-oct-2023
+# @date march-2024
 # @license GPLv3, see 'LICENSE' file
 #
 # ----------------------------------------------------------------------------
@@ -43,22 +43,30 @@ only_positive_energies = True
 # number of Qs to calculate on a dispersion direction
 num_Q_points = 256
 
-# files
-modelfile = "../../../data/demos/magnon_Cu2OSeO3/model.magdyn"
-dispfile = "disp.dat"
-
 
 # create the magdyn object
 mag = magdyn.MagDyn()
 
 
-# load the model file
-print("Loading {}...".format(modelfile))
-if mag.Load(modelfile):
-	print("Loaded {}.".format(modelfile))
-else:
-	print("Failed loading {}.".format(modelfile))
-	exit(-1)
+# add variables
+magdyn.add_variable(mag, "J", -1.)
+
+
+# add magnetic sites
+# all values have to be passed as strings
+# (these can contain the variables registered above)
+magdyn.add_site(mag, "site_1",  "0", "0", "0",  "0", "0", "1",  "1")
+
+
+# add couplings between the sites
+# all values have to be passed as strings
+# (these can contain the variables registered above)
+magdyn.add_coupling(mag, "coupling_1",  "site_1", "site_1",  "1", "0", "0",  "J")
+
+
+# calculate sites and couplings
+magdyn.calc(mag)
+
 
 # minimum energy
 print("Energy minimum at Q=(000): {:.4f} meV".format(mag.CalcMinimumEnergy()))
@@ -67,8 +75,8 @@ print("Ground state energy: {:.4f} meV".format(mag.CalcGroundStateEnergy()))
 
 if save_dispersion:
 	# directly calculate a dispersion and write it to a file
-	print("\nSaving dispersion to {}...".format(dispfile))
-	mag.SaveDispersion(dispfile,  0, 0, 0.5,  1, 1, 0.5,  num_Q_points)
+	print("\nSaving dispersion to {}...".format("disp.dat"))
+	mag.SaveDispersion("disp.dat",  0, 0, 0.5,  1, 1, 0.5,  num_Q_points)
 
 
 # manually calculate the same dispersion
