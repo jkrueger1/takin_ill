@@ -78,6 +78,7 @@ mag.AddExchangeTerm(coupling)
 
 
 # calculate sites and couplings
+mag.CalcExternalField();
 mag.CalcMagneticSites();
 mag.CalcExchangeTerms();
 

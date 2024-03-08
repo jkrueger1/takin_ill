@@ -179,6 +179,34 @@
 
 
 	/**
+	 * sets an external magnetic field
+	 */
+	void set_field(t_MagDyn& magdyn,
+		t_real Bx, t_real By, t_real Bz, t_real Bmag = 1.)
+	{
+		typename t_MagDyn::ExternalField field{};
+
+		field.dir[0] = Bx;
+		field.dir[1] = By;
+		field.dir[2] = Bz;
+		field.mag = Bmag;
+		field.align_spins = true;
+
+		magdyn.SetExternalField(field);
+		magdyn.CalcExternalField();
+	}
+
+
+	/**
+	 * sets the temperature
+	 */
+	void set_temperature(t_MagDyn& magdyn, t_real T)
+	{
+		magdyn.SetTemperature(T);
+	}
+
+
+	/**
 	 * adds a magnetic site
 	 */
 	void add_site(t_MagDyn& magdyn,
@@ -200,6 +228,7 @@
 		site.spin_dir[2] = sz;
 		site.spin_mag = S;
 
+		magdyn.CalcMagneticSite(site);
 		magdyn.AddMagneticSite(std::move(site));
 	}
 
@@ -244,6 +273,7 @@
 		coupling.Jgen[2][1] = Jzy;
 		coupling.Jgen[2][2] = Jzz;
 
+		magdyn.CalcExchangeTerm(coupling);
 		magdyn.AddExchangeTerm(std::move(coupling));
 	}
 
@@ -253,6 +283,7 @@
 	 */
 	void calc(t_MagDyn& magdyn)
 	{
+		magdyn.CalcExternalField();
 		magdyn.CalcMagneticSites();
 		magdyn.CalcExchangeTerms();
 	}

@@ -232,6 +232,7 @@ template<class t_vec_real, class t_real>
 struct t_ExternalField
 {
 	bool align_spins{};          // align spins along external field
+
 	t_vec_real dir{};            // field direction
 	t_real mag{};                // field magnitude
 };
@@ -742,6 +743,7 @@ public:
 	 */
 	void SymmetriseMagneticSites(const std::vector<t_mat_real>& symops)
 	{
+		CalcExternalField();
 		CalcMagneticSites();
 		MagneticSites newsites;
 
@@ -775,6 +777,7 @@ public:
 	 */
 	void SymmetriseExchangeTerms(const std::vector<t_mat_real>& symops)
 	{
+		CalcExternalField();
 		CalcMagneticSites();
 		CalcExchangeTerms();
 		ExchangeTerms newterms;
@@ -936,6 +939,7 @@ public:
 			t_real dist{};
 		};
 
+		CalcExternalField();
 		CalcMagneticSites();
 		CalcExchangeTerms();
 		ExchangeTerms newterms;
@@ -1057,14 +1061,10 @@ public:
 	// calculation functions
 	// --------------------------------------------------------------------
 	/**
-	 * calculate the spin rotation trafo for the magnetic sites and parse
-	 * any given expressions
+	 * calculate the rotation matrix for the external field
 	 */
-	void CalcMagneticSites()
+	void CalcExternalField()
 	{
-		if(GetMagneticSitesCount() == 0)
-			return;
-
 		bool use_field =
 			(!tl2::equals_0<t_real>(m_field.mag, m_eps) || m_field.align_spins)
 			&& m_field.dir.size() == 3;
@@ -1087,124 +1087,142 @@ public:
 			std::cout << std::endl;
 #endif
 		}
+	}
 
-		tl2::ExprParser<t_cplx> parser = GetExprParser();
 
-		for(MagneticSite& site : GetMagneticSites())
+
+	/**
+	 * calculate the spin rotation trafo for the magnetic sites
+	 * and parse any given expressions
+	 */
+	void CalcMagneticSite(MagneticSite& site)
+	{
+		try
 		{
-			try
+			tl2::ExprParser<t_cplx> parser = GetExprParser();
+
+			// spin direction and orthogonal plane
+			bool has_explicit_uv = true;
+
+			// defaults
+			site.pos_calc = tl2::zero<t_vec_real>(3);
+			site.spin_dir_calc = tl2::zero<t_vec>(3);
+			site.spin_ortho_calc = tl2::zero<t_vec>(3);
+			site.spin_ortho_conj_calc = tl2::zero<t_vec>(3);
+			if(site.g.size1() == 0 || site.g.size2() == 0)
+				site.g = -2. * tl2::unit<t_mat>(3);
+
+			// spin magnitude
+			if(parser.parse(site.spin_mag))
+				site.spin_mag_calc = parser.eval().real();
+
+			for(std::uint8_t idx = 0; idx < 3; ++idx)
 			{
-				// spin direction and orthogonal plane
-				bool has_explicit_uv = true;
-
-				// defaults
-				site.pos_calc = tl2::zero<t_vec_real>(3);
-				site.spin_dir_calc = tl2::zero<t_vec>(3);
-				site.spin_ortho_calc = tl2::zero<t_vec>(3);
-				site.spin_ortho_conj_calc = tl2::zero<t_vec>(3);
-				if(site.g.size1() == 0 || site.g.size2() == 0)
-					site.g = -2. * tl2::unit<t_mat>(3);
-
-				// spin magnitude
-				if(parser.parse(site.spin_mag))
-					site.spin_mag_calc = parser.eval().real();
-
-				for(std::uint8_t idx = 0; idx < 3; ++idx)
+				// position
+				if(site.pos[idx] != "")
 				{
-					// position
-					if(site.pos[idx] != "")
+					if(parser.parse(site.pos[idx]))
 					{
-						if(parser.parse(site.pos[idx]))
-						{
-							site.pos_calc[idx] = parser.eval().real();
-						}
-						else
-						{
-							std::cerr << "Error parsing position \""
-								<< site.pos[idx] << "\""
-								<< " for site \"" << site.name << "\""
-								<< " and component " << idx
-								<< "." << std::endl;
-						}
+						site.pos_calc[idx] = parser.eval().real();
 					}
-
-					// spin direction
-					if(site.spin_dir[idx] != "")
+					else
 					{
-						if(parser.parse(site.spin_dir[idx]))
-						{
-							site.spin_dir_calc[idx] = parser.eval();
-						}
-						else
-						{
-							std::cerr << "Error parsing spin direction \""
-								<< site.spin_dir[idx] << "\""
-								<< " for site \"" << site.name << "\""
-								<< " and component " << idx
-								<< "." << std::endl;
-						}
+						std::cerr << "Error parsing position \""
+							<< site.pos[idx] << "\""
+							<< " for site \"" << site.name << "\""
+							<< " and component " << idx
+							<< "." << std::endl;
 					}
+				}
 
-					// orthogonal spin direction
-					if(site.spin_ortho[idx] != "")
+				// spin direction
+				if(site.spin_dir[idx] != "")
+				{
+					if(parser.parse(site.spin_dir[idx]))
 					{
-						if(parser.parse(site.spin_ortho[idx]))
-						{
-							site.spin_ortho_calc[idx] = parser.eval();
-							site.spin_ortho_conj_calc[idx] = std::conj(site.spin_ortho_calc[idx]);
-						}
-						else
-						{
-							has_explicit_uv = false;
+						site.spin_dir_calc[idx] = parser.eval();
+					}
+					else
+					{
+						std::cerr << "Error parsing spin direction \""
+							<< site.spin_dir[idx] << "\""
+							<< " for site \"" << site.name << "\""
+							<< " and component " << idx
+							<< "." << std::endl;
+					}
+				}
 
-							std::cerr << "Error parsing spin orthogonal plane \""
-								<< site.spin_ortho[idx] << "\""
-								<< " for site \"" << site.name << "\""
-								<< " and component " << idx
-								<< "." << std::endl;
-						}
+				// orthogonal spin direction
+				if(site.spin_ortho[idx] != "")
+				{
+					if(parser.parse(site.spin_ortho[idx]))
+					{
+						site.spin_ortho_calc[idx] = parser.eval();
+						site.spin_ortho_conj_calc[idx] = std::conj(site.spin_ortho_calc[idx]);
 					}
 					else
 					{
 						has_explicit_uv = false;
-					}
-				}
 
-				// spin rotation of equation (9) from (Toth 2015)
-				if(m_field.align_spins)
-				{
-					std::tie(site.spin_ortho_calc, site.spin_dir_calc) = R_to_uv(m_rot_field);
+						std::cerr << "Error parsing spin orthogonal plane \""
+							<< site.spin_ortho[idx] << "\""
+							<< " for site \"" << site.name << "\""
+							<< " and component " << idx
+							<< "." << std::endl;
+					}
 				}
 				else
 				{
-					if(!has_explicit_uv)
-					{
-						// calculate u and v from the spin rotation
-						std::tie(site.spin_ortho_calc, site.spin_dir_calc) =
-							spin_to_uv(site.spin_dir_calc);
-					}
+					has_explicit_uv = false;
+				}
+			}
 
-					// TODO: normalise the v vector as well as the real and imaginary u vectors
-					// in case they are explicitly given
-
-#ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
-					std::cout << "Site " << site.name << " u = "
-						<< site.spin_ortho_calc[0] << " " << site.spin_ortho_calc[1] << " " << site.spin_ortho_calc[2]
-						<< std::endl;
-					std::cout << "Site " << site.name << " v = "
-						<< site.spin_dir_calc[0] << " " << site.spin_dir_calc[1] << " " << site.spin_dir_calc[2]
-						<< std::endl;
-#endif
+			// spin rotation of equation (9) from (Toth 2015)
+			if(m_field.align_spins)
+			{
+				std::tie(site.spin_ortho_calc, site.spin_dir_calc) = R_to_uv(m_rot_field);
+			}
+			else
+			{
+				if(!has_explicit_uv)
+				{
+					// calculate u and v from the spin rotation
+					std::tie(site.spin_ortho_calc, site.spin_dir_calc) =
+						spin_to_uv(site.spin_dir_calc);
 				}
 
-				site.spin_ortho_conj_calc = tl2::conj(site.spin_ortho_calc);
+				// TODO: normalise the v vector as well as the real and imaginary u vectors
+				// in case they are explicitly given
+
+#ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
+				std::cout << "Site " << site.name << " u = "
+					<< site.spin_ortho_calc[0] << " " << site.spin_ortho_calc[1] << " " << site.spin_ortho_calc[2]
+					<< std::endl;
+				std::cout << "Site " << site.name << " v = "
+					<< site.spin_dir_calc[0] << " " << site.spin_dir_calc[1] << " " << site.spin_dir_calc[2]
+					<< std::endl;
+#endif
 			}
-			catch(const std::exception& ex)
-			{
-				std::cerr << "Error calculating site \"" << site.name << "\"."
-					" Reason: " << ex.what() << std::endl;
-			}
+
+			site.spin_ortho_conj_calc = tl2::conj(site.spin_ortho_calc);
 		}
+		catch(const std::exception& ex)
+		{
+			std::cerr << "Error calculating site \"" << site.name << "\"."
+				" Reason: " << ex.what() << std::endl;
+		}
+	}
+
+
+
+	/**
+	 * calculate the spin rotation trafo for the magnetic sites
+	 * and parse any given expressions
+	 */
+	void CalcMagneticSites()
+	{
+		for(MagneticSite& site : GetMagneticSites())
+			CalcMagneticSite(site);
 	}
 
 
@@ -1212,111 +1230,116 @@ public:
 	/**
 	 * parse the exchange term expressions
 	 */
-	void CalcExchangeTerms()
+	void CalcExchangeTerm(ExchangeTerm& term)
 	{
-		if(GetExchangeTermsCount() == 0)
-			return;
-
-		tl2::ExprParser<t_cplx> parser = GetExprParser();
-
-		for(ExchangeTerm& term : GetExchangeTerms())
+		try
 		{
-			try
+			tl2::ExprParser<t_cplx> parser = GetExprParser();
+
+			// defaults
+			term.dist_calc = tl2::zero<t_vec_real>(3);  // distance
+			term.dmi_calc = tl2::zero<t_vec>(3);        // dmi interaction
+			term.Jgen_calc = tl2::zero<t_mat>(3, 3);    // general exchange interaction
+
+			// get site indices
+			term.site1_calc = GetMagneticSiteIndex(term.site1);
+			term.site2_calc = GetMagneticSiteIndex(term.site2);
+
+			if(term.site1_calc >= GetMagneticSitesCount())
 			{
-				// defaults
-				term.dist_calc = tl2::zero<t_vec_real>(3);  // distance
-				term.dmi_calc = tl2::zero<t_vec>(3);        // dmi interaction
-				term.Jgen_calc = tl2::zero<t_mat>(3, 3);    // general exchange interaction
-
-				// get site indices
-				term.site1_calc = GetMagneticSiteIndex(term.site1);
-				term.site2_calc = GetMagneticSiteIndex(term.site2);
-
-				if(term.site1_calc >= GetMagneticSitesCount())
-				{
-					std::cerr << "Error: Unknown site 1 name \"" << term.site1 << "\"."
-						<< " in coupling \"" << term.name << "\"." << std::endl;
-					continue;
-				}
-				if(term.site2_calc >= GetMagneticSitesCount())
-				{
-					std::cerr << "Error: Unknown site 2 name \"" << term.site2 << "\"."
-						<< " in coupling \"" << term.name << "\"." << std::endl;
-					continue;
-				}
-
-				// symmetric interaction
-				if(parser.parse(term.J))
-				{
-					term.J_calc = parser.eval();
-				}
-				else
-				{
-					std::cerr << "Error parsing J term \""
-						<< term.J << "\"."
-						<< std::endl;
-				}
-
-				for(std::uint8_t i = 0; i < 3; ++i)
-				{
-					// distance
-					if(term.dist[i] != "")
-					{
-						if(parser.parse(term.dist[i]))
-						{
-							term.dist_calc[i] = parser.eval().real();
-						}
-						else
-						{
-							std::cerr << "Error parsing distance term \""
-								<< term.dist[i]
-								<< "\" (index " << i << ")"
-								<< "." << std::endl;
-						}
-					}
-
-					// dmi
-					if(term.dmi[i] != "")
-					{
-						if(parser.parse(term.dmi[i]))
-						{
-							term.dmi_calc[i] = parser.eval();
-						}
-						else
-						{
-							std::cerr << "Error parsing DMI term \""
-								<< term.dmi[i]
-								<< "\" (index " << i << ")"
-								<< "." << std::endl;
-						}
-					}
-
-					// general exchange interaction
-					for(std::uint8_t j = 0; j < 3; ++j)
-					{
-						if(term.Jgen[i][j] == "")
-							continue;
-
-						if(parser.parse(term.Jgen[i][j]))
-						{
-							term.Jgen_calc(i, j) = parser.eval();
-						}
-						else
-						{
-							std::cerr << "Error parsing general term \""
-								<< term.Jgen[i][j]
-								<< "\" (indices " << i << ", " << j << ")"
-								<< "." << std::endl;
-						}
-					}
-				}
+				std::cerr << "Error: Unknown site 1 name \"" << term.site1 << "\"."
+					<< " in coupling \"" << term.name << "\"." << std::endl;
+				return;
 			}
-			catch(const std::exception& ex)
+			if(term.site2_calc >= GetMagneticSitesCount())
 			{
-				std::cerr << "Error calculating coupling \"" << term.name << "\"."
-					" Reason: " << ex.what() << "." << std::endl;
+				std::cerr << "Error: Unknown site 2 name \"" << term.site2 << "\"."
+					<< " in coupling \"" << term.name << "\"." << std::endl;
+				return;
+			}
+
+			// symmetric interaction
+			if(parser.parse(term.J))
+			{
+				term.J_calc = parser.eval();
+			}
+			else
+			{
+				std::cerr << "Error parsing J term \""
+					<< term.J << "\"."
+					<< std::endl;
+			}
+
+			for(std::uint8_t i = 0; i < 3; ++i)
+			{
+				// distance
+				if(term.dist[i] != "")
+				{
+					if(parser.parse(term.dist[i]))
+					{
+						term.dist_calc[i] = parser.eval().real();
+					}
+					else
+					{
+						std::cerr << "Error parsing distance term \""
+							<< term.dist[i]
+							<< "\" (index " << i << ")"
+							<< "." << std::endl;
+					}
+				}
+
+				// dmi
+				if(term.dmi[i] != "")
+				{
+					if(parser.parse(term.dmi[i]))
+					{
+						term.dmi_calc[i] = parser.eval();
+					}
+					else
+					{
+						std::cerr << "Error parsing DMI term \""
+							<< term.dmi[i]
+							<< "\" (index " << i << ")"
+							<< "." << std::endl;
+					}
+				}
+
+				// general exchange interaction
+				for(std::uint8_t j = 0; j < 3; ++j)
+				{
+					if(term.Jgen[i][j] == "")
+						continue;
+
+					if(parser.parse(term.Jgen[i][j]))
+					{
+						term.Jgen_calc(i, j) = parser.eval();
+					}
+					else
+					{
+						std::cerr << "Error parsing general term \""
+							<< term.Jgen[i][j]
+							<< "\" (indices " << i << ", " << j << ")"
+							<< "." << std::endl;
+					}
+				}
 			}
 		}
+		catch(const std::exception& ex)
+		{
+			std::cerr << "Error calculating coupling \"" << term.name << "\"."
+				" Reason: " << ex.what() << "." << std::endl;
+		}
+	}
+
+
+
+	/**
+	 * parse all exchange term expressions
+	 */
+	void CalcExchangeTerms()
+	{
+		for(ExchangeTerm& term : GetExchangeTerms())
+			CalcExchangeTerm(term);
 	}
 
 
@@ -2351,6 +2374,7 @@ public:
 			SetRotationAxis(rotaxis);
 		}
 
+		CalcExternalField();
 		CalcMagneticSites();
 		CalcExchangeTerms();
 		return true;
@@ -2514,41 +2538,41 @@ private:
 	// external field
 	ExternalField m_field{};
 	// matrix to rotate field into the [001] direction
-	t_mat m_rot_field = tl2::unit<t_mat>(3);
+	t_mat m_rot_field{ tl2::unit<t_mat>(3) };
 
 	// ordering wave vector for incommensurate structures
-	t_vec_real m_ordering = tl2::zero<t_vec_real>(3);
-	t_vec_real m_rotaxis = tl2::create<t_vec_real>({ 1., 0., 0. });
+	t_vec_real m_ordering{ tl2::zero<t_vec_real>(3) };
+	t_vec_real m_rotaxis{ tl2::create<t_vec_real>({ 1., 0., 0. }) };
 
 	// calculate the hamiltonian for Q, Q+ordering, and Q-ordering
-	bool m_calc_H{true};
-	bool m_calc_Hp{true};
-	bool m_calc_Hm{true};
+	bool m_calc_H{ true };
+	bool m_calc_Hp{ true };
+	bool m_calc_Hm{ true };
 
 	// direction to rotation spins into, usually [001]
-	t_vec_real m_zdir = tl2::create<t_vec_real>({ 0., 0., 1. });
+	t_vec_real m_zdir{ tl2::create<t_vec_real>({ 0., 0., 1. }) };
 
 	// temperature (-1: disable bose factor)
-	t_real m_temperature{-1};
+	t_real m_temperature{ -1. };
 
 	// bose cutoff energy to avoid infinities
-	t_real m_bose_cutoff{0.025};
+	t_real m_bose_cutoff{ 0.025 };
 
 	// settings
-	bool m_is_incommensurate{false};
-	bool m_force_incommensurate{false};
-	bool m_unite_degenerate_energies{true};
+	bool m_is_incommensurate{ false };
+	bool m_force_incommensurate{ false };
+	bool m_unite_degenerate_energies{ true };
 
 	// settings for cholesky decomposition
-	t_size m_tries_chol{50};
-	t_real m_delta_chol{0.0025};
+	t_size m_tries_chol{ 50 };
+	t_real m_delta_chol{ 0.0025 };
 
 	// precisions
-	t_real m_eps{1e-6};
-	int m_prec{6};
+	t_real m_eps{ 1e-6 };
+	int m_prec{ 6 };
 
 	// conventions
-	t_real m_phase_sign{-1.};
+	t_real m_phase_sign{ -1. };
 
 	// constants
 	static constexpr const t_cplx s_imag { t_real(0), t_real(1) };

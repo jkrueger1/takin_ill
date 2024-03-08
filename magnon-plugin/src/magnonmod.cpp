@@ -259,7 +259,10 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 	}
 
 	if(calc_sites)
+	{
+		m_dyn.CalcExternalField();
 		m_dyn.CalcMagneticSites();
+	}
 	if(calc_terms)
 		m_dyn.CalcExchangeTerms();
 }

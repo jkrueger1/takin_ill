@@ -164,6 +164,29 @@ void MagDynDlg::SyncToKernel()
 	m_termstab->blockSignals(true);
 	m_varstab->blockSignals(true);
 
+	// get variables
+	for(int row=0; row<m_varstab->rowCount(); ++row)
+	{
+		auto *name = m_varstab->item(row, COL_VARS_NAME);
+		auto *val_re = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_varstab->item(row, COL_VARS_VALUE_REAL));
+		auto *val_im = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_varstab->item(row, COL_VARS_VALUE_IMAG));
+
+		if(!name || !val_re || !val_im)
+		{
+			std::cerr << "Invalid entry in variables table row "
+				<< row << "." << std::endl;
+			continue;
+		}
+
+		t_magdyn::Variable var;
+		var.name = name->text().toStdString();
+		var.value = val_re->GetValue() + val_im->GetValue() * t_cplx(0, 1);
+
+		m_dyn.AddVariable(std::move(var));
+	}
+
 	// get ordering vector and rotation axis
 	{
 		t_vec_real ordering = tl2::create<t_vec_real>(
@@ -201,34 +224,13 @@ void MagDynDlg::SyncToKernel()
 		m_dyn.SetExternalField(field);
 	}
 
+	m_dyn.CalcExternalField();
+
 	// get temperature
 	if(m_use_temperature->isChecked())
 	{
 		t_real temp = m_temperature->value();
 		m_dyn.SetTemperature(temp);
-	}
-
-	// get variables
-	for(int row=0; row<m_varstab->rowCount(); ++row)
-	{
-		auto *name = m_varstab->item(row, COL_VARS_NAME);
-		auto *val_re = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_varstab->item(row, COL_VARS_VALUE_REAL));
-		auto *val_im = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_varstab->item(row, COL_VARS_VALUE_IMAG));
-
-		if(!name || !val_re || !val_im)
-		{
-			std::cerr << "Invalid entry in variables table row "
-				<< row << "." << std::endl;
-			continue;
-		}
-
-		t_magdyn::Variable var;
-		var.name = name->text().toStdString();
-		var.value = val_re->GetValue() + val_im->GetValue() * t_cplx(0, 1);
-
-		m_dyn.AddVariable(std::move(var));
 	}
 
 	// get magnetic sites

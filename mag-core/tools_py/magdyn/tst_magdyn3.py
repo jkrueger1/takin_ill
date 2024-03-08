@@ -64,8 +64,9 @@ magdyn.add_site(mag, "site_1",  "0", "0", "0",  "0", "0", "1",  "1")
 magdyn.add_coupling(mag, "coupling_1",  "site_1", "site_1",  "1", "0", "0",  "J")
 
 
-# calculate sites and couplings
-magdyn.calc(mag)
+# explicitly re-calculate all sites and couplings if needed
+# (e.g., when changing the external field after adding the sites)
+#magdyn.calc(mag)
 
 
 # minimum energy
