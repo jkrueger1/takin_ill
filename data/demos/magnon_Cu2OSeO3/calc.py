@@ -23,26 +23,28 @@
 # ----------------------------------------------------------------------------
 #
 
+import numpy
+import magdyn
+
+
 # options
-save_config_file = False
-save_dispersion = False
-print_dispersion = False
-plot_dispersion = True
+save_config_file       = False  # save magdyn file
+save_dispersion        = False  # write dispersion to file
+print_dispersion       = False  # write dispersion to console
+plot_dispersion        = True   # show dispersion plot
+only_positive_energies = True   # ignore magnon annihilation?
 
-# weight scaling and clamp factors
-S_scale = 64.
-S_min = 1.
-S_max = 500.
-
-# ignore magnon annihilation?
-only_positive_energies = True
+# dispersion plotting range
+hkl_start = numpy.array([ 0., 0., 0.5 ])
+hkl_end   = numpy.array([ 1., 1., 0.5 ])
 
 # number of Qs to calculate on a dispersion direction
 num_Q_points = 256
 
-
-import numpy
-import magdyn
+# weight scaling and clamp factors
+S_scale = 64.
+S_min   = 1.
+S_max   = 500.
 
 
 # create the magdyn object
@@ -114,7 +116,10 @@ if save_config_file:
 if save_dispersion:
 	# directly calculate a dispersion and write it to a file
 	print("\nSaving dispersion to {}...".format("disp.dat"))
-	mag.SaveDispersion("disp.dat",  -1, 0, 0,  1, 0, 0,  num_Q_points)
+	mag.SaveDispersion("disp.dat",
+		hkl_start[0], hkl_start[1], hkl_start[2],
+		hkl_end[0], hkl_end[1], hkl_end[2],
+		num_Q_points)
 
 
 # manually calculate the same dispersion
@@ -128,10 +133,8 @@ data_l = []
 data_E = []
 data_S = []
 
-for h in numpy.linspace(-1, 1, num_Q_points):
-	k = 0
-	l = 0
-	for S in mag.CalcEnergies(h, k, l, False):
+for hkl in numpy.linspace(hkl_start, hkl_end, num_Q_points):
+	for S in mag.CalcEnergies(hkl[0], hkl[1], hkl[2], False):
 		if only_positive_energies and S.E < 0.:
 			continue
 
@@ -141,14 +144,15 @@ for h in numpy.linspace(-1, 1, num_Q_points):
 		elif weight > S_max:
 			weight = S_max
 
-		data_h.append(h)
-		data_k.append(k)
-		data_l.append(l)
+		data_h.append(hkl[0])
+		data_k.append(hkl[1])
+		data_l.append(hkl[2])
 		data_E.append(S.E)
 		data_S.append(weight)
 
 		if print_dispersion:
-			print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(h, k, l, S.E, S.weight))
+			print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(
+				hkl[0], hkl[1], hkl[2], S.E, S.weight))
 
 
 # plot the results

@@ -1,7 +1,7 @@
 #
-# magdyn py interface test
+# magdyn py interface demo
 # @author Tobias Weber <tweber@ill.fr>
-# @date march-2024
+# @date 12-oct-2023
 # @license GPLv3, see 'LICENSE' file
 #
 # ----------------------------------------------------------------------------
@@ -28,48 +28,40 @@ import magdyn
 
 
 # options
-save_dispersion = False
-print_dispersion = False
-plot_dispersion = True
+save_config_file       = False  # save magdyn file
+save_dispersion        = False  # write dispersion to file
+print_dispersion       = False  # write dispersion to console
+plot_dispersion        = True   # show dispersion plot
+only_positive_energies = True   # ignore magnon annihilation?
 
-# weight scaling and clamp factors
-S_scale = 64.
-S_min = 1.
-S_max = 500.
-
-# ignore magnon annihilation?
-only_positive_energies = True
+# dispersion plotting range
+hkl_start = numpy.array([ 0., 0., 0.5 ])
+hkl_end   = numpy.array([ 1., 1., 0.5 ])
 
 # number of Qs to calculate on a dispersion direction
 num_Q_points = 256
+
+# weight scaling and clamp factors
+S_scale = 64.
+S_min   = 1.
+S_max   = 500.
+
+# files
+modelfile = "model.magdyn"
+dispfile  = "disp.dat"
 
 
 # create the magdyn object
 mag = magdyn.MagDyn()
 
 
-# add variables (either register them with magdyn or use them directly)
-#magdyn.add_variable(mag, "J", -1.)
-J = -1
-
-
-# add magnetic sites
-# the numeric values have to be passed as either all strings or all doubles
-# (the strings can contain the variables registered above)
-#magdyn.add_site(mag, "site_1",  "0", "0", "0",  "0", "0", "1",  "1")
-magdyn.add_site(mag, "site_1",  0, 0, 0,  0, 0, 1,  1)
-
-
-# add couplings between the sites
-# the numeric values have to be passed as either all strings or all doubles
-# (the strings can contain the variables registered above)
-#magdyn.add_coupling(mag, "coupling_1",  "site_1", "site_1",  "1", "0", "0",  "J")
-magdyn.add_coupling(mag, "coupling_1",  "site_1", "site_1",  1, 0, 0,  J)
-
-
-# explicitly re-calculate all sites and couplings if needed
-# (e.g., when changing the external field after adding the sites)
-#magdyn.calc(mag)
+# load the model file
+print("Loading {}...".format(modelfile))
+if mag.Load(modelfile):
+	print("Loaded {}.".format(modelfile))
+else:
+	print("Failed loading {}.".format(modelfile))
+	exit(-1)
 
 
 # minimum energy
@@ -79,8 +71,11 @@ print("Ground state energy: {:.4f} meV".format(mag.CalcGroundStateEnergy()))
 
 if save_dispersion:
 	# directly calculate a dispersion and write it to a file
-	print("\nSaving dispersion to {}...".format("disp.dat"))
-	mag.SaveDispersion("disp.dat",  0, 0, 0.5,  1, 1, 0.5,  num_Q_points)
+	print("\nSaving dispersion to {}...".format(dispfile))
+	mag.SaveDispersion(dispfile,
+		hkl_start[0], hkl_start[1], hkl_start[2],
+		hkl_end[0], hkl_end[1], hkl_end[2],
+		num_Q_points)
 
 
 # manually calculate the same dispersion
@@ -94,10 +89,8 @@ data_l = []
 data_E = []
 data_S = []
 
-for h in numpy.linspace(0, 1, num_Q_points):
-	k = h
-	l = 0.5
-	for S in mag.CalcEnergies(h, k, l, False):
+for hkl in numpy.linspace(hkl_start, hkl_end, num_Q_points):
+	for S in mag.CalcEnergies(hkl[0], hkl[1], hkl[2], False):
 		if only_positive_energies and S.E < 0.:
 			continue
 
@@ -107,14 +100,15 @@ for h in numpy.linspace(0, 1, num_Q_points):
 		elif weight > S_max:
 			weight = S_max
 
-		data_h.append(h)
-		data_k.append(k)
-		data_l.append(l)
+		data_h.append(hkl[0])
+		data_k.append(hkl[1])
+		data_l.append(hkl[2])
 		data_E.append(S.E)
 		data_S.append(weight)
 
 		if print_dispersion:
-			print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(h, k, l, S.E, S.weight))
+			print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(
+				hkl[0], hkl[1], hkl[2], S.E, S.weight))
 
 
 # plot the results

@@ -1576,7 +1576,7 @@ public:
 				if(chol_try >= m_tries_chol-1)
 				{
 					using namespace tl2_ops;
-					std::cerr << "Warning: Cholesky decomposition failed for Q = "
+					std::cerr << "Warning: Cholesky decomposition failed at Q = "
 						<< Qvec << "." << std::endl;
 					C_mat = std::move(_C);
 					break;
@@ -1592,7 +1592,7 @@ public:
 		{
 			using namespace tl2_ops;
 			std::cerr << "Warning: Needed " << chol_try
-				<< " corrections for cholesky decomposition for Q = "
+				<< " corrections for cholesky decomposition at Q = "
 				<< Qvec << "." << std::endl;
 		}
 
@@ -1603,7 +1603,7 @@ public:
 		if(!is_herm)
 		{
 			using namespace tl2_ops;
-			std::cerr << "Warning: Hamiltonian is not hermitian for Q = "
+			std::cerr << "Warning: Hamiltonian is not hermitian at Q = "
 				<< Qvec << "." << std::endl;
 		}
 
@@ -1615,7 +1615,7 @@ public:
 		if(!evecs_ok)
 		{
 			using namespace tl2_ops;
-			std::cerr << "Warning: Eigensystem calculation failed for Q = "
+			std::cerr << "Warning: Eigensystem calculation failed at Q = "
 				<< Qvec << "." << std::endl;
 		}
 
@@ -1690,7 +1690,7 @@ public:
 		if(!inv_ok)
 		{
 			using namespace tl2_ops;
-			std::cerr << "Warning: Inversion failed for Q = "
+			std::cerr << "Warning: Inversion failed at Q = "
 				<< Qvec << "." << std::endl;
 		}
 
