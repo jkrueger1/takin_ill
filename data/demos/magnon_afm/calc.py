@@ -39,12 +39,12 @@ hkl_start = numpy.array([ 0., 0., 0. ])
 hkl_end   = numpy.array([ 1., 0., 0. ])
 
 # number of Qs to calculate on a dispersion direction
-num_Q_points = 256
+num_Q_points = 512
 
 # weight scaling and clamp factors
 S_scale = 64.
 S_min   = 1.
-S_max   = 500.
+S_max   = 5000.
 
 
 # create the magdyn object

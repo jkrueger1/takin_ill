@@ -27,6 +27,7 @@
  */
 
 #include "magdyn.h"
+#include "tlibs2/libs/units.h"
 
 #include <iostream>
 #include <boost/scope_exit.hpp>
@@ -275,7 +276,7 @@ void MagDynDlg::SyncToKernel()
 
 		t_magdyn::MagneticSite site;
 		site.name = name->text().toStdString();
-		site.g = -2. * tl2::unit<t_mat>(3);
+		site.g_e = tl2::g_e<t_real> * tl2::unit<t_mat>(3);
 
 		site.pos[0] = pos_x->text().toStdString();
 		site.pos[1] = pos_y->text().toStdString();

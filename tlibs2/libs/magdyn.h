@@ -174,7 +174,7 @@ struct t_MagneticSite
 	t_strarr3 spin_ortho{};      // spin orthogonal vector
 
 	std::string spin_mag{};      // spin magnitude
-	t_mat g{};                   // g factor
+	t_mat g_e{};                 // electron g factor
 	// ------------------------------------------------------------------------
 
 	// ------------------------------------------------------------------------
@@ -603,7 +603,7 @@ public:
 
 	void SetCalcHamiltonian(bool H, bool Hp, bool Hm)
 	{
-		m_calc_H = H;
+		m_calc_H  = H;
 		m_calc_Hp = Hp;
 		m_calc_Hm = Hm;
 	}
@@ -709,7 +709,8 @@ public:
 			if(print_error)
 			{
 				std::cerr << "Error: Site index " << idx
-					<< " is out of bounds." << std::endl;
+					<< " is out of bounds."
+					<< std::endl;
 			}
 
 			return false;
@@ -730,7 +731,8 @@ public:
 			if(print_error)
 			{
 				std::cerr << "Error: Coupling index " << idx
-					<< " is out of bounds." << std::endl;
+					<< " is out of bounds."
+					<< std::endl;
 			}
 
 			return false;
@@ -1116,8 +1118,8 @@ public:
 			site.spin_dir_calc = tl2::zero<t_vec>(3);
 			site.spin_ortho_calc = tl2::zero<t_vec>(3);
 			site.spin_ortho_conj_calc = tl2::zero<t_vec>(3);
-			if(site.g.size1() == 0 || site.g.size2() == 0)
-				site.g = -2. * tl2::unit<t_mat>(3);
+			if(site.g_e.size1() == 0 || site.g_e.size2() == 0)
+				site.g_e = tl2::g_e<t_real> * tl2::unit<t_mat>(3);
 
 			// spin magnitude
 			if(parser.parse(site.spin_mag))
@@ -1255,13 +1257,15 @@ public:
 			if(term.site1_calc >= GetMagneticSitesCount())
 			{
 				std::cerr << "Error: Unknown site 1 name \"" << term.site1 << "\"."
-					<< " in coupling \"" << term.name << "\"." << std::endl;
+					<< " in coupling \"" << term.name << "\"."
+					<< std::endl;
 				return;
 			}
 			if(term.site2_calc >= GetMagneticSitesCount())
 			{
 				std::cerr << "Error: Unknown site 2 name \"" << term.site2 << "\"."
-					<< " in coupling \"" << term.name << "\"." << std::endl;
+					<< " in coupling \"" << term.name << "\"."
+					<< std::endl;
 				return;
 			}
 
@@ -1334,7 +1338,8 @@ public:
 		catch(const std::exception& ex)
 		{
 			std::cerr << "Error calculating coupling \"" << term.name << "\"."
-				" Reason: " << ex.what() << "." << std::endl;
+				" Reason: " << ex.what() << "."
+				<< std::endl;
 		}
 	}
 
@@ -1464,10 +1469,10 @@ public:
 		const auto [J_Q, J_Q0] = CalcReciprocalJs(Qvec);
 
 		// create the hamiltonian of equation (25) and (26) from (Toth 2015)
-		t_mat A = tl2::create<t_mat>(N, N);
-		t_mat A_conj_mQ = tl2::create<t_mat>(N, N);
-		t_mat B = tl2::create<t_mat>(N, N);
-		t_mat C = tl2::zero<t_mat>(N, N);
+		t_mat A         = tl2::zero<t_mat>(N, N);
+		t_mat A_conj_mQ = tl2::zero<t_mat>(N, N);
+		t_mat B         = tl2::zero<t_mat>(N, N);
+		t_mat C         = tl2::zero<t_mat>(N, N);
 
 		bool use_field = !tl2::equals_0<t_real>(m_field.mag, m_eps)
 			&& m_field.dir.size() == 3;
@@ -1478,18 +1483,18 @@ public:
 			const MagneticSite& s_i = GetMagneticSite(i);
 
 			// get the pre-calculated u and v vectors for the commensurate case
-			const t_vec& u_i = s_i.spin_ortho_calc;
+			const t_vec& u_i      = s_i.spin_ortho_calc;
 			const t_vec& u_conj_i = s_i.spin_ortho_conj_calc;
-			const t_vec& v_i = s_i.spin_dir_calc;
+			const t_vec& v_i      = s_i.spin_dir_calc;
 
 			for(t_size j = 0; j < N; ++j)
 			{
 				const MagneticSite& s_j = GetMagneticSite(j);
 
 				// get the pre-calculated u and v vectors for the commensurate case
-				const t_vec& u_j = s_j.spin_ortho_calc;
+				const t_vec& u_j      = s_j.spin_ortho_calc;
 				const t_vec& u_conj_j = s_j.spin_ortho_conj_calc;
-				const t_vec& v_j = s_j.spin_dir_calc;
+				const t_vec& v_j      = s_j.spin_dir_calc;
 
 				// get the pre-calculated exchange matrices for the (i, j) coupling
 				const t_indices indices_ij = std::make_pair(i, j);
@@ -1500,14 +1505,19 @@ public:
 				if(auto iter = J_Q0.find(indices_ij); iter != J_Q0.end())
 					J_Q033 = &iter->second;
 
-				if(J_Q33 && J_Q033)
+				if(J_Q33)
 				{
 					const t_real S_mag = 0.5 * std::sqrt(s_i.spin_mag_calc * s_j.spin_mag_calc);
 
 					// equation (26) from (Toth 2015)
-					A(i, j)         = S_mag * tl2::inner_noconj<t_vec>(u_i,      (*J_Q33) * u_conj_j);
-					A_conj_mQ(i, j) = S_mag * tl2::inner_noconj<t_vec>(u_conj_i, (*J_Q33) * u_j);
-					B(i, j)         = S_mag * tl2::inner_noconj<t_vec>(u_i,      (*J_Q33) * u_j);
+					A(i, j)         = S_mag * tl2::inner_noconj<t_vec>(u_i,      (*J_Q33)  * u_conj_j);
+					A_conj_mQ(i, j) = S_mag * tl2::inner_noconj<t_vec>(u_conj_i, (*J_Q33)  * u_j);
+					B(i, j)         = S_mag * tl2::inner_noconj<t_vec>(u_i,      (*J_Q33)  * u_j);
+				}
+
+				if(J_Q033)
+				{
+					// equation (26) from (Toth 2015)
 					C(i, i)        += s_j.spin_mag_calc * tl2::inner_noconj<t_vec>(v_i, (*J_Q033) * v_j);
 				}
 			}  // end of iteration over j sites
@@ -1516,14 +1526,14 @@ public:
 			if(use_field)
 			{
 				const t_vec field = tl2::convert<t_vec>(-m_field.dir) * m_field.mag;
-				const t_vec gv = s_i.g * v_i;
-				const t_cplx Bgv = tl2::inner_noconj<t_vec>(field, gv);
+				const t_vec gv    = s_i.g_e * v_i;
+				const t_cplx Bgv  = tl2::inner_noconj<t_vec>(field, gv);
 
 				// bohr magneton in [meV/T]
 				constexpr const t_real muB = tl2::mu_B<t_real>
 					/ tl2::meV<t_real> * tl2::tesla<t_real>;
 
-				A(i, i) -= muB * Bgv;
+				A(i, i)         -= muB * Bgv;
 				A_conj_mQ(i, i) -= std::conj(muB * Bgv);
 			}
 		}  // end of iteration over i sites
@@ -1667,8 +1677,8 @@ public:
 		const t_mat evec_mat_herm = tl2::herm(evec_mat);
 
 		// equation (32) from (Toth 2015)
-		const t_mat L_mat = evec_mat_herm * H_mat * evec_mat; // energies
-		t_mat E_sqrt = g_sign * L_mat;                  // abs. energies
+		const t_mat L_mat = evec_mat_herm * H_mat * evec_mat;    // energies
+		t_mat E_sqrt = g_sign * L_mat;                           // abs. energies
 		for(t_size i = 0; i < E_sqrt.size1(); ++i)
 			E_sqrt(i, i) = std::sqrt(E_sqrt/*L_mat*/(i, i)); // sqrt. of abs. energies
 
@@ -1710,8 +1720,7 @@ public:
 #endif
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_PY_OUTPUT__
-		std::cout
-			<< "# --------------------------------------------------------------------------------\n";
+		std::cout << "# --------------------------------------------------------------------------------\n";
 		std::cout << "Y = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
 		std::cout << "V = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
 		std::cout << "Z = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
@@ -1792,8 +1801,7 @@ public:
 		} // end of coordinate iteration
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_PY_OUTPUT__
-			std::cout
-				<< "# --------------------------------------------------------------------------------\n"
+			std::cout << "# --------------------------------------------------------------------------------\n"
 				<< std::endl;
 #endif
 	}
@@ -1821,15 +1829,15 @@ public:
 			E_and_S.S_perp = proj_neutron * E_and_S.S * proj_neutron;
 
 			// weights
-			E_and_S.weight = std::abs(tl2::trace<t_mat>(E_and_S.S_perp).real());
+			E_and_S.weight      = std::abs(tl2::trace<t_mat>(E_and_S.S_perp).real());
 			E_and_S.weight_full = std::abs(tl2::trace<t_mat>(E_and_S.S).real());
 
 			// polarisation channels
 			for(std::uint8_t i = 0; i < 3; ++i)
 			{
-				const t_mat pol = get_polarisation<t_mat>(i, false);
+				const t_mat pol   = get_polarisation<t_mat>(i, false);
 				const t_mat Sperp = pol * E_and_S.S_perp;
-				const t_mat S = pol * E_and_S.S;
+				const t_mat S     = pol * E_and_S.S;
 
 				E_and_S.weight_channel[i] = std::abs(tl2::trace<t_mat>(Sperp).real());
 				E_and_S.weight_channel_full[i] = std::abs(tl2::trace<t_mat>(S).real());
@@ -1869,15 +1877,15 @@ public:
 			else
 			{
 				// energy already seen: add correlation matrices and weights
-				iter->S += curState.S;
+				iter->S      += curState.S;
 				iter->S_perp += curState.S_perp;
 
-				iter->weight += curState.weight;
+				iter->weight      += curState.weight;
 				iter->weight_full += curState.weight_full;
 
 				for(std::uint8_t i = 0; i < 3; ++i)
 				{
-					iter->weight_channel[i] += curState.weight_channel[i];
+					iter->weight_channel[i]      += curState.weight_channel[i];
 					iter->weight_channel_full[i] += curState.weight_channel_full[i];
 				}
 			}
@@ -2230,7 +2238,9 @@ public:
 				magnetic_site.spin_ortho[2] = site.second.get<std::string>("spin_ortho_z", "");
 
 				magnetic_site.spin_mag = site.second.get<std::string>("spin_magnitude", "1");
-				magnetic_site.g = -2. * tl2::unit<t_mat>(3);
+
+				if(magnetic_site.g_e.size1() == 0 || magnetic_site.g_e.size2() == 0)
+					magnetic_site.g_e = tl2::g_e<t_real> * tl2::unit<t_mat>(3);
 
 				AddMagneticSite(std::move(magnetic_site));
 			}
