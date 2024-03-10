@@ -1,12 +1,12 @@
 /**
  * tlibs
  * @author Tobias Weber <tobias.weber@tum.de>
- * @date 2012-2021
+ * @date 2012-2024
  * @license GPLv2 or GPLv3
  *
  * ----------------------------------------------------------------------------
  * tlibs -- a physical-mathematical C++ template library
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).

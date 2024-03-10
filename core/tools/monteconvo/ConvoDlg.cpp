@@ -55,6 +55,16 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent, Qt::WindowTitleHint|Qt::WindowCloseButtonHint|Qt::WindowMinMaxButtonsHint),
 		m_pSett(pSett)
 {
+	if(m_pSett)
+	{
+		// make sure the maximum thread and process count is set up
+		// (this might otherwise not be the case when starting monteconvo individually)
+		if(m_pSett->contains("main/max_threads"))
+			g_iMaxThreads = m_pSett->value("main/max_threads", g_iMaxThreads).toInt();
+		if(m_pSett->contains("main/max_processes"))
+			g_iMaxProcesses = m_pSett->value("main/max_processes", g_iMaxProcesses).toInt();
+	}
+
 	setupUi(this);
 	setWindowTitle(s_strTitle.c_str());
 
@@ -847,7 +857,7 @@ void ConvoDlg::ShowAboutDlg()
 	std::ostringstream ostrAbout;
 	ostrAbout << "Takin/Convo version " << TAKIN_VER << ".\n";
 	ostrAbout << "Written by Tobias Weber <tweber@ill.fr>,\n";
-	ostrAbout << "2015 - 2023.\n";
+	ostrAbout << "2015 - 2024.\n";
 	ostrAbout << "\n" << TAKIN_LICENSE("Takin/Convo");
 
 	QMessageBox::about(this, "About Convo", ostrAbout.str().c_str());

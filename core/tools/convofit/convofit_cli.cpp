@@ -56,7 +56,7 @@ int convofit_main(int argc, char** argv)
 #ifdef MONTECONVO_STANDALONE	// only show copyright banner if not already displayed from Takin main program
 		tl::log_info("--------------------------------------------------------------------------------");
 		tl::log_info("This is the Takin command-line convolution fitter (convofit), version " TAKIN_VER ".");
-		tl::log_info("Written by Tobias Weber <tweber@ill.fr>, 2014 - 2022.");
+		tl::log_info("Written by Tobias Weber <tweber@ill.fr>, 2014 - 2024.");
 		tl::log_info(TAKIN_LICENSE("Takin/Convofit"));
 		tl::log_debug("Resolution calculation uses ", sizeof(t_real_reso)*8, " bit ", tl::get_typename<t_real_reso>(), "s.");
 		tl::log_debug("Fitting uses ", sizeof(tl::t_real_min)*8, " bit ", tl::get_typename<tl::t_real_min>(), "s.");
