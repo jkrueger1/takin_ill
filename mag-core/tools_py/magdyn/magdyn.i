@@ -195,9 +195,7 @@
 	{
 		typename t_MagDyn::ExternalField field{};
 
-		field.dir[0] = Bx;
-		field.dir[1] = By;
-		field.dir[2] = Bz;
+		field.dir = tl2::create<t_vec_real>({ Bx, By, Bz });
 		field.mag = Bmag;
 		field.align_spins = true;
 
