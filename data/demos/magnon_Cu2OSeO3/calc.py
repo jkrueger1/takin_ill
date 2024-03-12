@@ -75,6 +75,13 @@ magdyn.add_variable(mag, "D2z", +0.36)
 
 
 #
+# set the sample environment
+#
+magdyn.set_temperature(mag, 50)
+magdyn.set_field(mag,  0, 0, 1,  1,  False)
+
+
+#
 # add magnetic sites
 #                      name     x    y    z  sx sy sz   S
 magdyn.add_site(mag, "Cu 1",  0.5,   0, 0.5,  0, 0, 1,  1)

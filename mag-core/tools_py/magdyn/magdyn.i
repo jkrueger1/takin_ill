@@ -191,13 +191,14 @@
 	 * sets an external magnetic field
 	 */
 	void set_field(t_MagDyn& magdyn,
-		t_real Bx, t_real By, t_real Bz, t_real Bmag = 1.)
+		t_real Bx, t_real By, t_real Bz, t_real Bmag = 1.,
+		bool align_spins = true)
 	{
 		typename t_MagDyn::ExternalField field{};
 
 		field.dir = tl2::create<t_vec_real>({ Bx, By, Bz });
 		field.mag = Bmag;
-		field.align_spins = true;
+		field.align_spins = align_spins;
 
 		magdyn.SetExternalField(field);
 		magdyn.CalcExternalField();
