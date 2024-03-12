@@ -106,8 +106,6 @@ void MagDynDlg::Clear()
 
 	m_notes->clear();
 
-	m_curSiteCtr = m_curCouplingCtr = m_curVarCtr = 0;
-
 	// reset some options
 	for(int i = 0; i < 3; ++i)
 	{

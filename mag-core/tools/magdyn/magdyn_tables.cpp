@@ -35,16 +35,60 @@
 
 
 /**
+ * set a unique name for the given table item
+ */
+static void set_unique_tab_item_name(
+	QTableWidget *tab, QTableWidgetItem *item, int name_col, const std::string& prefix)
+{
+	if(!item)
+		return;
+
+	// was the item renamed?
+	if(tab->column(item) != name_col)
+		return;
+
+	int row = tab->row(item);
+	if(row < 0 || row >= tab->rowCount())
+		return;
+
+	// check if the new name is unique and non-empty
+	std::string new_name_base = item->text().toStdString();
+	std::string new_name = new_name_base;
+	if(tl2::trimmed(new_name) == "")
+		new_name_base = new_name = prefix;
+
+	// hash all other names
+	std::unordered_set<std::string> used_names;
+	for(int idx = 0; idx < tab->rowCount(); ++idx)
+	{
+		auto *name = tab->item(idx, name_col);
+		if(!name || idx == row)
+			continue;
+
+		used_names.emplace(name->text().toStdString());
+	}
+
+	// possibly add a suffix to make the new name unique
+	std::size_t ctr = 1;
+	while(used_names.find(new_name) != used_names.end())
+		new_name = new_name_base + "_" + tl2::var_to_str(ctr++);
+
+	// rename the site if needed
+	if(new_name != item->text().toStdString())
+		item->setText(new_name.c_str());
+}
+
+
+
+/**
  * add an atom site
  */
 void MagDynDlg::AddSiteTabItem(
-	int row, const std::string& _name,
+	int row, const std::string& name,
 	const std::string& x, const std::string& y, const std::string& z,
 	const std::string& sx, const std::string& sy, const std::string& sz,
 	const std::string& S,
-	[[__maybe_unused__]] const std::string& sox,
-	[[__maybe_unused__]] const std::string& soy,
-	[[__maybe_unused__]] const std::string& soz,
+	const std::string& sox, const std::string& soy, const std::string& soz,
 	const std::string& rgb)
 {
 	bool bclone = false;
@@ -55,15 +99,6 @@ void MagDynDlg::AddSiteTabItem(
 		if(this_->m_autocalc->isChecked())
 			this_->CalcAll();
 	} BOOST_SCOPE_EXIT_END
-
-	std::string name = _name;
-	if(name == "")
-	{
-		// default site name
-		std::ostringstream ostrName;
-		ostrName << "site_" << (++m_curSiteCtr);
-		name = ostrName.str();
-	}
 
 	if(row == -1)	// append to end of table
 		row = m_sitestab->rowCount();
@@ -82,7 +117,7 @@ void MagDynDlg::AddSiteTabItem(
 
 	if(bclone)
 	{
-		for(int thecol=0; thecol<NUM_SITE_COLS; ++thecol)
+		for(int thecol = 0; thecol < NUM_SITE_COLS; ++thecol)
 		{
 			m_sitestab->setItem(row, thecol,
 				m_sitestab->item(m_sites_cursor_row, thecol)->clone());
@@ -117,6 +152,9 @@ void MagDynDlg::AddSiteTabItem(
 				new tl2::NumericTableWidgetItem<t_real>(soz));
 		}
 	}
+
+	set_unique_tab_item_name(m_sitestab, m_sitestab->item(row, COL_SITE_NAME),
+		COL_SITE_NAME, "site");
 
 	m_sitestab->scrollToItem(m_sitestab->item(row, 0));
 	m_sitestab->setCurrentCell(row, 0);
@@ -169,7 +207,7 @@ void MagDynDlg::SyncSiteComboBox(SitesComboBox* combo, const std::string& select
 
 	// iterate sites to get their names
 	std::unordered_set<std::string> seen_names;
-	for(int row=0; row<m_sitestab->rowCount(); ++row)
+	for(int row = 0; row < m_sitestab->rowCount(); ++row)
 	{
 		auto *name = m_sitestab->item(row, COL_SITE_NAME);
 		if(!name)
@@ -259,20 +297,14 @@ SitesComboBox* MagDynDlg::CreateSitesComboBox(const std::string& selected_site)
  * add an exchange term
  */
 void MagDynDlg::AddTermTabItem(
-	int row, const std::string& _name,
+	int row, const std::string& name,
 	const std::string& atom_1, const std::string& atom_2,
 	const std::string& dist_x, const std::string& dist_y, const std::string& dist_z,
 	const std::string& J,
 	const std::string& dmi_x, const std::string& dmi_y, const std::string& dmi_z,
-	[[__maybe_unused__]] const std::string& gen_xx,
-	[[__maybe_unused__]] const std::string& gen_xy,
-	[[__maybe_unused__]] const std::string& gen_xz,
-	[[__maybe_unused__]] const std::string& gen_yx,
-	[[__maybe_unused__]] const std::string& gen_yy,
-	[[__maybe_unused__]] const std::string& gen_yz,
-	[[__maybe_unused__]] const std::string& gen_zx,
-	[[__maybe_unused__]] const std::string& gen_zy,
-	[[__maybe_unused__]] const std::string& gen_zz,
+	const std::string& gen_xx, const std::string& gen_xy, const std::string& gen_xz,
+	const std::string& gen_yx, const std::string& gen_yy, const std::string& gen_yz,
+	const std::string& gen_zx, const std::string& gen_zy, const std::string& gen_zz,
 	const std::string& rgb)
 {
 	bool bclone = false;
@@ -283,15 +315,6 @@ void MagDynDlg::AddTermTabItem(
 		if(this_->m_autocalc->isChecked())
 			this_->CalcAll();
 	} BOOST_SCOPE_EXIT_END
-
-	std::string name = _name;
-	if(name == "")
-	{
-		// default coupling name
-		std::ostringstream ostrName;
-		ostrName << "coupling_" << (++m_curCouplingCtr);
-		name = ostrName.str();
-	}
 
 	if(row == -1)	// append to end of table
 		row = m_termstab->rowCount();
@@ -377,6 +400,9 @@ void MagDynDlg::AddTermTabItem(
 		}
 	}
 
+	set_unique_tab_item_name(m_termstab, m_termstab->item(row, COL_XCH_NAME),
+		COL_XCH_NAME, "coupling");
+
 	m_termstab->scrollToItem(m_termstab->item(row, 0));
 	m_termstab->setCurrentCell(row, 0);
 	m_termstab->setSortingEnabled(true);
@@ -389,7 +415,7 @@ void MagDynDlg::AddTermTabItem(
 /**
  * add a variable
  */
-void MagDynDlg::AddVariableTabItem(int row, const std::string& _name, const t_cplx& value)
+void MagDynDlg::AddVariableTabItem(int row, const std::string& name, const t_cplx& value)
 {
 	bool bclone = false;
 	m_varstab->blockSignals(true);
@@ -399,15 +425,6 @@ void MagDynDlg::AddVariableTabItem(int row, const std::string& _name, const t_cp
 		if(this_->m_autocalc->isChecked())
 			this_->CalcAll();
 	} BOOST_SCOPE_EXIT_END
-
-	std::string name = _name;
-	if(name == "")
-	{
-		// default variable name
-		std::ostringstream ostrName;
-		ostrName << "var_" << (++m_curVarCtr);
-		name = ostrName.str();
-	}
 
 	if(row == -1)	// append to end of table
 		row = m_varstab->rowCount();
@@ -441,6 +458,9 @@ void MagDynDlg::AddVariableTabItem(int row, const std::string& _name, const t_cp
 		m_varstab->setItem(row, COL_VARS_VALUE_IMAG,
 			new tl2::NumericTableWidgetItem<t_real>(value.imag()));
 	}
+
+	set_unique_tab_item_name(m_varstab, m_varstab->item(row, COL_VARS_NAME),
+		COL_VARS_NAME, "var");
 
 	m_varstab->scrollToItem(m_varstab->item(row, 0));
 	m_varstab->setCurrentCell(row, 0);
@@ -755,8 +775,7 @@ void MagDynDlg::UpdateVerticalHeader(QTableWidget *pTab)
 
 
 
-std::vector<int> MagDynDlg::GetSelectedRows(
-	QTableWidget *pTab, bool sort_reversed) const
+std::vector<int> MagDynDlg::GetSelectedRows(QTableWidget *pTab, bool sort_reversed) const
 {
 	std::vector<int> vec;
 	vec.reserve(pTab->selectedItems().size());
@@ -774,49 +793,6 @@ std::vector<int> MagDynDlg::GetSelectedRows(
 	}
 
 	return vec;
-}
-
-
-
-/**
- * set a unique name for the given table item
- */
-static void set_unique_tab_item_name(
-	QTableWidget *tab, QTableWidgetItem *item, int name_col, const std::string& prefix)
-{
-	// was the item renamed?
-	if(tab->column(item) != name_col)
-		return;
-
-	int row = tab->row(item);
-	if(row < 0 || row >= tab->rowCount())
-		return;
-
-	// check if the new name is unique and non-empty
-	std::string new_name_base = item->text().toStdString();
-	std::string new_name = new_name_base;
-	if(tl2::trimmed(new_name) == "")
-		new_name_base = new_name = prefix;
-
-	// hash all other names
-	std::unordered_set<std::string> used_names;
-	for(int idx = 0; idx < tab->rowCount(); ++idx)
-	{
-		auto *name = tab->item(idx, name_col);
-		if(!name || idx == row)
-			continue;
-
-		used_names.emplace(name->text().toStdString());
-	}
-
-	// possibly add a suffix to make the new name unique
-	std::size_t ctr = 1;
-	while(used_names.find(new_name) != used_names.end())
-		new_name = new_name_base + "_" + tl2::var_to_str(ctr++);
-
-	// rename the site if needed
-	if(new_name != item->text().toStdString())
-		item->setText(new_name.c_str());
 }
 
 

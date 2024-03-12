@@ -255,7 +255,7 @@ TableImportDlg::~TableImportDlg()
 
 
 /**
- * read in the atoms from the table
+ * read in the magnetic sites from the table
  */
 void TableImportDlg::ImportAtoms()
 {

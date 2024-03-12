@@ -300,14 +300,6 @@ void MagDynDlg::ImportAtoms(const std::vector<TableImportAtom>& atompos_vec)
 		if(atompos.Sz) spin_z = tl2::var_to_str(*atompos.Sz);
 		if(atompos.Smag) spin_mag = tl2::var_to_str(*atompos.Smag);
 
-		if(name == "")
-		{
-			// default site name
-			std::ostringstream ostrName;
-			ostrName << "site_" << (++m_curSiteCtr);
-			name = ostrName.str();
-		}
-
 		AddSiteTabItem(-1, name,
 			pos_x, pos_y, pos_z,
 			spin_x, spin_y, spin_z, spin_mag);
@@ -349,14 +341,6 @@ void MagDynDlg::ImportCouplings(const std::vector<TableImportCoupling>& coupling
 		if(coupling.dmix) dmi_x = tl2::var_to_str(*coupling.dmix);
 		if(coupling.dmiy) dmi_y = tl2::var_to_str(*coupling.dmiy);
 		if(coupling.dmiz) dmi_z = tl2::var_to_str(*coupling.dmiz);
-
-		if(name == "")
-		{
-			// default coupling name
-			std::ostringstream ostrName;
-			ostrName << "coupling_" << (++m_curCouplingCtr);
-			name = ostrName.str();
-		}
 
 		std::string atom_1_name = tl2::var_to_str(atom_1);
 		std::string atom_2_name = tl2::var_to_str(atom_2);
