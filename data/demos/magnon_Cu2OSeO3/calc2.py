@@ -28,7 +28,6 @@ import magdyn
 
 
 # options
-save_config_file       = False  # save magdyn file
 save_dispersion        = False  # write dispersion to file
 print_dispersion       = False  # write dispersion to console
 plot_dispersion        = True   # show dispersion plot
