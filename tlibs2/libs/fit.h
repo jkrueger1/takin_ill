@@ -51,7 +51,6 @@
 #include <limits>
 #include <type_traits>
 
-#include "log.h"
 #include "expr.h"
 
 #include "maths.h"
@@ -271,7 +270,8 @@ public:
 	virtual t_real_min operator()(const std::vector<t_real_min>& vecParams) const override
 	{
 		t_real_min dChi2 = chi2(vecParams);
-		if(m_bDebug) log_debug("chi2 = ", dChi2);
+		if(m_bDebug)
+			std::cerr << "chi2 = " << dChi2 << std::endl;
 		return dChi2;
 	}
 
@@ -351,7 +351,7 @@ bool fit(t_func&& func,
 	{
 		if(!vecX.size() || !vecY.size() || !vecYErr.size())
 		{
-			log_err("No data given to fitter.");
+			std::cerr << "No data given to fitter." << std::endl;
 			return false;
 		}
 
@@ -359,7 +359,7 @@ bool fit(t_func&& func,
 		if(pVecFixed && std::all_of(pVecFixed->begin(), pVecFixed->end(),
 			[](bool b)->bool { return b; }))
 			{
-				log_err("All parameters are fixed.");
+				std::cerr << "All parameters are fixed." << std::endl;
 				return false;
 			}
 
@@ -403,13 +403,13 @@ bool fit(t_func&& func,
 		}
 
 		if(bDebug)
-			log_debug(mini);
+			std::cerr << mini << std::endl;
 
 		return bValidFit;
 	}
 	catch(const std::exception& ex)
 	{
-		log_err(ex.what());
+		std::cerr << ex.what() << std::endl;
 	}
 
 	return false;
@@ -439,7 +439,7 @@ bool fit_expr(const std::string& func,
 	{
 		if(!vecX.size() || !vecY.size() || !vecYErr.size())
 		{
-			log_err("No data given to fitter.");
+			std::cerr << "No data given to fitter." << std::endl;
 			return false;
 		}
 
@@ -447,7 +447,7 @@ bool fit_expr(const std::string& func,
 		if(pVecFixed && std::all_of(pVecFixed->begin(), pVecFixed->end(),
 			[](bool b)->bool { return b; }))
 			{
-				log_err("All parameters are fixed.");
+				std::cerr << "All parameters are fixed." << std::endl;
 				return false;
 			}
 
@@ -491,13 +491,13 @@ bool fit_expr(const std::string& func,
 		}
 
 		if(bDebug)
-			log_debug(mini);
+			std::cerr << mini << std::endl;
 
 		return bValidFit;
 	}
 	catch(const std::exception& ex)
 	{
-		log_err(ex.what());
+		std::cerr << ex.what() << std::endl;
 	}
 
 	return false;
@@ -519,7 +519,7 @@ bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
 		if(pVecFixed && std::all_of(pVecFixed->begin(), pVecFixed->end(),
 			[](bool b)->bool { return b; }))
 			{
-				log_err("All parameters are fixed.");
+				std::cerr << "All parameters are fixed." << std::endl;
 				return false;
 			}
 
@@ -545,13 +545,13 @@ bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
 		}
 
 		if(bDebug)
-			log_debug(mini);
+			std::cerr << mini << std::endl;
 
 		return bMinimumValid;
 	}
 	catch(const std::exception& ex)
 	{
-		log_err(ex.what());
+		std::cerr << ex.what() << std::endl;
 	}
 
 	return false;
@@ -573,7 +573,7 @@ bool minimise_expr(const std::string& func, const std::vector<std::string>& vecP
 		if(pVecFixed && std::all_of(pVecFixed->begin(), pVecFixed->end(),
 			[](bool b)->bool { return b; }))
 			{
-				log_err("All parameters are fixed.");
+				std::cerr << "All parameters are fixed." << std::endl;
 				return false;
 			}
 
@@ -599,13 +599,13 @@ bool minimise_expr(const std::string& func, const std::vector<std::string>& vecP
 		}
 
 		if(bDebug)
-			log_debug(mini);
+			std::cerr << mini << std::endl;
 
 		return bMinimumValid;
 	}
 	catch(const std::exception& ex)
 	{
-		log_err(ex.what());
+		std::cerr << ex.what() << std::endl;
 	}
 
 	return false;

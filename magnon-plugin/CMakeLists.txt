@@ -23,7 +23,7 @@
 # ----------------------------------------------------------------------------
 #
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 project(magnonmod)
 enable_language(CXX)
 
@@ -82,7 +82,7 @@ add_library(magnonmod SHARED
 	tlibs2/libs/magdyn.h
 	tlibs2/libs/maths.h
 
-	tlibs2/libs/log.cpp tlibs/log/log.cpp
+	tlibs/log/log.cpp
 	core/tools/monteconvo/sqwbase.cpp
 )
 

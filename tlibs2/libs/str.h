@@ -1,6 +1,5 @@
 /**
- * tlibs2
- * string library
+ * tlibs2 -- string library
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
  * @date 2013-2021
  * @note Forked on 7-Nov-2018 from my privately and TUM-PhD-developed "tlibs" project (https://github.com/t-weber/tlibs).
@@ -8,7 +7,7 @@
  *
  * ----------------------------------------------------------------------------
  * tlibs
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -49,7 +48,6 @@
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "log.h"
 #include "expr.h"
 
 
@@ -736,6 +734,59 @@ bool str_is_digits(const t_str& str)
 
 
 
+template<class t_real = double>
+std::string get_duration_str_secs(t_real dDur)
+{
+	int iAgeMS = int((dDur - std::trunc(dDur)) * t_real(1000.));
+	int iAge[] = { int(dDur), 0, 0, 0 };    // s, m, h, d
+	const int iConv[] = { 60, 60, 24 };
+	const char* pcUnit[] = { "s ", "m ", "h ", "d " };
+
+	for(std::size_t i=0; i<sizeof(iAge)/sizeof(iAge[0])-1; ++i)
+	{
+		if(iAge[i] > iConv[i])
+		{
+			iAge[i+1] = iAge[i] / iConv[i];
+			iAge[i] = iAge[i] % iConv[i];
+		}
+	}
+
+	bool bHadPrev = false;
+	std::string strAge;
+	for(std::ptrdiff_t i=sizeof(iAge)/sizeof(iAge[0])-1; i>=0; --i)
+	{
+		if(iAge[i] || bHadPrev)
+		{
+			strAge += std::to_string(iAge[i]) + pcUnit[i];
+			bHadPrev = true;
+		}
+	}
+	/*if(iAgeMS)*/
+	{
+		strAge += std::to_string(iAgeMS) + "ms ";
+		bHadPrev = true;
+	}
+
+	return strAge;
+}
+
+
+template<class t_real = double>
+std::string get_duration_str(const std::chrono::duration<t_real>& dur)
+{
+	using t_dur = std::chrono::duration<t_real>;
+
+	t_real dDurSecs = t_real(t_dur::period::num)/t_real(t_dur::period::den)
+		* t_real(dur.count());
+	return get_duration_str_secs(dDurSecs);
+}
+
+
+
+// ----------------------------------------------------------------------------
+
+
+
 template<class t_str=std::string, class t_cont=std::vector<double>>
 t_cont get_py_array(const t_str& str)
 {
@@ -799,7 +850,7 @@ std::pair<bool, t_val> eval_expr(const t_str& str) noexcept
 	catch(const std::exception& ex)
 	{
 #ifdef __TLIBS2_SHOW_ERR__
-		log_err("Parsing failed with error: ", ex.what(), ".");
+		std::cerr << "Parsing failed with error: " << ex.what() << "." << std::endl;
 #endif
 		return std::make_pair(false, t_val(0));
 	}

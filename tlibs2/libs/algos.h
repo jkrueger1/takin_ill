@@ -1,6 +1,5 @@
 /**
- * tlibs2
- * algorithm library
+ * tlibs2 -- algorithm library
  * @author Tobias Weber <tweber@ill.fr>
  * @date 2018-2021
  * @note Forked on 7-Nov-2018 from my privately and TUM-PhD-developed "tlibs" project (https://github.com/t-weber/tlibs).
@@ -9,7 +8,7 @@
  *
  * ----------------------------------------------------------------------------
  * tlibs
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -48,7 +47,8 @@ namespace tl2 {
  * copy algorithm with interleave
  */
 template<class T1, class T2>
-void copy_interleave(T1 inIter, T1 inEnd, T2 outIter, std::size_t interleave, std::size_t startskip)
+void copy_interleave(T1 inIter, T1 inEnd, T2 outIter,
+	std::size_t interleave, std::size_t startskip)
 {
 	std::advance(inIter, startskip);
 
@@ -60,6 +60,7 @@ void copy_interleave(T1 inIter, T1 inEnd, T2 outIter, std::size_t interleave, st
 		std::advance(inIter, interleave);
 	}
 }
+
 
 
 /**
@@ -86,6 +87,7 @@ std::size_t count_occurrences(const t_str &str, const t_str &tok)
 }
 
 
+
 /**
  * merge containers
  */
@@ -97,6 +99,7 @@ t_cont arrayunion(const std::initializer_list<t_cont>& lst)
 		contRet.insert(contRet.end(), cont.begin(), cont.end());
 	return contRet;
 }
+
 
 
 /**
@@ -131,6 +134,7 @@ template<typename T = long >
 using t_dur_weeks = std::chrono::duration<T, std::ratio<60*60*24*7, 1>>;
 
 
+
 /**
  * duration since epoch
  */
@@ -142,6 +146,7 @@ t_dur epoch_dur()
 }
 
 
+
 /**
  * seconds since epoch
  */
@@ -150,6 +155,7 @@ T epoch()
 {
 	return epoch_dur<t_dur_secs<T>>().count();
 }
+
 
 
 /**
@@ -174,6 +180,7 @@ std::string epoch_to_str(T tSeconds, const char *pcFmt="%a %Y-%b-%d %H:%M:%S %Z"
 }
 
 
+
 /**
  * get the permutation of indices to sort a container
  */
@@ -186,6 +193,7 @@ t_cont get_perm(std::size_t num_elems, Comp comp)
 	std::stable_sort(perm.begin(), perm.end(), comp);
 	return perm;
 }
+
 
 
 /**
@@ -205,6 +213,7 @@ t_cont_perm get_perm(const t_cont& cont)
 }
 
 
+
 /**
  * reorder a vector according to a permutation
  */
@@ -218,6 +227,61 @@ t_vec reorder(const t_vec& vec, const t_perm& perm)
 		vec_new.push_back(vec[perm[i]]);
 
 	return vec_new;
+}
+
+
+
+/*
+ * count how many bits are needed for the given number
+ */
+template<typename T = std::size_t>
+T count_needed_bits(T imax)
+{
+	T inum = 0;
+
+	for(; imax != 0; imax >>= 1)
+		++inum;
+
+	return inum;
+}
+
+
+
+/**
+ * reverse the bits of the given number
+ */
+template<typename T = std::size_t>
+T bit_reverse(T imax, T inum)
+{
+	if(imax<2)
+		return inum;
+
+	T irev = 0;
+	T ibitcnt = count_needed_bits<T>(imax)-2;
+
+	for(T i = 1; i < imax; i <<= 1)
+	{
+		if(inum & i)
+			irev |= (1 << ibitcnt);
+		--ibitcnt;
+	}
+
+	return irev;
+}
+
+
+
+template<typename T = std::size_t,
+	template<class...> class t_cont = std::vector>
+t_cont<T> bit_reverse_indices(T imax)
+{
+	t_cont<T> vec;
+	vec.reserve(imax);
+
+	for(T i = 0; i < imax; ++i)
+		vec.push_back(bit_reverse<T>(imax, i));
+
+	return vec;
 }
 
 }

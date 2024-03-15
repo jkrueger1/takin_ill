@@ -86,7 +86,7 @@ include(${SWIG_USE_FILE})
 set_source_files_properties(magdyn.i PROPERTIES CPLUSPLUS TRUE)
 set_source_files_properties(magdyn.i PROPERTIES SWIG_FLAGS "-I ${PROJECT_SOURCE_DIR}/libs")
 
-swig_add_library(magdyn_py LANGUAGE python SOURCES magdyn.i ../../tlibs2/libs/log.cpp)
+swig_add_library(magdyn_py LANGUAGE python SOURCES magdyn.i)
 target_link_libraries(magdyn_py Python3::Python -llapacke)
 
 # installation

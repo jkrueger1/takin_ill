@@ -1,6 +1,5 @@
 /**
- * tlibs2
- * (container-agnostic) math library
+ * tlibs2 -- (container-agnostic) math library
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
  * @date 2015 - 2024
  * @license GPLv3, see 'LICENSE' file
@@ -14,7 +13,7 @@
  *
  * ----------------------------------------------------------------------------
  * tlibs
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -73,9 +72,8 @@
 #include <boost/math/special_functions/spherical_harmonic.hpp>
 #include <boost/algorithm/minmax_element.hpp>
 
-#include "log.h"
 #include "str.h"
-#include "bits.h"
+#include "algos.h"
 #include "traits.h"
 
 #if __has_include(<lapacke.h>) && USE_LAPACK

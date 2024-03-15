@@ -48,7 +48,7 @@ namespace pt = boost::property_tree;
 #include <deque>
 #include <cstdlib>
 
-#include "tlibs2/libs/log.h"
+#include "tlibs2/libs/str.h"
 
 #ifdef USE_HDF5
 	#include "tlibs2/libs/h5file.h"
