@@ -712,15 +712,8 @@ void ScanViewerDlg::PlotScan()
 			}
 			else
 			{
-				t_real y = m_vecY[iY];
-				t_real m = vecMon[iY];
-				t_real dy = m_vecYErr[iY];
-				t_real dm = vecMonErr[iY];
-
-				// y_new = y/m
-				// dy_new = 1/m dy - y/m^2 dm
-				m_vecY[iY] = y/m;
-				m_vecYErr[iY] = std::sqrt(std::pow(dy/m, 2.) + std::pow(dm*y/(m*m), 2.));
+				std::tie(m_vecY[iY], m_vecYErr[iY]) = norm_cnts_to_mon(
+					m_vecY[iY], m_vecYErr[iY], vecMon[iY], vecMonErr[iY]);
 			}
 		}
 	}

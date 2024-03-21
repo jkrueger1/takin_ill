@@ -100,7 +100,7 @@ void ScanViewerDlg::CalcPol()
 	};
 
 
-	auto propagate_err = [](t_real x, t_real y, t_real dx, t_real dy) -> t_real
+	auto propagate_pol_err = [](t_real x, t_real y, t_real dx, t_real dy) -> t_real
 	{
 		// d((x-y)/(x+y)) = dx * 2*y/(x+y)^2 - dy * 2*x/(x+y)^2
 		return std::sqrt(dx*2.*y/((x+y)*(x+y))*dx*2.*y/((x+y)*(x+y))
@@ -165,7 +165,8 @@ void ScanViewerDlg::CalcPol()
 		strX = vecScanVars[0];
 	const std::vector<t_real>& vecX = m_pInstr->GetCol(strX.c_str());
 	const std::vector<t_real>& vecCnts = m_pInstr->GetCol(m_pInstr->GetCountVar().c_str());
-
+	const std::vector<t_real>& vecMons = m_pInstr->GetCol(m_pInstr->GetMonVar().c_str());
+	bool has_mon = (vecCnts.size() == vecMons.size());
 
 	// raw counts per polarisation channel
 	std::ostringstream ostrCnts;
@@ -183,7 +184,14 @@ void ScanViewerDlg::CalcPol()
 		ostrCnts << "<tr><th>Init. Pol. Vec.</th>";
 		ostrCnts << "<th>Fin. Pol. Vec.</th>";
 		ostrCnts << "<th>Counts</th>";
-		ostrCnts << "<th>Error</th></tr>";
+		ostrCnts << "<th>Error</th>";
+		if(has_mon)
+		{
+			ostrCnts << "<th>Monitor</th>";
+			ostrCnts << "<th>Norm. Counts</th>";
+			ostrCnts << "<th>Norm. Error</th>";
+		}
+		ostrCnts << "</tr>";
 
 		// iterate over polarisation states
 		for(std::size_t iPol=0; iPol<iNumPolStates; ++iPol, ++iPt)
@@ -196,16 +204,29 @@ void ScanViewerDlg::CalcPol()
 			t_real dPfy = vecPolStates[iPol][4];
 			t_real dPfz = vecPolStates[iPol][5];
 
-			std::size_t iCnts = 0;
+			std::size_t iCnts = 0, iMon = 0;
 			if(iPt < vecCnts.size())
 				iCnts = std::size_t(vecCnts[iPt]);
+			if(iPt < vecMons.size())
+				iMon = std::size_t(vecMons[iPt]);
 			t_real dErr = (iCnts==0 ? 1 : std::sqrt(t_real(iCnts)));
+			t_real dMonErr = (iMon==0 ? 1 : std::sqrt(t_real(iMon)));
 
-			ostrCnts << "<tr><td>" << polvec_str(dPix, dPiy, dPiz) << "</td>"
-				<< "<td>" << polvec_str(dPfx, dPfy, dPfz) << "</td>"
-				<< "<td><b>" << iCnts << "</b></td>"
-				<< "<td><b>" << dErr << "</b></td>"
-				<< "</tr>";
+			ostrCnts << "<tr><td>" << polvec_str(dPix, dPiy, dPiz) << "</td>";
+			ostrCnts << "<td>" << polvec_str(dPfx, dPfy, dPfz) << "</td>";
+			ostrCnts << "<td><b>" << iCnts << "</b></td>";
+			ostrCnts << "<td><b>" << dErr << "</b></td>";
+			if(has_mon)
+			{
+				t_real norm_cts = 0., norm_err = 0.;
+				std::tie(norm_cts, norm_err) = norm_cnts_to_mon(
+					t_real(iCnts), dErr, t_real(iMon), dMonErr);
+
+				ostrCnts << "<td><b>" << iMon << "</b></td>";
+				ostrCnts << "<td><b>" << norm_cts << "</b></td>";
+				ostrCnts << "<td><b>" << norm_err << "</b></td>";
+			}
+			ostrCnts << "</tr>";
 		}
 		ostrCnts << "</table></p>";
 	}
@@ -241,13 +262,13 @@ void ScanViewerDlg::CalcPol()
 
 			const std::size_t iSF = vecSFIdx[iPol];
 			const std::array<t_real, 6>& state = vecPolStates[iPol];
-			//const std::array<t_real, 6>& stateSF = vecPolStates[iSF];
 
 			setPolAlreadySeen.insert(iPol);
 			setPolAlreadySeen.insert(iSF);
 
 			t_real dCntsNSF = t_real(0);
 			t_real dCntsSF = t_real(0);
+
 			if(iPt*iNumPolStates + iPol < vecCnts.size())
 				dCntsNSF = vecCnts[iPt*iNumPolStates + iPol];
 			if(iPt*iNumPolStates + iSF < vecCnts.size())
@@ -259,12 +280,37 @@ void ScanViewerDlg::CalcPol()
 			if(tl::float_equal(dCntsSF, t_real(0), g_dEps))
 				dSFErr = 1.;
 
+			// normalise to monitor if available
+			if(has_mon)
+			{
+				t_real dMonNSF = t_real(0);
+				t_real dMonSF = t_real(0);
+
+				if(iPt*iNumPolStates + iPol < vecCnts.size())
+					dMonNSF = vecMons[iPt*iNumPolStates + iPol];
+				if(iPt*iNumPolStates + iSF < vecCnts.size())
+					dMonSF = vecMons[iPt*iNumPolStates + iSF];
+
+				t_real dMonNSFErr = std::sqrt(dMonNSF);
+				t_real dMonSFErr = std::sqrt(dMonSF);
+
+				if(tl::float_equal(dMonNSF, t_real(0), g_dEps))
+					dMonNSFErr = 1.;
+				if(tl::float_equal(dMonSF, t_real(0), g_dEps))
+					dMonSFErr = 1.;
+
+				std::tie(dCntsNSF, dNSFErr) = norm_cnts_to_mon(
+					dCntsNSF, dNSFErr, dMonNSF, dMonNSFErr);
+				std::tie(dCntsSF, dSFErr) = norm_cnts_to_mon(
+					dCntsSF, dSFErr, dMonSF, dMonSFErr);
+			}
+
 			bool bInvalid = tl::float_equal(dCntsNSF+dCntsSF, t_real(0), g_dEps);
 			t_real dPolElem = 0., dPolErr = 1.;
 			if(!bInvalid)
 			{
 				dPolElem = /*std::abs*/((dCntsSF-dCntsNSF) / (dCntsSF+dCntsNSF));
-				dPolErr = propagate_err(dCntsNSF, dCntsSF, dNSFErr, dSFErr);
+				dPolErr = propagate_pol_err(dCntsNSF, dCntsSF, dNSFErr, dSFErr);
 			}
 
 			// polarisation matrix elements, e.g. <[100] | P | [010]> = <x|P|y>
@@ -358,8 +404,8 @@ void ScanViewerDlg::CalcPol()
 			t_real dPolElem = 0., dPolErr = 1.;
 			if(!bInvalid)
 			{
-				dPolElem = /*std::abs*/((dCntsSF-dCntsNSF) / (dCntsSF+dCntsNSF));
-				dPolErr = propagate_err(dCntsNSF, dCntsSF, dNSFErr, dSFErr);
+				dPolElem = (dCntsSF-dCntsNSF) / (dCntsSF+dCntsNSF);
+				dPolErr = propagate_pol_err(dCntsNSF, dCntsSF, dNSFErr, dSFErr);
 			}
 
 			// polarisation matrix elements, e.g. <[100] | P | [010]> = <x|P|y>
