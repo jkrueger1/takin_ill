@@ -286,9 +286,9 @@ void ScanViewerDlg::CalcPol()
 				t_real dMonNSF = t_real(0);
 				t_real dMonSF = t_real(0);
 
-				if(iPt*iNumPolStates + iPol < vecCnts.size())
+				if(iPt*iNumPolStates + iPol < vecMons.size())
 					dMonNSF = vecMons[iPt*iNumPolStates + iPol];
-				if(iPt*iNumPolStates + iSF < vecCnts.size())
+				if(iPt*iNumPolStates + iSF < vecMons.size())
 					dMonSF = vecMons[iPt*iNumPolStates + iSF];
 
 				t_real dMonNSFErr = std::sqrt(dMonNSF);
