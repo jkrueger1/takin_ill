@@ -23,7 +23,7 @@
  * ----------------------------------------------------------------------------
  */
 
-%module tl2_instr
+%module instr
 %{
 	#include "../../tlibs2/libs/instr.h"
 %}
@@ -33,7 +33,6 @@
 %include "std_map.i"
 %include "std_unordered_map.i"
 %include "std_pair.i"
-//%include "std_tuple.i"
 %include "std_string.i"
 %include "std_shared_ptr.i"
 

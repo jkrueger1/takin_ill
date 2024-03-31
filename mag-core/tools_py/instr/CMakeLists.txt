@@ -23,9 +23,9 @@
 # ----------------------------------------------------------------------------
 #
 
+cmake_minimum_required(VERSION 3.5)
 project(instr_py)
 
-cmake_minimum_required(VERSION 3.0)
 cmake_policy(SET CMP0078 NEW)
 cmake_policy(SET CMP0086 NEW)
 
@@ -85,11 +85,12 @@ include(${SWIG_USE_FILE})
 set_source_files_properties(instr.i PROPERTIES CPLUSPLUS TRUE)
 set_source_files_properties(instr.i PROPERTIES SWIG_FLAGS "-I ${PROJECT_SOURCE_DIR}/libs")
 
-swig_add_library(instr_py LANGUAGE python SOURCES instr.i ../../tlibs2/libs/log.cpp)
+swig_add_library(instr_py LANGUAGE python SOURCES instr.i)
 
 target_link_libraries(instr_py Python3::Python)
 
 # installation
+get_property(INSTR_AUX_FILES TARGET instr_py PROPERTY SWIG_SUPPORT_FILES)
+install(FILES ${INSTR_AUX_FILES} DESTINATION "${Python3_SITEARCH}")
 install(TARGETS instr_py LIBRARY DESTINATION "${Python3_SITEARCH}")
-#install(FILES FILES "${CMAKE_BINARY_DIR}/tl2.py" DESTINATION "${Python3_SITEARCH}")
 # -----------------------------------------------------------------------------

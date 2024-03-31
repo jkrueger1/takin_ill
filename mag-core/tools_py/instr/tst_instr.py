@@ -25,7 +25,7 @@
 
 import os
 import math
-import tl2_instr
+import instr
 
 
 # get energy transfer from ki and kf
@@ -38,7 +38,7 @@ def get_E(ki, kf):
 
 def load_data(datfile):
 	#print("Loading \"%s\"." % (datfile))
-	dat = tl2_instr.FileInstrBaseD.LoadInstr(datfile)
+	dat = instr.FileInstrBaseD.LoadInstr(datfile)
 	if dat == None:
 		return
 
