@@ -88,7 +88,7 @@ def load_data(datfile, mergefiles = []):
 
 		if counts == 0:
 			counts_err = 1.
-		if mon_err == 0:
+		if mon == 0:
 			mon_err = 1.
 
 		[I, I_err] = norm_counts_to_mon(counts, counts_err, mon, mon_err)
