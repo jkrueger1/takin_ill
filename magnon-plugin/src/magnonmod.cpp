@@ -26,14 +26,15 @@
  * ----------------------------------------------------------------------------
  */
 
+//#define MAGNONMOD_USE_CPLX
+//#define MAGNONMOD_ALLOW_QSIGNS
+
 #include "magnonmod.h"
 
 #include "core/libs/version.h"
 #include "tlibs/string/string.h"
 #include "tlibs/math/math.h"
 #include "tlibs/phys/neutrons.h"
-
-//#define MAGNONMOD_USE_CPLX
 
 using t_real = MagnonMod::t_real;
 
@@ -78,6 +79,15 @@ MagnonMod::~MagnonMod()
 std::tuple<std::vector<t_real>, std::vector<t_real>>
 	MagnonMod::disp(t_real h, t_real k, t_real l) const
 {
+#ifdef MAGNONMOD_ALLOW_QSIGNS
+	if(m_Qsigns.size() == 3)
+	{
+		h *= m_Qsigns[0];
+		k *= m_Qsigns[1];
+		l *= m_Qsigns[2];
+	}
+#endif
+
 	// calculate dispersion relation
 	auto modes = m_dyn.CalcEnergies(h, k, l, false);
 
@@ -164,6 +174,10 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 		"B_mag", "real", tl::var_to_str(field.mag)});
 	vars.push_back(SqwBase::t_var{
 		"B_align_spins", "real", tl::var_to_str((int)field.align_spins)});
+#ifdef MAGNONMOD_ALLOW_QSIGNS
+	vars.push_back(SqwBase::t_var{
+		"Q_signs", "vector", vec_to_str(m_Qsigns)});
+#endif
 
 	// get variables from the model
 	for(const auto& modelvar : m_dyn.GetVariables())
@@ -241,6 +255,18 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 			m_dyn.SetExternalField(field);
 			calc_sites = true;
 		}
+#ifdef MAGNONMOD_ALLOW_QSIGNS
+		else if(strVar == "Q_signs")
+		{
+			std::vector<t_real> signs = str_to_vec<std::vector<t_real>>(strVal);
+			if(signs.size() == 3)
+			{
+				m_Qsigns[0] = signs[0];
+				m_Qsigns[1] = signs[1];
+				m_Qsigns[2] = signs[2];
+			}
+		}
+#endif
 		else
 		{
 			// set model variables
@@ -289,6 +315,9 @@ SqwBase* MagnonMod::shallow_copy() const
 	mod->m_S0 = this->m_S0;
 	mod->m_dyn = this->m_dyn;
 	mod->m_channel = this->m_channel;
+#ifdef MAGNONMOD_ALLOW_QSIGNS
+	mod->m_Qsigns = this->m_Qsigns;
+#endif
 
 	return mod;
 }

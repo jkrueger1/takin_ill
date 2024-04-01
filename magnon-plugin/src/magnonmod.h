@@ -70,6 +70,11 @@ class MagnonMod : public SqwBase
 		// polarisation channel, -1: unpolarised
 		int m_channel{-1};
 
+#ifdef MAGNONMOD_ALLOW_QSIGNS
+		// for quickly flipping coordinates
+		std::vector<t_real> m_Qsigns = { 1., 1., 1. };
+#endif
+
 
 	public:
 		MagnonMod();
