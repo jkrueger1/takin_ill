@@ -26,16 +26,20 @@
 import os
 import math
 import instr
+import scipy.constants as co
 
 
+#
 # get energy transfer from ki and kf
+#
 def get_E(ki, kf):
-	#E_to_k2 = 2.*co.neutron_mass/hbar_in_meVs**2. / co.elementary_charge*1000. * 1e-20
-	E_to_k2 = 0.482596406464	# calculated with scipy, using the formula above
-
+	E_to_k2 = 2.*co.neutron_mass/co.hbar**2. * co.elementary_charge/1000. * 1e-20
 	return (ki**2. - kf**2.) / E_to_k2
 
 
+#
+# load an instrument data file
+#
 def load_data(datfile):
 	#print("Loading \"%s\"." % (datfile))
 	dat = instr.FileInstrBaseD.LoadInstr(datfile)
@@ -64,10 +68,23 @@ def load_data(datfile):
 	#print()
 
 
+#
+# load all instrument data files in a directory
+#
 def load_all(dir):
 	for datfile in os.listdir(dir):
 		load_data(dir + "/" + datfile)
 
 
-print("#          h            k            l            E            S        S_err")
-load_all("/users/tw/tmp/mvo_phonon")
+def main(argv):
+	if len(argv) < 2:
+		print("No scan directory given.")
+		exit(-1)
+
+	print("#          h            k            l            E            S        S_err")
+	load_all(argv[1])
+
+
+if __name__ == "__main__":
+	import sys
+	main(sys.argv)

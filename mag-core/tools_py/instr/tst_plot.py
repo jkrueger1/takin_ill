@@ -23,9 +23,10 @@
 # ----------------------------------------------------------------------------
 #
 
-import sys
 import math
 import instr
+import numpy
+import scipy.constants as co
 
 
 #
@@ -40,14 +41,17 @@ def norm_counts_to_mon(y, dy, m, dm):
 	return [val, err]
 
 
+#
 # get energy transfer from ki and kf
+#
 def get_E(ki, kf):
-	#E_to_k2 = 2.*co.neutron_mass/hbar_in_meVs**2. / co.elementary_charge*1000. * 1e-20
-	E_to_k2 = 0.482596406464  # calculated with scipy, using the formula above
-
+	E_to_k2 = 2.*co.neutron_mass/co.hbar**2. * co.elementary_charge/1000. * 1e-20
 	return (ki**2. - kf**2.) / E_to_k2
 
 
+#
+# load an instrument data file
+#
 def load_data(datfile, mergefiles = []):
 	print("Loading \"%s\"." % (datfile))
 	dat = instr.FileInstrBaseD.LoadInstr(datfile)
@@ -82,8 +86,8 @@ def load_data(datfile, mergefiles = []):
 		Es.append(E)
 
 		counts = cntcol[point_idx]
-		counts_err = math.sqrt(counts)
 		mon = moncol[point_idx]
+		counts_err = math.sqrt(counts)
 		mon_err = math.sqrt(mon)
 
 		if counts == 0:
@@ -98,22 +102,35 @@ def load_data(datfile, mergefiles = []):
 	return (hs, ks, ls, Es, Is, Is_err)
 
 
+#
 # load scan files
-if len(sys.argv) < 2:
-	print("No scan file given.")
-	exit(-1)
+#
+def main(argv):
+	if len(argv) < 2:
+		print("No scan file given.")
+		exit(-1)
 
-scanfile = sys.argv[1]
-mergefiles = sys.argv[2:]
-[hs, ks, ls, Es, Is, Is_err] = load_data(scanfile, mergefiles)
+	scanfile = argv[1]
+	mergefiles = argv[2:]
+	[hs, ks, ls, Es, Is, Is_err] = load_data(scanfile, mergefiles)
+	h = numpy.mean(hs)
+	k = numpy.mean(ks)
+	l = numpy.mean(ls)
 
 
-# plot the scan data
-import matplotlib.pyplot as plt
+	# plot the scan data
+	import matplotlib.pyplot as plt
 
-plt.figure()
-plt.xlabel("E (meV)")
-plt.ylabel("S (a.u.)")
-plt.errorbar(Es, Is, Is_err, marker='o', capsize=4, ls="none")
-plt.tight_layout()
-plt.show()
+	plt.figure()
+	plt.title("Q = (%.2f %.2f %.2f)" % (h, k, l))
+	plt.xlabel("E (meV)")
+	plt.ylabel("S (a.u.)")
+	plt.errorbar(Es, Is, Is_err, marker="o", markersize=6, capsize=4, ls="none")
+	plt.tight_layout()
+	plt.show()
+	plt.close()
+
+
+if __name__ == "__main__":
+	import sys
+	main(sys.argv)
