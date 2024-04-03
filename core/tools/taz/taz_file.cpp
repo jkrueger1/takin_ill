@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -57,6 +57,7 @@ static int find_sg_from_combo(QComboBox* pCombo, const std::string& str)
 
 	return -1;
 }
+
 
 
 //--------------------------------------------------------------------------------
@@ -110,6 +111,7 @@ void TazDlg::New()
 }
 
 
+
 bool TazDlg::Load()
 {
 	QFileDialog::Option fileopt = QFileDialog::Option(0);
@@ -127,10 +129,12 @@ bool TazDlg::Load()
 }
 
 
+
 bool TazDlg::LoadFile(const QString& strFile)
 {
 	return Load(strFile.toStdString().c_str());
 }
+
 
 
 bool TazDlg::Load(const char* pcFile)
@@ -183,7 +187,7 @@ bool TazDlg::Load(const char* pcFile)
 	m_settings.setValue("main/last_dir", QString(strDir.c_str()));
 
 
-	bool bOk = 0;
+	bool bOk = false;
 	m_sceneReal.SetEmitChanges(false);
 	m_sceneReal.GetTasLayout()->SetReady(false);
 	m_sceneRecip.SetEmitChanges(false);
@@ -237,7 +241,7 @@ bool TazDlg::Load(const char* pcFile)
 			TasLayoutNode *pNode = m_sceneReal.GetTasLayout()->GetNodes()[iNodeReal];
 			std::string strNode = m_sceneReal.GetTasLayout()->GetNodeNames()[iNodeReal];
 
-			bool bOkX=0, bOkY=0;
+			bool bOkX = false, bOkY = false;
 			t_real dValX = xml.Query<t_real>(strXmlRoot + "real/" + strNode + "_x", 0., &bOkX);
 			t_real dValY = xml.Query<t_real>(strXmlRoot + "real/" + strNode + "_y", 0., &bOkY);
 
@@ -412,8 +416,12 @@ bool TazDlg::Load(const char* pcFile)
 	recent.FillMenu(m_pMenuRecent, [this](const std::string& str){ LoadFile(str.c_str()); });
 
 
-
 	m_bReady = true;
+
+	UpdateDs();
+	UpdateMonoSense();
+	UpdateAnaSense();
+	UpdateSampleSense();
 
 	m_sceneReal.GetTasLayout()->SetReady(true);
 	m_sceneReal.SetEmitChanges(true);
@@ -433,6 +441,7 @@ bool TazDlg::Load(const char* pcFile)
 
 	return true;
 }
+
 
 
 bool TazDlg::Save()
@@ -591,6 +600,7 @@ bool TazDlg::Save()
 
 	return true;
 }
+
 
 
 bool TazDlg::SaveAs()
@@ -829,10 +839,12 @@ bool TazDlg::ImportCIF()
 }
 
 
+
 bool TazDlg::ImportCIFFile(const QString& strFile)
 {
 	return ImportCIF(strFile.toStdString().c_str());
 }
+
 
 
 static inline std::pair<std::string, std::string> get_ciftool_version()
@@ -851,6 +863,7 @@ static inline std::pair<std::string, std::string> get_ciftool_version()
 
 	return std::make_pair(strVer, cifbin);
 }
+
 
 
 bool TazDlg::ImportCIF(const char* pcFile)
@@ -892,7 +905,7 @@ bool TazDlg::ImportCIF(const char* pcFile)
 		using t_vec = ublas::vector<t_real>;
 		using t_mat = ublas::matrix<t_real>;
 
-		bool bOk = 0;
+		bool bOk = false;
 		t_real a = 5, b = 5, c = 5;
 		t_real alpha = M_PI/2, beta = M_PI/2, gamma = M_PI/2;
 		std::vector<std::string> vecAtomNames;
