@@ -1,5 +1,5 @@
 /**
- * interface for S(q,w) models
+ * interface for S(Q, E) models
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date 6-apr-2020
  * @license GPLv2

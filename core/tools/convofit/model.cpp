@@ -468,7 +468,7 @@ void SqwFuncModel::SetParamSet(std::size_t iSet)
 	{
 		m_iCurParamSet = iSet;
 
-		// set s(q,w) parameters from scan file
+		// set S(Q, E) parameters from scan file
 		const Scan& sc = m_pScans->operator[](m_iCurParamSet);
 		if(m_vecResos.size() > 1)
 			set_tasreso_params_from_scan(m_vecResos[m_iCurParamSet], sc);
@@ -477,7 +477,7 @@ void SqwFuncModel::SetParamSet(std::size_t iSet)
 		set_model_params_from_scan(*this, sc);
 
 
-		// set s(q,w) parameters from optional override
+		// set S(Q, E) parameters from optional override
 		std::ostringstream ostrParams;
 		if(m_vecSqwParams.size() > m_iCurParamSet)
 		{
@@ -500,7 +500,7 @@ void SqwFuncModel::SetParamSet(std::size_t iSet)
 				}
 				else
 				{
-					tl::log_err("Could not override S(q,w) model parameter named \"", vecModParam[0],
+					tl::log_err("Could not override S(Q, E) model parameter named \"", vecModParam[0],
 						"\" with value \"", vecModParam[1], "\" for scan group ", m_iCurParamSet, ".");
 				}
 			}

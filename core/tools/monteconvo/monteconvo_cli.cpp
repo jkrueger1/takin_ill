@@ -218,20 +218,20 @@ static std::shared_ptr<SqwBase> create_sqw_model(const std::string& strSqwIdent,
 
 	if(strSqwFile == "")
 	{
-		tl::log_warn("No S(q,w) config file given.");
+		tl::log_warn("No S(Q, E) config file given.");
 		return nullptr;
 	}
 
 	std::shared_ptr<SqwBase> pSqw = construct_sqw(strSqwIdent, strSqwFile);
 	if(!pSqw)
 	{
-		tl::log_err("Unknown S(q,w) model selected.");
+		tl::log_err("Unknown S(Q, E) model selected.");
 		return nullptr;
 	}
 
 	if(!pSqw->IsOk())
 	{
-		tl::log_err("Could not create S(q,w).");
+		tl::log_err("Could not create S(Q, E).");
 		return nullptr;
 	}
 
@@ -243,13 +243,20 @@ static std::shared_ptr<SqwBase> create_sqw_model(const std::string& strSqwIdent,
 /**
  * create 1d convolution
  */
-static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml)
+static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, const std::string& sqw_params)
 {
+	// load S(Q. E) model
 	std::shared_ptr<SqwBase> pSqw = create_sqw_model(cfg.sqw, cfg.sqw_conf);
 	if(!pSqw)
 		return false;
+
+	// load default model parameters from configuration
 	if(!load_sqw_params(pSqw.get(), xml, g_strXmlRoot + "monteconvo/"))
 		return false;
+
+	// override model parameters
+	pSqw->SetVars(sqw_params);
+
 
 	Filter filter;
 	if(cfg.filter_col != "")
@@ -431,7 +438,7 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml)
 			t_real dhklE_mean[4] = {0., 0., 0., 0.};
 
 			if(cfg.neutron_count == 0)
-			{	// if no neutrons are given, just plot the unconvoluted S(q,w)
+			{	// if no neutrons are given, just plot the unconvoluted S(Q, E)
 				// TODO: add an option to let the user choose if S(Q,E) is
 				// really the dynamical structure factor, or its absolute square
 				dS += (*pSqw)(dCurH, dCurK, dCurL, dCurE);
@@ -502,7 +509,7 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml)
 		if(tl::is_nan_or_inf(dS))
 		{
 			dS = t_real(0);
-			tl::log_warn("S(q,w) is invalid.");
+			tl::log_warn("S(Q, E) is invalid.");
 		}
 
 		ostrOut << std::left << std::setw(g_iPrec*2) << vecH[iStep] << " "
@@ -559,7 +566,7 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml)
 			ublas::vector<t_real> vecScanHKLE = tl::make_vec({ pt.h, pt.k, pt.l, E });
 
 
-			// find point on S(q,w) curve closest to scan point
+			// find point on S(Q, E) curve closest to scan point
 			std::size_t iMinIdx = 0;
 			t_real dMinDist = std::numeric_limits<t_real>::max();
 			for(std::size_t iStep=0; iStep<cfg.step_count; ++iStep)
@@ -605,13 +612,19 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml)
 /**
  * create 2d convolution
  */
-static bool start_convo_2d(const ConvoConfig& cfg, const tl::Prop<std::string>& xml)
+static bool start_convo_2d(const ConvoConfig& cfg, const tl::Prop<std::string>& xml, const std::string& sqw_params)
 {
+	// load S(Q, E) model
 	std::shared_ptr<SqwBase> pSqw = create_sqw_model(cfg.sqw, cfg.sqw_conf);
 	if(!pSqw)
 		return false;
+
+	// load default model parameters from configuration
 	if(!load_sqw_params(pSqw.get(), xml, g_strXmlRoot+"monteconvo/"))
 		return false;
+
+	// override model parameters
+	pSqw->SetVars(sqw_params);
 
 
 	std::string strAutosave = cfg.autosave;
@@ -791,7 +804,7 @@ static bool start_convo_2d(const ConvoConfig& cfg, const tl::Prop<std::string>& 
 			t_real dhklE_mean[4] = {0., 0., 0., 0.};
 
 			if(cfg.neutron_count == 0)
-			{	// if no neutrons are given, just plot the unconvoluted S(q,w)
+			{	// if no neutrons are given, just plot the unconvoluted S(Q, E)
 				// TODO: add an option to let the user choose if S(Q,E) is
 				// really the dynamical structure factor, or its absolute square
 				dS += (*pSqw)(dCurH, dCurK, dCurL, dCurE);
@@ -863,7 +876,7 @@ static bool start_convo_2d(const ConvoConfig& cfg, const tl::Prop<std::string>& 
 		if(tl::is_nan_or_inf(dS))
 		{
 			dS = t_real(0);
-			tl::log_warn("S(q,w) is invalid.");
+			tl::log_warn("S(Q, E) is invalid.");
 		}
 
 		ostrOut << std::left << std::setw(g_iPrec*2) << vecH[iStep] << " "
@@ -935,6 +948,9 @@ int monteconvo_main(int argc, char** argv)
 		// overrides for quickly changing input and output files
 		std::string scanfile_override, autosave_override;
 
+		// parameter overrides for sqw model
+		std::string sqw_params;
+
 		// normal args
 		opts::options_description args("monteconvo options (overriding config file settings)");
 		args.add(boost::shared_ptr<opts::option_description>(
@@ -953,6 +969,10 @@ int monteconvo_main(int argc, char** argv)
 			new opts::option_description("autosave-override",
 			opts::value<decltype(autosave_override)>(&autosave_override),
 			"autosave file override")));
+		args.add(boost::shared_ptr<opts::option_description>(
+			new opts::option_description("sqw-param-override",
+			opts::value<decltype(sqw_params)>(&sqw_params),
+			"override parameters for S(Q, E) model")));
 
 		// dummy arg if launched from takin executable
 		bool bStartedFromTakin = false;
@@ -1050,12 +1070,12 @@ int monteconvo_main(int argc, char** argv)
 		if(cfg.scan_2d)
 		{
 			tl::log_info("Performing a 2d convolution simulation.");
-			ok = start_convo_2d(cfg, xml);
+			ok = start_convo_2d(cfg, xml, sqw_params);
 		}
 		else
 		{
 			tl::log_info("Performing a 1d convolution simulation.");
-			ok = start_convo_1d(cfg, xml);
+			ok = start_convo_1d(cfg, xml, sqw_params);
 		}
 
 		if(!ok)

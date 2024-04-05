@@ -1,5 +1,5 @@
 /**
- * S(q,w) module for magnetic dynamics
+ * S(Q, E) module for magnetic dynamics
  * @author Tobias Weber <tweber@ill.fr>
  * @date jan-2022
  * @license GPLv2, see 'LICENSE' file

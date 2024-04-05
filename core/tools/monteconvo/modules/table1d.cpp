@@ -86,7 +86,7 @@ void SqwTable1d::CreateKd()
 		lstPoints.emplace_back(std::vector<t_real>{{ q, E, S }});
 	}
 
-	tl::log_info("Loaded ", m_dat->GetRowCount(), " S(q,w) points.");
+	tl::log_info("Loaded ", m_dat->GetRowCount(), " S(Q, E) points.");
 	tl::log_info("q range: ", minq, "..", maxq, ", E range: ", minE, "..", maxE, ".");
 
 	m_kd->Load(lstPoints, 2);

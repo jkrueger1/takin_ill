@@ -1,5 +1,5 @@
 /**
- * factory and plugin interface for S(q,w) models
+ * factory and plugin interface for S(Q, E) models
  * @author Tobias Weber <tweber@ill.fr>
  * @date 2016 -- 2020
  * @license GPLv2
@@ -218,11 +218,11 @@ std::shared_ptr<SqwBase> construct_sqw(const std::string& strName,
 		t_pfkt pFkt = std::get<0>(iter->second);
 		if(!pFkt)
 		{
-			tl::log_err("Invalid constructor function for S(q,w) model.");
+			tl::log_err("Invalid constructor function for S(Q, E) model.");
 			return nullptr;
 		}
 
-		tl::log_debug("Constructing \"", iter->first, "\" S(q,w) module.");
+		tl::log_debug("Constructing \"", iter->first, "\" S(Q, E) module.");
 		return (*pFkt)(strConfigFile);
 	}
 	else if(iterRaw != g_mapSqwRaw.end())
@@ -232,16 +232,16 @@ std::shared_ptr<SqwBase> construct_sqw(const std::string& strName,
 
 		if(!pFktNew || !pFktDel)
 		{
-			tl::log_err("Invalid constructor function for S(q,w) model.");
+			tl::log_err("Invalid constructor function for S(Q, E) model.");
 			return nullptr;
 		}
 
-		tl::log_debug("Constructing \"", iterRaw->first, "\" S(q,w) module via raw interface.");
+		tl::log_debug("Constructing \"", iterRaw->first, "\" S(Q, E) module via raw interface.");
 		return std::make_shared<SqwRawDelegate>(pFktNew(strConfigFile));
 	}
 	else if(iterExt != g_mapSqwExt.end())
 	{
-		tl::log_debug("Constructing \"", iterExt->first, "\" S(q,w) module via external interface.");
+		tl::log_debug("Constructing \"", iterExt->first, "\" S(Q, E) module via external interface.");
 
 		// number of spawned child processes
 		std::size_t iNumProcesses = get_max_processes();
@@ -251,7 +251,7 @@ std::shared_ptr<SqwBase> construct_sqw(const std::string& strName,
 			std::get<1>(iterExt->second).c_str(), iNumProcesses);
 	}
 
-	tl::log_err("No S(q,w) model of name \"", strName, "\" found.");
+	tl::log_err("No S(Q, E) model of name \"", strName, "\" found.");
 	return nullptr;
 }
 
@@ -344,13 +344,13 @@ void load_sqw_ext_plugins()
 
 			if(strTakVer == "")
 			{
-				tl::log_err("Skipping S(q,w) plugin \"", strPlugin,
+				tl::log_err("Skipping S(Q, E) plugin \"", strPlugin,
 					"\" as it is not responding.");
 				continue;
 			}
 			if(strTakVer != TAKIN_VER)
 			{
-				tl::log_err("Skipping external S(q,w) plugin \"", strPlugin,
+				tl::log_err("Skipping external S(Q, E) plugin \"", strPlugin,
 					"\" as it was compiled for Takin version ", strTakVer,
 					", but this is version ", TAKIN_VER, ".");
 				continue;
@@ -488,14 +488,14 @@ void load_sqw_plugins()
 					}
 					if(strTakVer == "")
 					{
-						tl::log_err("Skipping S(q,w) plugin \"", strPlugin,
+						tl::log_err("Skipping S(Q, E) plugin \"", strPlugin,
 							"\" as it is not responding.");
 						pmod->unload();
 						continue;
 					}
 					if(strTakVer != TAKIN_VER)
 					{
-						tl::log_err("Skipping S(q,w) plugin \"", strPlugin,
+						tl::log_err("Skipping S(Q, E) plugin \"", strPlugin,
 							"\" as it was compiled for Takin version ", strTakVer,
 							", but this is version ", TAKIN_VER, ".");
 						pmod->unload();

@@ -1,5 +1,5 @@
 /**
- * interface for S(q,w) models
+ * interface for S(Q, E) models
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date 2015, 2016
  * @license GPLv2
@@ -28,6 +28,34 @@
 
 #include "sqwbase.h"
 #include "tlibs/log/log.h"
+
+
+/**
+ * set or override S(Q, E) model parameters from a string
+ */
+void SqwBase::SetVars(const std::string& sqw_params)
+{
+	// set the given individual global model parameters
+	if(sqw_params == "")
+		return;
+
+	std::vector<std::string> vecSetParams;
+	tl::get_tokens<std::string, std::string>(sqw_params, ";", vecSetParams);
+	for(const std::string& strModParam : vecSetParams)
+	{
+		std::vector<std::string> vecModParam;
+		tl::get_tokens<std::string, std::string>(strModParam, "=", vecModParam);
+		if(vecModParam.size() < 2)
+				continue;
+		tl::trim(vecModParam[0]);
+		tl::trim(vecModParam[1]);
+
+		if(this->SetVarIfAvail(vecModParam[0], vecModParam[1]))
+			tl::log_info("Setting model parameter \"", vecModParam[0], "\" to \"", vecModParam[1], "\".");
+		else
+			tl::log_err("No parameter named \"", vecModParam[0], "\" available in S(Q, E) model.");
+	}
+}
 
 
 /**

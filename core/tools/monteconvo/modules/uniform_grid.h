@@ -1,5 +1,5 @@
 /**
- * S(q,w) module for a pre-calculated grid (file format version 2)
+ * S(Q, E) module for a pre-calculated grid (file format version 2)
  * @author Tobias Weber <tweber@ill.fr>
  * @date 06-jan-2020
  * @license GPLv2

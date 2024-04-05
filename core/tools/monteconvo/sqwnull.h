@@ -1,5 +1,5 @@
 /**
- * dummy S(q,w) model
+ * dummy S(Q, E) model
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date 8-apr-2020
  * @license GPLv2

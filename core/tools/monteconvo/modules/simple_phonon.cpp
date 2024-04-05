@@ -133,7 +133,7 @@ void SqwPhonon::create()
 		}
 	}
 
-	tl::log_info("Generated ", lst.size(), " S(q,w) points.");
+	tl::log_info("Generated ", lst.size(), " S(Q, E) points.");
 #ifdef USE_RTREE
 	m_rt->Load(lst);
 	tl::log_info("Generated R* tree.");

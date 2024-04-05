@@ -1,5 +1,5 @@
 /**
- * S(q,w) module example
+ * S(Q, E) module example
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date 2016
  * @license GPLv2

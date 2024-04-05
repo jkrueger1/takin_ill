@@ -52,7 +52,7 @@ static inline void set_tasreso_params_from_scan(TASReso& reso, const Scan& sc)
 
 
 /**
- * set s(q,w) model parameters from scan file
+ * set s(Q, E) model parameters from scan file
  */
 static inline void set_model_params_from_scan(SqwFuncModel& mod, const Scan& sc)
 {

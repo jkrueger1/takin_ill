@@ -286,7 +286,7 @@ bool Convofit::run_job(const std::string& _strJob)
 
 
 	// --------------------------------------------------------------------
-	// optional s(q,w) parameter overrides
+	// optional s(Q, E) parameter overrides
 	std::vector<std::string> vecSetParams;
 
 	// get secondary resolution files for multi-function fitting
@@ -300,7 +300,7 @@ bool Convofit::run_job(const std::string& _strJob)
 
 	if(vecSetParams.size()!=vecvecScFiles.size())
 	{
-		tl::log_err("Number of S(q,w) parameter overrides has to match the number of scan file groups.");
+		tl::log_err("Number of S(Q, E) parameter overrides has to match the number of scan file groups.");
 		tl::log_err("Number of scan file groups: ", vecvecScFiles.size(), ", number of parameter files: ", vecSetParams.size(), ".");
 		return 0;
 	}
@@ -581,18 +581,18 @@ bool Convofit::run_job(const std::string& _strJob)
 
 	// --------------------------------------------------------------------
 	// Model file
-	tl::log_info("Loading S(q,w) file \"", strSqwFile, "\".");
+	tl::log_info("Loading S(Q, E) file \"", strSqwFile, "\".");
 	std::shared_ptr<SqwBase> pSqw = construct_sqw(strSqwMod, strSqwFile);
 
 	if(!pSqw)
 	{
-		tl::log_err("Invalid S(q,w) model selected: \"", strSqwMod, "\".");
+		tl::log_err("Invalid S(Q, E) model selected: \"", strSqwMod, "\".");
 		return 0;
 	}
 
 	if(!pSqw->IsOk())
 	{
-		tl::log_err("S(q,w) model cannot be initialised.");
+		tl::log_err("S(Q, E) model cannot be initialised.");
 		return 0;
 	}
 	SqwFuncModel mod(pSqw, vecResos);
@@ -691,25 +691,7 @@ bool Convofit::run_job(const std::string& _strJob)
 
 
 	// set the given individual global model parameters
-	if(strSetParams != "")
-	{
-		std::vector<std::string> vecSetParams;
-		tl::get_tokens<std::string, std::string>(strSetParams, ";", vecSetParams);
-		for(const std::string& strModParam : vecSetParams)
-		{
-			std::vector<std::string> vecModParam;
-			tl::get_tokens<std::string, std::string>(strModParam, "=", vecModParam);
-			if(vecModParam.size() < 2)
-				continue;
-			tl::trim(vecModParam[0]);
-			tl::trim(vecModParam[1]);
-
-			if(mod.GetSqwBase()->SetVarIfAvail(vecModParam[0], vecModParam[1]))
-				tl::log_info("Setting model parameter \"", vecModParam[0], "\" to \"", vecModParam[1], "\".");
-			else
-				tl::log_err("No parameter named \"", vecModParam[0], "\" available in S(q,w) model.");
-		}
-	}
+	mod.GetSqwBase()->SetVars(strSetParams);
 	// --------------------------------------------------------------------
 
 
@@ -722,7 +704,7 @@ bool Convofit::run_job(const std::string& _strJob)
 		t_real dVal = vecFitValues[iParam];
 		t_real dErr = vecFitErrors[iParam];
 
-		// not a S(q,w) model parameter
+		// not a S(Q, E) model parameter
 		if(strParam=="scale" || strParam=="slope" || strParam=="offs")
 			continue;
 

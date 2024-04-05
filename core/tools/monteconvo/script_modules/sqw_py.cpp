@@ -1,5 +1,5 @@
 /**
- * S(Q,w) python interface
+ * S(Q, E) python interface
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date aug-2015
  * @license GPLv2
@@ -167,7 +167,7 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 {
 	if(!m_bOk)
 	{
-		tl::log_err("Interpreter has not initialised, cannot query S(q,w).");
+		tl::log_err("Interpreter has not initialised, cannot query S(Q, E).");
 		return std::make_tuple(std::vector<t_real>(), std::vector<t_real>());
 	}
 
@@ -222,7 +222,7 @@ t_real SqwPy::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 {
 	if(!m_bOk)
 	{
-		tl::log_err("Interpreter has not initialised, cannot query S(q,w).");
+		tl::log_err("Interpreter has not initialised, cannot query S(Q, E).");
 		return t_real(0);
 	}
 

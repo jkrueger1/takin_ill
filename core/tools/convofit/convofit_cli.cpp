@@ -89,7 +89,7 @@ int convofit_main(int argc, char** argv)
 			"keep the initial values from the model file"));
 		args.add(boost::make_shared<opts::option_description>(
 			"model-params", opts::value<decltype(g_strSetParams)>(&g_strSetParams),
-			"set S(q,w) model parameters"));
+			"set S(Q, E) model parameters"));
 		args.add(boost::make_shared<opts::option_description>(
 			"outfile-suffix", opts::value<decltype(g_strOutFileSuffix)>(&g_strOutFileSuffix),
 			"suffix to append to output files"));
@@ -107,7 +107,7 @@ int convofit_main(int argc, char** argv)
 			"maximum number of threads"));
 
 		// dummy arg if launched from takin executable
-		bool bStartedFromTakin = 0;
+		bool bStartedFromTakin = false;
 #ifndef CONVOFIT_STANDALONE
 		args.add(boost::make_shared<opts::option_description>(
 			"convofit", opts::bool_switch(&bStartedFromTakin),

@@ -1,5 +1,5 @@
 /**
- * S(Q,w) julia interface
+ * S(Q, E) julia interface
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date dec-2016
  * @license GPLv2
@@ -210,7 +210,7 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 {
 	if(!m_bOk)
 	{
-		tl::log_err("Julia interpreter has not initialised, cannot query S(q,w).");
+		tl::log_err("Julia interpreter has not initialised, cannot query S(Q, E).");
 		return std::make_tuple(std::vector<t_real>(), std::vector<t_real>());
 	}
 
@@ -259,7 +259,7 @@ t_real SqwJl::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 {
 	if(!m_bOk)
 	{
-		tl::log_err("Julia interpreter has not initialised, cannot query S(q,w).");
+		tl::log_err("Julia interpreter has not initialised, cannot query S(Q, E).");
 		return t_real(0);
 	}
 

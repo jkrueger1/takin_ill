@@ -1,5 +1,5 @@
 /**
- * S(q,w) module for magnon dynamics
+ * S(Q, E) module for magnon dynamics
  * @author Tobias Weber <tweber@ill.fr>
  * @date jan-2022
  * @license GPLv2, see 'LICENSE' file

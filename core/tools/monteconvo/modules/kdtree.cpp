@@ -83,7 +83,7 @@ bool SqwKdTree::open(const char* pcFile)
 		++iCurPoint;
 	}
 
-	tl::log_info("Loaded ",  iCurPoint, " S(q,w) points.");
+	tl::log_info("Loaded ",  iCurPoint, " S(Q, E) points.");
 	m_kd->Load(lstPoints, 4);
 	tl::log_info("Generated k-d tree.");
 

@@ -1,5 +1,5 @@
 /**
- * interface for S(q,w) models
+ * interface for S(Q, E) models
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date 2015, 2016
  * @license GPLv2
@@ -39,7 +39,7 @@
 
 
 /**
- * base class for S(q,w) models
+ * base class for S(Q, E) models
  */
 class SqwBase
 {
@@ -79,13 +79,14 @@ public:
 	virtual const std::vector<t_var_fit>& GetFitVars() const { return m_vecFit; }
 
 	// updates model variables
+	virtual void SetVars(const std::string& sqw_params);
 	virtual void SetVars(const std::vector<t_var>&) = 0;
 	virtual void SetFitVars(const std::vector<t_var_fit>&);
 
 	// this replaces the current fit variables with the given ones
 	virtual void InitFitVars(const std::vector<t_var_fit>&);
-
 	virtual bool SetVarIfAvail(const std::string& strKey, const std::string& strNewVal);
+
 	virtual bool SetErrIfAvail(const std::string& strKey, const std::string& strNewErr);
 	virtual bool SetRangeIfAvail(const std::string& strKey, const std::string& strNewRange);
 

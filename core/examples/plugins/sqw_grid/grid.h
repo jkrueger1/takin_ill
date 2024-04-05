@@ -1,5 +1,5 @@
 /**
- * S(q,w) module example for a pre-calculated grid
+ * S(Q, E) module example for a pre-calculated grid
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date 30-sep-2018
  * @license GPLv2
