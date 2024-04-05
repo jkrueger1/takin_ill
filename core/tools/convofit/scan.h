@@ -77,10 +77,10 @@ struct Scan
 	t_real_sc dKFix = 2.662;
 
 	std::string strTempCol = "TT";
-	t_real_sc dTemp = 100., dTempErr=0.;
+	t_real_sc dTemp = 100., dTempErr = 0.;
 
 	std::string strFieldCol = "";
-	t_real_sc dField = 0., dFieldErr=0.;
+	t_real_sc dField = 0., dFieldErr = 0.;
 
 	std::string strCntCol = "";
 	std::string strMonCol = "";

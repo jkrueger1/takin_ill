@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -71,10 +71,13 @@ static const std::string g_strXmlRoot("taz/");
 // configuration
 struct ConvoConfig
 {
-	t_real h_from{}, k_from{}, l_from{}, E_from{};
-	t_real h_to{}, k_to{}, l_to{}, E_to{};
-	t_real h_to_2{}, k_to_2{}, l_to_2{}, E_to_2{};
-	t_real kfix{};
+	t_real h_from{}, k_from{}, l_from{}, E_from{};  // manual scan positions
+	t_real h_to{}, k_to{}, l_to{}, E_to{};          //
+	t_real h_to_2{}, k_to_2{}, l_to_2{}, E_to_2{};  //
+
+	int fixedk{1};                   // 0: ki, 1: kf
+	t_real kfix{};                   // fixed k value
+
 	t_real tolerance{};
 	t_real S_scale{1}, S_slope{0}, S_offs{0};
 
@@ -88,9 +91,9 @@ struct ConvoConfig
 	bool flip_coords{false};
 	bool allow_scan_merging{false};
 	bool has_scanfile{false};
+	bool override_positions{true};   // use automatic scan positions from the scan file
 
 	ResoAlgo algo{ResoAlgo::POP};
-	int fixedk{1};
 	int mono_foc{1}, ana_foc{1};
 	int scanaxis{4}, scanaxis2{0};
 
@@ -141,12 +144,13 @@ static ConvoConfig load_config(const tl::Prop<std::string>& xml)
 
 	// bool values
 	boost::optional<int> obVal;
-	obVal = xml.QueryOpt<int>(g_strXmlRoot+"monteconvo/scan_2d"); if(obVal) cfg.scan_2d = *obVal != 0;
-	obVal = xml.QueryOpt<int>(g_strXmlRoot+"convofit/recycle_neutrons"); if(obVal) cfg.recycle_neutrons = *obVal != 0;
-	obVal = xml.QueryOpt<int>(g_strXmlRoot+"convofit/normalise"); if(obVal) cfg.normalise = *obVal != 0;
-	obVal = xml.QueryOpt<int>(g_strXmlRoot+"convofit/flip_coords"); if(obVal) cfg.flip_coords = *obVal != 0;
-	obVal = xml.QueryOpt<int>(g_strXmlRoot+"monteconvo/allow_scan_merging"); if(obVal) cfg.allow_scan_merging = *obVal != 0;
-	obVal = xml.QueryOpt<int>(g_strXmlRoot+"monteconvo/has_scanfile"); if(obVal) cfg.has_scanfile = *obVal != 0;
+	obVal = xml.QueryOpt<int>(g_strXmlRoot+"monteconvo/scan_2d"); if(obVal) cfg.scan_2d = (*obVal != 0);
+	obVal = xml.QueryOpt<int>(g_strXmlRoot+"convofit/recycle_neutrons"); if(obVal) cfg.recycle_neutrons = (*obVal != 0);
+	obVal = xml.QueryOpt<int>(g_strXmlRoot+"convofit/normalise"); if(obVal) cfg.normalise = (*obVal != 0);
+	obVal = xml.QueryOpt<int>(g_strXmlRoot+"convofit/flip_coords"); if(obVal) cfg.flip_coords = (*obVal != 0);
+	obVal = xml.QueryOpt<int>(g_strXmlRoot+"monteconvo/allow_scan_merging"); if(obVal) cfg.allow_scan_merging = (*obVal != 0);
+	obVal = xml.QueryOpt<int>(g_strXmlRoot+"monteconvo/has_scanfile"); if(obVal) cfg.has_scanfile = (*obVal != 0);
+	obVal = xml.QueryOpt<int>(g_strXmlRoot+"monteconvo/override_positions"); if(obVal) cfg.override_positions = (*obVal != 0);
 
 	// index values
 	boost::optional<int> oCmb;
@@ -239,7 +243,7 @@ static std::shared_ptr<SqwBase> create_sqw_model(const std::string& strSqwIdent,
 /**
  * create 1d convolution
  */
-static bool start_convo_1d(const ConvoConfig& cfg, const tl::Prop<std::string>& xml)
+static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml)
 {
 	std::shared_ptr<SqwBase> pSqw = create_sqw_model(cfg.sqw, cfg.sqw_conf);
 	if(!pSqw)
@@ -273,6 +277,29 @@ static bool start_convo_1d(const ConvoConfig& cfg, const tl::Prop<std::string>& 
 		{
 			tl::log_err("No points in scan(s) \"", cfg.scanfile, "\".");
 			return false;
+		}
+
+		if(cfg.override_positions)
+		{
+			// use scan start and end positions from scan file
+			cfg.h_from = scan.vecScanOrigin[0];
+			cfg.k_from = scan.vecScanOrigin[1];
+			cfg.l_from = scan.vecScanOrigin[2];
+			cfg.E_from = scan.vecScanOrigin[3];
+
+			cfg.h_to = scan.vecScanOrigin[0] + scan.vecScanDir[0];
+			cfg.k_to = scan.vecScanOrigin[1] + scan.vecScanDir[1];
+			cfg.l_to = scan.vecScanOrigin[2] + scan.vecScanDir[2];
+			cfg.E_to = scan.vecScanOrigin[3] + scan.vecScanDir[3];
+
+			cfg.kfix = scan.dKFix;
+			cfg.fixedk = scan.bKiFixed ? 0 : 1;
+
+			tl::log_info("Overriding scan path with values from scan file: (",
+				cfg.h_from, " ", cfg.k_from, ", ", cfg.l_from, ") rlu, ", cfg.E_from, " meV -> (",
+				cfg.h_to, " ", cfg.k_to, ", ", cfg.l_to, ") rlu, ", cfg.E_to, " meV.");
+
+			tl::log_info("Overriding fixed ", (cfg.fixedk == 0 ? "ki = " : "kf = "), cfg.kfix, " / A.");
 		}
 	}
 
@@ -338,7 +365,6 @@ static bool start_convo_1d(const ConvoConfig& cfg, const tl::Prop<std::string>& 
 	}
 	else	// use crystal config file
 	{
-		// -------------------------------------------------------------------------
 		// Load lattice
 		std::string _strLatticeFile = cfg.crys;
 		tl::trim(_strLatticeFile);
@@ -350,11 +376,10 @@ static bool start_convo_1d(const ConvoConfig& cfg, const tl::Prop<std::string>& 
 			tl::log_err("Could not load crystal file \"", strLatticeFile, "\".");
 			return false;
 		}
-		// -------------------------------------------------------------------------
 	}
 
 	reso.SetAlgo(cfg.algo);
-	reso.SetKiFix(cfg.fixedk==0);
+	reso.SetKiFix(cfg.fixedk == 0);
 	reso.SetKFix(cfg.kfix);
 	reso.SetOptimalFocus(get_reso_focus(cfg.mono_foc, cfg.ana_foc));
 
@@ -621,25 +646,25 @@ static bool start_convo_2d(const ConvoConfig& cfg, const tl::Prop<std::string>& 
 	// find axis labels and ranges
 	std::string strScanVar1 = "";
 	t_real dStart1{}, dStop1{};
-	if(cfg.scanaxis==1 || (cfg.scanaxis==0 && !tl::float_equal(cfg.h_from, cfg.h_to, EPS_RLU)))
+	if(cfg.scanaxis == 1 || (cfg.scanaxis == 0 && !tl::float_equal(cfg.h_from, cfg.h_to, EPS_RLU)))
 	{
 		strScanVar1 = "h (rlu)";
 		dStart1 = cfg.h_from;
 		dStop1 = cfg.h_to;
 	}
-	else if(cfg.scanaxis==2 || (cfg.scanaxis==0 && !tl::float_equal(cfg.k_from, cfg.k_to, EPS_RLU)))
+	else if(cfg.scanaxis == 2 || (cfg.scanaxis == 0 && !tl::float_equal(cfg.k_from, cfg.k_to, EPS_RLU)))
 	{
 		strScanVar1 = "k (rlu)";
 		dStart1 = cfg.k_from;
 		dStop1 = cfg.k_to;
 	}
-	else if(cfg.scanaxis==3 || (cfg.scanaxis==0 && !tl::float_equal(cfg.l_from, cfg.l_to, EPS_RLU)))
+	else if(cfg.scanaxis == 3 || (cfg.scanaxis == 0 && !tl::float_equal(cfg.l_from, cfg.l_to, EPS_RLU)))
 	{
 		strScanVar1 = "l (rlu)";
 		dStart1 = cfg.l_from;
 		dStop1 = cfg.l_to;
 	}
-	else if(cfg.scanaxis==4 || (cfg.scanaxis==0 && !tl::float_equal(cfg.E_from, cfg.E_to, EPS_RLU)))
+	else if(cfg.scanaxis == 4 || (cfg.scanaxis == 0 && !tl::float_equal(cfg.E_from, cfg.E_to, EPS_RLU)))
 	{
 		strScanVar1 = "E (meV)";
 		dStart1 = cfg.E_from;
@@ -648,25 +673,25 @@ static bool start_convo_2d(const ConvoConfig& cfg, const tl::Prop<std::string>& 
 
 	std::string strScanVar2 = "";
 	t_real dStart2{}, dStop2{};
-	if(cfg.scanaxis2==1 || (cfg.scanaxis2==0 && !tl::float_equal(cfg.h_from, cfg.h_to_2, EPS_RLU)))
+	if(cfg.scanaxis2 == 1 || (cfg.scanaxis2 == 0 && !tl::float_equal(cfg.h_from, cfg.h_to_2, EPS_RLU)))
 	{
 		strScanVar2 = "h (rlu)";
 		dStart2 = cfg.h_from;
 		dStop2 = cfg.h_to_2;
 	}
-	else if(cfg.scanaxis2==2 || (cfg.scanaxis2==0 && !tl::float_equal(cfg.k_from, cfg.k_to_2, EPS_RLU)))
+	else if(cfg.scanaxis2 == 2 || (cfg.scanaxis2 == 0 && !tl::float_equal(cfg.k_from, cfg.k_to_2, EPS_RLU)))
 	{
 		strScanVar2 = "k (rlu)";
 		dStart2 = cfg.k_from;
 		dStop2 = cfg.k_to_2;
 	}
-	else if(cfg.scanaxis2==3 || (cfg.scanaxis2==0 && !tl::float_equal(cfg.l_from, cfg.l_to_2, EPS_RLU)))
+	else if(cfg.scanaxis2 == 3 || (cfg.scanaxis2 == 0 && !tl::float_equal(cfg.l_from, cfg.l_to_2, EPS_RLU)))
 	{
 		strScanVar2 = "l (rlu)";
 		dStart2 = cfg.l_from;
 		dStop2 = cfg.l_to_2;
 	}
-	else if(cfg.scanaxis2==4 || (cfg.scanaxis2==0 && !tl::float_equal(cfg.E_from, cfg.E_to_2, EPS_RLU)))
+	else if(cfg.scanaxis2 == 4 || (cfg.scanaxis2 == 0 && !tl::float_equal(cfg.E_from, cfg.E_to_2, EPS_RLU)))
 	{
 		strScanVar2 = "E (meV)";
 		dStart2 = cfg.E_from;
@@ -709,7 +734,7 @@ static bool start_convo_2d(const ConvoConfig& cfg, const tl::Prop<std::string>& 
 
 
 	reso.SetAlgo(cfg.algo);
-	reso.SetKiFix(cfg.fixedk==0);
+	reso.SetKiFix(cfg.fixedk == 0);
 	reso.SetKFix(cfg.kfix);
 	reso.SetOptimalFocus(get_reso_focus(cfg.mono_foc, cfg.ana_foc));
 
@@ -894,7 +919,7 @@ int monteconvo_main(int argc, char** argv)
 #ifdef MONTECONVO_STANDALONE	// only show copyright banner if not already displayed from Takin main program
 		tl::log_info("--------------------------------------------------------------------------------");
 		tl::log_info("This is the Takin command-line convolution simulator (monteconvo), version " TAKIN_VER ".");
-		tl::log_info("Written by Tobias Weber <tweber@ill.fr>, 2014 - 2021.");
+		tl::log_info("Written by Tobias Weber <tweber@ill.fr>, 2014 - 2024.");
 		tl::log_info(TAKIN_LICENSE("Takin/Monteconvo"));
 		tl::log_debug("Resolution calculation uses ", sizeof(t_real_reso)*8, " bit ", tl::get_typename<t_real_reso>(), "s.");
 		tl::log_info("--------------------------------------------------------------------------------");
@@ -907,8 +932,11 @@ int monteconvo_main(int argc, char** argv)
 		// get job files and program options
 		std::vector<std::string> vecJobs;
 
+		// overrides for quickly changing input and output files
+		std::string scanfile_override, autosave_override;
+
 		// normal args
-        opts::options_description args("monteconvo options (overriding config file settings)");
+		opts::options_description args("monteconvo options (overriding config file settings)");
 		args.add(boost::shared_ptr<opts::option_description>(
 			new opts::option_description("job-file",
 			opts::value<decltype(vecJobs)>(&vecJobs),
@@ -917,13 +945,22 @@ int monteconvo_main(int argc, char** argv)
 			new opts::option_description("max-threads",
 			opts::value<decltype(g_iMaxThreads)>(&g_iMaxThreads),
 			"maximum number of threads")));
+		args.add(boost::shared_ptr<opts::option_description>(
+			new opts::option_description("scanfile-override",
+			opts::value<decltype(scanfile_override)>(&scanfile_override),
+			"scan file override")));
+		args.add(boost::shared_ptr<opts::option_description>(
+			new opts::option_description("autosave-override",
+			opts::value<decltype(autosave_override)>(&autosave_override),
+			"autosave file override")));
+
 		// dummy arg if launched from takin executable
 		bool bStartedFromTakin = false;
 #ifndef MONTECONVO_STANDALONE
 		args.add(boost::shared_ptr<opts::option_description>(
 			new opts::option_description("convosim",
 			opts::bool_switch(&bStartedFromTakin),
-			"launch convofit from takin")));
+			"launch monteconvo from takin")));
 #endif
 
 
@@ -941,9 +978,9 @@ int monteconvo_main(int argc, char** argv)
 		opts::notify(opts_map);
 
 
-		int args_to_ignore = 1;	// started with "monteconvo-cli"
+		int args_to_ignore = 1;    // started with "monteconvo-cli"
 		if(bStartedFromTakin)
-			++args_to_ignore;	// started with "takin --monteconvo-cli"
+			++args_to_ignore;  // started with "takin --monteconvo-cli"
 
 		if(argc <= args_to_ignore)
 		{
@@ -989,8 +1026,19 @@ int monteconvo_main(int argc, char** argv)
 			return -1;
 		}
 
-
 		ConvoConfig cfg = load_config(xml);
+
+		if(scanfile_override != "")
+		{
+			cfg.scanfile = scanfile_override;
+			tl::log_info("Overriding scan input file with \"", cfg.scanfile, "\".");
+		}
+
+		if(autosave_override != "")
+		{
+			cfg.autosave = autosave_override;
+			tl::log_info("Overriding autosave output file with \"", cfg.autosave, "\".");
+		}
 		// --------------------------------------------------------------------
 
 
@@ -1022,7 +1070,7 @@ int monteconvo_main(int argc, char** argv)
 		tl::log_info("================================================================================");
 
 		return ok ? 0 : -1;
-    }
+	}
 	catch(const std::exception& ex)
 	{
 		tl::log_crit(ex.what());
