@@ -247,7 +247,7 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 		m_vecScaledS.reserve(iNumSteps);
 
 		unsigned int iNumThreads = bForceDeferred ? 0 : get_max_threads();
-		tl::log_debug("Calculating using ", iNumThreads, " threads.");
+		tl::log_debug("Calculating using ", iNumThreads, (iNumThreads == 1 ? " thread." : " threads."));
 
 		// function to be called before each thread
 		auto th_start_func = [seed, bRecycleNeutrons, bForceDeferred]
@@ -773,7 +773,7 @@ void ConvoDlg::Start2D()
 		}
 
 		unsigned int iNumThreads = bForceDeferred ? 0 : get_max_threads();
-		tl::log_debug("Calculating using ", iNumThreads, " threads.");
+		tl::log_debug("Calculating using ", iNumThreads, (iNumThreads == 1 ? " thread." : " threads."));
 
 		void (*pThStartFunc)() = []{ tl::init_rand(); };
 		tl::ThreadPool<std::pair<bool, t_real>()> tp(iNumThreads, pThStartFunc);
@@ -1056,7 +1056,7 @@ void ConvoDlg::StartDisp()
 		m_vecvecW.clear();
 
 		unsigned int iNumThreads = bForceDeferred ? 0 : get_max_threads();
-		tl::log_debug("Calculating using ", iNumThreads, " threads.");
+		tl::log_debug("Calculating using ", iNumThreads, (iNumThreads == 1 ? " thread." : " threads."));
 
 		tl::ThreadPool<std::tuple<bool, std::vector<t_real>, std::vector<t_real>>()>
 			tp(iNumThreads);

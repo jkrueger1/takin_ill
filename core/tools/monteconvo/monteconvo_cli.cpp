@@ -418,7 +418,7 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 	vecScaledS.reserve(cfg.step_count);
 
 	unsigned int iNumThreads = get_max_threads();
-	tl::log_debug("Calculating using ", iNumThreads, " threads.");
+	tl::log_debug("Calculating using ", iNumThreads, (iNumThreads == 1 ? " thread." : " threads."));
 
 	void (*pThStartFunc)() = []{ tl::init_rand(); };
 	tl::ThreadPool<std::pair<bool, t_real>()> tp(iNumThreads, pThStartFunc);
@@ -783,7 +783,7 @@ static bool start_convo_2d(const ConvoConfig& cfg, const tl::Prop<std::string>& 
 	}
 
 	unsigned int iNumThreads = get_max_threads();
-	tl::log_debug("Calculating using ", iNumThreads, " threads.");
+	tl::log_debug("Calculating using ", iNumThreads, (iNumThreads == 1 ? " thread." : " threads."));
 
 	void (*pThStartFunc)() = []{ tl::init_rand(); };
 	tl::ThreadPool<std::pair<bool, t_real>()> tp(iNumThreads, pThStartFunc);
