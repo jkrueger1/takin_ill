@@ -88,9 +88,8 @@ class Convofit
 	public:
 		using t_sigInitPlotter = sig::signal<void*(const std::string&)>;
 		using t_sigDeinitPlotter = sig::signal<void(void*&)>;
-		using t_sigPlot = sig::signal<void(void*, const char*, const char*,
-			const tl::PlotObj<t_real_reso>&, const tl::PlotObj<t_real_reso>&,
-			bool)>;
+		using t_sigPlot = sig::signal<void(void*, const char*, const char*, const char*,
+			const tl::PlotObj<t_real_reso>&, const tl::PlotObj<t_real_reso>&, bool)>;
 
 	protected:
 		// user-supplied plotter

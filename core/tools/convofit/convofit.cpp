@@ -55,6 +55,7 @@ using t_real = t_real_reso;
 #define DEFAULT_TERM "x11 noraise"
 //#define DEFAULT_TERM "qt noraise"
 
+
 static void* init_convofit_plot(const std::string& strTerm)
 {
 	tl::GnuPlot<t_real> *pPlt = new tl::GnuPlot<t_real>();
@@ -64,6 +65,7 @@ static void* init_convofit_plot(const std::string& strTerm)
 	pPlt->SetTerminal(0, strTerm.c_str());
 	return pPlt;
 }
+
 
 static void deinit_convofit_plot(void *&_pPlt)
 {
@@ -75,18 +77,25 @@ static void deinit_convofit_plot(void *&_pPlt)
 	}
 }
 
-static void convofit_plot(void* _pPlt, const char* pcX, const char* pcY,
-	const tl::PlotObj<t_real>& pltMeas, const tl::PlotObj<t_real>& pltMod,
-	bool bIsFinal)
-{
-	if(!_pPlt) return;
-	tl::GnuPlot<t_real> *pPlt = reinterpret_cast<tl::GnuPlot<t_real>*>(_pPlt);
 
+static void convofit_plot(void* _pPlt, const char* pcX, const char* pcY, const char *pcTitle,
+	const tl::PlotObj<t_real>& pltMeas, const tl::PlotObj<t_real>& pltMod, bool bIsFinal)
+{
+	if(!_pPlt)
+		return;
+	tl::GnuPlot<t_real> *pPlt = reinterpret_cast<tl::GnuPlot<t_real>*>(_pPlt);
 	pPlt->StartPlot();
-	pPlt->SetXLabel(pcX);
-	pPlt->SetYLabel(pcY);
+
+	if(pcTitle)
+		pPlt->SetTitle(pcTitle);
+	if(pcX)
+		pPlt->SetXLabel(pcX);
+	if(pcY)
+		pPlt->SetYLabel(pcY);
+
 	pPlt->AddLine(pltMod);
 	pPlt->AddLine(pltMeas);
+
 	pPlt->FinishPlot();
 }
 
@@ -102,6 +111,7 @@ Convofit::Convofit(bool bUseDefaultPlotter)
 		addsig_plot(&::convofit_plot);
 	}
 }
+
 
 Convofit::~Convofit()
 {
@@ -168,7 +178,7 @@ bool Convofit::run_job(const std::string& _strJob)
 	if(!prop.Load(strJob.c_str(), tl::PropType::INFO))
 	{
 		tl::log_err("Cannot load job file \"", strJob, "\".");
-		return 0;
+		return false;
 	}
 
 	std::string strScFile = prop.Query<std::string>("input/scan_file");
@@ -280,7 +290,7 @@ bool Convofit::run_job(const std::string& _strJob)
 	{
 		tl::log_err("Number of resolution files has to be either one or match the number of scan file groups.");
 		tl::log_err("Number of scan file groups: ", vecvecScFiles.size(), ", number of resolution files: ", vecResFiles.size(), ".");
-		return 0;
+		return false;
 	}
 	// --------------------------------------------------------------------
 
@@ -302,7 +312,7 @@ bool Convofit::run_job(const std::string& _strJob)
 	{
 		tl::log_err("Number of S(Q, E) parameter overrides has to match the number of scan file groups.");
 		tl::log_err("Number of scan file groups: ", vecvecScFiles.size(), ", number of parameter files: ", vecSetParams.size(), ".");
-		return 0;
+		return false;
 	}
 	// --------------------------------------------------------------------
 
@@ -373,7 +383,7 @@ bool Convofit::run_job(const std::string& _strJob)
 	if(strScOutFile=="" || strModOutFile=="")
 	{
 		tl::log_err("Not output files selected.");
-		return 0;
+		return false;
 	}
 
 
@@ -404,7 +414,7 @@ bool Convofit::run_job(const std::string& _strJob)
 		vecFitParams.size() != vecFitFixed.size())
 	{
 		tl::log_err("Fit parameter size mismatch.");
-		return 0;
+		return false;
 	}
 
 
@@ -500,7 +510,7 @@ bool Convofit::run_job(const std::string& _strJob)
 	if(!vecSc.size())
 	{
 		tl::log_err("No scans loaded.");
-		return 0;
+		return false;
 	}
 
 	tl::log_info("Number of scan groups: ", vecSc.size(), ".");
@@ -538,7 +548,7 @@ bool Convofit::run_job(const std::string& _strJob)
 		TASReso reso;
 		tl::log_info("Loading instrument resolution file \"", strCurResFile, "\" for scan group ", iGroup, ".");
 		if(!reso.LoadRes(strCurResFile.c_str()))
-			return 0;
+			return false;
 
 		if(strResAlgo == "pop")
 			reso.SetAlgo(ResoAlgo::POP);
@@ -553,7 +563,7 @@ bool Convofit::run_job(const std::string& _strJob)
 		else
 		{
 			tl::log_err("Invalid resolution algorithm selected: \"", strResAlgo, "\".");
-			return 0;
+			return false;
 		}
 
 		{
@@ -589,13 +599,13 @@ bool Convofit::run_job(const std::string& _strJob)
 	if(!pSqw)
 	{
 		tl::log_err("Invalid S(Q, E) model selected: \"", strSqwMod, "\".");
-		return 0;
+		return false;
 	}
 
 	if(!pSqw->IsOk())
 	{
 		tl::log_err("S(Q, E) model cannot be initialised.");
-		return 0;
+		return false;
 	}
 	SqwFuncModel mod(pSqw, vecResos);
 	mod.SetSqwParamOverrides(vecSetParams);
@@ -636,7 +646,11 @@ bool Convofit::run_job(const std::string& _strJob)
 			pltMod.odSize = 1.5;
 
 			if(scan_group < pltMeas.size())
-				m_sigPlot(this->m_pPlt, scan_axis.c_str(), "Intensity", pltMeas[scan_group], pltMod, 0);
+			{
+				std::string title = "Takin/Convofit, scan group #" + tl::var_to_str(scan_group);
+				m_sigPlot(this->m_pPlt, scan_axis.c_str(), "Intensity", title.c_str(),
+				pltMeas[scan_group], pltMod, false);
+			}
 		}
 	});
 
@@ -701,7 +715,7 @@ bool Convofit::run_job(const std::string& _strJob)
 
 
 	// --------------------------------------------------------------------
-	// Fitting
+	// fitting
 
 	// non-S(Q, E) model parameters to include in fitting
 	std::vector<std::string> vecNonSQEParms;
@@ -783,7 +797,7 @@ bool Convofit::run_job(const std::string& _strJob)
 	else
 	{
 		tl::log_err("Invalid minimiser selected: \"", strMinimiser, "\".");
-		return 0;
+		return false;
 	}
 
 	bool bValidFit = 0;
@@ -830,7 +844,7 @@ bool Convofit::run_job(const std::string& _strJob)
 
 
 	// --------------------------------------------------------------------
-	// Plotting
+	// final plotting of results
 	if(bPlot && vecSc.size() <= 1)
 	{
 		tl::DatFile<t_real, char> datMod;
@@ -843,12 +857,11 @@ bool Convofit::run_job(const std::string& _strJob)
 			pltMod.odSize = 1.5;
 
 			if(pltMeas.size())
-				m_sigPlot(m_pPlt, "", "Intensity", pltMeas[0], pltMod, 1);
+				m_sigPlot(m_pPlt, "", "Intensity", "Takin/Convofit result", pltMeas[0], pltMod, true);
 		}
 		else
 		{
-			tl::log_err("Cannot open model file \"",
-				strModOutFile, "\" for plotting.");
+			tl::log_err("Cannot open model file \"", strModOutFile, "\" for plotting.");
 		}
 	}
 	// --------------------------------------------------------------------
@@ -862,6 +875,7 @@ bool Convofit::run_job(const std::string& _strJob)
 	}
 
 
-	if(!bDoFit) return 1;
+	if(!bDoFit)
+		return true;
 	return bValidFit;
 }
