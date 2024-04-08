@@ -60,14 +60,16 @@ protected:
 	std::vector<TASReso> m_vecResos;
 	std::vector<std::string> m_vecSqwParams;
 	unsigned int m_iNumNeutrons = 1000;
-	bool m_bUseThreads = 1;
+	bool m_bUseThreads = true;
 
 	ublas::vector<t_real_mod> m_vecScanOrigin;	// hklE
 	ublas::vector<t_real_mod> m_vecScanDir;		// hklE
 	t_real_mod m_dPrincipalAxisMin, m_dPrincipalAxisMax;
 
+	// parameters that are not part of the S(Q, E) model
 	t_real_mod m_dScale = 1., m_dSlope = 0., m_dOffs = 0.;
 	t_real_mod m_dScaleErr = 0.1, m_dSlopeErr = 0., m_dOffsErr = 0.;
+	std::vector<std::string> m_nonSQEParamNames = { "scale", "slope", "offs" };
 
 	std::vector<std::string> m_vecModelParamNames;
 	std::vector<t_real_mod> m_vecModelParams;
@@ -81,6 +83,7 @@ protected:
 	std::size_t m_iCurParamSet = 0;
 	const std::vector<Scan>* m_pScans = nullptr;
 	// -------------------------------------------------------------------------
+
 
 protected:
 	// -------------------------------------------------------------------------
@@ -103,12 +106,16 @@ protected:
 	}
 	// -------------------------------------------------------------------------
 
+
 protected:
 	void SetModelParams();
 
 	bool SetTASPos(t_real_mod dX, TASReso& reso) const;
 	TASReso* GetTASReso();
 	const TASReso* GetTASReso() const;
+
+	std::size_t GetNonSQEParamIdx(const std::string& param) const;
+
 
 public:
 	SqwFuncModel(std::shared_ptr<SqwBase> pSqw, const TASReso& reso);
@@ -140,6 +147,11 @@ public:
 	// -------------------------------------------------------------------------
 
 
+	void SetNonSQEParams(const std::vector<std::string>& nonSQEParams);
+	void SetScale(t_real_mod scale) { m_dScale = scale; }
+	void SetSlope(t_real_mod slope) { m_dSlope = slope; }
+	void SetOffs(t_real_mod offs) { m_dOffs = offs; }
+
 	void SetOtherParamNames(std::string strTemp, std::string strField);
 	void SetOtherParams(t_real_mod dTemperature, t_real_mod dField);
 
@@ -168,7 +180,8 @@ public:
 	void SetMinuitParams(const minuit::MnUserParameterState& state)
 	{ SetMinuitParams(state.Parameters()); }
 
-	bool Save(const char *pcFile, std::size_t iPts=256, std::size_t iSkipBegin=0, std::size_t iSkipEnd=0) const;
+	bool Save(const char *pcFile, std::size_t iPts = 256,
+		std::size_t iSkipBegin = 0, std::size_t iSkipEnd = 0) const;
 
 	SqwBase* GetSqwBase() { return m_pSqw.get(); }
 };

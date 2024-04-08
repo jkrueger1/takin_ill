@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -148,19 +148,25 @@ SqwFuncModel* SqwFuncModel::copy() const
 	pMod->m_vecScanDir = this->m_vecScanDir;
 	pMod->m_dPrincipalAxisMin = this->m_dPrincipalAxisMin;
 	pMod->m_dPrincipalAxisMax = this->m_dPrincipalAxisMax;
+
 	pMod->m_iNumNeutrons = this->m_iNumNeutrons;
 	pMod->m_bUseThreads = this->m_bUseThreads;
+
 	pMod->m_dScale = this->m_dScale;
 	pMod->m_dSlope = this->m_dSlope;
 	pMod->m_dOffs = this->m_dOffs;
 	pMod->m_dScaleErr = this->m_dScaleErr;
 	pMod->m_dSlopeErr = this->m_dSlopeErr;
 	pMod->m_dOffsErr = this->m_dOffsErr;
+	pMod->m_nonSQEParamNames = this->m_nonSQEParamNames;
+
 	pMod->m_vecModelParamNames = this->m_vecModelParamNames;
 	pMod->m_vecModelParams = this->m_vecModelParams;
 	pMod->m_vecModelErrs = this->m_vecModelErrs;
+
 	pMod->m_strTempParamName = this->m_strTempParamName;
 	pMod->m_strFieldParamName = this->m_strFieldParamName;
+
 	pMod->m_iCurParamSet = this->m_iCurParamSet;
 	pMod->m_pScans = this->m_pScans;
 	pMod->m_psigFuncResult = this->m_psigFuncResult;
@@ -168,6 +174,12 @@ SqwFuncModel* SqwFuncModel::copy() const
 	pMod->m_vecSqwParams = this->m_vecSqwParams;
 
 	return pMod;
+}
+
+
+void SqwFuncModel::SetNonSQEParams(const std::vector<std::string>& nonSQEParams)
+{
+	m_nonSQEParamNames = nonSQEParams;
 }
 
 
@@ -182,9 +194,9 @@ void SqwFuncModel::SetOtherParams(t_real dTemperature, t_real dField)
 {
 	std::vector<SqwBase::t_var> vecVars;
 	if(m_strTempParamName != "")
-		vecVars.push_back(std::make_tuple(m_strTempParamName, "double", tl::var_to_str(dTemperature)));
+		vecVars.push_back(std::make_tuple(m_strTempParamName, "double", tl::var_to_str(dTemperature, NUM_PREC)));
 	if(m_strFieldParamName != "")
-		vecVars.push_back(std::make_tuple(m_strFieldParamName, "double", tl::var_to_str(dField)));
+		vecVars.push_back(std::make_tuple(m_strFieldParamName, "double", tl::var_to_str(dField, NUM_PREC)));
 	m_pSqw->SetVars(vecVars);
 }
 
@@ -197,7 +209,7 @@ void SqwFuncModel::SetModelParams()
 
 	for(std::size_t iParam=0; iParam<iNumParams; ++iParam)
 	{
-		std::string strVal = tl::var_to_str(m_vecModelParams[iParam]);
+		std::string strVal = tl::var_to_str(m_vecModelParams[iParam], NUM_PREC);
 		SqwBase::t_var var = std::make_tuple(m_vecModelParamNames[iParam], "double", strVal);
 		vecVars.push_back(var);
 	}
@@ -206,13 +218,35 @@ void SqwFuncModel::SetModelParams()
 }
 
 
+std::size_t SqwFuncModel::GetNonSQEParamIdx(const std::string& param) const
+{
+	for(std::size_t i = 0; i < m_nonSQEParamNames.size(); ++i)
+		if(m_nonSQEParamNames[i] == param)
+			return i;
+
+	// not found
+	return m_nonSQEParamNames.size();
+}
+
+
 bool SqwFuncModel::SetParams(const std::vector<tl::t_real_min>& vecParams)
 {
 	// --------------------------------------------------------------------
 	// prints changed model parameters
+	std::vector<t_real> vecOldParams;
 
-	// fixed parameters
-	std::vector<t_real> vecOldParams = { m_dScale, m_dSlope, m_dOffs };
+	// add parameters that are not part of the S(Q, E) model
+	for(const std::string& param_name : m_nonSQEParamNames)
+	{
+		if(param_name == "scale")
+			vecOldParams.push_back(m_dScale);
+		else if(param_name == "slope")
+			vecOldParams.push_back(m_dSlope);
+		else if(param_name == "offs")
+			vecOldParams.push_back(m_dOffs);
+	}
+
+	// add S(Q, E) model parameters
 	vecOldParams.insert(vecOldParams.end(), m_vecModelParams.begin(), m_vecModelParams.end());
 
 	std::vector<std::string> vecParamNames = GetParamNames();
@@ -234,9 +268,9 @@ bool SqwFuncModel::SetParams(const std::vector<tl::t_real_min>& vecParams)
 				bool bChanged = !tl::float_equal(dVal, dOldParam);
 				std::string strRet = strParam +
 					std::string(" = ") +
-					tl::var_to_str(dVal);
+					tl::var_to_str(dVal, NUM_PREC);
 				if(bChanged)
-					strRet += " (old: " + tl::var_to_str(dOldParam) + ")";
+					strRet += " (old: " + tl::var_to_str(dOldParam, NUM_PREC) + ")";
 				return strRet;
 			});
 
@@ -249,19 +283,26 @@ bool SqwFuncModel::SetParams(const std::vector<tl::t_real_min>& vecParams)
 	}
 	// --------------------------------------------------------------------
 
-	if(vecParams.size() < 3)
+	if(vecParams.size() < m_nonSQEParamNames.size())
 	{
-		tl::log_err("Invalid size of model parameters. Has to have at least three parameters: scale, slope, offset.");
+		tl::log_err("Invalid size of model parameters. Has to have at least three parameters: scale, slope, offs.");
 		return false;
 	}
 
-	// fixed parameters
-	m_dScale = t_real(vecParams[0]);
-	m_dSlope = t_real(vecParams[1]);
-	m_dOffs = t_real(vecParams[2]);
+	// parameters that are not part of the S(Q, E) model
+	std::size_t idxScale = GetNonSQEParamIdx("scale");
+	std::size_t idxSlope = GetNonSQEParamIdx("slope");
+	std::size_t idxOffs = GetNonSQEParamIdx("offs");
 
-	for(std::size_t iParam = 3; iParam < vecParams.size(); ++iParam)
-		m_vecModelParams[iParam - 3] = t_real(vecParams[iParam]);
+	if(idxScale < m_nonSQEParamNames.size())
+		m_dScale = t_real(vecParams[idxScale]);
+	if(idxSlope < m_nonSQEParamNames.size())
+		m_dSlope = t_real(vecParams[idxSlope]);
+	if(idxOffs < m_nonSQEParamNames.size())
+		m_dOffs = t_real(vecParams[idxOffs]);
+
+	for(std::size_t iParam = m_nonSQEParamNames.size(); iParam < vecParams.size(); ++iParam)
+		m_vecModelParams[iParam - m_nonSQEParamNames.size()] = t_real(vecParams[iParam]);
 
 	SetModelParams();
 	return true;
@@ -270,19 +311,26 @@ bool SqwFuncModel::SetParams(const std::vector<tl::t_real_min>& vecParams)
 
 bool SqwFuncModel::SetErrs(const std::vector<tl::t_real_min>& vecErrs)
 {
-	if(vecErrs.size() < 3)
+	if(vecErrs.size() < m_nonSQEParamNames.size())
 	{
-		tl::log_err("Invalid size of model parameter errors. Has to have at least three parameters: scale, slope, offset.");
+		tl::log_err("Invalid size of model parameter errors. Has to have at least three parameters: scale, slope, offs.");
 		return false;
 	}
 
-	// fixed parameters
-	m_dScaleErr = t_real(vecErrs[0]);
-	m_dSlopeErr = t_real(vecErrs[1]);
-	m_dOffsErr = t_real(vecErrs[2]);
+	// parameters that are not part of the S(Q, E) model
+	std::size_t idxScale = GetNonSQEParamIdx("scale");
+	std::size_t idxSlope = GetNonSQEParamIdx("slope");
+	std::size_t idxOffs = GetNonSQEParamIdx("offs");
 
-	for(std::size_t iParam=3; iParam<vecErrs.size(); ++iParam)
-		m_vecModelErrs[iParam-3] = t_real(vecErrs[iParam]);
+	if(idxScale < m_nonSQEParamNames.size())
+		m_dScaleErr = t_real(vecErrs[idxScale]);
+	if(idxSlope < m_nonSQEParamNames.size())
+		m_dSlopeErr = t_real(vecErrs[idxSlope]);
+	if(idxOffs < m_nonSQEParamNames.size())
+		m_dOffsErr = t_real(vecErrs[idxOffs]);
+
+	for(std::size_t iParam = m_nonSQEParamNames.size(); iParam<vecErrs.size(); ++iParam)
+		m_vecModelErrs[iParam - m_nonSQEParamNames.size()] = t_real(vecErrs[iParam]);
 
 	//SetModelParams();
 	return true;
@@ -291,8 +339,8 @@ bool SqwFuncModel::SetErrs(const std::vector<tl::t_real_min>& vecErrs)
 
 std::vector<std::string> SqwFuncModel::GetParamNames() const
 {
-	// fixed parameters
-	std::vector<std::string> vecNames = { "scale", "slope", "offs" };
+	// parameters that are not part of the S(Q, E) model
+	std::vector<std::string> vecNames = m_nonSQEParamNames;
 
 	for(const std::string& str : m_vecModelParamNames)
 		vecNames.push_back(str);
@@ -303,9 +351,20 @@ std::vector<std::string> SqwFuncModel::GetParamNames() const
 
 std::vector<tl::t_real_min> SqwFuncModel::GetParamValues() const
 {
-	// fixed parameters
-	std::vector<tl::t_real_min> vecVals = { m_dScale, m_dSlope, m_dOffs };
+	std::vector<tl::t_real_min> vecVals;
 
+	// add parameters that are not part of the S(Q, E) model
+	for(const std::string& param_name : m_nonSQEParamNames)
+	{
+		if(param_name == "scale")
+			vecVals.push_back(m_dScale);
+		else if(param_name == "slope")
+			vecVals.push_back(m_dSlope);
+		else if(param_name == "offs")
+			vecVals.push_back(m_dOffs);
+	}
+
+	// add S(Q, E) model parameters
 	for(t_real d : m_vecModelParams)
 		vecVals.push_back(tl::t_real_min(d));
 
@@ -315,9 +374,20 @@ std::vector<tl::t_real_min> SqwFuncModel::GetParamValues() const
 
 std::vector<tl::t_real_min> SqwFuncModel::GetParamErrors() const
 {
-	// fixed parameters
-	std::vector<tl::t_real_min> vecErrs = { m_dScaleErr, m_dSlopeErr, m_dOffsErr };
+	std::vector<tl::t_real_min> vecErrs;
 
+	// add parameter errors that are not part of the S(Q, E) model
+	for(const std::string& param_name : m_nonSQEParamNames)
+	{
+		if(param_name == "scale")
+			vecErrs.push_back(m_dScaleErr);
+		else if(param_name == "slope")
+			vecErrs.push_back(m_dSlopeErr);
+		else if(param_name == "offs")
+			vecErrs.push_back(m_dOffsErr);
+	}
+
+	// add S(Q, E) model parameter errors
 	for(t_real d : m_vecModelErrs)
 		vecErrs.push_back(tl::t_real_min(d));
 
@@ -331,7 +401,7 @@ void SqwFuncModel::SetMinuitParams(const minuit::MnUserParameters& state)
 	std::vector<t_real> vecNewErrs;
 
 	const std::vector<std::string> vecNames = GetParamNames();
-	for(std::size_t iParam=0; iParam<vecNames.size(); ++iParam)
+	for(std::size_t iParam = 0; iParam < vecNames.size(); ++iParam)
 	{
 		const std::string& strName = vecNames[iParam];
 
@@ -351,10 +421,16 @@ minuit::MnUserParameters SqwFuncModel::GetMinuitParams() const
 {
 	minuit::MnUserParameters params;
 
-	// fixed parameters
-	params.Add("scale", m_dScale, m_dScaleErr);
-	params.Add("slope", m_dSlope, m_dSlopeErr);
-	params.Add("offs", m_dOffs, m_dOffsErr);
+	// parameters that are not part of the S(Q, E) model
+	for(const std::string& paramname : m_nonSQEParamNames)
+	{
+		if(paramname == "scale")
+			params.Add("scale", m_dScale, m_dScaleErr);
+		if(paramname == "slope")
+			params.Add("slope", m_dSlope, m_dSlopeErr);
+		if(paramname == "offs")
+			params.Add("offs", m_dOffs, m_dOffsErr);
+	}
 
 	for(std::size_t iParam = 0; iParam < m_vecModelParamNames.size(); ++iParam)
 	{
@@ -474,7 +550,7 @@ void SqwFuncModel::SetParamSet(std::size_t iSet)
 		return;
 	}
 
-	// fixed parameters
+	// parameters that are not part of the S(Q, E) model
 	static const std::unordered_set<std::string> ignored_parms{{ "scale", "slope", "offs" }};
 
 	if(m_iCurParamSet != iSet)
@@ -501,7 +577,7 @@ void SqwFuncModel::SetParamSet(std::size_t iSet)
 				m_pSqw->SetVars(m_vecSqwParams[m_iCurParamSet], false, &ignored_parms, &all_params);
 
 
-			// change fixed parameters
+			// change parameters that are not part of the S(Q, E) model
 			auto iter_scale = all_params.find("scale");
 			auto iter_slope = all_params.find("slope");
 			auto iter_offs = all_params.find("offs");
@@ -512,7 +588,7 @@ void SqwFuncModel::SetParamSet(std::size_t iSet)
 
 				if(strParams.length())
 					strParams += ", ";
-				strParams += "scale = " + tl::var_to_str(m_dScale);
+				strParams += "scale = " + tl::var_to_str(m_dScale, NUM_PREC);
 			}
 
 			if(iter_slope != all_params.end())
@@ -521,7 +597,7 @@ void SqwFuncModel::SetParamSet(std::size_t iSet)
 
 				if(strParams.length())
 					strParams += ", ";
-				strParams += "slope = " + tl::var_to_str(m_dSlope);
+				strParams += "slope = " + tl::var_to_str(m_dSlope, NUM_PREC);
 			}
 
 			if(iter_offs != all_params.end())
@@ -530,7 +606,7 @@ void SqwFuncModel::SetParamSet(std::size_t iSet)
 
 				if(strParams.length())
 					strParams += ", ";
-				strParams += "offs = " + tl::var_to_str(m_dOffs);
+				strParams += "offs = " + tl::var_to_str(m_dOffs, NUM_PREC);
 			}
 
 

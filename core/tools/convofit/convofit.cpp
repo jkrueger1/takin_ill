@@ -470,7 +470,7 @@ bool Convofit::run_job(const std::string& _strJob)
 	// --------------------------------------------------------------------
 	// Scan files
 	std::vector<Scan> vecSc;
-	for(std::size_t iSc=0; iSc<vecvecScFiles.size(); ++iSc)
+	for(std::size_t iSc = 0; iSc < vecvecScFiles.size(); ++iSc)
 	{
 		Scan sc;
 		if(strTempCol != "")
@@ -531,10 +531,12 @@ bool Convofit::run_job(const std::string& _strJob)
 	// --------------------------------------------------------------------
 	// resolution files
 	std::vector<TASReso> vecResos;
-	for(const std::string& strCurResFile : vecResFiles)
+	for(std::size_t iGroup = 0; iGroup < vecResFiles.size(); ++iGroup)
 	{
+		const std::string& strCurResFile = vecResFiles[iGroup];
+
 		TASReso reso;
-		tl::log_info("Loading instrument resolution file \"", strCurResFile, "\".");
+		tl::log_info("Loading instrument resolution file \"", strCurResFile, "\" for scan group ", iGroup, ".");
 		if(!reso.LoadRes(strCurResFile.c_str()))
 			return 0;
 
@@ -692,7 +694,6 @@ bool Convofit::run_job(const std::string& _strJob)
 	tl::log_info("Model temperature variable: \"", strTempVar, "\", value: ", vecSc[0].dTemp);
 	tl::log_info("Model field variable: \"", strFieldVar, "\", value: ", vecSc[0].dField);
 
-
 	// set the given individual global model parameters
 	mod.GetSqwBase()->SetVars(strSetParams);
 	// --------------------------------------------------------------------
@@ -701,23 +702,49 @@ bool Convofit::run_job(const std::string& _strJob)
 
 	// --------------------------------------------------------------------
 	// Fitting
+
+	// non-S(Q, E) model parameters to include in fitting
+	std::vector<std::string> vecNonSQEParms;
+
 	for(std::size_t iParam = 0; iParam < vecFitParams.size(); ++iParam)
 	{
 		const std::string& strParam = vecFitParams[iParam];
-		t_real dVal = vecFitValues[iParam];
-		t_real dErr = vecFitErrors[iParam];
+		const t_real dValue = vecFitValues[iParam];
 
-		// not a S(Q, E) model parameter
+		// only include "scale", "slope", or "offs" if they are not fixed
+		if(strParam == "scale")
+		{
+			mod.SetScale(dValue);
+			if(!vecFitFixed[iParam])
+				vecNonSQEParms.push_back("scale");
+		}
+		else if(strParam == "slope")
+		{
+			mod.SetSlope(dValue);
+			if(!vecFitFixed[iParam])
+				vecNonSQEParms.push_back("slope");
+		}
+		else if(strParam == "offs")
+		{
+			mod.SetOffs(dValue);
+			if(!vecFitFixed[iParam])
+				vecNonSQEParms.push_back("offs");
+		}
+
+		// ignore non-S(Q, E) model parameters
 		if(strParam == "scale" || strParam == "slope" || strParam == "offs")
 			continue;
 
-		mod.AddModelFitParams(strParam, dVal, dErr);
+		mod.AddModelFitParams(strParam, dValue, vecFitErrors[iParam]);
 	}
+
+	mod.SetNonSQEParams(vecNonSQEParms);
+
 
 	tl::Chi2Function_mult<t_real_sc, std::vector> chi2fkt;
 	// the vecSc[0] data sets are the default data set (will not be used if scan groups are defined)
 	chi2fkt.AddFunc(&mod, vecSc[0].vecX.size(), vecSc[0].vecX.data(), vecSc[0].vecCts.data(), vecSc[0].vecCtsErr.data());
-	chi2fkt.SetDebug(1);
+	chi2fkt.SetDebug(true);
 	chi2fkt.SetSigma(dSigma);
 
 
@@ -725,13 +752,22 @@ bool Convofit::run_job(const std::string& _strJob)
 	for(std::size_t iParam = 0; iParam < vecFitParams.size(); ++iParam)
 	{
 		const std::string& strParam = vecFitParams[iParam];
-		t_real dVal = vecFitValues[iParam];
-		t_real dErr = vecFitErrors[iParam];
-		bool bFix = vecFitFixed[iParam];
+
+		// ignore non-included parameters
+		if(strParam == "scale" && std::find(vecNonSQEParms.begin(), vecNonSQEParms.end(), strParam) == vecNonSQEParms.end())
+			continue;
+		else if(strParam == "slope" && std::find(vecNonSQEParms.begin(), vecNonSQEParms.end(), strParam) == vecNonSQEParms.end())
+			continue;
+		else if(strParam == "offs" && std::find(vecNonSQEParms.begin(), vecNonSQEParms.end(), strParam) == vecNonSQEParms.end())
+			continue;
+
+		const t_real dVal = vecFitValues[iParam];
+		const t_real dErr = vecFitErrors[iParam];
 
 		params.SetValue(strParam, dVal);
 		params.SetError(strParam, dErr);
-		if(bFix) params.Fix(strParam);
+		if(vecFitFixed[iParam])
+			params.Fix(strParam);
 	}
 	// set initials
 	mod.SetMinuitParams(params);
