@@ -38,6 +38,7 @@
 #include "../res/ellipse.h"
 #include "convofit.h"
 
+
 using t_real = t_real_mod;
 #define NUM_PREC 16
 
@@ -111,7 +112,6 @@ tl::t_real_min SqwFuncModel::operator()(tl::t_real_min x_principal) const
 
 	for(const ublas::vector<t_real_reso>& vecHKLE : vecNeutrons)
 	{
-		// TODO: add option to choose if the model is given as S(Q,E) or |S|^2
 		dS += t_real((*m_pSqw)(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]));
 
 		for(int i=0; i<4; ++i)
@@ -143,6 +143,7 @@ SqwFuncModel* SqwFuncModel::copy() const
 	// cannot rebuild kd tree in phonon model with only a shallow copy
 	SqwFuncModel* pMod = new SqwFuncModel(
 		std::shared_ptr<SqwBase>(m_pSqw->shallow_copy()), m_vecResos);
+
 	pMod->m_vecScanOrigin = this->m_vecScanOrigin;
 	pMod->m_vecScanDir = this->m_vecScanDir;
 	pMod->m_dPrincipalAxisMin = this->m_dPrincipalAxisMin;
@@ -209,11 +210,14 @@ bool SqwFuncModel::SetParams(const std::vector<tl::t_real_min>& vecParams)
 {
 	// --------------------------------------------------------------------
 	// prints changed model parameters
+
+	// fixed parameters
 	std::vector<t_real> vecOldParams = { m_dScale, m_dSlope, m_dOffs };
 	vecOldParams.insert(vecOldParams.end(), m_vecModelParams.begin(), m_vecModelParams.end());
+
 	std::vector<std::string> vecParamNames = GetParamNames();
 
-	if(vecOldParams.size()==vecParams.size() && vecParamNames.size()==vecParams.size())
+	if(vecOldParams.size() == vecParams.size() && vecParamNames.size() == vecParams.size())
 	{
 		std::ostringstream ostrDebug;
 		std::transform(vecParams.begin(), vecParams.end(), vecParamNames.begin(),
@@ -251,12 +255,13 @@ bool SqwFuncModel::SetParams(const std::vector<tl::t_real_min>& vecParams)
 		return false;
 	}
 
+	// fixed parameters
 	m_dScale = t_real(vecParams[0]);
 	m_dSlope = t_real(vecParams[1]);
 	m_dOffs = t_real(vecParams[2]);
 
-	for(std::size_t iParam=3; iParam<vecParams.size(); ++iParam)
-		m_vecModelParams[iParam-3] = t_real(vecParams[iParam]);
+	for(std::size_t iParam = 3; iParam < vecParams.size(); ++iParam)
+		m_vecModelParams[iParam - 3] = t_real(vecParams[iParam]);
 
 	SetModelParams();
 	return true;
@@ -271,6 +276,7 @@ bool SqwFuncModel::SetErrs(const std::vector<tl::t_real_min>& vecErrs)
 		return false;
 	}
 
+	// fixed parameters
 	m_dScaleErr = t_real(vecErrs[0]);
 	m_dSlopeErr = t_real(vecErrs[1]);
 	m_dOffsErr = t_real(vecErrs[2]);
@@ -285,7 +291,8 @@ bool SqwFuncModel::SetErrs(const std::vector<tl::t_real_min>& vecErrs)
 
 std::vector<std::string> SqwFuncModel::GetParamNames() const
 {
-	std::vector<std::string> vecNames = {"scale", "slope", "offs"};
+	// fixed parameters
+	std::vector<std::string> vecNames = { "scale", "slope", "offs" };
 
 	for(const std::string& str : m_vecModelParamNames)
 		vecNames.push_back(str);
@@ -296,7 +303,8 @@ std::vector<std::string> SqwFuncModel::GetParamNames() const
 
 std::vector<tl::t_real_min> SqwFuncModel::GetParamValues() const
 {
-	std::vector<tl::t_real_min> vecVals = {m_dScale, m_dSlope, m_dOffs};
+	// fixed parameters
+	std::vector<tl::t_real_min> vecVals = { m_dScale, m_dSlope, m_dOffs };
 
 	for(t_real d : m_vecModelParams)
 		vecVals.push_back(tl::t_real_min(d));
@@ -307,7 +315,8 @@ std::vector<tl::t_real_min> SqwFuncModel::GetParamValues() const
 
 std::vector<tl::t_real_min> SqwFuncModel::GetParamErrors() const
 {
-	std::vector<tl::t_real_min> vecErrs = {m_dScaleErr, m_dSlopeErr, m_dOffsErr};
+	// fixed parameters
+	std::vector<tl::t_real_min> vecErrs = { m_dScaleErr, m_dSlopeErr, m_dOffsErr };
 
 	for(t_real d : m_vecModelErrs)
 		vecErrs.push_back(tl::t_real_min(d));
@@ -342,11 +351,12 @@ minuit::MnUserParameters SqwFuncModel::GetMinuitParams() const
 {
 	minuit::MnUserParameters params;
 
+	// fixed parameters
 	params.Add("scale", m_dScale, m_dScaleErr);
 	params.Add("slope", m_dSlope, m_dSlopeErr);
 	params.Add("offs", m_dOffs, m_dOffsErr);
 
-	for(std::size_t iParam=0; iParam<m_vecModelParamNames.size(); ++iParam)
+	for(std::size_t iParam = 0; iParam < m_vecModelParamNames.size(); ++iParam)
 	{
 		const std::string& strParam = m_vecModelParamNames[iParam];
 		tl::t_real_min dHint = tl::t_real_min(m_vecModelParams[iParam]);
@@ -464,6 +474,9 @@ void SqwFuncModel::SetParamSet(std::size_t iSet)
 		return;
 	}
 
+	// fixed parameters
+	static const std::unordered_set<std::string> ignored_parms{{ "scale", "slope", "offs" }};
+
 	if(m_iCurParamSet != iSet)
 	{
 		m_iCurParamSet = iSet;
@@ -477,32 +490,54 @@ void SqwFuncModel::SetParamSet(std::size_t iSet)
 		set_model_params_from_scan(*this, sc);
 
 
-		// set S(Q, E) parameters from optional override
-		std::ostringstream ostrParams;
+		// set S(Q, E) parameters from optional overrides
+		std::string strParams;
 		if(m_vecSqwParams.size() > m_iCurParamSet)
 		{
-			std::vector<std::string> vecSetParams;
-			tl::get_tokens<std::string, std::string>(m_vecSqwParams[m_iCurParamSet], ";", vecSetParams);
-			for(const std::string& strModParam : vecSetParams)
-			{
-				std::vector<std::string> vecModParam;
-				tl::get_tokens<std::string, std::string>(strModParam, "=", vecModParam);
-				if(vecModParam.size() < 2)
-					continue;
-				tl::trim(vecModParam[0]);
-				tl::trim(vecModParam[1]);
+			bool params_ok = false;
+			std::unordered_map<std::string, std::string> all_params;
 
-				if(m_pSqw->SetVarIfAvail(vecModParam[0], vecModParam[1]))
-				{
-					if(ostrParams.str().length())
-						ostrParams << ", ";
-					ostrParams << vecModParam[0] << " = " << vecModParam[1];
-				}
-				else
-				{
-					tl::log_err("Could not override S(Q, E) model parameter named \"", vecModParam[0],
-						"\" with value \"", vecModParam[1], "\" for scan group ", m_iCurParamSet, ".");
-				}
+			std::tie(params_ok, strParams) =
+				m_pSqw->SetVars(m_vecSqwParams[m_iCurParamSet], false, &ignored_parms, &all_params);
+
+
+			// change fixed parameters
+			auto iter_scale = all_params.find("scale");
+			auto iter_slope = all_params.find("slope");
+			auto iter_offs = all_params.find("offs");
+
+			if(iter_scale != all_params.end())
+			{
+				m_dScale = tl::str_to_var<t_real>(iter_scale->second);
+
+				if(strParams.length())
+					strParams += ", ";
+				strParams += "scale = " + tl::var_to_str(m_dScale);
+			}
+
+			if(iter_slope != all_params.end())
+			{
+				m_dSlope = tl::str_to_var<t_real>(iter_slope->second);
+
+				if(strParams.length())
+					strParams += ", ";
+				strParams += "slope = " + tl::var_to_str(m_dSlope);
+			}
+
+			if(iter_offs != all_params.end())
+			{
+				m_dOffs = tl::str_to_var<t_real>(iter_offs->second);
+
+				if(strParams.length())
+					strParams += ", ";
+				strParams += "offs = " + tl::var_to_str(m_dOffs);
+			}
+
+
+			if(!params_ok)
+			{
+				tl::log_err("Could not override S(Q, E) model parameter(s) for scan group ",
+					m_iCurParamSet, ".");
 			}
 		}
 
@@ -510,9 +545,10 @@ void SqwFuncModel::SetParamSet(std::size_t iSet)
 		{
 			std::ostringstream ostrDescr;
 			ostrDescr << "Scan group " << m_iCurParamSet;
-			if(ostrParams.str().length())
-				ostrDescr << ": " << ostrParams.str();
+			if(strParams.length())
+				ostrDescr << ": " << strParams;
 			ostrDescr << ".";
+
 			(*m_psigParamsChanged)(ostrDescr.str());
 		}
 	}

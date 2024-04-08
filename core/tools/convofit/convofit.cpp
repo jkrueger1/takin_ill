@@ -600,7 +600,8 @@ bool Convofit::run_job(const std::string& _strJob)
 
 
 	std::vector<t_real> vecModTmpX, vecModTmpY;
-	// slots
+
+	// callback for outputting results
 	mod.AddFuncResultSlot(
 	[this, &pltMeas, &vecModTmpX, &vecModTmpY, bPlotIntermediate, &vecScanAxes]
 		(t_real h, t_real k, t_real l, t_real E, t_real S, std::size_t scan_group)
@@ -636,6 +637,8 @@ bool Convofit::run_job(const std::string& _strJob)
 				m_sigPlot(this->m_pPlt, scan_axis.c_str(), "Intensity", pltMeas[scan_group], pltMod, 0);
 		}
 	});
+
+	// callback for changed parameters
 	mod.AddParamsChangedSlot(
 	[&vecModTmpX, &vecModTmpY, bPlotIntermediate, iSeed, bRecycleMC](const std::string& strDescr)
 	{
@@ -698,20 +701,19 @@ bool Convofit::run_job(const std::string& _strJob)
 
 	// --------------------------------------------------------------------
 	// Fitting
-	for(std::size_t iParam=0; iParam<vecFitParams.size(); ++iParam)
+	for(std::size_t iParam = 0; iParam < vecFitParams.size(); ++iParam)
 	{
 		const std::string& strParam = vecFitParams[iParam];
 		t_real dVal = vecFitValues[iParam];
 		t_real dErr = vecFitErrors[iParam];
 
 		// not a S(Q, E) model parameter
-		if(strParam=="scale" || strParam=="slope" || strParam=="offs")
+		if(strParam == "scale" || strParam == "slope" || strParam == "offs")
 			continue;
 
 		mod.AddModelFitParams(strParam, dVal, dErr);
 	}
 
-	//tl::Chi2Function<t_real_sc> chi2fkt(&mod, vecSc[0].vecX.size(), vecSc[0].vecX.data(), vecSc[0].vecCts.data(), vecSc[0].vecCtsErr.data());
 	tl::Chi2Function_mult<t_real_sc, std::vector> chi2fkt;
 	// the vecSc[0] data sets are the default data set (will not be used if scan groups are defined)
 	chi2fkt.AddFunc(&mod, vecSc[0].vecX.size(), vecSc[0].vecX.data(), vecSc[0].vecCts.data(), vecSc[0].vecCtsErr.data());
@@ -720,7 +722,7 @@ bool Convofit::run_job(const std::string& _strJob)
 
 
 	minuit::MnUserParameters params = mod.GetMinuitParams();
-	for(std::size_t iParam=0; iParam<vecFitParams.size(); ++iParam)
+	for(std::size_t iParam = 0; iParam < vecFitParams.size(); ++iParam)
 	{
 		const std::string& strParam = vecFitParams[iParam];
 		t_real dVal = vecFitValues[iParam];
@@ -736,11 +738,6 @@ bool Convofit::run_job(const std::string& _strJob)
 
 
 	minuit::MnStrategy strat(iStrat);
-	/*strat.SetStorageLevel(1);
-	strat.SetGradientStepTolerance(1.);
-	strat.SetGradientTolerance(1.);
-	strat.SetHessianStepTolerance(1.);
-	strat.SetHessianG2Tolerance(1.);*/
 
 	std::unique_ptr<minuit::MnApplication> pmini;
 	if(strMinimiser == "simplex")
@@ -774,7 +771,7 @@ bool Convofit::run_job(const std::string& _strJob)
 
 	tl::log_info("Saving results.");
 
-	for(std::size_t iSc=0; iSc<vecSc.size(); ++iSc)
+	for(std::size_t iSc = 0; iSc < vecSc.size(); ++iSc)
 	{
 		const Scan& sc = vecSc[iSc];
 

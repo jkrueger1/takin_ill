@@ -33,6 +33,8 @@
 #include <tuple>
 #include <vector>
 #include <memory>
+#include <unordered_set>
+#include <unordered_map>
 
 #include "../res/defs.h"
 #include "tlibs/string/string.h"
@@ -79,7 +81,10 @@ public:
 	virtual const std::vector<t_var_fit>& GetFitVars() const { return m_vecFit; }
 
 	// updates model variables
-	virtual void SetVars(const std::string& sqw_params);
+	virtual std::tuple<bool, std::string> SetVars(const std::string& sqw_params,
+		bool print_messages = true,
+		const std::unordered_set<std::string> *ingored_params = nullptr,
+		std::unordered_map<std::string, std::string> *all_params = nullptr);
 	virtual void SetVars(const std::vector<t_var>&) = 0;
 	virtual void SetFitVars(const std::vector<t_var_fit>&);
 

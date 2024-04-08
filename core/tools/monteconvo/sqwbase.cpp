@@ -33,28 +33,65 @@
 /**
  * set or override S(Q, E) model parameters from a string
  */
-void SqwBase::SetVars(const std::string& sqw_params)
+std::tuple<bool, std::string> SqwBase::SetVars(const std::string& sqw_params,
+	bool print_messages,
+	const std::unordered_set<std::string> *ingored_params,
+	std::unordered_map<std::string, std::string> *all_params)
 {
+	bool ok = true;
+
 	// set the given individual global model parameters
 	if(sqw_params == "")
-		return;
+		return std::make_pair(ok, "");
 
+	std::ostringstream ostrStatus;
+
+	// get all parameters
 	std::vector<std::string> vecSetParams;
 	tl::get_tokens<std::string, std::string>(sqw_params, ";", vecSetParams);
+
 	for(const std::string& strModParam : vecSetParams)
 	{
+		// get key = value pairs for current parameter
 		std::vector<std::string> vecModParam;
 		tl::get_tokens<std::string, std::string>(strModParam, "=", vecModParam);
 		if(vecModParam.size() < 2)
-				continue;
+			continue;
+
 		tl::trim(vecModParam[0]);
 		tl::trim(vecModParam[1]);
 
-		if(this->SetVarIfAvail(vecModParam[0], vecModParam[1]))
-			tl::log_info("Setting model parameter \"", vecModParam[0], "\" to \"", vecModParam[1], "\".");
+		// save all parameters to a map
+		if(all_params)
+			all_params->insert(std::make_pair(vecModParam[0], vecModParam[1]));
+
+		// skip ignored parameters
+		if(ingored_params && ingored_params->find(vecModParam[0]) != ingored_params->end())
+			continue;
+
+		if(SetVarIfAvail(vecModParam[0], vecModParam[1]))
+		{
+			// list changed parameters in a readable form
+			if(ostrStatus.str().length())
+				ostrStatus << ", ";
+			ostrStatus << vecModParam[0] << " = " << vecModParam[1];
+
+			if(print_messages)
+			{
+				tl::log_info("Setting S(Q, E) model parameter \"", vecModParam[0],
+					"\" to \"", vecModParam[1], "\".");
+			}
+		}
 		else
-			tl::log_err("No parameter named \"", vecModParam[0], "\" available in S(Q, E) model.");
+		{
+			ok = false;
+
+			tl::log_err("No parameter named \"", vecModParam[0], "\" available in S(Q, E) model, ",
+				"cannot set new value \"", vecModParam[1], "\".");
+		}
 	}
+
+	return std::make_pair(ok, ostrStatus.str());
 }
 
 
