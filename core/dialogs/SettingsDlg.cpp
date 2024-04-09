@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -30,6 +30,7 @@
 #include "tlibs/string/string.h"
 #include "tlibs/log/log.h"
 #include "tlibs/file/file.h"
+#include "tlibs/math/math.h"
 #ifndef NO_3D
 	#include "tlibs/gfx/gl.h"
 #endif
@@ -47,7 +48,36 @@
 
 using t_real = t_real_glob;
 
+
+// ellipse table rows
+#define ELLI_1A       0
+#define ELLI_1B       1
+#define ELLI_2A       2
+#define ELLI_2B       3
+#define ELLI_3A       4
+#define ELLI_3B       5
+#define ELLI_4A       6
+#define ELLI_4B       7
+
+// ellipse table columns
+#define ELLI_X        0
+#define ELLI_Y        1
+#define ELLI_PROJ1    2
+#define ELLI_REM1     3
+#define ELLI_PROJ2    4
+#define ELLI_REM2     5
+
+// ellipsoid table rows
+#define ELLO_1        0
+#define ELLO_2        1
+
+// ellipsoid table columns
+#define ELLO_X        0
+#define ELLO_Y        1
+#define ELLO_Z        2
+#define ELLO_PROJREM  3
 // -----------------------------------------------------------------------------
+
 
 
 SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
@@ -173,7 +203,7 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 	spinThreads->setMaximum(std::thread::hardware_concurrency());
 	spinProcesses->setMaximum(std::thread::hardware_concurrency());
 
-	SetDefaults(0);
+	SetDefaults(false);
 
 
 	if(m_pSettings && m_pSettings->contains("settings/geo"))
@@ -183,13 +213,16 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 }
 
 
+
 SettingsDlg::~SettingsDlg()
 {}
 
 
+
 void SettingsDlg::SetDefaults(bool bOverwrite)
 {
-	if(!m_pSettings) return;
+	if(!m_pSettings)
+		return;
 
 	for(const t_tupEdit& tup : m_vecEdits)
 	{
@@ -197,7 +230,8 @@ void SettingsDlg::SetDefaults(bool bOverwrite)
 		const std::string& strDef = std::get<1>(tup);
 
 		bool bKeyExists = m_pSettings->contains(strKey.c_str());
-		if(bKeyExists && !bOverwrite) continue;
+		if(bKeyExists && !bOverwrite)
+			continue;
 
 		m_pSettings->setValue(strKey.c_str(), strDef.c_str());
 	}
@@ -208,7 +242,8 @@ void SettingsDlg::SetDefaults(bool bOverwrite)
 		const bool bDef = std::get<1>(tup);
 
 		bool bKeyExists = m_pSettings->contains(strKey.c_str());
-		if(bKeyExists && !bOverwrite) continue;
+		if(bKeyExists && !bOverwrite)
+			continue;
 
 		m_pSettings->setValue(strKey.c_str(), bDef);
 	}
@@ -219,7 +254,8 @@ void SettingsDlg::SetDefaults(bool bOverwrite)
 		const int iDef = std::get<1>(tup);
 
 		bool bKeyExists = m_pSettings->contains(strKey.c_str());
-		if(bKeyExists && !bOverwrite) continue;
+		if(bKeyExists && !bOverwrite)
+			continue;
 
 		m_pSettings->setValue(strKey.c_str(), iDef);
 	}
@@ -230,16 +266,71 @@ void SettingsDlg::SetDefaults(bool bOverwrite)
 		const int iDef = std::get<1>(tup);
 
 		bool bKeyExists = m_pSettings->contains(strKey.c_str());
-		if(bKeyExists && !bOverwrite) continue;
+		if(bKeyExists && !bOverwrite)
+			continue;
 
 		m_pSettings->setValue(strKey.c_str(), iDef);
+	}
+
+
+	// ellipse table
+	if(bOverwrite)
+	{
+		m_pSettings->setValue("reso/ellipse_1a_x", 0); m_pSettings->setValue("reso/ellipse_1b_x", 0);
+		m_pSettings->setValue("reso/ellipse_2a_x", 1); m_pSettings->setValue("reso/ellipse_2b_x", 1);
+		m_pSettings->setValue("reso/ellipse_3a_x", 2); m_pSettings->setValue("reso/ellipse_3b_x", 2);
+		m_pSettings->setValue("reso/ellipse_4a_x", 0); m_pSettings->setValue("reso/ellipse_4b_x", 0);
+
+		m_pSettings->setValue("reso/ellipse_1a_y", 3); m_pSettings->setValue("reso/ellipse_1b_y", 3);
+		m_pSettings->setValue("reso/ellipse_2a_y", 3); m_pSettings->setValue("reso/ellipse_2b_y", 3);
+		m_pSettings->setValue("reso/ellipse_3a_y", 3); m_pSettings->setValue("reso/ellipse_3b_y", 3);
+		m_pSettings->setValue("reso/ellipse_4a_y", 1); m_pSettings->setValue("reso/ellipse_4b_y", 1);
+
+		m_pSettings->setValue("reso/ellipse_1a_proj1", 1); m_pSettings->setValue("reso/ellipse_1b_proj1", -1);
+		m_pSettings->setValue("reso/ellipse_2a_proj1", 0); m_pSettings->setValue("reso/ellipse_2b_proj1", -1);
+		m_pSettings->setValue("reso/ellipse_3a_proj1", 0); m_pSettings->setValue("reso/ellipse_3b_proj1", -1);
+		m_pSettings->setValue("reso/ellipse_4a_proj1", 3); m_pSettings->setValue("reso/ellipse_4b_proj1", -1);
+
+		m_pSettings->setValue("reso/ellipse_1a_rem1", 2); m_pSettings->setValue("reso/ellipse_1b_rem1", 2);
+		m_pSettings->setValue("reso/ellipse_2a_rem1", 2); m_pSettings->setValue("reso/ellipse_2b_rem1", 2);
+		m_pSettings->setValue("reso/ellipse_3a_rem1", 1); m_pSettings->setValue("reso/ellipse_3b_rem1", 1);
+		m_pSettings->setValue("reso/ellipse_4a_rem1", 2); m_pSettings->setValue("reso/ellipse_4b_rem1", 2);
+
+		m_pSettings->setValue("reso/ellipse_1a_proj2", -1); m_pSettings->setValue("reso/ellipse_1b_proj2", -1);
+		m_pSettings->setValue("reso/ellipse_2a_proj2", -1); m_pSettings->setValue("reso/ellipse_2b_proj2", -1);
+		m_pSettings->setValue("reso/ellipse_3a_proj2", -1); m_pSettings->setValue("reso/ellipse_3b_proj2", -1);
+		m_pSettings->setValue("reso/ellipse_4a_proj2", -1); m_pSettings->setValue("reso/ellipse_4b_proj2", -1);
+
+		m_pSettings->setValue("reso/ellipse_1a_rem2", -1); m_pSettings->setValue("reso/ellipse_1b_rem2", 1);
+		m_pSettings->setValue("reso/ellipse_2a_rem2", -1); m_pSettings->setValue("reso/ellipse_2b_rem2", 0);
+		m_pSettings->setValue("reso/ellipse_3a_rem2", -1); m_pSettings->setValue("reso/ellipse_3b_rem2", 0);
+		m_pSettings->setValue("reso/ellipse_4a_rem2", -1); m_pSettings->setValue("reso/ellipse_4b_rem2", 3);
+	}
+
+
+	// ellipsoid table
+	if(bOverwrite)
+	{
+		m_pSettings->setValue("reso/ellipsoid3d_1_x", 0);
+		m_pSettings->setValue("reso/ellipsoid3d_2_x", 0);
+
+		m_pSettings->setValue("reso/ellipsoid3d_1_y", 1);
+		m_pSettings->setValue("reso/ellipsoid3d_2_y", 1);
+
+		m_pSettings->setValue("reso/ellipsoid3d_1_z", 3);
+		m_pSettings->setValue("reso/ellipsoid3d_2_z", 2);
+
+		m_pSettings->setValue("reso/ellipsoid3d_1_proj_or_rem", 2);
+		m_pSettings->setValue("reso/ellipsoid3d_2_proj_or_rem", 3);
 	}
 }
 
 
+
 void SettingsDlg::LoadSettings()
 {
-	if(!m_pSettings) return;
+	if(!m_pSettings)
+		return;
 
 	for(const t_tupEdit& tup : m_vecEdits)
 	{
@@ -281,13 +372,78 @@ void SettingsDlg::LoadSettings()
 		pCombo->setCurrentIndex(iVal);
 	}
 
+
+	// ellipse table
+	std::vector<std::string> elli_names = { "1a", "1b", "2a", "2b", "3a", "3b", "4a", "4b" };
+	std::vector<int> elli_rows = { ELLI_1A, ELLI_1B, ELLI_2A, ELLI_2B, ELLI_3A, ELLI_3B, ELLI_4A, ELLI_4B };
+
+	for(std::size_t row = 0; row < elli_names.size(); ++row)
+	{
+		const std::string& elli_name = elli_names[row];
+		int elli_row = elli_rows[row];
+
+		int x = m_pSettings->value(("reso/ellipse_" + elli_name + "_x").c_str(), -2).toInt();
+		if(x > -2)
+			tabEllipses->item(elli_row, ELLI_X)->setText(tl::var_to_str(tl::clamp(x, -1, 3)).c_str());
+
+		int y = m_pSettings->value(("reso/ellipse_" + elli_name + "_y").c_str(), -2).toInt();
+		if(y > -2)
+			tabEllipses->item(elli_row, ELLI_Y)->setText(tl::var_to_str(tl::clamp(y, -1, 3)).c_str());
+
+		int proj1 = m_pSettings->value(("reso/ellipse_" + elli_name + "_proj1").c_str(), -2).toInt();
+		if(proj1 > -2)
+			tabEllipses->item(elli_row, ELLI_PROJ1)->setText(tl::var_to_str(tl::clamp(proj1, -1, 3)).c_str());
+
+		int rem1 = m_pSettings->value(("reso/ellipse_" + elli_name + "_rem1").c_str(), -2).toInt();
+		if(rem1 > -2)
+			tabEllipses->item(elli_row, ELLI_REM1)->setText(tl::var_to_str(tl::clamp(rem1, -1, 3)).c_str());
+
+		int proj2 = m_pSettings->value(("reso/ellipse_" + elli_name + "_proj2").c_str(), -2).toInt();
+		if(proj2 > -2)
+			tabEllipses->item(elli_row, ELLI_PROJ2)->setText(tl::var_to_str(tl::clamp(proj2, -1, 3)).c_str());
+
+		int rem2 = m_pSettings->value(("reso/ellipse_" + elli_name + "_rem2").c_str(), -2).toInt();
+		if(rem2 > -2)
+			tabEllipses->item(elli_row, ELLI_REM2)->setText(tl::var_to_str(tl::clamp(rem2, -1, 3)).c_str());
+	}
+
+
+	// ellipsoid table
+	std::vector<std::string> ello_names = { "1", "2"  };
+	std::vector<int> ello_rows = { ELLO_1, ELLO_2 };
+
+	for(std::size_t row = 0; row < ello_names.size(); ++row)
+	{
+		const std::string& ello_name = ello_names[row];
+		int ello_row = ello_rows[row];
+
+		int x = m_pSettings->value(("reso/ellipsoid3d_" + ello_name + "_x").c_str(), -2).toInt();
+		if(x > -2)
+			tabEllipsoids->item(ello_row, ELLO_X)->setText(tl::var_to_str(tl::clamp(x, -1, 3)).c_str());
+
+		int y = m_pSettings->value(("reso/ellipsoid3d_" + ello_name + "_y").c_str(), -2).toInt();
+		if(y > -2)
+			tabEllipsoids->item(ello_row, ELLO_Y)->setText(tl::var_to_str(tl::clamp(y, -1, 3)).c_str());
+
+		int z = m_pSettings->value(("reso/ellipsoid3d_" + ello_name + "_z").c_str(), -2).toInt();
+		if(z > -2)
+			tabEllipsoids->item(ello_row, ELLO_Z)->setText(tl::var_to_str(tl::clamp(z, -1, 3)).c_str());
+
+		int proj = m_pSettings->value(("reso/ellipsoid3d_" + ello_name + "_proj_or_rem").c_str(), -2).toInt();
+		if(proj > -2)
+			tabEllipsoids->item(ello_row, ELLO_PROJREM)->setText(tl::var_to_str(tl::clamp(proj, -1, 3)).c_str());
+	}
+
+
 	SetGlobals();
 }
 
 
+
 void SettingsDlg::SaveSettings()
 {
-	if(!m_pSettings) return;
+	if(!m_pSettings)
+		return;
 
 	for(const t_tupEdit& tup : m_vecEdits)
 	{
@@ -323,8 +479,54 @@ void SettingsDlg::SaveSettings()
 		m_pSettings->setValue((strKey+"_value").c_str(), pCombo->currentText());
 	}
 
+
+	// ellipse table
+	std::vector<std::string> elli_names = { "1a", "1b", "2a", "2b", "3a", "3b", "4a", "4b" };
+	std::vector<int> elli_rows = { ELLI_1A, ELLI_1B, ELLI_2A, ELLI_2B, ELLI_3A, ELLI_3B, ELLI_4A, ELLI_4B };
+
+	for(std::size_t row = 0; row < elli_names.size(); ++row)
+	{
+		const std::string& elli_name = elli_names[row];
+		int elli_row = elli_rows[row];
+
+		m_pSettings->setValue(("reso/ellipse_" + elli_name + "_x").c_str(),
+			tl::clamp(tl::str_to_var<int>(tabEllipses->item(elli_row, ELLI_X)->text().toStdString()), -1, 3));
+		m_pSettings->setValue(("reso/ellipse_" + elli_name + "_y").c_str(),
+			tl::clamp(tl::str_to_var<int>(tabEllipses->item(elli_row, ELLI_Y)->text().toStdString()), -1, 3));
+		m_pSettings->setValue(("reso/ellipse_" + elli_name + "_proj1").c_str(),
+			tl::clamp(tl::str_to_var<int>(tabEllipses->item(elli_row, ELLI_PROJ1)->text().toStdString()), -1, 3));
+		m_pSettings->setValue(("reso/ellipse_" + elli_name + "_rem1").c_str(),
+			tl::clamp(tl::str_to_var<int>(tabEllipses->item(elli_row, ELLI_REM1)->text().toStdString()), -1, 3));
+		m_pSettings->setValue(("reso/ellipse_" + elli_name + "_proj2").c_str(),
+			tl::clamp(tl::str_to_var<int>(tabEllipses->item(elli_row, ELLI_PROJ2)->text().toStdString()), -1, 3));
+		m_pSettings->setValue(("reso/ellipse_" + elli_name + "_rem2").c_str(),
+			tl::clamp(tl::str_to_var<int>(tabEllipses->item(elli_row, ELLI_REM2)->text().toStdString()), -1, 3));
+	}
+
+
+	// ellipsoid table
+	std::vector<std::string> ello_names = { "1", "2" };
+	std::vector<int> ello_rows = { ELLO_1, ELLO_2 };
+
+	for(std::size_t row = 0; row < ello_names.size(); ++row)
+	{
+		const std::string& ello_name = ello_names[row];
+		int ello_row = ello_rows[row];
+
+		m_pSettings->setValue(("reso/ellipsoid3d_" + ello_name + "_x").c_str(),
+			tl::clamp(tl::str_to_var<int>(tabEllipsoids->item(ello_row, ELLO_X)->text().toStdString()), -1, 3));
+		m_pSettings->setValue(("reso/ellipsoid3d_" + ello_name + "_y").c_str(),
+			tl::clamp(tl::str_to_var<int>(tabEllipsoids->item(ello_row, ELLO_Y)->text().toStdString()), -1, 3));
+		m_pSettings->setValue(("reso/ellipsoid3d_" + ello_name + "_z").c_str(),
+			tl::clamp(tl::str_to_var<int>(tabEllipsoids->item(ello_row, ELLO_Z)->text().toStdString()), -1, 3));
+		m_pSettings->setValue(("reso/ellipsoid3d_" + ello_name + "_proj_or_rem").c_str(),
+			tl::clamp(tl::str_to_var<int>(tabEllipsoids->item(ello_row, ELLO_PROJREM)->text().toStdString()), -1, 3));
+	}
+
+
 	SetGlobals();
 }
+
 
 
 void SettingsDlg::SetGlobals() const
@@ -382,7 +584,7 @@ void SettingsDlg::SetGlobals() const
 
 
 	// if no GUI style has been set, use a safe default
-	if(!m_pSettings->contains("main/gui_style_value"))
+	if(m_pSettings && !m_pSettings->contains("main/gui_style_value"))
 	{
 		int iGUIDefault = comboGUI->findText("Fusion", Qt::MatchContains);
 		if(iGUIDefault >= 0)
@@ -399,6 +601,7 @@ void SettingsDlg::SetGlobals() const
 
 	emit SettingsChanged();
 }
+
 
 
 void SettingsDlg::SelectGLFont()
@@ -432,9 +635,10 @@ void SettingsDlg::SelectGLFont()
 }
 
 
+
 void SettingsDlg::SelectGfxFont()
 {
-	bool bOk = 0;
+	bool bOk = false;
 	QFont fontNew = QFontDialog::getFont(&bOk, g_fontGfx, this);
 	if(bOk)
 	{
@@ -447,9 +651,10 @@ void SettingsDlg::SelectGfxFont()
 }
 
 
+
 void SettingsDlg::SelectGenFont()
 {
-	bool bOk = 0;
+	bool bOk = false;
 	QFont fontNew = QFontDialog::getFont(&bOk, g_fontGen, this);
 	if(bOk)
 	{
@@ -457,6 +662,7 @@ void SettingsDlg::SelectGenFont()
 		editGenFont->setText(fontNew.toString());
 	}
 }
+
 
 
 void SettingsDlg::SelectGplTool()
@@ -475,10 +681,12 @@ void SettingsDlg::SelectGplTool()
 }
 
 
+
 void SettingsDlg::showEvent(QShowEvent *pEvt)
 {
 	QDialog::showEvent(pEvt);
 }
+
 
 
 void SettingsDlg::ButtonBoxClicked(QAbstractButton *pBtn)
@@ -490,7 +698,7 @@ void SettingsDlg::ButtonBoxClicked(QAbstractButton *pBtn)
 	}
 	else if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::ResetRole)
 	{
-		SetDefaults(1);
+		SetDefaults(true);
 		LoadSettings();
 	}
 	else if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::RejectRole)

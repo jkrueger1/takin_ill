@@ -152,17 +152,17 @@ void EllipseDlg3D::Calc()
 
 	switch(coord)
 	{
-		case EllipseCoordSys::Q_AVG:		// Q|| Qperp system in 1/A
+		case EllipseCoordSys::Q_AVG:       // Q|| Qperp system in 1/A
 			pReso = &m_reso;
 			pQavg = &m_Q_avg;
 			pReso_v = &m_reso_v;
 			break;
-		case EllipseCoordSys::RLU:			// rlu system
+		case EllipseCoordSys::RLU:         // rlu system
 			pReso = &m_resoHKL;
 			pQavg = &m_Q_avgHKL;
 			pReso_v = &m_reso_vHKL;
 			break;
-		case EllipseCoordSys::RLU_ORIENT:	// rlu system
+		case EllipseCoordSys::RLU_ORIENT:  // rlu system
 			pReso = &m_resoOrient;
 			pQavg = &m_Q_avgOrient;
 			pReso_v = &m_reso_vOrient;
@@ -178,10 +178,10 @@ void EllipseDlg3D::Calc()
 	const ublas::vector<t_real_reso>& _Q_avg = *pQavg;
 
 
-	const int iX[] = { 0, 0 };
-	const int iY[] = { 1, 1 };
-	const int iZ[] = { 3, 2 };
-	const int iIntOrRem[] = { 2, 3 };
+	int iX[] = { 0, 0 };
+	int iY[] = { 1, 1 };
+	int iZ[] = { 3, 2 };
+	int iIntOrRem[] = { 2, 3 };
 
 	bool bCenterOn0 = true;
 
@@ -191,6 +191,28 @@ void EllipseDlg3D::Calc()
 
 	for(std::size_t i = 0; i < m_pPlots.size(); ++i)
 	{
+		// load ellipsoid configuration from settings
+		if(m_pSettings)
+		{
+			std::string ello_name = tl::var_to_str(i + 1);
+
+			int x = m_pSettings->value(("reso/ellipsoid3d_" + ello_name + "_x").c_str(), -2).toInt();
+			if(x > -2)
+				iX[i] = tl::clamp(x, -1, 3);
+
+			int y = m_pSettings->value(("reso/ellipsoid3d_" + ello_name + "_y").c_str(), -2).toInt();
+			if(y > -2)
+				iY[i] = tl::clamp(y, -1, 3);
+
+			int z = m_pSettings->value(("reso/ellipsoid3d_" + ello_name + "_z").c_str(), -2).toInt();
+			if(z > -2)
+				iZ[i] = tl::clamp(z, -1, 3);
+
+			int proj_or_rem = m_pSettings->value(("reso/ellipsoid3d_" + ello_name + "_proj_or_rem").c_str(), -2).toInt();
+			if(proj_or_rem > -2)
+				iIntOrRem[i] = tl::clamp(proj_or_rem, -1, 3);
+		}
+
 		m_elliProj[i] = ::calc_res_ellipsoid(
 			reso, reso_v, reso_s, Q_avg, iX[i], iY[i], iZ[i], iIntOrRem[i], -1);
 		m_elliSlice[i] = ::calc_res_ellipsoid(

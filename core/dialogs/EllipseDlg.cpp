@@ -203,35 +203,36 @@ void EllipseDlg::Calc()
 
 		for(unsigned int iEll = 0; iEll < 4; ++iEll)
 		{
+			// load ellipse configuration from settings
 			if(m_pSettings)
 			{
-				std::ostringstream ostrCfg;
-				ostrCfg << "reso/ellipse_2d_" << iEll;
-				std::string strProjPath = ostrCfg.str() + "_proj";
-				std::string strSlicePath = ostrCfg.str() + "_slice";
-
-				std::string strProj = m_pSettings->value(strProjPath.c_str(), "").toString().toStdString();
-				std::string strSlice = m_pSettings->value(strSlicePath.c_str(), "").toString().toStdString();
-
-				const std::string* strEllis[] = { &strProj, &strSlice };
-
-				for(unsigned int iWhichEll = 0; iWhichEll < 2; ++iWhichEll)
+				for(unsigned int iSubEll = 0; iSubEll < 2; ++iSubEll)
 				{
-					if(*strEllis[iWhichEll] != "")
-					{
-						std::vector<int> vecIdx;
-						tl::get_tokens<int>(*strEllis[iWhichEll], std::string(","), vecIdx);
+					std::string elli_name = tl::var_to_str(iEll + 1) + char('a' + iSubEll);
 
-						if(vecIdx.size() != 6)
-						{
-							tl::log_err("Error in resolution config: Wrong size of parameters for ",
-								strProj, ".");
-							continue;
-						}
+					int x = m_pSettings->value(("reso/ellipse_" + elli_name + "_x").c_str(), -2).toInt();
+					if(x > -2)
+						iParams[iSubEll][iEll][0] = tl::clamp(x, -1, 3);
 
-						for(unsigned int iParam = 0; iParam < 6; ++iParam)
-							iParams[iWhichEll][iEll][iParam] = vecIdx[iParam];
-					}
+					int y = m_pSettings->value(("reso/ellipse_" + elli_name + "_y").c_str(), -2).toInt();
+					if(y > -2)
+						iParams[iSubEll][iEll][1] = tl::clamp(y, -1, 3);
+
+					int proj1 = m_pSettings->value(("reso/ellipse_" + elli_name + "_proj1").c_str(), -2).toInt();
+					if(proj1 > -2)
+						iParams[iSubEll][iEll][2] = tl::clamp(proj1, -1, 3);
+
+					int proj2 = m_pSettings->value(("reso/ellipse_" + elli_name + "_proj2").c_str(), -2).toInt();
+					if(proj2 > -2)
+						iParams[iSubEll][iEll][3] = tl::clamp(proj2, -1, 3);
+
+					int rem1 = m_pSettings->value(("reso/ellipse_" + elli_name + "_rem1").c_str(), -2).toInt();
+					if(rem1 > -2)
+						iParams[iSubEll][iEll][4] = tl::clamp(rem1, -1, 3);
+
+					int rem2 = m_pSettings->value(("reso/ellipse_" + elli_name + "_rem2").c_str(), -2).toInt();
+					if(rem2 > -2)
+						iParams[iSubEll][iEll][5] = tl::clamp(rem2, -1, 3);
 				}
 			}
 

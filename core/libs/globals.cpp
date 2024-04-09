@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -42,14 +42,14 @@ unsigned int g_iPrecGfx = 4;
 t_real_glob g_dEps = 1e-6;
 t_real_glob g_dEpsGfx = 1e-4;
 
-bool g_bHasElements = 0;
-bool g_bHasFormfacts = 0;
-bool g_bHasMagFormfacts = 0;
-bool g_bHasScatlens = 0;
-bool g_bHasSpaceGroups = 0;
-bool g_bShowFsq = 1;
-bool g_b3dBZ = 1;
-bool g_bUseGlobalPaths = 1;
+bool g_bHasElements = false;
+bool g_bHasFormfacts = false;
+bool g_bHasMagFormfacts = false;
+bool g_bHasScatlens = false;
+bool g_bHasSpaceGroups = false;
+bool g_bShowFsq = true;
+bool g_b3dBZ = true;
+bool g_bUseGlobalPaths = true;
 
 std::string g_strApp;
 std::string g_strHome;

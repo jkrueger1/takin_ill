@@ -70,12 +70,12 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 
 	labelRepo->setText("Source repository: <a href=\"https://github.com/ILLGrenoble/takin\">https://github.com/ILLGrenoble/takin</a>.");
 
-	labelDesc->setText("Overviews of Takin can be found here:"
+	labelDesc->setText("Papers about Takin can be found here, <b>please cite</b> the version closest to the one you have used:"
 		"<ul>"
-		"<li><a href=\"https://doi.org/10.1016/j.softx.2023.101471\">DOI: 10.1016/j.softx.2023.101471</a>,</li>"
-		"<li><a href=\"https://doi.org/10.1016/j.softx.2021.100667\">DOI: 10.1016/j.softx.2021.100667</a>,</li>"
-		"<li><a href=\"https://doi.org/10.1016/j.softx.2017.06.002\">DOI: 10.1016/j.softx.2017.06.002</a>,</li>"
-		"<li><a href=\"https://doi.org/10.1016/j.softx.2016.06.002\">DOI: 10.1016/j.softx.2016.06.002</a>.</li>"
+		"<li>Version 2.5: <a href=\"https://doi.org/10.1016/j.softx.2023.101471\">DOI: 10.1016/j.softx.2023.101471</a>,</li>"
+		"<li>Version 2.0: <a href=\"https://doi.org/10.1016/j.softx.2021.100667\">DOI: 10.1016/j.softx.2021.100667</a>,</li>"
+		"<li>Version 1.5: <a href=\"https://doi.org/10.1016/j.softx.2017.06.002\">DOI: 10.1016/j.softx.2017.06.002</a>,</li>"
+		"<li>Version 1.0: <a href=\"https://doi.org/10.1016/j.softx.2016.06.002\">DOI: 10.1016/j.softx.2016.06.002</a>.</li>"
 		"</ul>");
 	labelDesc->setOpenExternalLinks(1);
 	labelLicense->setOpenExternalLinks(1);
