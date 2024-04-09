@@ -169,19 +169,26 @@ void EllipseDlg::Calc()
 
 	try
 	{
-		int iParams[2][4][5] =
+		// parameters are: x, y, project 1, project 2, remove 1, remove 2
+		int iParams[2][4][6] =
 		{
 			{	// projected
-				{0, 3, 1, 2, -1},
-				{1, 3, 0, 2, -1},
-				{2, 3, 0, 1, -1},
-				{0, 1, 3, 2, -1}
+				{ 0, 3, 1, -1, 2, -1 },
+				{ 1, 3, 0, -1, 2, -1 },
+				{ 2, 3, 0, -1, 1, -1 },
+				{ 0, 1, 3, -1, 2, -1 }
 			},
+			/*{	// projected
+				{ 0, 3, 2, 1, -1, -1 },
+				{ 1, 3, 2, 0, -1, -1 },
+				{ 2, 3, 1, 0, -1, -1 },
+				{ 0, 1, 3, 2, -1, -1 }
+			},*/
 			{	// sliced
-				{0, 3, -1, 2, 1},
-				{1, 3, -1, 2, 0},
-				{2, 3, -1, 1, 0},
-				{0, 1, -1, 2, 3}
+				{ 0, 3, -1, -1, 2, 1 },
+				{ 1, 3, -1, -1, 2, 0 },
+				{ 2, 3, -1, -1, 1, 0 },
+				{ 0, 1, -1, -1, 2, 3 }
 			}
 		};
 
@@ -194,7 +201,7 @@ void EllipseDlg::Calc()
 
 		std::vector<std::future<Ellipse2d<t_real_reso>>> tasks_ell_proj, tasks_ell_slice;
 
-		for(unsigned int iEll=0; iEll<4; ++iEll)
+		for(unsigned int iEll = 0; iEll < 4; ++iEll)
 		{
 			if(m_pSettings)
 			{
@@ -206,25 +213,24 @@ void EllipseDlg::Calc()
 				std::string strProj = m_pSettings->value(strProjPath.c_str(), "").toString().toStdString();
 				std::string strSlice = m_pSettings->value(strSlicePath.c_str(), "").toString().toStdString();
 
-				const std::string* strEllis[] = {&strProj, &strSlice};
+				const std::string* strEllis[] = { &strProj, &strSlice };
 
-				for(unsigned int iWhichEll=0; iWhichEll<2; ++iWhichEll)
+				for(unsigned int iWhichEll = 0; iWhichEll < 2; ++iWhichEll)
 				{
 					if(*strEllis[iWhichEll] != "")
 					{
 						std::vector<int> vecIdx;
 						tl::get_tokens<int>(*strEllis[iWhichEll], std::string(","), vecIdx);
 
-						if(vecIdx.size() == 5)
-						{
-							for(unsigned int iParam=0; iParam<5; ++iParam)
-								iParams[iWhichEll][iEll][iParam] = vecIdx[iParam];
-						}
-						else
+						if(vecIdx.size() != 6)
 						{
 							tl::log_err("Error in resolution config: Wrong size of parameters for ",
-								strProj,  ".");
+								strProj, ".");
+							continue;
 						}
+
+						for(unsigned int iParam = 0; iParam < 6; ++iParam)
+							iParams[iWhichEll][iEll][iParam] = vecIdx[iParam];
 					}
 				}
 			}
@@ -235,13 +241,19 @@ void EllipseDlg::Calc()
 			std::future<Ellipse2d<t_real_reso>> ell_proj =
 				std::async(std::launch::deferred|std::launch::async,
 				[=, &reso, &Q_avg]()
-				{ return ::calc_res_ellipse<t_real_reso>(
-					reso, reso_v, reso_s, Q_avg, iP[0], iP[1], iP[2], iP[3], iP[4]); });
+				{
+					return ::calc_res_ellipse<t_real_reso>(
+						reso, reso_v, reso_s, Q_avg,
+						iP[0], iP[1], iP[2], iP[3], iP[4], iP[5]);
+				});
 			std::future<Ellipse2d<t_real_reso>> ell_slice =
 				std::async(std::launch::deferred|std::launch::async,
 				[=, &reso, &Q_avg]()
-				{ return ::calc_res_ellipse<t_real_reso>(
-					reso, reso_v, reso_s, Q_avg, iS[0], iS[1], iS[2], iS[3], iS[4]); });
+				{
+					return ::calc_res_ellipse<t_real_reso>(
+						reso, reso_v, reso_s, Q_avg,
+						iS[0], iS[1], iS[2], iS[3], iS[4], iS[5]);
+				});
 
 			tasks_ell_proj.push_back(std::move(ell_proj));
 			tasks_ell_slice.push_back(std::move(ell_slice));
@@ -273,7 +285,7 @@ void EllipseDlg::Calc()
 			}
 		}
 
-		for(unsigned int iEll=0; iEll<4; ++iEll)
+		for(unsigned int iEll = 0; iEll < 4; ++iEll)
 		{
 			m_elliProj[iEll] = tasks_ell_proj[iEll].get();
 			m_elliSlice[iEll] = tasks_ell_slice[iEll].get();

@@ -199,19 +199,20 @@ void calc(const std::vector<std::string>& vecArgs)
 
 	//Ellipsoid4d<t_real> ell4d = calc_res_ellipsoid4d(res.reso, res.Q_avg);
 
-	int iParams[2][4][5] =
+	// parameters are: x, y, project 1, project 2, remove 1, remove 2
+	int iParams[2][4][6] =
 	{
 		{	// projected
-			{0, 3, 1, 2, -1},
-			{1, 3, 0, 2, -1},
-			{2, 3, 0, 1, -1},
-			{0, 1, 3, 2, -1}
+			{ 0, 3, 1, -1, 2, -1 },
+			{ 1, 3, 0, -1, 2, -1 },
+			{ 2, 3, 0, -1, 1, -1 },
+			{ 0, 1, 3, -1, 2, -1 }
 		},
 		{	// sliced
-			{0, 3, -1, 2, 1},
-			{1, 3, -1, 2, 0},
-			{2, 3, -1, 1, 0},
-			{0, 1, -1, 2, 3}
+			{ 0, 3, -1, -1, 2, 1 },
+			{ 1, 3, -1, -1, 2, 0 },
+			{ 2, 3, -1, -1, 1, 0 },
+			{ 0, 1, -1, -1, 2, 3 }
 		}
 	};
 
@@ -244,15 +245,19 @@ void calc(const std::vector<std::string>& vecArgs)
 		std::future<Ellipse2d<t_real>> ell_proj =
 			std::async(std::launch::deferred|std::launch::async,
 			[=, &reso, &Q_avg]()
-			{ return ::calc_res_ellipse<t_real>(
-				reso, reso_v, reso_s,
-				Q_avg, iP[0], iP[1], iP[2], iP[3], iP[4]); });
+			{
+				return ::calc_res_ellipse<t_real>(
+					reso, reso_v, reso_s,
+					Q_avg, iP[0], iP[1], iP[2], iP[3], iP[4], iP[5]);
+			});
 		std::future<Ellipse2d<t_real>> ell_slice =
 			std::async(std::launch::deferred|std::launch::async,
 			[=, &reso, &Q_avg]()
-			{ return ::calc_res_ellipse<t_real>(
-				reso, reso_v, reso_s,
-				Q_avg, iS[0], iS[1], iS[2], iS[3], iS[4]); });
+			{
+				return ::calc_res_ellipse<t_real>(
+					reso, reso_v, reso_s,
+					Q_avg, iS[0], iS[1], iS[2], iS[3], iS[4], iS[5]);
+			});
 
 		tasks_ell_proj.push_back(std::move(ell_proj));
 		tasks_ell_slice.push_back(std::move(ell_slice));

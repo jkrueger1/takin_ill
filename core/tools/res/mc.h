@@ -66,7 +66,7 @@ struct McNeutronOpts
 
 
 /**
- * Ellipsoid E in Q||... coord. system in 1/A
+ * ellipsoid E in Q||... coord. system in 1/A
  *
  * Q_invA = U*B * Q_rlu
  * Q_rlu = B_inv * U_inv * Q_invA
@@ -78,7 +78,8 @@ void mc_neutrons(const Ellipsoid4d<typename t_vec::value_type>& ell4d,
 {
 	using t_real = typename t_vec::value_type;
 
-	t_vec vecTrans = tl::make_vec<t_vec>({ell4d.x_offs, ell4d.y_offs, ell4d.z_offs, ell4d.w_offs});
+	t_vec vecTrans = tl::make_vec<t_vec>({
+		ell4d.x_offs, ell4d.y_offs, ell4d.z_offs, ell4d.w_offs });
 	const t_mat& rot = ell4d.rot;
 
 	// trafo from (Q||, ...) in 1/A to (orient1, orient2) system in 1/A
@@ -87,15 +88,17 @@ void mc_neutrons(const Ellipsoid4d<typename t_vec::value_type>& ell4d,
 
 	//        Uinv * matQVec0: trafo from (Q||, ...) 1/A system to lab 1/A system
 	// Binv * Uinv * matQVec0: trafo from (Q||, ...) 1/A system to crystal rlu system
-	t_mat matUBinvQVec0 = ublas::prod(opts.matUBinv, matQVec0);
+	t_mat matUBinvQVec0;
+	if(opts.coords == McNeutronCoords::RLU)
+		matUBinvQVec0 = ublas::prod(opts.matUBinv, matQVec0);
 
-	for(std::size_t iCur=0; iCur<iNum; ++iCur)
+	for(std::size_t iCur = 0; iCur < iNum; ++iCur)
 	{
 		// generate neutrons using the 4-d gaussian distribution
 		// given by the resolution function in the orthogonal system
 		t_vec vecMC = tl::make_vec<t_vec, std::vector>(
 			tl::rand_norm_nd<t_real, std::vector>
-				({0.,0.,0.,0.},
+				({ 0., 0., 0., 0. },
 				{ ell4d.x_hwhm*tl::get_HWHM2SIGMA<t_real>(),
 				  ell4d.y_hwhm*tl::get_HWHM2SIGMA<t_real>(),
 				  ell4d.z_hwhm*tl::get_HWHM2SIGMA<t_real>(),

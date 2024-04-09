@@ -178,10 +178,10 @@ void EllipseDlg3D::Calc()
 	const ublas::vector<t_real_reso>& _Q_avg = *pQavg;
 
 
-	const int iX[] = {0, 0};
-	const int iY[] = {1, 1};
-	const int iZ[] = {3, 2};
-	const int iIntOrRem[] = {2, 3};
+	const int iX[] = { 0, 0 };
+	const int iY[] = { 1, 1 };
+	const int iZ[] = { 3, 2 };
+	const int iIntOrRem[] = { 2, 3 };
 
 	bool bCenterOn0 = true;
 
@@ -189,7 +189,7 @@ void EllipseDlg3D::Calc()
 	if(bCenterOn0)
 		Q_avg = ublas::zero_vector<t_real_reso>(Q_avg.size());
 
-	for(std::size_t i=0; i<m_pPlots.size(); ++i)
+	for(std::size_t i = 0; i < m_pPlots.size(); ++i)
 	{
 		m_elliProj[i] = ::calc_res_ellipsoid(
 			reso, reso_v, reso_s, Q_avg, iX[i], iY[i], iZ[i], iIntOrRem[i], -1);

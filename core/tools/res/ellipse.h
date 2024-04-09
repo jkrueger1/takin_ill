@@ -331,7 +331,7 @@ static inline const std::string& ellipse_labels(int iCoord, EllipseCoordSys sys,
 /*
  * this is a 1:1 C++ reimplementation of 'proj_elip' from 'mcresplot.pl' and 'rescal5'
  * iX, iY: dimensions to plot
- * iInt: dimension to integrate
+ * iInt, iInt2: dimensions to integrate
  * iRem1, iRem2: dimensions to remove
  */
 template<class t_real = t_real_reso>
@@ -340,7 +340,7 @@ Ellipse2d<t_real> calc_res_ellipse(
 	const ublas::vector<t_real>& reso_vec,	// linear part
 	t_real reso_const,			// const part
 	const ublas::vector<t_real>& Q_avg,
-	int iX, int iY, int iInt, int iRem1, int iRem2)
+	int iX, int iY, int iInt1, int iInt2, int iRem1, int iRem2)
 {
 	Ellipse2d<t_real> ell;
 	ell.quad.SetDim(4);
@@ -357,34 +357,46 @@ Ellipse2d<t_real> calc_res_ellipse(
 
 	ublas::vector<t_real> Q_offs = Q_avg;
 
-	if(iRem1>-1)
+	if(iRem1 > -1)
 	{
 		ell.quad.RemoveElems(iRem1);
 		Q_offs = tl::remove_elem(Q_offs, iRem1);
 
-		if(iInt>=iRem1) --iInt;
-		if(iRem2>=iRem1) --iRem2;
-		if(iX>=iRem1) --iX;
-		if(iY>=iRem1) --iY;
+		if(iInt1 >= iRem1) --iInt1;
+		if(iInt2 >= iRem1) --iInt2;
+		if(iRem2 >= iRem1) --iRem2;
+		if(iX >= iRem1) --iX;
+		if(iY >= iRem1) --iY;
 	}
 
-	if(iRem2>-1)
+	if(iRem2 > -1)
 	{
 		ell.quad.RemoveElems(iRem2);
 		Q_offs = tl::remove_elem(Q_offs, iRem2);
 
-		if(iInt>=iRem2) --iInt;
-		if(iX>=iRem2) --iX;
-		if(iY>=iRem2) --iY;
+		if(iInt1 >= iRem2) --iInt1;
+		if(iInt2 >= iRem2) --iInt2;
+		if(iX >= iRem2) --iX;
+		if(iY >= iRem2) --iY;
 	}
 
-	if(iInt>-1)
+	if(iInt1 > -1)
 	{
-		quad_proj(ell.quad, iInt);
-		Q_offs = tl::remove_elem(Q_offs, iInt);
+		quad_proj(ell.quad, iInt1);
+		Q_offs = tl::remove_elem(Q_offs, iInt1);
 
-		if(iX>=iInt) --iX;
-		if(iY>=iInt) --iY;
+		if(iInt2 >= iInt1) --iInt2;
+		if(iX >= iInt1) --iX;
+		if(iY >= iInt1) --iY;
+	}
+
+	if(iInt2 > -1)
+	{
+		quad_proj(ell.quad, iInt2);
+		Q_offs = tl::remove_elem(Q_offs, iInt2);
+
+		if(iX >= iInt2) --iX;
+		if(iY >= iInt2) --iY;
 	}
 
 	std::vector<t_real> evals;
@@ -420,7 +432,8 @@ Ellipse2d<t_real> calc_res_ellipse(
 
 
 	// linear part of quadric
-	const ublas::vector<t_real> vecTrans = ublas::prod(ell.rot, quad.GetPrincipalOffset());
+	const ublas::vector<t_real> vecTrans
+		= ublas::prod(ell.rot, quad.GetPrincipalOffset());
 
 	if(vecTrans.size() == 2)
 	{
@@ -602,25 +615,25 @@ Ellipsoid3d<t_real> calc_res_ellipsoid(
 
 	ublas::vector<t_real> Q_offs = Q_avg;
 
-	if(iRem>-1)
+	if(iRem >- 1)
 	{
 		ell.quad.RemoveElems(iRem);
 		Q_offs = tl::remove_elem(Q_offs, iRem);
 
-		if(iInt>=iRem) --iInt;
-		if(iX>=iRem) --iX;
-		if(iY>=iRem) --iY;
-		if(iZ>=iRem) --iZ;
+		if(iInt >= iRem) --iInt;
+		if(iX >= iRem) --iX;
+		if(iY >= iRem) --iY;
+		if(iZ >= iRem) --iZ;
 	}
 
-	if(iInt>-1)
+	if(iInt >- 1)
 	{
 		quad_proj(ell.quad, iInt);
 		Q_offs = tl::remove_elem(Q_offs, iInt);
 
-		if(iX>=iInt) --iX;
-		if(iY>=iInt) --iY;
-		if(iZ>=iInt) --iZ;
+		if(iX >= iInt) --iX;
+		if(iY >= iInt) --iY;
+		if(iZ >= iInt) --iZ;
 	}
 
 	std::vector<t_real> evals;
