@@ -203,12 +203,40 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 	spinThreads->setMaximum(std::thread::hardware_concurrency());
 	spinProcesses->setMaximum(std::thread::hardware_concurrency());
 
-	SetDefaults(false);
+
+	// tables
+	m_elli_rows = { ELLI_1A, ELLI_1B, ELLI_2A, ELLI_2B, ELLI_3A, ELLI_3B, ELLI_4A, ELLI_4B };
+	m_ello_rows = { ELLO_1, ELLO_2 };
+
+	tabEllipses->setColumnWidth(ELLI_X, 32);
+	tabEllipses->setColumnWidth(ELLI_Y, 32);
+	tabEllipses->setColumnWidth(ELLI_PROJ1, 64);
+	tabEllipses->setColumnWidth(ELLI_REM1, 64);
+	tabEllipses->setColumnWidth(ELLI_PROJ2, 64);
+	tabEllipses->setColumnWidth(ELLI_REM2, 64);
+
+	tabEllipsoids->setColumnWidth(ELLO_X, 48);
+	tabEllipsoids->setColumnWidth(ELLO_Y, 48);
+	tabEllipsoids->setColumnWidth(ELLO_Z, 48);
+	tabEllipsoids->setColumnWidth(ELLO_PROJREM, 64);
+
+	for(int elli_row : m_elli_rows)
+	{
+		tabEllipses->setRowHeight(elli_row,
+			tabEllipses->verticalHeader()->minimumSectionSize() + 4);
+	}
+
+	for(int ello_row : m_ello_rows)
+	{
+		tabEllipsoids->setRowHeight(ello_row,
+			tabEllipsoids->verticalHeader()->minimumSectionSize() + 4);
+	}
 
 
 	if(m_pSettings && m_pSettings->contains("settings/geo"))
 		restoreGeometry(m_pSettings->value("settings/geo").toByteArray());
 
+	SetDefaults(false);
 	LoadSettings();
 }
 
@@ -375,12 +403,11 @@ void SettingsDlg::LoadSettings()
 
 	// ellipse table
 	std::vector<std::string> elli_names = { "1a", "1b", "2a", "2b", "3a", "3b", "4a", "4b" };
-	std::vector<int> elli_rows = { ELLI_1A, ELLI_1B, ELLI_2A, ELLI_2B, ELLI_3A, ELLI_3B, ELLI_4A, ELLI_4B };
 
 	for(std::size_t row = 0; row < elli_names.size(); ++row)
 	{
 		const std::string& elli_name = elli_names[row];
-		int elli_row = elli_rows[row];
+		int elli_row = m_elli_rows[row];
 
 		int x = m_pSettings->value(("reso/ellipse_" + elli_name + "_x").c_str(), -2).toInt();
 		if(x > -2)
@@ -410,12 +437,11 @@ void SettingsDlg::LoadSettings()
 
 	// ellipsoid table
 	std::vector<std::string> ello_names = { "1", "2"  };
-	std::vector<int> ello_rows = { ELLO_1, ELLO_2 };
 
 	for(std::size_t row = 0; row < ello_names.size(); ++row)
 	{
 		const std::string& ello_name = ello_names[row];
-		int ello_row = ello_rows[row];
+		int ello_row = m_ello_rows[row];
 
 		int x = m_pSettings->value(("reso/ellipsoid3d_" + ello_name + "_x").c_str(), -2).toInt();
 		if(x > -2)
@@ -482,12 +508,11 @@ void SettingsDlg::SaveSettings()
 
 	// ellipse table
 	std::vector<std::string> elli_names = { "1a", "1b", "2a", "2b", "3a", "3b", "4a", "4b" };
-	std::vector<int> elli_rows = { ELLI_1A, ELLI_1B, ELLI_2A, ELLI_2B, ELLI_3A, ELLI_3B, ELLI_4A, ELLI_4B };
 
 	for(std::size_t row = 0; row < elli_names.size(); ++row)
 	{
 		const std::string& elli_name = elli_names[row];
-		int elli_row = elli_rows[row];
+		int elli_row = m_elli_rows[row];
 
 		m_pSettings->setValue(("reso/ellipse_" + elli_name + "_x").c_str(),
 			tl::clamp(tl::str_to_var<int>(tabEllipses->item(elli_row, ELLI_X)->text().toStdString()), -1, 3));
@@ -506,12 +531,11 @@ void SettingsDlg::SaveSettings()
 
 	// ellipsoid table
 	std::vector<std::string> ello_names = { "1", "2" };
-	std::vector<int> ello_rows = { ELLO_1, ELLO_2 };
 
 	for(std::size_t row = 0; row < ello_names.size(); ++row)
 	{
 		const std::string& ello_name = ello_names[row];
-		int ello_row = ello_rows[row];
+		int ello_row = m_ello_rows[row];
 
 		m_pSettings->setValue(("reso/ellipsoid3d_" + ello_name + "_x").c_str(),
 			tl::clamp(tl::str_to_var<int>(tabEllipsoids->item(ello_row, ELLO_X)->text().toStdString()), -1, 3));

@@ -43,7 +43,8 @@ SqwParamDlg::SqwParamDlg(QWidget* pParent, QSettings* pSett)
 			setFont(font);
 	}
 
-	tableParams->verticalHeader()->setDefaultSectionSize(tableParams->verticalHeader()->minimumSectionSize()+2);
+	tableParams->verticalHeader()->setDefaultSectionSize(
+		tableParams->verticalHeader()->minimumSectionSize() + 2);
 
 	connect(buttonBox, &QDialogButtonBox::clicked, this, &SqwParamDlg::ButtonBoxClicked);
 
@@ -177,7 +178,7 @@ void SqwParamDlg::SaveSqwParams()
 	std::vector<SqwBase::t_var> vecVars;
 	std::vector<SqwBase::t_var_fit> vecVarsFit;
 
-	for(int iRow=0; iRow<tableParams->rowCount(); ++iRow)
+	for(int iRow = 0; iRow < tableParams->rowCount(); ++iRow)
 	{
 		// basic vars
 		SqwBase::t_var var;

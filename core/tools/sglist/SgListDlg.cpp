@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -155,8 +155,10 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 	if(!pItem) return;
 
 
-	std::shared_ptr<const xtl::SpaceGroups<t_real>> sgs = xtl::SpaceGroups<t_real>::GetInstance();
-	const xtl::SpaceGroups<t_real>::t_vecSpaceGroups* pvecSG = sgs->get_space_groups_vec();
+	std::shared_ptr<const xtl::SpaceGroups<t_real>> sgs =
+		xtl::SpaceGroups<t_real>::GetInstance();
+	const xtl::SpaceGroups<t_real>::t_vecSpaceGroups* pvecSG =
+		sgs->get_space_groups_vec();
 
 	// header selected?
 	unsigned int iSG = pItem->data(Qt::UserRole).toUInt();

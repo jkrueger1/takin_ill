@@ -60,6 +60,9 @@ class SettingsDlg : public QDialog, Ui::SettingsDlg
 		typedef std::tuple<std::string, int, QComboBox*> t_tupCombo;
 		std::vector<t_tupCombo> m_vecCombos;
 
+		// tables
+		std::vector<int> m_elli_rows, m_ello_rows;
+
 	public:
 		SettingsDlg(QWidget* pParent=0, QSettings* pSett=0);
 		virtual ~SettingsDlg();
