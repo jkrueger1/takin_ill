@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -30,6 +30,7 @@
 #include "tlibs/file/tmp.h"
 #include "tlibs/log/log.h"
 #include "../res/defs.h"
+#include "../monteconvo/monteconvo_common.h"
 
 #include <map>
 #include <boost/filesystem.hpp>
@@ -180,6 +181,11 @@ std::string convert_monteconvo(
 	mapJob["resolution/focus_mono_h"] = strFocMonoH;
 	mapJob["resolution/focus_ana_v"] = strFocAnaV;
 	mapJob["resolution/focus_ana_h"] = strFocAnaH;
+
+
+	// epsilons
+	t_real eps_plane = propMC.Query<t_real>("taz/monteconvo/eps_plane_dist", t_real(EPS_PLANE));
+	mapJob["tolerances/plane_dist"] = tl::var_to_str(eps_plane);
 
 
 	// parameters

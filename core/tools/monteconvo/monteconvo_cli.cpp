@@ -66,8 +66,8 @@ using t_real = t_real_reso;
 
 static const std::string g_strXmlRoot("taz/");
 
-static constexpr const t_real g_dEpsRlu = EPS_RLU;
-static constexpr const t_real g_dEpsPlane = EPS_PLANE;
+static t_real g_dEpsRlu = EPS_RLU;
+static t_real g_dEpsPlane = EPS_PLANE;
 
 
 // ----------------------------------------------------------------------------
@@ -136,6 +136,21 @@ static ConvoConfig load_config(const tl::Prop<std::string>& xml)
 	odVal = xml.QueryOpt<t_real>(g_strXmlRoot+"monteconvo/S_scale"); if(odVal) cfg.S_scale = *odVal;
 	odVal = xml.QueryOpt<t_real>(g_strXmlRoot+"monteconvo/S_slope"); if(odVal) cfg.S_slope = *odVal;
 	odVal = xml.QueryOpt<t_real>(g_strXmlRoot+"monteconvo/S_offs"); if(odVal) cfg.S_offs = *odVal;
+
+	// real value epsilons
+	odVal = xml.QueryOpt<t_real>(g_strXmlRoot+"monteconvo/eps_rlu");
+	if(odVal)
+	{
+		g_dEpsRlu = *odVal;
+		tl::log_debug("Setting rlu tolerance = ", g_dEpsRlu);
+	}
+
+	odVal = xml.QueryOpt<t_real>(g_strXmlRoot+"monteconvo/eps_plane_dist");
+	if(odVal)
+	{
+		g_dEpsPlane = *odVal;
+		tl::log_debug("Setting plane distance tolerance = ", g_dEpsPlane);
+	}
 
 	// int values
 	boost::optional<int> oiVal;
@@ -354,7 +369,7 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 	tl::trim(_strResoFile);
 	const std::string strResoFile = find_file_in_global_paths(_strResoFile);
 
-	tl::log_debug("Loading resolution from \"", strResoFile, "\".");
+	tl::log_info("Loading resolution from \"", strResoFile, "\".");
 	if(strResoFile == "" || !reso.LoadRes(strResoFile.c_str()))
 	{
 		tl::log_err("Could not load resolution file \"", strResoFile, "\".");
@@ -381,7 +396,7 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 		tl::trim(_strLatticeFile);
 		const std::string strLatticeFile = find_file_in_global_paths(_strLatticeFile);
 
-		tl::log_debug("Loading crystal from \"", strLatticeFile, "\".");
+		tl::log_info("Loading crystal from \"", strLatticeFile, "\".");
 		if(strLatticeFile == "" || !reso.LoadLattice(strLatticeFile.c_str(), cfg.flip_coords))
 		{
 			tl::log_err("Could not load crystal file \"", strLatticeFile, "\".");
@@ -728,7 +743,7 @@ static bool start_convo_2d(const ConvoConfig& cfg, const tl::Prop<std::string>& 
 	tl::trim(_strResoFile);
 	const std::string strResoFile = find_file_in_global_paths(_strResoFile);
 
-	tl::log_debug("Loading resolution from \"", strResoFile, "\".");
+	tl::log_info("Loading resolution from \"", strResoFile, "\".");
 	if(strResoFile == "" || !reso.LoadRes(strResoFile.c_str()))
 	{
 		tl::log_err("Could not load resolution file \"", strResoFile, "\".");
@@ -743,7 +758,7 @@ static bool start_convo_2d(const ConvoConfig& cfg, const tl::Prop<std::string>& 
 	tl::trim(_strLatticeFile);
 	const std::string strLatticeFile = find_file_in_global_paths(_strLatticeFile);
 
-	tl::log_debug("Loading crystal from \"", strLatticeFile, "\".");
+	tl::log_info("Loading crystal from \"", strLatticeFile, "\".");
 	if(strLatticeFile == "" || !reso.LoadLattice(strLatticeFile.c_str(), cfg.flip_coords))
 	{
 		tl::log_err("Could not load crystal file \"", strLatticeFile, "\".");

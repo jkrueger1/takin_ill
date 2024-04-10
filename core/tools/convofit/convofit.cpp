@@ -43,6 +43,7 @@ namespace fs = boost::filesystem;
 #include "convofit_import.h"
 #include "scan.h"
 #include "model.h"
+#include "../monteconvo/monteconvo_common.h"
 #include "../monteconvo/sqwfactory.h"
 #include "../res/defs.h"
 
@@ -121,9 +122,9 @@ Convofit::~Convofit()
 
 // ----------------------------------------------------------------------------
 // global command line overrides
-bool g_bVerbose = 0;
-bool g_bSkipFit = 0;
-bool g_bUseValuesFromModel = 0;
+bool g_bVerbose = false;
+bool g_bSkipFit = false;
+bool g_bUseValuesFromModel = false;
 unsigned int g_iNumNeutrons = 0;
 std::string g_strSetParams;
 std::string g_strOutFileSuffix;
@@ -316,6 +317,7 @@ bool Convofit::run_job(const std::string& _strJob)
 	}
 	// --------------------------------------------------------------------
 
+	t_real eps_plane_dist = prop.Query<t_real>("tolerances/plane_dist", EPS_PLANE);
 
 	unsigned iNumNeutrons = prop.Query<unsigned>("montecarlo/neutrons", 1000);
 	unsigned iNumSample = prop.Query<unsigned>("montecarlo/sample_positions", 1);
@@ -546,6 +548,8 @@ bool Convofit::run_job(const std::string& _strJob)
 		const std::string& strCurResFile = vecResFiles[iGroup];
 
 		TASReso reso;
+		reso.SetPlaneDistTolerance(eps_plane_dist);
+
 		tl::log_info("Loading instrument resolution file \"", strCurResFile, "\" for scan group ", iGroup, ".");
 		if(!reso.LoadRes(strCurResFile.c_str()))
 			return false;
