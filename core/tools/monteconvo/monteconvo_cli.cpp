@@ -142,14 +142,14 @@ static ConvoConfig load_config(const tl::Prop<std::string>& xml)
 	if(odVal)
 	{
 		g_dEpsRlu = *odVal;
-		tl::log_debug("Setting rlu tolerance = ", g_dEpsRlu);
+		tl::log_debug("Setting rlu tolerance = ", g_dEpsRlu, ".");
 	}
 
 	odVal = xml.QueryOpt<t_real>(g_strXmlRoot+"monteconvo/eps_plane_dist");
 	if(odVal)
 	{
 		g_dEpsPlane = *odVal;
-		tl::log_debug("Setting plane distance tolerance = ", g_dEpsPlane);
+		tl::log_debug("Setting plane distance tolerance = ", g_dEpsPlane, ".");
 	}
 
 	// int values
