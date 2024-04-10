@@ -212,10 +212,10 @@ bool Convofit::run_job(const std::string& _strJob)
 	std::string strFieldVar = prop.Query<std::string>("input/sqw_field_var", "");
 	std::string strSetParams = prop.Query<std::string>("input/sqw_set_params", "");
 
-	bool bNormToMon = prop.Query<bool>("input/norm_to_monitor", 1);
-	bool bFlipCoords = prop.Query<bool>("input/flip_lhs_rhs", 0);
-	bool bUseFirstAndLastScanPt = prop.Query<bool>("input/use_first_last_pt", 0);
-	bool bAllowScanMerging = prop.Query<bool>("input/allow_scan_merging", 0);
+	bool bNormToMon = prop.Query<bool>("input/norm_to_monitor", true);
+	bool bFlipCoords = prop.Query<bool>("input/flip_lhs_rhs", false);
+	bool bUseFirstAndLastScanPt = prop.Query<bool>("input/use_first_last_pt", false);
+	bool bAllowScanMerging = prop.Query<bool>("input/allow_scan_merging", false);
 
 	if(g_strSetParams != "")
 	{
@@ -321,7 +321,7 @@ bool Convofit::run_job(const std::string& _strJob)
 
 	unsigned iNumNeutrons = prop.Query<unsigned>("montecarlo/neutrons", 1000);
 	unsigned iNumSample = prop.Query<unsigned>("montecarlo/sample_positions", 1);
-	bool bRecycleMC = prop.Query<bool>("montecarlo/recycle_neutrons", 1);
+	bool bRecycleMC = prop.Query<bool>("montecarlo/recycle_neutrons", true);
 
 	if(g_iNumNeutrons > 0)
 		iNumNeutrons = g_iNumNeutrons;
@@ -338,7 +338,7 @@ bool Convofit::run_job(const std::string& _strJob)
 	int iStrat = prop.Query<int>("fitter/strategy", 0);
 	t_real dSigma = prop.Query<t_real>("fitter/sigma", 1.);
 
-	bool bDoFit = prop.Query<bool>("fitter/do_fit", 1);
+	bool bDoFit = prop.Query<bool>("fitter/do_fit", true);
 	if(g_bSkipFit) bDoFit = 0;
 
 	unsigned int iMaxFuncCalls = prop.Query<unsigned>("fitter/max_funccalls", 0);
@@ -347,8 +347,8 @@ bool Convofit::run_job(const std::string& _strJob)
 	std::string strScOutFile = prop.Query<std::string>("output/scan_file");
 	std::string strModOutFile = prop.Query<std::string>("output/model_file");
 	std::string strLogOutFile = prop.Query<std::string>("output/log_file");
-	bool bPlot = prop.Query<bool>("output/plot", 0);
-	bool bPlotIntermediate = prop.Query<bool>("output/plot_intermediate", 0);
+	bool bPlot = prop.Query<bool>("output/plot", false);
+	bool bPlotIntermediate = prop.Query<bool>("output/plot_intermediate", false);
 
 	unsigned int iPlotPoints = prop.Query<unsigned>("output/plot_points", 128);
 	unsigned int iPlotPointsSkipBegin = prop.Query<unsigned>("output/plot_points_skip_begin", 0);
@@ -396,7 +396,7 @@ bool Convofit::run_job(const std::string& _strJob)
 
 	// parameter using either strModInFile if it is defined or strModOutFile if
 	// reuse_values_from_model_file is set to 1
-	bool bUseValuesFromModel = prop.Query<bool>("fit_parameters/reuse_values_from_model_file", 0);
+	bool bUseValuesFromModel = prop.Query<bool>("fit_parameters/reuse_values_from_model_file", false);
 	std::string strModInFile = prop.Query<std::string>("input/model_file");
 	if(g_bUseValuesFromModel || strModInFile != "")
 		bUseValuesFromModel = 1;
