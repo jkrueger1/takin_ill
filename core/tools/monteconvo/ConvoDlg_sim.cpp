@@ -38,8 +38,6 @@
 using t_real = t_real_reso;
 using t_stopwatch = tl::Stopwatch<t_real>;
 
-static constexpr const t_real g_dEpsRlu = EPS_RLU;
-
 
 /**
  * create 1d convolution
@@ -116,7 +114,7 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 		std::string strScanVar = "";
 		std::vector<std::vector<t_real>> vecAxes;
 		std::tie(bScanAxisFound, iScanAxisIdx, strScanVar, vecAxes) = get_scan_axis<t_real>(
-			true, comboAxis->currentIndex(), spinStepCnt->value(), g_dEpsRlu,
+			true, comboAxis->currentIndex(), spinStepCnt->value(), m_eps_rlu,
 			spinStartH->value(), spinStopH->value(), spinStartK->value(), spinStopK->value(),
 			spinStartL->value(), spinStopL->value(), spinStartE->value(), spinStopE->value());
 		if(!bScanAxisFound)
@@ -145,6 +143,7 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 		// -------------------------------------------------------------------------
 		// Load reso file
 		TASReso reso;
+		reso.SetPlaneDistTolerance(m_eps_plane);
 
 		std::string _strResoFile = editRes->text().toStdString();
 		tl::trim(_strResoFile);
@@ -308,7 +307,6 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 					}
 					catch(const std::exception& ex)
 					{
-						//QMessageBox::critical(this, "Error", ex.what());
 						tl::log_err(ex.what());
 						return std::pair<bool, t_real>(false, 0.);
 					}
@@ -615,25 +613,25 @@ void ConvoDlg::Start2D()
 
 		std::string strScanVar1 = "";
 		t_real dStart1{}, dStop1{};
-		if(iScanAxis1==1 || (iScanAxis1==0 && !tl::float_equal(spinStartH->value(), spinStopH->value(), g_dEpsRlu)))
+		if(iScanAxis1==1 || (iScanAxis1==0 && !tl::float_equal(spinStartH->value(), spinStopH->value(), m_eps_rlu)))
 		{
 			strScanVar1 = "h (rlu)";
 			dStart1 = spinStartH->value();
 			dStop1 = spinStopH->value();
 		}
-		else if(iScanAxis1==2 || (iScanAxis1==0 && !tl::float_equal(spinStartK->value(), spinStopK->value(), g_dEpsRlu)))
+		else if(iScanAxis1==2 || (iScanAxis1==0 && !tl::float_equal(spinStartK->value(), spinStopK->value(), m_eps_rlu)))
 		{
 			strScanVar1 = "k (rlu)";
 			dStart1 = spinStartK->value();
 			dStop1 = spinStopK->value();
 		}
-		else if(iScanAxis1==3 || (iScanAxis1==0 && !tl::float_equal(spinStartL->value(), spinStopL->value(), g_dEpsRlu)))
+		else if(iScanAxis1==3 || (iScanAxis1==0 && !tl::float_equal(spinStartL->value(), spinStopL->value(), m_eps_rlu)))
 		{
 			strScanVar1 = "l (rlu)";
 			dStart1 = spinStartL->value();
 			dStop1 = spinStopL->value();
 		}
-		else if(iScanAxis1==4 || (iScanAxis1==0 && !tl::float_equal(spinStartE->value(), spinStopE->value(), g_dEpsRlu)))
+		else if(iScanAxis1==4 || (iScanAxis1==0 && !tl::float_equal(spinStartE->value(), spinStopE->value(), m_eps_rlu)))
 		{
 			strScanVar1 = "E (meV)";
 			dStart1 = spinStartE->value();
@@ -642,25 +640,25 @@ void ConvoDlg::Start2D()
 
 		std::string strScanVar2 = "";
 		t_real dStart2{}, dStop2{};
-		if(iScanAxis2==1 || (iScanAxis2==0 && !tl::float_equal(spinStartH->value(), spinStopH2->value(), g_dEpsRlu)))
+		if(iScanAxis2==1 || (iScanAxis2==0 && !tl::float_equal(spinStartH->value(), spinStopH2->value(), m_eps_rlu)))
 		{
 			strScanVar2 = "h (rlu)";
 			dStart2 = spinStartH->value();
 			dStop2 = spinStopH2->value();
 		}
-		else if(iScanAxis2==2 || (iScanAxis2==0 && !tl::float_equal(spinStartK->value(), spinStopK2->value(), g_dEpsRlu)))
+		else if(iScanAxis2==2 || (iScanAxis2==0 && !tl::float_equal(spinStartK->value(), spinStopK2->value(), m_eps_rlu)))
 		{
 			strScanVar2 = "k (rlu)";
 			dStart2 = spinStartK->value();
 			dStop2 = spinStopK2->value();
 		}
-		else if(iScanAxis2==3 || (iScanAxis2==0 && !tl::float_equal(spinStartL->value(), spinStopL2->value(), g_dEpsRlu)))
+		else if(iScanAxis2==3 || (iScanAxis2==0 && !tl::float_equal(spinStartL->value(), spinStopL2->value(), m_eps_rlu)))
 		{
 			strScanVar2 = "l (rlu)";
 			dStart2 = spinStartL->value();
 			dStop2 = spinStopL2->value();
 		}
-		else if(iScanAxis2==4 || (iScanAxis2==0 && !tl::float_equal(spinStartE->value(), spinStopE2->value(), g_dEpsRlu)))
+		else if(iScanAxis2==4 || (iScanAxis2==0 && !tl::float_equal(spinStartE->value(), spinStopE2->value(), m_eps_rlu)))
 		{
 			strScanVar2 = "E (meV)";
 			dStart2 = spinStartE->value();
@@ -681,6 +679,8 @@ void ConvoDlg::Start2D()
 		// -------------------------------------------------------------------------
 		// Load reso file
 		TASReso reso;
+		reso.SetPlaneDistTolerance(m_eps_plane);
+
 		std::string _strResoFile = editRes->text().toStdString();
 		tl::trim(_strResoFile);
 		const std::string strResoFile = find_file_in_global_paths(_strResoFile);
@@ -800,6 +800,7 @@ void ConvoDlg::Start2D()
 					// TODO: add an option to let the user choose if S(Q,E) is
 					// really the dynamical structure factor, or its absolute square
 					dS += (*m_pSqw)(dCurH, dCurK, dCurL, dCurE);
+					dS += m_pSqw->GetBackground(dCurH, dCurK, dCurL, dCurE);
 				}
 				else
 				{	// convolution
@@ -820,7 +821,6 @@ void ConvoDlg::Start2D()
 					}
 					catch(const std::exception& ex)
 					{
-						//QMessageBox::critical(this, "Error", ex.what());
 						tl::log_err(ex.what());
 						return std::pair<bool, t_real>(false, 0.);
 					}
@@ -1001,7 +1001,7 @@ void ConvoDlg::StartDisp()
 		std::string strScanVar = "";
 		std::vector<std::vector<t_real>> vecAxes;
 		std::tie(bScanAxisFound, iScanAxisIdx, strScanVar, vecAxes) = get_scan_axis<t_real>(
-			false, comboAxis->currentIndex(), spinStepCnt->value(), g_dEpsRlu,
+			false, comboAxis->currentIndex(), spinStepCnt->value(), m_eps_rlu,
 			spinStartH->value(), spinStopH->value(), spinStartK->value(), spinStopK->value(),
 			spinStartL->value(), spinStopL->value(), spinStartE->value(), spinStopE->value());
 		if(!bScanAxisFound)

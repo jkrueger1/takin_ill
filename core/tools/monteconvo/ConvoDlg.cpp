@@ -69,6 +69,12 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	setWindowTitle(s_strTitle.c_str());
 
 	// -------------------------------------------------------------------------
+	// default values
+	editEpsRlu->setText(tl::var_to_str(EPS_RLU).c_str());
+	editEpsPlaneDist->setText(tl::var_to_str(EPS_PLANE).c_str());
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
 	// widgets
 	m_vecSpinBoxes = { spinStartH, spinStartK, spinStartL, spinStartE,
 		spinStopH, spinStopK, spinStopL, spinStopE,
@@ -102,6 +108,7 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 		editCounter, editMonitor,
 		editTemp, editField,
 		editAutosave,
+		editEpsRlu, editEpsPlaneDist,
 	};
 	m_vecEditNames = {
 		"monteconvo/filter_col", "monteconvo/filter_val",
@@ -111,6 +118,7 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 		"convofit/counter", "convofit/monitor",
 		"convofit/temp_override", "convofit/field_override",
 		"monteconvo/autosave",
+		"monteconvo/eps_rlu", "monteconvo/eps_plane_dist",
 	};
 
 	m_vecTextBoxes = { editSqwParams };
@@ -394,15 +402,22 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 
 	connect(comboSqw, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &ConvoDlg::SqwModelChanged);
 	connect(editSqw, &QLineEdit::textChanged, this, &ConvoDlg::createSqwModel);
+
 	connect(editScan, &QLineEdit::textChanged, this, &ConvoDlg::scanFileChanged);
 	connect(editFilterCol, &QLineEdit::textChanged, this, [this]() -> void
 	{ scanFileChanged(editScan->text()); });
 	connect(editFilterVal, &QLineEdit::textChanged, this, [this]() -> void
 	{ scanFileChanged(editScan->text()); });
+
 	connect(editCounter, &QLineEdit::textChanged, this, [this]() -> void
 	{ scanFileChanged(editScan->text()); });
 	connect(editMonitor, &QLineEdit::textChanged, this, [this]() -> void
 	{ scanFileChanged(editScan->text()); });
+
+	connect(editEpsRlu, &QLineEdit::textChanged, this, [this]() -> void
+	{ m_eps_rlu = tl::str_to_var<t_real>(editEpsRlu->text().toStdString()); });
+	connect(editEpsPlaneDist, &QLineEdit::textChanged, this, [this]() -> void
+	{ m_eps_plane = tl::str_to_var<t_real>(editEpsPlaneDist->text().toStdString()); });
 
 	connect(editScale, &QLineEdit::textChanged, this, &ConvoDlg::scaleChanged);
 	connect(editSlope, &QLineEdit::textChanged, this, &ConvoDlg::scaleChanged);
@@ -782,7 +797,7 @@ void ConvoDlg::scaleChanged()
 	std::string strScanVar = "";
 	std::vector<std::vector<t_real>> vecAxes;
 	std::tie(bScanAxisFound, iScanAxisIdx, strScanVar, vecAxes) = get_scan_axis<t_real>(
-		true, comboAxis->currentIndex(), spinStepCnt->value(), EPS_RLU,
+		true, comboAxis->currentIndex(), spinStepCnt->value(), m_eps_rlu,
 		spinStartH->value(), spinStopH->value(), spinStartK->value(), spinStopK->value(),
 		spinStartL->value(), spinStopL->value(), spinStartE->value(), spinStopE->value());
 	if(!bScanAxisFound)

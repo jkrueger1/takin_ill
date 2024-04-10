@@ -66,6 +66,9 @@ using t_real = t_real_reso;
 
 static const std::string g_strXmlRoot("taz/");
 
+static constexpr const t_real g_dEpsRlu = EPS_RLU;
+static constexpr const t_real g_dEpsPlane = EPS_PLANE;
+
 
 // ----------------------------------------------------------------------------
 // configuration
@@ -327,7 +330,7 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 	std::string strScanVar = "";
 	std::vector<std::vector<t_real>> vecAxes;
 	std::tie(bScanAxisFound, iScanAxisIdx, strScanVar, vecAxes) = get_scan_axis<t_real>(
-		true, cfg.scanaxis, cfg.step_count, EPS_RLU,
+		true, cfg.scanaxis, cfg.step_count, g_dEpsRlu,
 		cfg.h_from, cfg.h_to, cfg.k_from, cfg.k_to, cfg.l_from, cfg.l_to, cfg.E_from, cfg.E_to);
 	if(!bScanAxisFound)
 	{
@@ -345,6 +348,7 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 	// -------------------------------------------------------------------------
 	// Load reso file
 	TASReso reso;
+	reso.SetPlaneDistTolerance(g_dEpsPlane);
 
 	std::string _strResoFile = cfg.instr;
 	tl::trim(_strResoFile);
@@ -659,25 +663,25 @@ static bool start_convo_2d(const ConvoConfig& cfg, const tl::Prop<std::string>& 
 	// find axis labels and ranges
 	std::string strScanVar1 = "";
 	t_real dStart1{}, dStop1{};
-	if(cfg.scanaxis == 1 || (cfg.scanaxis == 0 && !tl::float_equal(cfg.h_from, cfg.h_to, EPS_RLU)))
+	if(cfg.scanaxis == 1 || (cfg.scanaxis == 0 && !tl::float_equal(cfg.h_from, cfg.h_to, g_dEpsRlu)))
 	{
 		strScanVar1 = "h (rlu)";
 		dStart1 = cfg.h_from;
 		dStop1 = cfg.h_to;
 	}
-	else if(cfg.scanaxis == 2 || (cfg.scanaxis == 0 && !tl::float_equal(cfg.k_from, cfg.k_to, EPS_RLU)))
+	else if(cfg.scanaxis == 2 || (cfg.scanaxis == 0 && !tl::float_equal(cfg.k_from, cfg.k_to, g_dEpsRlu)))
 	{
 		strScanVar1 = "k (rlu)";
 		dStart1 = cfg.k_from;
 		dStop1 = cfg.k_to;
 	}
-	else if(cfg.scanaxis == 3 || (cfg.scanaxis == 0 && !tl::float_equal(cfg.l_from, cfg.l_to, EPS_RLU)))
+	else if(cfg.scanaxis == 3 || (cfg.scanaxis == 0 && !tl::float_equal(cfg.l_from, cfg.l_to, g_dEpsRlu)))
 	{
 		strScanVar1 = "l (rlu)";
 		dStart1 = cfg.l_from;
 		dStop1 = cfg.l_to;
 	}
-	else if(cfg.scanaxis == 4 || (cfg.scanaxis == 0 && !tl::float_equal(cfg.E_from, cfg.E_to, EPS_RLU)))
+	else if(cfg.scanaxis == 4 || (cfg.scanaxis == 0 && !tl::float_equal(cfg.E_from, cfg.E_to, g_dEpsRlu)))
 	{
 		strScanVar1 = "E (meV)";
 		dStart1 = cfg.E_from;
@@ -686,25 +690,25 @@ static bool start_convo_2d(const ConvoConfig& cfg, const tl::Prop<std::string>& 
 
 	std::string strScanVar2 = "";
 	t_real dStart2{}, dStop2{};
-	if(cfg.scanaxis2 == 1 || (cfg.scanaxis2 == 0 && !tl::float_equal(cfg.h_from, cfg.h_to_2, EPS_RLU)))
+	if(cfg.scanaxis2 == 1 || (cfg.scanaxis2 == 0 && !tl::float_equal(cfg.h_from, cfg.h_to_2, g_dEpsRlu)))
 	{
 		strScanVar2 = "h (rlu)";
 		dStart2 = cfg.h_from;
 		dStop2 = cfg.h_to_2;
 	}
-	else if(cfg.scanaxis2 == 2 || (cfg.scanaxis2 == 0 && !tl::float_equal(cfg.k_from, cfg.k_to_2, EPS_RLU)))
+	else if(cfg.scanaxis2 == 2 || (cfg.scanaxis2 == 0 && !tl::float_equal(cfg.k_from, cfg.k_to_2, g_dEpsRlu)))
 	{
 		strScanVar2 = "k (rlu)";
 		dStart2 = cfg.k_from;
 		dStop2 = cfg.k_to_2;
 	}
-	else if(cfg.scanaxis2 == 3 || (cfg.scanaxis2 == 0 && !tl::float_equal(cfg.l_from, cfg.l_to_2, EPS_RLU)))
+	else if(cfg.scanaxis2 == 3 || (cfg.scanaxis2 == 0 && !tl::float_equal(cfg.l_from, cfg.l_to_2, g_dEpsRlu)))
 	{
 		strScanVar2 = "l (rlu)";
 		dStart2 = cfg.l_from;
 		dStop2 = cfg.l_to_2;
 	}
-	else if(cfg.scanaxis2 == 4 || (cfg.scanaxis2 == 0 && !tl::float_equal(cfg.E_from, cfg.E_to_2, EPS_RLU)))
+	else if(cfg.scanaxis2 == 4 || (cfg.scanaxis2 == 0 && !tl::float_equal(cfg.E_from, cfg.E_to_2, g_dEpsRlu)))
 	{
 		strScanVar2 = "E (meV)";
 		dStart2 = cfg.E_from;
@@ -718,6 +722,8 @@ static bool start_convo_2d(const ConvoConfig& cfg, const tl::Prop<std::string>& 
 	// -------------------------------------------------------------------------
 	// Load reso file
 	TASReso reso;
+	reso.SetPlaneDistTolerance(g_dEpsPlane);
+
 	std::string _strResoFile = cfg.instr;
 	tl::trim(_strResoFile);
 	const std::string strResoFile = find_file_in_global_paths(_strResoFile);

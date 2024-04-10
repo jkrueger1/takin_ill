@@ -69,6 +69,7 @@ protected:
 
 	// for better compatibility with older versions
 	t_real_reso m_R0_scale = 1.;
+	t_real_reso m_dPlaneDistTolerance = std::cbrt(tl::get_epsilon<t_real_reso>());
 
 public:
 	TASReso();
@@ -92,6 +93,7 @@ public:
 
 	void SetAlgo(ResoAlgo algo) { m_algo = algo; }
 	void SetOptimalFocus(ResoFocus foc) { m_foc = foc; }
+	void SetPlaneDistTolerance(t_real_reso eps) { m_dPlaneDistTolerance = eps; }
 
 	const EckParams& GetResoParams() const { return m_reso; }
 	const VioParams& GetTofResoParams() const { return m_tofreso; }

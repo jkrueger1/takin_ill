@@ -36,8 +36,8 @@
 #include "TASReso.h"
 
 
-#define EPS_RLU 1e-3
-
+#define EPS_RLU   1e-3
+#define EPS_PLANE 5e-4
 
 
 /**

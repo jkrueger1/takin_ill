@@ -72,12 +72,16 @@ const TASReso& TASReso::operator=(const TASReso& res)
 	this->m_algo = res.m_algo;
 	this->m_foc = res.m_foc;
 	this->m_opts = res.m_opts;
+
 	this->m_reso = res.m_reso;
 	this->m_tofreso = res.m_tofreso;
 	this->m_res = res.m_res;
+
 	this->m_bKiFix = res.m_bKiFix;
 	this->m_dKFix = res.m_dKFix;
+
 	this->m_R0_scale = res.m_R0_scale;
+	this->m_dPlaneDistTolerance = res.m_dPlaneDistTolerance;
 
 	return *this;
 }
@@ -448,8 +452,6 @@ bool TASReso::SetLattice(t_real a, t_real b, t_real c,
 
 bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 {
-	static const t_real s_dPlaneDistTolerance = std::cbrt(tl::get_epsilon<t_real>());
-
 	ResoResults& resores = m_res[0];
 
 	//std::cout << "UB = " << m_opts.matUB << std::endl;
@@ -512,26 +514,27 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 
 	if(m_foc != ResoFocus::FOC_UNCHANGED)
 	{
-		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_FLAT)) != 0)		// flat mono
+		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_FLAT)) != 0)      // flat mono
 			m_reso.bMonoIsCurvedH = m_reso.bMonoIsCurvedV = 0;
-		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_H)) != 0)		// optimally curved mono (h)
+		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_H)) != 0)         // optimally curved mono (h)
 			m_reso.bMonoIsCurvedH = m_reso.bMonoIsOptimallyCurvedH = 1;
-		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_V)) != 0)		// optimally curved mono (v)
+		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_V)) != 0)         // optimally curved mono (v)
 			m_reso.bMonoIsCurvedV = m_reso.bMonoIsOptimallyCurvedV = 1;
 
-		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_FLAT)) != 0)		// flat ana
+		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_FLAT)) != 0)       // flat ana
 			m_reso.bAnaIsCurvedH = m_reso.bAnaIsCurvedV = 0;
-		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_H)) != 0)			// optimally curved ana (h)
+		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_H)) != 0)          // optimally curved ana (h)
 			m_reso.bAnaIsCurvedH = m_reso.bAnaIsOptimallyCurvedH = 1;
-		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_V)) != 0)			// optimally curved ana (v)
+		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_V)) != 0)          // optimally curved ana (v)
 			m_reso.bAnaIsCurvedV = m_reso.bAnaIsOptimallyCurvedV = 1;
 	}
 
 
-	if(std::fabs(vecQ[2]) > s_dPlaneDistTolerance)
+	if(std::fabs(vecQ[2]) > m_dPlaneDistTolerance)
 	{
 		tl::log_err("Position Q = (", h, " ", k, " ", l, "),",
-			" E = ", E, " meV not in scattering plane.");
+			" E = ", E, " meV not in scattering plane.",
+			" Distance: ", vecQ[2], "/A, tolerance: ", m_dPlaneDistTolerance, "/A.");
 
 		resores.strErr = "Not in scattering plane.";
 		resores.bOk = false;

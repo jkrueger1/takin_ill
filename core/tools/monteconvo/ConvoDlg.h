@@ -84,6 +84,10 @@ protected:
 	static const std::string s_strTitle;
 	std::string m_strLastFile;
 
+	// distance in 1/A to be considered inside the scattering plane
+	t_real_reso m_eps_plane = EPS_PLANE;
+	t_real_reso m_eps_rlu = EPS_RLU;
+
 	t_real_reso m_chi2 = 0.;
 
 	// maps module identifiers to the corresponding module help texts

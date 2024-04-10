@@ -61,7 +61,7 @@
         <number>0</number>
        </property>
        <item row="0" column="0">
-        <widget class="QGroupBox" name="groupBox">
+        <widget class="QGroupBox" name="groupBoxCfgFiles">
          <property name="title">
           <string>Input and Configuration Files</string>
          </property>
@@ -259,7 +259,7 @@
         </widget>
        </item>
        <item row="3" column="0">
-        <widget class="QGroupBox" name="groupBox_2">
+        <widget class="QGroupBox" name="groupBoxSteps">
          <property name="title">
           <string>Scan Steps in (hkl) [rlu], E [meV]</string>
          </property>
@@ -763,7 +763,7 @@
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QGroupBox" name="groupBox_4">
+        <widget class="QGroupBox" name="groupBoxCfg">
          <property name="title">
           <string>Configuration</string>
          </property>
@@ -1174,7 +1174,7 @@
         </widget>
        </item>
        <item row="2" column="0">
-        <widget class="QGroupBox" name="groupBox_3">
+        <widget class="QGroupBox" name="groupBoxSqw">
          <property name="title">
           <string>Dynamical Structure Factor S(Q,E)</string>
          </property>
@@ -1313,7 +1313,7 @@
         <number>0</number>
        </property>
        <item row="0" column="0">
-        <widget class="QGroupBox" name="groupBox_6">
+        <widget class="QGroupBox" name="groupBoxGenCfg">
          <property name="title">
           <string>General Configuration</string>
          </property>
@@ -1376,8 +1376,91 @@
          </layout>
         </widget>
        </item>
+
        <item row="1" column="0">
-        <widget class="QGroupBox" name="groupBox_5">
+        <widget class="QGroupBox" name="groupBoxEps">
+         <property name="title">
+          <string>Tolerances</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_10a">
+          <property name="leftMargin">
+           <number>4</number>
+          </property>
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="rightMargin">
+           <number>4</number>
+          </property>
+          <property name="bottomMargin">
+           <number>4</number>
+          </property>
+          <property name="horizontalSpacing">
+           <number>4</number>
+          </property>
+          <property name="verticalSpacing">
+           <number>2</number>
+          </property>
+
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_24a">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>RLU:</string>
+            </property>
+           </widget>
+          </item>
+
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="editEpsRlu"/>
+          </item>
+
+          <item row="0" column="2">
+           <spacer name="horizontalSpacer_2a">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>10</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+
+          <item row="0" column="3">
+           <widget class="QLabel" name="label_24b">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Plane Dist.:</string>
+            </property>
+           </widget>
+          </item>
+
+          <item row="0" column="4">
+           <widget class="QLineEdit" name="editEpsPlaneDist"/>
+          </item>
+
+         </layout>
+        </widget>
+       </item>
+
+       <item row="2" column="0">
+        <widget class="QGroupBox" name="groupBoxFitter">
          <property name="title">
           <string>Fitter Configuration</string>
          </property>
@@ -1515,8 +1598,9 @@
          </layout>
         </widget>
        </item>
-       <item row="2" column="0">
-        <widget class="QGroupBox" name="groupBox_7">
+
+       <item row="3" column="0">
+        <widget class="QGroupBox" name="groupBoxOverrides">
          <property name="title">
           <string>Overrides (automatically determined if empty)</string>
          </property>
@@ -1539,64 +1623,7 @@
           <property name="verticalSpacing">
            <number>2</number>
           </property>
-          <item row="4" column="0" colspan="5">
-           <widget class="QPlainTextEdit" name="editSqwParams"/>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_27">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Temperature:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="editCounter"/>
-          </item>
-          <item row="1" column="3">
-           <widget class="QLabel" name="label_28">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Mag. Field:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="4">
-           <widget class="QLineEdit" name="editMonitor"/>
-          </item>
-          <item row="3" column="0" colspan="2">
-           <widget class="QLabel" name="label_29">
-            <property name="text">
-             <string>Script Parameters:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="3">
-           <widget class="QLabel" name="label_26">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Monitor:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="4">
-           <widget class="QLineEdit" name="editField"/>
-          </item>
+
           <item row="0" column="0">
            <widget class="QLabel" name="label_25">
             <property name="sizePolicy">
@@ -1610,9 +1637,11 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="editTemp"/>
+
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="editCounter"/>
           </item>
+
           <item row="0" column="2">
            <spacer name="horizontalSpacer_3">
             <property name="orientation">
@@ -1629,6 +1658,61 @@
             </property>
            </spacer>
           </item>
+
+          <item row="0" column="3">
+           <widget class="QLabel" name="label_26">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Monitor:</string>
+            </property>
+           </widget>
+          </item>
+
+          <item row="0" column="4">
+           <widget class="QLineEdit" name="editMonitor"/>
+          </item>
+
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_27">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Temperature:</string>
+            </property>
+           </widget>
+          </item>
+
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="editTemp"/>
+          </item>
+
+          <item row="1" column="3">
+           <widget class="QLabel" name="label_28">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Mag. Field:</string>
+            </property>
+           </widget>
+          </item>
+
+          <item row="1" column="4">
+           <widget class="QLineEdit" name="editField"/>
+          </item>
+
           <item row="2" column="0">
            <spacer name="verticalSpacer">
             <property name="orientation">
@@ -1645,11 +1729,25 @@
             </property>
            </spacer>
           </item>
+
+          <item row="3" column="0" colspan="2">
+           <widget class="QLabel" name="label_29">
+            <property name="text">
+             <string>Script Parameters:</string>
+            </property>
+           </widget>
+          </item>
+
+          <item row="4" column="0" colspan="5">
+           <widget class="QPlainTextEdit" name="editSqwParams"/>
+          </item>
+
          </layout>
         </widget>
        </item>
       </layout>
      </widget>
+
      <widget class="QWidget" name="tabResults">
       <attribute name="title">
        <string>Results</string>
@@ -2095,6 +2193,8 @@
   <tabstop>checkNorm</tabstop>
   <tabstop>checkFlip</tabstop>
   <tabstop>checkRel</tabstop>
+  <tabstop>editEpsRlu</tabstop>
+  <tabstop>editEpsPlaneDist</tabstop>
   <tabstop>comboFitter</tabstop>
   <tabstop>spinStrategy</tabstop>
   <tabstop>spinMaxCalls</tabstop>
