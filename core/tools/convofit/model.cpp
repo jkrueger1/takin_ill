@@ -47,6 +47,7 @@ SqwFuncModel::SqwFuncModel(std::shared_ptr<SqwBase> pSqw, const TASReso& reso)
 	: m_pSqw(pSqw), m_vecResos({reso})
 {}
 
+
 SqwFuncModel::SqwFuncModel(std::shared_ptr<SqwBase> pSqw, const std::vector<TASReso>& vecResos)
 	: m_pSqw(pSqw), m_vecResos(vecResos)
 {}
@@ -133,7 +134,10 @@ tl::t_real_min SqwFuncModel::operator()(tl::t_real_min x_principal) const
 		dYVal = 0.;
 
 	if(m_psigFuncResult)
-		(*m_psigFuncResult)(vecScanPos[0], vecScanPos[1], vecScanPos[2], vecScanPos[3], dYVal, m_iCurParamSet);
+	{
+		(*m_psigFuncResult)(vecScanPos[0], vecScanPos[1], vecScanPos[2], vecScanPos[3],
+			dYVal, m_iCurParamSet);
+	}
 	return tl::t_real_min(dYVal);
 }
 
@@ -542,7 +546,8 @@ bool SqwFuncModel::Save(const char *pcFile, std::size_t iNum, std::size_t iSkipB
 // optional, for multi-fits
 void SqwFuncModel::SetParamSet(std::size_t iSet)
 {
-	if(!m_pScans) return;
+	if(!m_pScans)
+		return;
 
 	if(iSet >= m_pScans->size())
 	{
@@ -550,87 +555,81 @@ void SqwFuncModel::SetParamSet(std::size_t iSet)
 		return;
 	}
 
+	m_iCurParamSet = iSet;
+
 	// parameters that are not part of the S(Q, E) model
 	static const std::unordered_set<std::string> ignored_parms{{ "scale", "slope", "offs" }};
 
-	if(m_iCurParamSet != iSet)
+	// set S(Q, E) parameters from scan file
+	const Scan& sc = m_pScans->operator[](m_iCurParamSet);
+	if(m_vecResos.size() > 1)
+		set_tasreso_params_from_scan(m_vecResos[m_iCurParamSet], sc);
+	else
+		set_tasreso_params_from_scan(m_vecResos[0], sc);
+	set_model_params_from_scan(*this, sc);
+
+
+	// set S(Q, E) parameters from optional overrides
+	std::string strParams;
+	if(m_iCurParamSet < m_vecSqwParams.size())
 	{
-		m_iCurParamSet = iSet;
+		bool params_ok = false;
+		std::unordered_map<std::string, std::string> all_params;
 
-		// set S(Q, E) parameters from scan file
-		const Scan& sc = m_pScans->operator[](m_iCurParamSet);
-		if(m_vecResos.size() > 1)
-			set_tasreso_params_from_scan(m_vecResos[m_iCurParamSet], sc);
-		else
-			set_tasreso_params_from_scan(m_vecResos[0], sc);
-		set_model_params_from_scan(*this, sc);
+		std::tie(params_ok, strParams) =
+			m_pSqw->SetVars(m_vecSqwParams[m_iCurParamSet],
+				false, &ignored_parms, &all_params);
 
 
-		// set S(Q, E) parameters from optional overrides
-		std::string strParams;
-		if(m_vecSqwParams.size() > m_iCurParamSet)
+		// change parameters that are not part of the S(Q, E) model
+		auto iter_scale = all_params.find("scale");
+		auto iter_slope = all_params.find("slope");
+		auto iter_offs = all_params.find("offs");
+
+		if(iter_scale != all_params.end())
 		{
-			bool params_ok = false;
-			std::unordered_map<std::string, std::string> all_params;
+			m_dScale = tl::str_to_var<t_real>(iter_scale->second);
 
-			std::tie(params_ok, strParams) =
-				m_pSqw->SetVars(m_vecSqwParams[m_iCurParamSet], false, &ignored_parms, &all_params);
-
-
-			// change parameters that are not part of the S(Q, E) model
-			auto iter_scale = all_params.find("scale");
-			auto iter_slope = all_params.find("slope");
-			auto iter_offs = all_params.find("offs");
-
-			if(iter_scale != all_params.end())
-			{
-				m_dScale = tl::str_to_var<t_real>(iter_scale->second);
-
-				if(strParams.length())
-					strParams += ", ";
-				strParams += "scale = " + tl::var_to_str(m_dScale, NUM_PREC);
-			}
-
-			if(iter_slope != all_params.end())
-			{
-				m_dSlope = tl::str_to_var<t_real>(iter_slope->second);
-
-				if(strParams.length())
-					strParams += ", ";
-				strParams += "slope = " + tl::var_to_str(m_dSlope, NUM_PREC);
-			}
-
-			if(iter_offs != all_params.end())
-			{
-				m_dOffs = tl::str_to_var<t_real>(iter_offs->second);
-
-				if(strParams.length())
-					strParams += ", ";
-				strParams += "offs = " + tl::var_to_str(m_dOffs, NUM_PREC);
-			}
-
-
-			if(!params_ok)
-			{
-				tl::log_err("Could not override S(Q, E) model parameter(s) for scan group ",
-					m_iCurParamSet, ".");
-			}
+			if(strParams.length())
+				strParams += ", ";
+			strParams += "scale = " + tl::var_to_str(m_dScale, NUM_PREC);
 		}
 
-		if(m_psigParamsChanged)
+		if(iter_slope != all_params.end())
 		{
-			std::ostringstream ostrDescr;
-			ostrDescr << "Scan group " << m_iCurParamSet;
-			if(strParams.length())
-				ostrDescr << ": " << strParams;
-			ostrDescr << ".";
+			m_dSlope = tl::str_to_var<t_real>(iter_slope->second);
 
-			(*m_psigParamsChanged)(ostrDescr.str());
+			if(strParams.length())
+				strParams += ", ";
+			strParams += "slope = " + tl::var_to_str(m_dSlope, NUM_PREC);
+		}
+
+		if(iter_offs != all_params.end())
+		{
+			m_dOffs = tl::str_to_var<t_real>(iter_offs->second);
+
+			if(strParams.length())
+				strParams += ", ";
+			strParams += "offs = " + tl::var_to_str(m_dOffs, NUM_PREC);
+		}
+
+
+		if(!params_ok)
+		{
+			tl::log_err("Could not override S(Q, E) model parameter(s) for scan group ",
+				m_iCurParamSet, ".");
 		}
 	}
-	else
+
+	if(m_psigParamsChanged)
 	{
-		tl::log_info("Scan group ", iSet, " requested, which is already set.");
+		std::ostringstream ostrDescr;
+		ostrDescr << "Scan group " << m_iCurParamSet;
+		if(strParams.length())
+			ostrDescr << ": " << strParams;
+		ostrDescr << ".";
+
+		(*m_psigParamsChanged)(ostrDescr.str());
 	}
 }
 

@@ -301,7 +301,7 @@ bool Convofit::run_job(const std::string& _strJob)
 	std::vector<std::string> vecSetParams;
 
 	// get secondary resolution files for multi-function fitting
-	for(std::size_t iGroup=0; iGroup<vecvecScFiles.size(); ++iGroup)
+	for(std::size_t iGroup = 0; iGroup < vecvecScFiles.size(); ++iGroup)
 	{
 		std::string strSecParams = "input/sqw_set_params_" + tl::var_to_str(iGroup);
 		std::string strSetParamsOverrides = prop.Query<std::string>(strSecParams, "");
@@ -309,7 +309,7 @@ bool Convofit::run_job(const std::string& _strJob)
 		vecSetParams.emplace_back(std::move(strSetParamsOverrides));
 	}
 
-	if(vecSetParams.size()!=vecvecScFiles.size())
+	if(vecSetParams.size() != vecvecScFiles.size())
 	{
 		tl::log_err("Number of S(Q, E) parameter overrides has to match the number of scan file groups.");
 		tl::log_err("Number of scan file groups: ", vecvecScFiles.size(), ", number of parameter files: ", vecSetParams.size(), ".");
