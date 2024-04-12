@@ -52,6 +52,7 @@ static const auto sec = tl::get_one_second<t_real>();
 using wavenumber = tl::t_wavenumber_si<t_real>;
 
 
+
 TASReso::TASReso()
 {
 	m_res.resize(1);
@@ -61,10 +62,12 @@ TASReso::TASReso()
 }
 
 
+
 TASReso::TASReso(const TASReso& res)
 {
 	operator=(res);
 }
+
 
 
 const TASReso& TASReso::operator=(const TASReso& res)
@@ -85,6 +88,7 @@ const TASReso& TASReso::operator=(const TASReso& res)
 
 	return *this;
 }
+
 
 
 /**
@@ -136,6 +140,7 @@ bool TASReso::LoadLattice(const char* pcXmlFile, bool flip_coords)
 
 	return true;
 }
+
 
 
 /**
@@ -272,8 +277,8 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 	m_reso.mono_curvv = xml.Query<t_real>((strXmlRoot + "reso/pop_mono_curvv").c_str(), 0.)*cm;
 	m_reso.bMonoIsCurvedH = (xml.Query<int>((strXmlRoot + "reso/pop_mono_use_curvh").c_str(), 0) != 0);
 	m_reso.bMonoIsCurvedV = (xml.Query<int>((strXmlRoot + "reso/pop_mono_use_curvv").c_str(), 0) != 0);
-	m_reso.bMonoIsOptimallyCurvedH = (xml.Query<int>((strXmlRoot + "reso/pop_mono_use_curvh_opt").c_str(), 1) != 0);
-	m_reso.bMonoIsOptimallyCurvedV = (xml.Query<int>((strXmlRoot + "reso/pop_mono_use_curvv_opt").c_str(), 1) != 0);
+	m_reso.bMonoIsOptimallyCurvedH = (xml.Query<int>((strXmlRoot + "reso/pop_mono_use_curvh").c_str(), 1) == 1);
+	m_reso.bMonoIsOptimallyCurvedV = (xml.Query<int>((strXmlRoot + "reso/pop_mono_use_curvv").c_str(), 1) == 1);
 
 	m_reso.ana_w = xml.Query<t_real>((strXmlRoot + "reso/pop_ana_w").c_str(), 0.)*cm;
 	m_reso.ana_h = xml.Query<t_real>((strXmlRoot + "reso/pop_ana_h").c_str(), 0.)*cm;
@@ -282,8 +287,8 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 	m_reso.ana_curvv = xml.Query<t_real>((strXmlRoot + "reso/pop_ana_curvv").c_str(), 0.)*cm;
 	m_reso.bAnaIsCurvedH = (xml.Query<int>((strXmlRoot + "reso/pop_ana_use_curvh").c_str(), 0) != 0);
 	m_reso.bAnaIsCurvedV = (xml.Query<int>((strXmlRoot + "reso/pop_ana_use_curvv").c_str(), 0) != 0);
-	m_reso.bAnaIsOptimallyCurvedH = (xml.Query<int>((strXmlRoot + "reso/pop_ana_use_curvh_opt").c_str(), 1) != 0);
-	m_reso.bAnaIsOptimallyCurvedV = (xml.Query<int>((strXmlRoot + "reso/pop_ana_use_curvv_opt").c_str(), 1) != 0);
+	m_reso.bAnaIsOptimallyCurvedH = (xml.Query<int>((strXmlRoot + "reso/pop_ana_use_curvh").c_str(), 1) == 1);
+	m_reso.bAnaIsOptimallyCurvedV = (xml.Query<int>((strXmlRoot + "reso/pop_ana_use_curvv").c_str(), 1) == 1);
 
 	m_reso.bSampleCub = (xml.Query<int>((strXmlRoot + "reso/pop_sample_cuboid").c_str(), 0) != 0);
 	m_reso.sample_w_q = xml.Query<t_real>((strXmlRoot + "reso/pop_sample_wq").c_str(), 0.)*cm;
@@ -403,6 +408,10 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 }
 
 
+
+/**
+ * set a crystal definition
+ */
 bool TASReso::SetLattice(t_real a, t_real b, t_real c,
 	t_real alpha, t_real beta, t_real gamma,
 	const t_vec& vec1, const t_vec& vec2)
@@ -450,6 +459,10 @@ bool TASReso::SetLattice(t_real a, t_real b, t_real c,
 }
 
 
+
+/**
+ * go to a (hkl), E position
+ */
 bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 {
 	ResoResults& resores = m_res[0];
@@ -512,21 +525,22 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 			/*m_reso.dsample_sense>=0.*/true, true);
 
 
+	// apply focusing overrides
 	if(m_foc != ResoFocus::FOC_UNCHANGED)
 	{
 		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_FLAT)) != 0)      // flat mono
-			m_reso.bMonoIsCurvedH = m_reso.bMonoIsCurvedV = 0;
+			m_reso.bMonoIsCurvedH = m_reso.bMonoIsCurvedV = false;
 		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_H)) != 0)         // optimally curved mono (h)
-			m_reso.bMonoIsCurvedH = m_reso.bMonoIsOptimallyCurvedH = 1;
+			m_reso.bMonoIsCurvedH = m_reso.bMonoIsOptimallyCurvedH = true;
 		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_V)) != 0)         // optimally curved mono (v)
-			m_reso.bMonoIsCurvedV = m_reso.bMonoIsOptimallyCurvedV = 1;
+			m_reso.bMonoIsCurvedV = m_reso.bMonoIsOptimallyCurvedV = true;
 
 		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_FLAT)) != 0)       // flat ana
-			m_reso.bAnaIsCurvedH = m_reso.bAnaIsCurvedV = 0;
+			m_reso.bAnaIsCurvedH = m_reso.bAnaIsCurvedV = false;
 		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_H)) != 0)          // optimally curved ana (h)
-			m_reso.bAnaIsCurvedH = m_reso.bAnaIsOptimallyCurvedH = 1;
+			m_reso.bAnaIsCurvedH = m_reso.bAnaIsOptimallyCurvedH = true;
 		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_ANA_V)) != 0)          // optimally curved ana (v)
-			m_reso.bAnaIsCurvedV = m_reso.bAnaIsOptimallyCurvedV = 1;
+			m_reso.bAnaIsCurvedV = m_reso.bAnaIsOptimallyCurvedV = true;
 	}
 
 
@@ -615,6 +629,7 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 }
 
 
+
 /**
  * generates MC neutrons using available threads
  */
@@ -665,6 +680,7 @@ Ellipsoid4d<t_real> TASReso::GenerateMC(std::size_t iNum, std::vector<t_vec>& ve
 
 	return ell4dret;
 }
+
 
 
 /**
