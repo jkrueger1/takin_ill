@@ -968,6 +968,7 @@ int monteconvo_main(int argc, char** argv)
 
 		// overrides for quickly changing input and output files
 		std::string scanfile_override, autosave_override;
+		unsigned int neutron_count_override = 0;
 
 		// parameter overrides for sqw model
 		std::string sqw_params;
@@ -982,6 +983,10 @@ int monteconvo_main(int argc, char** argv)
 			new opts::option_description("max-threads",
 			opts::value<decltype(g_iMaxThreads)>(&g_iMaxThreads),
 			"maximum number of threads")));
+		args.add(boost::shared_ptr<opts::option_description>(
+			new opts::option_description("neutron-count",
+			opts::value<decltype(neutron_count_override)>(&neutron_count_override),
+			"simulated neutron count")));
 		args.add(boost::shared_ptr<opts::option_description>(
 			new opts::option_description("scanfile-override",
 			opts::value<decltype(scanfile_override)>(&scanfile_override),
@@ -1080,6 +1085,9 @@ int monteconvo_main(int argc, char** argv)
 			cfg.autosave = autosave_override;
 			tl::log_info("Overriding autosave output file with \"", cfg.autosave, "\".");
 		}
+
+		if(neutron_count_override > 0)
+			cfg.neutron_count = neutron_count_override;
 		// --------------------------------------------------------------------
 
 
