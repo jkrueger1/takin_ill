@@ -50,6 +50,7 @@
 #include <QMessageBox>
 #include <QGridLayout>
 
+
 using t_mat = ublas::matrix<t_real_reso>;
 using t_vec = ublas::vector<t_real_reso>;
 
@@ -59,6 +60,7 @@ static const auto meV = tl::get_one_meV<t_real_reso>();
 static const auto cm = tl::get_one_centimeter<t_real_reso>();
 static const auto meters = tl::get_one_meter<t_real_reso>();
 static const auto sec = tl::get_one_second<t_real_reso>();
+
 
 
 ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
@@ -218,7 +220,9 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 }
 
 
+
 ResoDlg::~ResoDlg() {}
+
 
 
 void ResoDlg::setupAlgos()
@@ -232,6 +236,7 @@ void ResoDlg::setupAlgos()
 	comboAlgo->insertSeparator(6);
 	comboAlgo->addItem("Simple", static_cast<int>(ResoAlgo::SIMPLE));
 }
+
 
 
 void ResoDlg::RefreshQEPos()
@@ -273,8 +278,10 @@ void ResoDlg::RefreshQEPos()
 	catch(const std::exception& ex)
 	{
 		tl::log_err(ex.what());
+		labelStatus->setText(QString("<font color='red'>Error: ") + ex.what() + QString("</font>"));
 	}
 }
+
 
 
 /**
@@ -305,6 +312,7 @@ std::shared_ptr<ReflCurve<t_real_reso>> ResoDlg::load_cache_refl(const std::stri
 
 	return pRefl;
 }
+
 
 
 /**
@@ -785,16 +793,19 @@ void ResoDlg::Calc()
 		}
 		else
 		{
-			QString strErr = "Error: ";
-			strErr += res.strErr.c_str();
-			labelStatus->setText(QString("<font color='red'>") + strErr + QString("</font>"));
+			labelStatus->setText(QString("<font color='red'>Error: ")
+				+ res.strErr.c_str() + QString("</font>"));
 		}
 	}
 	catch(const std::exception& ex)
 	{
 		tl::log_err("Cannot calculate resolution: ", ex.what(), ".");
+
+		labelStatus->setText(QString("<font color='red'>Error: ")
+			+ ex.what() + QString("</font>"));
 	}
 }
+
 
 
 void ResoDlg::SetSelectedAlgo(ResoAlgo algo)
@@ -813,6 +824,7 @@ void ResoDlg::SetSelectedAlgo(ResoAlgo algo)
 }
 
 
+
 ResoAlgo ResoDlg::GetSelectedAlgo() const
 {
 	ResoAlgo algoSel = ResoAlgo::UNKNOWN;
@@ -823,6 +835,7 @@ ResoAlgo ResoDlg::GetSelectedAlgo() const
 		algoSel = static_cast<ResoAlgo>(varAlgo.toInt());
 	return algoSel;
 }
+
 
 
 void ResoDlg::EmitResults()
@@ -852,6 +865,7 @@ void ResoDlg::EmitResults()
 }
 
 
+
 void ResoDlg::ResoParamsChanged(const ResoParams& params)
 {
 	//tl::log_debug("reso params changed, recalc: ", !m_bDontCalc);
@@ -876,6 +890,7 @@ void ResoDlg::ResoParamsChanged(const ResoParams& params)
 		RefreshQEPos();
 	Calc();
 }
+
 
 
 void ResoDlg::RecipParamsChanged(const RecipParams& parms)
@@ -930,6 +945,7 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 }
 
 
+
 void ResoDlg::RealParamsChanged(const RealParams& parms)
 {
 	//tl::log_debug("real params changed");
@@ -947,6 +963,7 @@ void ResoDlg::RealParamsChanged(const RealParams& parms)
 	if(m_bUpdateOnRealEvent)
 		Calc();
 }
+
 
 
 void ResoDlg::SampleParamsChanged(const SampleParams& parms)
@@ -991,6 +1008,7 @@ void ResoDlg::SampleParamsChanged(const SampleParams& parms)
 }
 
 
+
 // --------------------------------------------------------------------------------
 // Monte-Carlo stuff
 
@@ -999,6 +1017,7 @@ void ResoDlg::checkAutoCalcElli4dChanged()
 	if(checkElli4dAutoCalc->isChecked() && !m_bEll4dCurrent)
 		CalcElli4d();
 }
+
 
 
 void ResoDlg::CalcElli4d()
@@ -1027,6 +1046,7 @@ void ResoDlg::CalcElli4d()
 
 	editElli->setHtml(QString::fromUtf8(ostrElli.str().c_str()));
 }
+
 
 
 void ResoDlg::MCGenerate()
@@ -1129,7 +1149,9 @@ void ResoDlg::MCGenerate()
 }
 
 
+
 // --------------------------------------------------------------------------------
+
 
 
 void ResoDlg::AlgoChanged()
@@ -1224,6 +1246,7 @@ void ResoDlg::AlgoChanged()
 }
 
 
+
 /**
  * quick hack to scan a variable
  */
@@ -1244,7 +1267,9 @@ void ResoDlg::DebugOutput()
 }
 
 
+
 // --------------------------------------------------------------------------------
+
 
 
 void ResoDlg::ShowTOFCalcDlg()
@@ -1256,7 +1281,9 @@ void ResoDlg::ShowTOFCalcDlg()
 }
 
 
+
 // --------------------------------------------------------------------------------
+
 
 
 void ResoDlg::ButtonBoxClicked(QAbstractButton* pBtn)
@@ -1279,6 +1306,7 @@ void ResoDlg::ButtonBoxClicked(QAbstractButton* pBtn)
 }
 
 
+
 void ResoDlg::hideEvent(QHideEvent *event)
 {
 	if(m_pSettings)
@@ -1286,11 +1314,13 @@ void ResoDlg::hideEvent(QHideEvent *event)
 }
 
 
+
 void ResoDlg::showEvent(QShowEvent *event)
 {
 	if(m_pSettings)
 		restoreGeometry(m_pSettings->value("reso/wnd_geo").toByteArray());
 }
+
 
 
 #include "moc_ResoDlg.cpp"
