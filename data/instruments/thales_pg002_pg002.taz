@@ -21,7 +21,7 @@
 		<ana_mosaic>40</ana_mosaic>
 		<ana_scatter_sense>1</ana_scatter_sense>
 		<eck_ana_mosaic_v>40</eck_ana_mosaic_v>
-		<eck_mono_mosaic_v>1</eck_mono_mosaic_v>
+		<eck_mono_mosaic_v>40</eck_mono_mosaic_v>
 		<eck_sample_mosaic_v>15</eck_sample_mosaic_v>
 		<eck_sample_pos_x>0</eck_sample_pos_x>
 		<eck_sample_pos_y>0</eck_sample_pos_y>
@@ -35,7 +35,7 @@
 		<mc_live_neutrons>0</mc_live_neutrons>
 		<mc_live_sample_neutrons>1</mc_live_sample_neutrons>
 		<mono_d>3.355</mono_d>
-		<mono_mosaic>1</mono_mosaic>
+		<mono_mosaic>40</mono_mosaic>
 		<mono_refl>1</mono_refl>
 		<mono_refl_file/>
 		<mono_scatter_sense>1</mono_scatter_sense>
