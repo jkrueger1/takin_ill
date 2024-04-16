@@ -321,8 +321,8 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 			cfg.fixedk = scan.bKiFixed ? 0 : 1;
 
 			tl::log_info("Overriding scan path with values from scan file: (",
-				cfg.h_from, " ", cfg.k_from, ", ", cfg.l_from, ") rlu, ", cfg.E_from, " meV -> (",
-				cfg.h_to, " ", cfg.k_to, ", ", cfg.l_to, ") rlu, ", cfg.E_to, " meV.");
+				cfg.h_from, ", ", cfg.k_from, ", ", cfg.l_from, ") rlu, ", cfg.E_from, " meV -> (",
+				cfg.h_to, ", ", cfg.k_to, ", ", cfg.l_to, ") rlu, ", cfg.E_to, " meV.");
 
 			tl::log_info("Overriding fixed ", (cfg.fixedk == 0 ? "ki = " : "kf = "), cfg.kfix, " / A.");
 		}
