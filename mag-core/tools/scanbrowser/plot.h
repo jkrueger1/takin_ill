@@ -23,8 +23,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef __PLOT_H__
-#define __PLOT_H__
+#ifndef __SCANBROWSER_PLOT_H__
+#define __SCANBROWSER_PLOT_H__
 
 #include <QtCore/QSettings>
 #include <QtWidgets/QWidget>

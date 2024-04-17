@@ -1181,7 +1181,7 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 		tl2::set_h5_string<std::string>(*h5file, "meta_infos/description", "Takin/Magdyn grid format");
 		tl2::set_h5_string<std::string>(*h5file, "meta_infos/user", user);
 		tl2::set_h5_string<std::string>(*h5file, "meta_infos/date", tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()));
-		tl2::set_h5_string<std::string>(*h5file, "meta_infos/url", "https://code.ill.fr/scientific-software/takin");
+		tl2::set_h5_string<std::string>(*h5file, "meta_infos/url", "https://github.com/ILLGrenoble/takin");
 		tl2::set_h5_string<std::string>(*h5file, "meta_infos/doi", "https://doi.org/10.5281/zenodo.4117437");
 		tl2::set_h5_string<std::string>(*h5file, "meta_infos/doi_tlibs", "https://doi.org/10.5281/zenodo.5717779");
 

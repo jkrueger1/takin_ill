@@ -90,7 +90,7 @@ BZDlg::BZDlg(QWidget* pParent) : QDialog{pParent},
 		m_symops->setSelectionMode(QTableWidget::ContiguousSelection);
 		m_symops->setContextMenuPolicy(Qt::CustomContextMenu);
 		m_symops->verticalHeader()->setDefaultSectionSize(
-			fontMetrics().lineSpacing()*4 + 4);
+			fontMetrics().lineSpacing()*6 + 4);
 		m_symops->verticalHeader()->setVisible(false);
 		m_symops->setAlternatingRowColors(true);
 		m_symops->setColumnCount(NUM_SYMOP_COLS);

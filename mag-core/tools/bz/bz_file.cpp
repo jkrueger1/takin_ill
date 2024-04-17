@@ -167,7 +167,7 @@ bool BZDlg::Save(const QString& filename)
 	node.put<std::string>("bz.meta.info", "bz_tool");
 	node.put<std::string>("bz.meta.date", tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()));
 	node.put<std::string>("bz.meta.user", user);
-	node.put<std::string>("bz.meta.url", "https://code.ill.fr/scientific-software/takin");
+	node.put<std::string>("bz.meta.url", "https://github.com/ILLGrenoble/takin");
 	node.put<std::string>("bz.meta.doi", "https://doi.org/10.5281/zenodo.4117437");
 	node.put<std::string>("bz.meta.doi_tlibs", "https://doi.org/10.5281/zenodo.5717779");
 

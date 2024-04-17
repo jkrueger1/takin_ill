@@ -29,8 +29,12 @@
 #include <cmath>
 
 
-t_real g_eps = 1e-6;
-int g_prec = 6;
+/**
+ * will give wrong results if epsilon is too high
+ * (check with space group #146)
+ */
+t_real g_eps = 1e-7;
+int g_prec = 7;
 int g_prec_gui = 4;
 
 

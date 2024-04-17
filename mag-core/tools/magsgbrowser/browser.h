@@ -38,11 +38,12 @@
 
 #include "tlibs2/libs/magsg.h"
 #include "tlibs2/libs/maths.h"
+#include "../defs.h"
 
 #include "ui_browser.h"
 
 
-using t_real_sg = double;
+using t_real_sg = t_real;
 using t_vec_sg = tl2::qvec_adapter<int, 3, t_real_sg, QGenericMatrix>;
 using t_mat_sg = tl2::qmat_adapter<int, 3, 3, t_real_sg, QGenericMatrix>;
 using t_mat44_sg = tl2::qmat_adapter<int, 4, 4, t_real_sg, QGenericMatrix>;

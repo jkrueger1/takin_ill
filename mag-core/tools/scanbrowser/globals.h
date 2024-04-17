@@ -27,22 +27,21 @@
 #define __SCANBROWSER_GLOBALS_H__
 
 
-#include "types.h"
+#include "../defs.h"
 #include "command.h"
 
 
 #define PROGRAM_VERSION "0.1"
 
 
-
 // the GUI's command line widget
 extern CommandLine *g_pCLI;
 
 // output precision
-extern std::size_t g_prec;
+extern t_size g_prec;
 
 // epsilon value for merging data columns
-extern t_real_dat g_eps_merge;
+extern t_real g_eps_merge;
 
 
 

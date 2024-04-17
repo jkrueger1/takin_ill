@@ -30,7 +30,7 @@
 #include <string>
 #include <tuple>
 
-#include "types.h"
+#include "../defs.h"
 
 
 class Data;
@@ -45,15 +45,15 @@ class Data
 private:
 	// counts
 	// can have multiple detectors and monitors
-	std::vector<std::vector<t_real_dat>> m_counts;
-	std::vector<std::vector<t_real_dat>> m_counts_err;
+	std::vector<std::vector<t_real>> m_counts;
+	std::vector<std::vector<t_real>> m_counts_err;
 
 	// monitors
-	std::vector<std::vector<t_real_dat>> m_monitors;
-	std::vector<std::vector<t_real_dat>> m_monitors_err;
+	std::vector<std::vector<t_real>> m_monitors;
+	std::vector<std::vector<t_real>> m_monitors_err;
 
 	// x axes
-	std::vector<std::vector<t_real_dat>> m_x;
+	std::vector<std::vector<t_real>> m_x;
 	std::vector<std::string> m_x_names;
 
 
@@ -65,14 +65,14 @@ public:
 
 
 	// counters
-	const std::vector<t_real_dat>& GetCounter(std::size_t i) const { return m_counts[i]; }
-	const std::vector<t_real_dat>& GetCounterErrors(std::size_t i) const { return m_counts_err[i]; }
-	void AddCounter(const std::vector<t_real_dat> &dat, const std::vector<t_real_dat> &err)
+	const std::vector<t_real>& GetCounter(std::size_t i) const { return m_counts[i]; }
+	const std::vector<t_real>& GetCounterErrors(std::size_t i) const { return m_counts_err[i]; }
+	void AddCounter(const std::vector<t_real> &dat, const std::vector<t_real> &err)
 	{
 		m_counts.push_back(dat);
 		m_counts_err.push_back(err);
 	}
-	void AddCounter(std::vector<t_real_dat> &&dat, std::vector<t_real_dat> &&err)
+	void AddCounter(std::vector<t_real> &&dat, std::vector<t_real> &&err)
 	{
 		m_counts.push_back(std::move(dat));
 		m_counts_err.push_back(std::move(err));
@@ -80,14 +80,14 @@ public:
 
 
 	// monitors
-	const std::vector<t_real_dat>& GetMonitor(std::size_t i) const { return m_monitors[i]; }
-	const std::vector<t_real_dat>& GetMonitorErrors(std::size_t i) const { return m_monitors_err[i]; }
-	void AddMonitor(const std::vector<t_real_dat> &dat, const std::vector<t_real_dat> &err)
+	const std::vector<t_real>& GetMonitor(std::size_t i) const { return m_monitors[i]; }
+	const std::vector<t_real>& GetMonitorErrors(std::size_t i) const { return m_monitors_err[i]; }
+	void AddMonitor(const std::vector<t_real> &dat, const std::vector<t_real> &err)
 	{
 		m_monitors.push_back(dat);
 		m_monitors_err.push_back(err);
 	}
-	void AddMonitor(std::vector<t_real_dat> &&dat, std::vector<t_real_dat> &&err)
+	void AddMonitor(std::vector<t_real> &&dat, std::vector<t_real> &&err)
 	{
 		m_monitors.push_back(std::move(dat));
 		m_monitors_err.push_back(std::move(err));
@@ -95,11 +95,11 @@ public:
 
 
 	// x axes
-	const std::vector<t_real_dat>& GetAxis(std::size_t i) const { return m_x[i]; }
+	const std::vector<t_real>& GetAxis(std::size_t i) const { return m_x[i]; }
 	const std::string& GetAxisName(std::size_t i) const { return m_x_names[i]; }
 	void SetAxisNames(const std::vector<std::string> &names) { m_x_names = names; }
 	void SetAxisNames(std::vector<std::string> &&names) { m_x_names = std::move(names); }
-	void AddAxis(const std::vector<t_real_dat> &dat, const std::string &name="")
+	void AddAxis(const std::vector<t_real> &dat, const std::string &name="")
 	{
 		m_x.push_back(dat);
 
@@ -108,7 +108,7 @@ public:
 		else if(m_x_names.size() < m_x.size())
 			m_x_names.push_back("ax" + std::to_string(GetNumAxes()));
 	}
-	void AddAxis(std::vector<t_real_dat> &&dat, const std::string &name="")
+	void AddAxis(std::vector<t_real> &&dat, const std::string &name="")
 	{
 		m_x.emplace_back(std::move(dat));
 
@@ -124,13 +124,13 @@ public:
 
 	// binary operators
 	friend Data operator +(const Data& dat1, const Data& dat2);
-	friend Data operator +(const Data& dat, t_real_dat d);
-	friend Data operator +(t_real_dat d, const Data& dat);
+	friend Data operator +(const Data& dat, t_real d);
+	friend Data operator +(t_real d, const Data& dat);
 	friend Data operator -(const Data& dat1, const Data& dat2);
-	friend Data operator -(const Data& dat, t_real_dat d);
-	friend Data operator *(const Data& dat1, t_real_dat d);
-	friend Data operator *(t_real_dat d, const Data& dat1);
-	friend Data operator /(const Data& dat1, t_real_dat d);
+	friend Data operator -(const Data& dat, t_real d);
+	friend Data operator *(const Data& dat1, t_real d);
+	friend Data operator *(t_real d, const Data& dat1);
+	friend Data operator /(const Data& dat1, t_real d);
 
 	// unary operators
 	friend const Data& operator +(const Data& dat);
@@ -170,13 +170,13 @@ public:
 
 	// binary operators
 	friend Dataset operator +(const Dataset& dat1, const Dataset& dat2);
-	friend Dataset operator +(const Dataset& dat, t_real_dat d);
-	friend Dataset operator +(t_real_dat d, const Dataset& dat);
+	friend Dataset operator +(const Dataset& dat, t_real d);
+	friend Dataset operator +(t_real d, const Dataset& dat);
 	friend Dataset operator -(const Dataset& dat1, const Dataset& dat2);
-	friend Dataset operator -(const Dataset& dat, t_real_dat d);
-	friend Dataset operator *(const Dataset& dat1, t_real_dat d);
-	friend Dataset operator *(t_real_dat d, const Dataset& dat1);
-	friend Dataset operator /(const Dataset& dat1, t_real_dat d);
+	friend Dataset operator -(const Dataset& dat, t_real d);
+	friend Dataset operator *(const Dataset& dat1, t_real d);
+	friend Dataset operator *(t_real d, const Dataset& dat1);
+	friend Dataset operator /(const Dataset& dat1, t_real d);
 
 	// unary operators
 	friend const Dataset& operator +(const Dataset& dat);

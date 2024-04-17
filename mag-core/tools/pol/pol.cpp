@@ -46,6 +46,8 @@
 #include "tlibs2/libs/str.h"
 #include "tlibs2/libs/qt/helper.h"
 
+#include "../defs.h"
+
 #include <boost/version.hpp>
 #include <boost/config.hpp>
 #include <boost/algorithm/string/replace.hpp>
@@ -54,8 +56,6 @@ namespace algo = boost::algorithm;
 
 using namespace tl2_ops;
 
-using t_real = double;
-using t_cplx = std::complex<t_real>;
 using t_vec = tl2::vec<t_cplx, std::vector>;
 using t_mat = tl2::mat<t_cplx, std::vector>;
 using t_matvec = std::vector<t_mat>;

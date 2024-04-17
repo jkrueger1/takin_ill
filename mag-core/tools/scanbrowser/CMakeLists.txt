@@ -107,7 +107,6 @@ add_executable(takin_scanbrowser
 	command.cpp command.h
 	about.cpp about.h
 	globals.cpp globals.h
-	hacks.cpp hacks.h
 
 	${BISON_cliparser_OUTPUT_SOURCE} ${BISON_cliparser_OUTPUT_HEADER}
 	${FLEX_clilexer_OUTPUTS} ${FLEX_clilexer_OUTPUT_HEADER}
@@ -115,7 +114,6 @@ add_executable(takin_scanbrowser
 	cli/ast.cpp cli/sym.cpp
 	cli/funcs.cpp cli/funcs.h
 
-	../../tlibs2/libs/log.cpp
 #	../../ext/qcp/qcustomplot.cpp ../../ext/qcp/qcustomplot.h
 )
 

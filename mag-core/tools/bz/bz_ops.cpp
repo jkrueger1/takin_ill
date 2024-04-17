@@ -68,7 +68,6 @@ void BZDlg::AddSymOpTabItem(int row, const t_mat& op)
 		bclone = true;
 	}
 
-	//bool sorting = m_symops->isSortingEnabled();
 	m_symops->setSortingEnabled(false);
 	m_symops->insertRow(row);
 
@@ -90,7 +89,7 @@ void BZDlg::AddSymOpTabItem(int row, const t_mat& op)
 	m_symops->scrollToItem(m_symops->item(row, 0));
 	m_symops->setCurrentCell(row, 0);
 
-	m_symops->setSortingEnabled(/*sorting*/ true);
+	m_symops->setSortingEnabled(true);
 }
 
 

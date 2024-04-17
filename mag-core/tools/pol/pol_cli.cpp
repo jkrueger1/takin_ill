@@ -29,13 +29,14 @@
  */
 
 #include <iostream>
+
 #include "tlibs2/libs/maths.h"
+#include "../defs.h"
+
 
 using namespace tl2;
 using namespace tl2_ops;
 
-using t_real = double;
-using t_cplx = std::complex<t_real>;
 using t_vec = std::vector<t_cplx>;
 using t_mat = mat<t_cplx, std::vector>;
 using t_matvec = std::vector<t_mat>;

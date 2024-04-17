@@ -25,6 +25,7 @@
 
 #include "libs/loadcif.h"
 #include "tlibs2/libs/maths.h"
+#include "../defs.h"
 
 #include <gemmi/version.hpp>
 #include <boost/algorithm/string.hpp>
@@ -32,7 +33,6 @@
 #include <memory>
 
 
-using t_real = double;
 using t_vec = tl2::vec<t_real, std::vector>;
 using t_mat = tl2::mat<t_real, std::vector>;
 

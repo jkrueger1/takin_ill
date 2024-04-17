@@ -245,22 +245,22 @@ Data Data::merge(const Data& dat1, const Data& dat2)
 
 			std::size_t x2 = iter2 - dat2.m_x_names.begin();
 
-			t_real_dat xval2 = dat2.GetAxis(x2)[idx2];
+			t_real xval2 = dat2.GetAxis(x2)[idx2];
 			const auto& xvals1 = datret.GetAxis(x1);
 
 			if(idx)
 			{
 				// already found the x index
-				if(!tl2::equals<t_real_dat>(xvals1[*idx], xval2, g_eps_merge))
+				if(!tl2::equals<t_real>(xvals1[*idx], xval2, g_eps_merge))
 					return std::nullopt;
 			}
 			else
 			{
 				// find the position on the datret axis, which has the same value as the given one on dat2
 				auto iter = std::find_if(xvals1.begin(), xvals1.end(),
-					[xval2](t_real_dat xval1) -> bool
+					[xval2](t_real xval1) -> bool
 				{
-					return tl2::equals<t_real_dat>(xval1, xval2, g_eps_merge);
+					return tl2::equals<t_real>(xval1, xval2, g_eps_merge);
 				});
 
 				if(iter == xvals1.end())
@@ -439,12 +439,12 @@ Data operator +(const Data& dat1, const Data& dat2)
 }
 
 
-Data operator +(const Data& dat, t_real_dat d)
+Data operator +(const Data& dat, t_real d)
 {
 	Data datret = dat;
-	t_real_dat d_err = std::sqrt(d);
-	t_real_dat d_mon = 0.;	// TODO
-	t_real_dat d_mon_err = std::sqrt(d_mon);
+	t_real d_err = std::sqrt(d);
+	t_real d_mon = 0.;	// TODO
+	t_real d_mon_err = std::sqrt(d_mon);
 
 	// detectors
 	for(std::size_t detidx=0; detidx<datret.m_counts.size(); ++detidx)
@@ -482,13 +482,13 @@ Data operator +(const Data& dat, t_real_dat d)
 }
 
 
-Data operator +(t_real_dat d, const Data& dat)
+Data operator +(t_real d, const Data& dat)
 {
 	return dat + d;
 }
 
 
-Data operator -(const Data& dat, t_real_dat d)
+Data operator -(const Data& dat, t_real d)
 {
 	return dat + (-d);
 }
@@ -500,7 +500,7 @@ Data operator -(const Data& dat1, const Data& dat2)
 }
 
 
-Data operator *(const Data& dat1, t_real_dat d)
+Data operator *(const Data& dat1, t_real d)
 {
 	Data datret = dat1;
 
@@ -532,7 +532,7 @@ Data operator *(const Data& dat1, t_real_dat d)
 }
 
 
-Data operator *(t_real_dat d, const Data& dat1)
+Data operator *(t_real d, const Data& dat1)
 {
 	return dat1 * d;
 }
@@ -674,7 +674,7 @@ Dataset operator -(const Dataset& dat1, const Dataset& dat2)
 }
 
 
-Dataset operator +(const Dataset& dat, t_real_dat d)
+Dataset operator +(const Dataset& dat, t_real d)
 {
 	Dataset dataset;
 
@@ -688,19 +688,19 @@ Dataset operator +(const Dataset& dat, t_real_dat d)
 }
 
 
-Dataset operator +(t_real_dat d, const Dataset& dat)
+Dataset operator +(t_real d, const Dataset& dat)
 {
 	return dat + d;
 }
 
 
-Dataset operator -(const Dataset& dat, t_real_dat d)
+Dataset operator -(const Dataset& dat, t_real d)
 {
 	return dat + (-d);
 }
 
 
-Dataset operator *(const Dataset& dat1, t_real_dat d)
+Dataset operator *(const Dataset& dat1, t_real d)
 {
 	Dataset dataset;
 
@@ -714,13 +714,13 @@ Dataset operator *(const Dataset& dat1, t_real_dat d)
 }
 
 
-Dataset operator *(t_real_dat d, const Dataset& dat1)
+Dataset operator *(t_real d, const Dataset& dat1)
 {
 	return operator *(dat1, d);
 }
 
 
-Dataset operator /(const Dataset& dat1, t_real_dat d)
+Dataset operator /(const Dataset& dat1, t_real d)
 {
 	Dataset dataset;
 

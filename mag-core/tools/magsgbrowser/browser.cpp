@@ -197,7 +197,7 @@ void SgBrowserDlg::MagSpaceGroupSelected(QTreeWidgetItem *pItem)
 
 			// translation vector
 			ostr << std::setw(ostr.precision()*2) << std::right << "( ";
-			ostr << std::setw(ostr.precision()*1.5) << std::right << vec[i]; 
+			ostr << std::setw(ostr.precision()*1.5) << std::right << vec[i];
 			ostr << " )";
 
 			// time inversion

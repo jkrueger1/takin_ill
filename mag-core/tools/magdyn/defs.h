@@ -39,15 +39,13 @@
 #include "tlibs2/libs/maths.h"
 #include "tlibs2/libs/qt/gl.h"
 
+#include "../defs.h"
+
 
 
 // ----------------------------------------------------------------------------
 // type definitions
 // ----------------------------------------------------------------------------
-using t_size = std::size_t;
-using t_real = /*float*/ double;
-using t_cplx = std::complex<t_real>;
-
 using t_vec_real = tl2::vec<t_real, std::vector>;
 using t_mat_real = tl2::mat<t_real, std::vector>;
 

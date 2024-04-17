@@ -26,8 +26,6 @@
 #include <string>
 #include <locale>
 
-#include "hacks.h"
-
 
 
 /**

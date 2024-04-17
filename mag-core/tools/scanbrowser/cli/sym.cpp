@@ -660,8 +660,8 @@ std::shared_ptr<Symbol> Symbol::unserialise(const std::string &str)
 				tl2::get_tokens_seq<std::string, std::string>(str_axes, next_elem, tok_axes, true);
 				for(const auto &tok_axis : tok_axes)
 				{
-					std::vector<t_real_dat> axis;
-					tl2::get_tokens<t_real_dat, std::string>(tok_axis, ",", axis);
+					std::vector<t_real> axis;
+					tl2::get_tokens<t_real, std::string>(tok_axis, ",", axis);
 					data.AddAxis(std::move(axis));
 				}
 			}
@@ -676,9 +676,9 @@ std::shared_ptr<Symbol> Symbol::unserialise(const std::string &str)
 					const auto &tok_axis = tok_ctrs[idxax];
 					const auto &tok_axis_err = tok_ctr_errs[idxax];
 
-					std::vector<t_real_dat> axis, axis_err;
-					tl2::get_tokens<t_real_dat, std::string>(tok_axis, ",", axis);
-					tl2::get_tokens<t_real_dat, std::string>(tok_axis_err, ",", axis_err);
+					std::vector<t_real> axis, axis_err;
+					tl2::get_tokens<t_real, std::string>(tok_axis, ",", axis);
+					tl2::get_tokens<t_real, std::string>(tok_axis_err, ",", axis_err);
 
 					data.AddCounter(std::move(axis), std::move(axis_err));
 				}
@@ -694,9 +694,9 @@ std::shared_ptr<Symbol> Symbol::unserialise(const std::string &str)
 					const auto &tok_axis = tok_ctrs[idxax];
 					const auto &tok_axis_err = tok_ctr_errs[idxax];
 
-					std::vector<t_real_dat> axis, axis_err;
-					tl2::get_tokens<t_real_dat, std::string>(tok_axis, ",", axis);
-					tl2::get_tokens<t_real_dat, std::string>(tok_axis_err, ",", axis_err);
+					std::vector<t_real> axis, axis_err;
+					tl2::get_tokens<t_real, std::string>(tok_axis, ",", axis);
+					tl2::get_tokens<t_real, std::string>(tok_axis_err, ",", axis_err);
 
 					data.AddMonitor(std::move(axis), std::move(axis_err));
 				}

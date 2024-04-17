@@ -33,12 +33,7 @@
 #include <tuple>
 #include <vector>
 
-//#include <boost/numeric/ublas/matrix.hpp>
-//#include <boost/numeric/ublas/vector.hpp>
-//namespace ublas = boost::numeric::ublas;
-
 #include <boost/property_tree/ptree.hpp>
-//#include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/info_parser.hpp>
 namespace ptree = boost::property_tree;
 
@@ -46,11 +41,9 @@ namespace ptree = boost::property_tree;
 namespace algo = boost::algorithm;
 
 #include "tlibs2/libs/maths.h"
+#include "../defs.h"
 
 
-using t_real = double;
-//using t_mat = ublas::matrix<t_real>;
-//using t_vec = ublas::vector<t_real>;
 using t_mat = tl2::mat<t_real, std::vector>;
 using t_vec = tl2::vec<t_real, std::vector>;
 

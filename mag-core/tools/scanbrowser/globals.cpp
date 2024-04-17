@@ -28,5 +28,5 @@
 
 CommandLine *g_pCLI = nullptr;
 
-std::size_t g_prec = 8;
-t_real_dat g_eps_merge = 0.01;
+t_size g_prec = 8;
+t_real g_eps_merge = 0.01;

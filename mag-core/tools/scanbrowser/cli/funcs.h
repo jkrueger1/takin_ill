@@ -23,8 +23,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef __FUNCS_H__
-#define __FUNCS_H__
+#ifndef __CLI_FUNCS_H__
+#define __CLI_FUNCS_H__
 
 #include <unordered_map>
 #include <vector>

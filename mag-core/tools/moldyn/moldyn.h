@@ -40,11 +40,11 @@
 
 #include "tlibs2/libs/qt/glplot.h"
 #include "tlibs2/libs/maths.h"
+#include "../defs.h"
 
 #include "moldyn-loader.h"
 
 
-using t_real = double;
 using t_vec = tl2::vec<t_real, std::vector>;
 using t_mat = tl2::mat<t_real, std::vector>;
 

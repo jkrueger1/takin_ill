@@ -1,13 +1,15 @@
 /**
- * global types
+ * basic type definitions
  * @author Tobias Weber <tweber@ill.fr>
- * @date 19-Jun-2018
- * @license see 'LICENSE' file
+ * @date Jan-2023
+ * @license GPLv3, see 'LICENSE' file
  *
  * ----------------------------------------------------------------------------
  * mag-core (part of the Takin software suite)
- * Copyright (C) 2018-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2018-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
+ * "misc" project
+ * Copyright (C) 2017-2022  Tobias WEBER (privately developed).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,12 +25,24 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef __SCANBROWSER_TYPES_H__
-#define __SCANBROWSER_TYPES_H__
+#ifndef __MAGCORE_DEFS__
+#define __MAGCORE_DEFS__
 
 
-using t_real_dat = double;
-using t_real = t_real_dat;
+#include <cstddef>
+#include <complex>
+
+
+// ----------------------------------------------------------------------------
+// basic type definitions
+// ----------------------------------------------------------------------------
+using t_size = std::size_t;
+
+//using t_real = float;
+using t_real = double;
+
+using t_cplx = std::complex<t_real>;
+// ----------------------------------------------------------------------------
 
 
 #endif

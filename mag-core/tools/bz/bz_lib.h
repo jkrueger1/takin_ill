@@ -334,7 +334,8 @@ public:
 			std::size_t face_idx = 0;
 			for(face_idx=0; face_idx<m_face_polygons.size(); ++face_idx)
 			{
-				if(tl2::equals<t_vec>(m_face_norms[face_idx], norm, m_eps) && tl2::equals<t_real>(m_face_dists[face_idx], dist, m_eps))
+				if(tl2::equals<t_vec>(m_face_norms[face_idx], norm, m_eps)
+					&& tl2::equals<t_real>(m_face_dists[face_idx], dist, m_eps))
 				{
 					face_found = true;
 					break;
@@ -589,19 +590,19 @@ public:
 
 
 private:
-	t_real m_eps{ 1e-6 };                  // calculation epsilon
+	t_real m_eps{ 1e-7 };                          // calculation epsilon
 
-	t_mat m_crystB{tl2::unit<t_mat>(3)};        // crystal B matrix
-	t_mat m_crystB_ortho{tl2::unit<t_mat>(3)};  // orthonormal part of crystal B matrix
+	t_mat m_crystB{tl2::unit<t_mat>(3)};           // crystal B matrix
+	t_mat m_crystB_ortho{tl2::unit<t_mat>(3)};     // orthonormal part of crystal B matrix
 
-	std::vector<t_mat> m_symops{ };        // space group centring symmetry operations
-	std::vector<t_vec> m_peaks{ };         // nuclear bragg peaks
-	std::vector<t_vec> m_peaks_invA { };   // nuclear bragg peaks in lab coordinates
-	std::optional<std::size_t> m_idx000{}; // index of the (000) peak
+	std::vector<t_mat> m_symops{ };                // space group centring symmetry operations
+	std::vector<t_vec> m_peaks{ };                 // nuclear bragg peaks
+	std::vector<t_vec> m_peaks_invA { };           // nuclear bragg peaks in lab coordinates
+	std::optional<std::size_t> m_idx000{};         // index of the (000) peak
 
-	std::vector<t_vec> m_vertices{};            // voronoi vertices
+	std::vector<t_vec> m_vertices{};               // voronoi vertices
 
-	std::vector<std::vector<t_vec>> m_triags{}; // bz triangles
+	std::vector<std::vector<t_vec>> m_triags{};    // bz triangles
 	std::vector<std::vector<std::size_t>> m_triags_idx{}; // ... and the version with voronoi vertex indices
 
 	std::vector<t_vec> m_all_triags {};            // all brillouin zone triangles

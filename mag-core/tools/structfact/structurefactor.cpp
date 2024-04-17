@@ -39,12 +39,11 @@ namespace consts = si::constants;
 #include <fstream>
 #include <memory>
 
+#include "../defs.h"
 #include "tlibs2/libs/maths.h"
 using namespace tl2;
 using namespace tl2_ops;
 
-using t_real = double;
-using t_cplx = std::complex<t_real>;
 using t_vec = std::vector<t_real>;
 using t_mat = mat<t_real, std::vector>;
 using t_vec_cplx = std::vector<t_cplx>;

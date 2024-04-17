@@ -31,6 +31,7 @@
 
 #include <iostream>
 #include "tlibs2/libs/phys.h"
+#include "tlibs2/libs/str.h"
 
 
 /**
@@ -44,20 +45,40 @@ std::string op_to_str(const t_mat& op)
 	std::ostringstream ostr;
 	ostr.precision(g_prec);
 
-	for(std::size_t row=0; row<op.size1(); ++row)
+	for(std::size_t row = 0; row < op.size1(); ++row)
 	{
-		for(std::size_t col=0; col<op.size2(); ++col)
+		for(std::size_t col = 0; col < op.size2(); ++col)
 		{
 			t_real elem = op(row, col);
 			tl2::set_eps_0(elem);
 
-			ostr << elem;
+			// write periodic values as fractions to avoid
+			// calculation errors involving epsilon
+			if(tl2::equals<t_real>(elem, 1./3., g_eps))
+				ostr << "1/3";
+			else if(tl2::equals<t_real>(elem, 2./3., g_eps))
+				ostr << "2/3";
+			else if(tl2::equals<t_real>(elem, 1./6., g_eps))
+				ostr << "1/6";
+			else if(tl2::equals<t_real>(elem, 5./6., g_eps))
+				ostr << "5/6";
+			else if(tl2::equals<t_real>(elem, -1./3., g_eps))
+				ostr << "-1/3";
+			else if(tl2::equals<t_real>(elem, -2./3., g_eps))
+				ostr << "-2/3";
+			else if(tl2::equals<t_real>(elem, -1./6., g_eps))
+				ostr << "-1/6";
+			else if(tl2::equals<t_real>(elem, -5./6., g_eps))
+				ostr << "-5/6";
+			else
+				ostr << elem;
+
 			if(col != op.size2()-1)
 				ostr << " ";
 		}
 
 		if(row != op.size1()-1)
-			ostr << "\n";
+			ostr << " \n";
 	}
 
 	return ostr.str();
@@ -74,9 +95,23 @@ t_mat str_to_op(const std::string& str)
 	t_mat op = tl2::unit<t_mat>(4);
 
 	std::istringstream istr(str);
-	for(std::size_t row=0; row<op.size1(); ++row)
-		for(std::size_t col=0; col<op.size2(); ++col)
-			istr >> op(row, col);
+	for(std::size_t row = 0; row < op.size1(); ++row)
+	{
+		for(std::size_t col = 0; col < op.size2(); ++col)
+		{
+			std::string op_str;
+			istr >> op_str;
+
+			auto [ok, val] = tl2::eval_expr<std::string, t_real>(op_str);
+			op(row, col) = val;
+
+			if(!ok)
+			{
+				std::cerr << "Error evaluating symop component \""
+					<< op_str << "\"" << std::endl;
+			}
+		}
+	}
 
 	return op;
 }
@@ -93,12 +128,15 @@ std::string get_op_properties(const t_mat& op)
 
 	if(tl2::is_unit<t_mat>(op, g_eps))
 	{
-		if(prop.size()) prop += ", ";
+		if(prop.size())
+			prop += ", ";
 		prop += "identity";
 	}
+
 	if(tl2::hom_is_centring<t_mat>(op, g_eps))
 	{
-		if(prop.size()) prop += ", ";
+		if(prop.size())
+			prop += ", ";
 		prop += "centring";
 	}
 

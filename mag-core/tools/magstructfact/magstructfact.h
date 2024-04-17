@@ -49,6 +49,8 @@
 #include "tlibs2/libs/maths.h"
 #include "tlibs2/libs/qt/numerictablewidgetitem.h"
 
+#include "../defs.h"
+
 
 // columns of Fourier components table
 enum : int
@@ -76,8 +78,6 @@ enum : int
 };
 
 
-using t_real = double;
-using t_cplx = std::complex<t_real>;
 using t_vec = tl2::vec<t_real, std::vector>;
 using t_vec_cplx = tl2::vec<t_cplx, std::vector>;
 using t_mat = tl2::mat<t_real, std::vector>;
