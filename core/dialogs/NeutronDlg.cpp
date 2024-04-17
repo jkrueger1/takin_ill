@@ -291,7 +291,7 @@ void NeutronDlg::CalcNeutronTau()
 	std::string strInput = editTau->text().toStdString();
 
 	bool bImag = 0;
-	tl::t_energy_si<t_real> E_n = 1./tl::str_to_var_parse<t_real>(strInput) / ps * tl::get_h<t_real>();
+	tl::t_energy_si<t_real> E_n = t_real(1.)/tl::str_to_var_parse<t_real>(strInput) / ps * tl::get_h<t_real>();
 	tl::t_wavenumber_si<t_real> k_n = tl::E2k(E_n, bImag);
 	tl::t_length_si<t_real> lam_n = tl::k2lam(k_n);
 	tl::t_momentum_si<t_real> p_n = tl::lam2p(lam_n);

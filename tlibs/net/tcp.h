@@ -4,8 +4,9 @@
  * @date aug-2014
  * @license GPLv2 or GPLv3
  *
- * @desc based on Boost's example chat client (c) 2003-2015 by C. M. Kohlhoff:
- * @desc http://www.boost.org/doc/libs/1_61_0/doc/html/boost_asio/example/cpp11/chat/chat_client.cpp
+ * @desc based on Boost's example chat client/server (c) 2003-2015 by C. M. Kohlhoff:
+ * @desc   - http://www.boost.org/doc/libs/1_61_0/doc/html/boost_asio/example/cpp11/chat/chat_client.cpp
+ * @desc   - https://www.boost.org/doc/libs/1_61_0/doc/html/boost_asio/example/cpp11/chat/chat_server.cpp
  *
  * ----------------------------------------------------------------------------
  * tlibs -- a physical-mathematical C++ template library
@@ -89,7 +90,7 @@ public:
 	void add_connect(const typename t_sigConn::slot_type& conn);
 
 	bool connect(const t_str& strHost, const t_str& strService);
-	virtual void disconnect(bool bAlwaysSendSignal=0);
+	virtual void disconnect(bool bAlwaysSendSignal = false);
 	bool is_connected();
 
 	void write(const t_str& str);
@@ -118,7 +119,7 @@ public:
 	TcpTxtServer();
 	virtual ~TcpTxtServer();
 
-	virtual void disconnect(bool bAlwaysSendSignal=0) override;
+	virtual void disconnect(bool bAlwaysSendSignal = false) override;
 	bool start_server(unsigned short iPort);
 
 	void add_server_start(const typename t_sigServerStart::slot_type& start);

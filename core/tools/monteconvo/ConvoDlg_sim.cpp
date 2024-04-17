@@ -115,8 +115,8 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 		std::vector<std::vector<t_real>> vecAxes;
 		std::tie(bScanAxisFound, iScanAxisIdx, strScanVar, vecAxes) = get_scan_axis<t_real>(
 			true, comboAxis->currentIndex(), spinStepCnt->value(), m_eps_rlu,
-			spinStartH->value(), spinStopH->value(), spinStartK->value(), spinStopK->value(),
-			spinStartL->value(), spinStopL->value(), spinStartE->value(), spinStopE->value());
+			t_real(spinStartH->value()), t_real(spinStopH->value()), t_real(spinStartK->value()), t_real(spinStopK->value()),
+			t_real(spinStartL->value()), t_real(spinStopL->value()), t_real(spinStartE->value()), t_real(spinStopE->value()));
 		if(!bScanAxisFound)
 		{
 			//QMessageBox::critical(this, "Error", "No scan variable found.");
@@ -587,22 +587,22 @@ void ConvoDlg::Start2D()
 		const unsigned int iNumSteps = std::sqrt(spinStepCnt->value());
 		const t_real dStartHKL[] =
 		{
-			spinStartH->value(), spinStartK->value(),
-			spinStartL->value(), spinStartE->value()
+			t_real(spinStartH->value()), t_real(spinStartK->value()),
+			t_real(spinStartL->value()), t_real(spinStartE->value())
 		};
 		const t_real dDeltaHKL1[] =
 		{
-			(spinStopH->value() - spinStartH->value()) / t_real(iNumSteps),
-			(spinStopK->value() - spinStartK->value()) / t_real(iNumSteps),
-			(spinStopL->value() - spinStartL->value()) / t_real(iNumSteps),
-			(spinStopE->value() - spinStartE->value()) / t_real(iNumSteps)
+			t_real(spinStopH->value() - spinStartH->value()) / t_real(iNumSteps),
+			t_real(spinStopK->value() - spinStartK->value()) / t_real(iNumSteps),
+			t_real(spinStopL->value() - spinStartL->value()) / t_real(iNumSteps),
+			t_real(spinStopE->value() - spinStartE->value()) / t_real(iNumSteps)
 		};
 		const t_real dDeltaHKL2[] =
 		{
-			(spinStopH2->value() - spinStartH->value()) / t_real(iNumSteps),
-			(spinStopK2->value() - spinStartK->value()) / t_real(iNumSteps),
-			(spinStopL2->value() - spinStartL->value()) / t_real(iNumSteps),
-			(spinStopE2->value() - spinStartE->value()) / t_real(iNumSteps)
+			t_real(spinStopH2->value() - spinStartH->value()) / t_real(iNumSteps),
+			t_real(spinStopK2->value() - spinStartK->value()) / t_real(iNumSteps),
+			t_real(spinStopL2->value() - spinStartL->value()) / t_real(iNumSteps),
+			t_real(spinStopE2->value() - spinStartE->value()) / t_real(iNumSteps)
 		};
 
 
@@ -1002,8 +1002,8 @@ void ConvoDlg::StartDisp()
 		std::vector<std::vector<t_real>> vecAxes;
 		std::tie(bScanAxisFound, iScanAxisIdx, strScanVar, vecAxes) = get_scan_axis<t_real>(
 			false, comboAxis->currentIndex(), spinStepCnt->value(), m_eps_rlu,
-			spinStartH->value(), spinStopH->value(), spinStartK->value(), spinStopK->value(),
-			spinStartL->value(), spinStopL->value(), spinStartE->value(), spinStopE->value());
+			t_real(spinStartH->value()), t_real(spinStopH->value()), t_real(spinStartK->value()), t_real(spinStopK->value()),
+			t_real(spinStartL->value()), t_real(spinStopL->value()), t_real(spinStartE->value()), t_real(spinStopE->value()));
 		if(!bScanAxisFound)
 		{
 			//QMessageBox::critical(this, "Error", "No scan variable found.");

@@ -53,8 +53,8 @@ namespace tl2 {
 // --------------------------------------------------------------------------------
 // import scipy.constants as co
 // E2KSQ = 2.*co.neutron_mass/(co.Planck/co.elementary_charge*1000./2./co.pi)**2. / co.elementary_charge*1000. * 1e-20
-template<class T=double> constexpr T KSQ2E = T(0.5) * hbar<T>/angstrom<T>/m_n<T> * hbar<T>/angstrom<T>/meV<T>;
-template<class T=double> constexpr T E2KSQ = T(1) / KSQ2E<T>;
+template<class T = double> constexpr T KSQ2E = T(0.5) * hbar<T>/angstrom<T>/m_n<T> * hbar<T>/angstrom<T>/meV<T>;
+template<class T = double> constexpr T E2KSQ = T(1) / KSQ2E<T>;
 // --------------------------------------------------------------------------------
 
 
@@ -106,9 +106,9 @@ t_wavenumber<Sys,Y> kinematic_plane(bool bFixedKi,
 
 	auto c = Y(2.)*m_n<Y> / (hbar<Y>*hbar<Y>);
 	t_wavenumber<Sys,Y> Q =
-		units::sqrt(c *
-		(Y(2.)*EiEf + dE - Y(2.)*units::cos(twotheta) *
-		units::sqrt(EiEf*(EiEf + dE))));
+		my_units_sqrt<t_wavenumber<Sys,Y>>(c *
+			(Y(2.)*EiEf + dE - Y(2.)*units::cos(twotheta) *
+			my_units_sqrt<t_wavenumber<Sys,Y>>(EiEf*(EiEf + dE))));
 
 	return Q;
 }
@@ -128,9 +128,12 @@ t_energy<Sys,Y> kinematic_plane(bool bFixedKi, bool bBranch,
 	const t_energy<Sys,Y>& EiEf, const t_wavenumber<Sys,Y>& Q,
 	const t_angle<Sys,Y>& twotheta)
 {
+	using t_cE = units::quantity<units::unit<typename units::derived_dimension<
+		units::length_base_dimension, -2>::type,
+		Sys>, Y>;
+
 	auto c = Y(2.)*m_n<Y> / (hbar<Y>*hbar<Y>);
 	auto c2 = c*c;
-
 	auto EiEf2 = EiEf*EiEf;
 
 	Y ctt = units::cos(twotheta);
@@ -140,10 +143,11 @@ t_energy<Sys,Y> kinematic_plane(bool bFixedKi, bool bBranch,
 	Y dSignFixedKf = bFixedKi ? Y(-1.) : Y(1.);
 
 	t_energy<Sys,Y> dE =
-			dSignFixedKf*Y(2.) * EiEf * ctt2
-			- dSignFixedKf*Y(2.) * EiEf
-			+ dSignFixedKf * Q*Q / c
-			+ dSign*Y(2.) * ctt/c * units::sqrt(c2*ctt2*EiEf2 - c2*EiEf2 + c*EiEf*Q*Q);
+		dSignFixedKf*Y(2.) * EiEf * ctt2
+		- dSignFixedKf*Y(2.) * EiEf
+		+ dSignFixedKf * Q*Q / c
+		+ dSign*Y(2.) * ctt/c * my_units_sqrt<t_cE>(
+			c2*ctt2*EiEf2 - c2*EiEf2 + c*EiEf*Q*Q);
 
 	return dE;
 }
@@ -323,7 +327,6 @@ calc_tas_Q_len(const t_wavenumber<Sys,Y>& ki,
 		Qsq = -Qsq;
 	}
 
-	//t_wavenumber<Sys,Y> Q = units::sqrt(Qsq);
 	t_wavenumber<Sys,Y> Q = my_units_sqrt<t_wavenumber<Sys,Y>>(Qsq);
 	return Q;
 }
@@ -574,7 +577,6 @@ t_wavenumber<Sys,Y> get_other_k(const t_energy<Sys,Y>& E,
 	if(k_sq*angstrom<Y>*angstrom<Y> < Y(0.))
 		throw std::runtime_error("Scattering triangle not closed.");
 
-	//return units::sqrt(k_sq);
 	return my_units_sqrt<t_wavenumber<Sys,Y>>(k_sq);
 }
 

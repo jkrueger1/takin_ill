@@ -34,6 +34,7 @@
 #include "tlibs/string/string.h"
 #include "tlibs/string/spec_char.h"
 #include "tlibs/helper/exception.h"
+#include "tlibs/helper/array.h"
 #include "libs/formfactors/formfact.h"
 
 #include <iostream>
@@ -248,7 +249,7 @@ void PowderDlg::PlotPowderLines(const std::vector<const PowderLine*>& vecLines)
 	// --------------------------------------------------------------------
 	// angles vs ki plot
 	const t_real dMinKi = 0.1;
-	const t_real dMaxKi = tl::lam2k(spinLam->value()*angs)*angs + 0.1;
+	const t_real dMaxKi = tl::lam2k(t_real(spinLam->value())*angs)*angs + 0.1;
 
 	std::vector<t_real> vecCurveWidths;
 	t_real dMinCurveWidth = std::numeric_limits<t_real>::max();
@@ -314,8 +315,9 @@ void PowderDlg::PlotPowderLines(const std::vector<const PowderLine*>& vecLines)
 			m_plotwrapAnglesKi->GetCurve(iPlot)->setPen(penCurve);
 		}
 
-		// TODO: container_cast if real types mismatch
-		set_zoomer_base(m_plotwrapAnglesKi->GetZoomer(), m_vecKis, m_vecAngles);
+		set_zoomer_base(m_plotwrapAnglesKi->GetZoomer(),
+			tl::nested_container_cast<t_real_qwt, t_real, std::vector>()(m_vecKis),
+			tl::nested_container_cast<t_real_qwt, t_real, std::vector>()(m_vecAngles));
 		m_plotwrapAnglesKi->GetPlot()->replot();
 	}
 	// --------------------------------------------------------------------

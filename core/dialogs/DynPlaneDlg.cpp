@@ -91,13 +91,13 @@ void DynPlaneDlg::cursorMoved(const QPointF& pt)
 {
 	try
 	{
-		const bool bFixedKi = (comboFixedE->currentIndex()==0);
-		const tl::t_angle_si<t_real> twotheta = tl::d2r(spinAngle->value()) * rads;
+		const bool bFixedKi = (comboFixedE->currentIndex() == 0);
+		const tl::t_angle_si<t_real> twotheta = tl::d2r(t_real(spinAngle->value())) * rads;
 		const tl::t_energy_si<t_real> EiEf = t_real(spinEiEf->value()) * meV;
 
-		const tl::t_wavenumber_si<t_real> Q = pt.x() / angs;
-		tl::t_energy_si<t_real> dE0 = tl::kinematic_plane(bFixedKi, 0, EiEf, Q, twotheta);
-		tl::t_energy_si<t_real> dE1 = tl::kinematic_plane(bFixedKi, 1, EiEf, Q, twotheta);
+		const tl::t_wavenumber_si<t_real> Q = t_real(pt.x()) / angs;
+		tl::t_energy_si<t_real> dE0 = tl::kinematic_plane(bFixedKi, false, EiEf, Q, twotheta);
+		tl::t_energy_si<t_real> dE1 = tl::kinematic_plane(bFixedKi, true, EiEf, Q, twotheta);
 
 		t_real _dQ = Q * angs;
 		t_real _dE0 = dE0 / meV;
@@ -155,20 +155,19 @@ void DynPlaneDlg::Calc()
 
 		const t_real dMinQ = spinMinQ->value();
 		const t_real dMaxQ = spinMaxQ->value();
-		const t_real dAngle = tl::d2r(spinAngle->value());
+		const t_real dAngle = tl::d2r(t_real(spinAngle->value()));
 		const tl::t_energy_si<t_real> EiEf = t_real(spinEiEf->value()) * meV;
 
 
-		//m_pPlanePlot->clear();
 		std::vector<t_real> vecQ[2], vecE[2];
 		vecQ[0].reserve(GFX_NUM_POINTS); vecE[0].reserve(GFX_NUM_POINTS);
 		vecQ[1].reserve(GFX_NUM_POINTS); vecE[1].reserve(GFX_NUM_POINTS);
 
 		tl::t_angle_si<t_real> twotheta = dAngle * rads;
 
-		for(std::size_t iPt=0; iPt<GFX_NUM_POINTS; ++iPt)
+		for(std::size_t iPt = 0; iPt < GFX_NUM_POINTS; ++iPt)
 		{
-			for(unsigned char iSign=0; iSign<=1; ++iSign)
+			for(unsigned char iSign = 0; iSign <= 1; ++iSign)
 			{
 				tl::t_wavenumber_si<t_real> Q = (dMinQ + (dMaxQ - dMinQ)/t_real(GFX_NUM_POINTS)*t_real(iPt)) / angs;
 				tl::t_energy_si<t_real> dE = tl::kinematic_plane(bFixedKi, iSign, EiEf, Q, twotheta);

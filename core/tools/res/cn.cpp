@@ -368,16 +368,16 @@ ResoResults calc_cn(const CNParams& cn)
 	{
 		// [mit84], equ. B.10/B.11 (similar to equ. B.13 with coll. idx 5 -> idx 1) and equ. B.3
 		res.dR0 *=
-			  1./std::sqrt((M(1, 1) + M(4, 4)) * (M(0, 0) + M(3, 3)) - std::pow(M(0, 1) + M(3, 4), 2.))
-			* 1./std::sqrt(M(2, 2) + M(5, 5))
-			* 1./std::sqrt(1. + std::pow(2.*s_th_a*ana_mosaic_v/cn.coll_v_post_ana, 2.))
+			  t_real(1)/std::sqrt((M(1, 1) + M(4, 4)) * (M(0, 0) + M(3, 3)) - std::pow(M(0, 1) + M(3, 4), t_real(2)))
+			* t_real(1)/std::sqrt(M(2, 2) + M(5, 5))
+			* t_real(1)/std::sqrt(t_real(1) + std::pow(t_real(2)*s_th_a*ana_mosaic_v/cn.coll_v_post_ana, t_real(2)))
 			* rads * units::sqrt(
-				  1./(cn.coll_v_pre_sample*cn.coll_v_pre_sample)
-				+ 1./(cn.coll_v_pre_mono*cn.coll_v_pre_mono + 4.*s_th_m*s_th_m*mono_mosaic_v*mono_mosaic_v))
+				  t_real(1)/(cn.coll_v_pre_sample*cn.coll_v_pre_sample)
+				+ t_real(1)/(cn.coll_v_pre_mono*cn.coll_v_pre_mono + t_real(4)*s_th_m*s_th_m*mono_mosaic_v*mono_mosaic_v))
 			* rads*rads * units::sqrt(
-				  1./(cn.coll_h_pre_mono*cn.coll_h_pre_mono*cn.coll_h_pre_sample*cn.coll_h_pre_sample)
-				+ 1./(4.*cn.coll_h_pre_mono*cn.coll_h_pre_mono*cn.mono_mosaic*cn.mono_mosaic)
-				+ 1./(4.*cn.coll_h_pre_sample*cn.coll_h_pre_sample*cn.mono_mosaic*cn.mono_mosaic));
+				  t_real(1)/(cn.coll_h_pre_mono*cn.coll_h_pre_mono*cn.coll_h_pre_sample*cn.coll_h_pre_sample)
+				+ t_real(1)/(t_real(4)*cn.coll_h_pre_mono*cn.coll_h_pre_mono*cn.mono_mosaic*cn.mono_mosaic)
+				+ t_real(1)/(t_real(4)*cn.coll_h_pre_sample*cn.coll_h_pre_sample*cn.mono_mosaic*cn.mono_mosaic));
 		res.dR0 /= cn.ki*cn.ki*cn.ki*cn.ki * angs*angs*angs*angs * t_th_m;
 		//res.dR0 *= hbar/mn /angs/angs*sec / std::sqrt(2.*pi);
 	}
@@ -385,10 +385,10 @@ ResoResults calc_cn(const CNParams& cn)
 	{
 		// [mit84], equ. B.10
 		res.dR0 *=
-			  1./std::sqrt((M(1, 1) + M(4, 4)) * (M(0, 0) + M(3, 3)) - std::pow(M(0, 1) + M(3, 4), 2.))
-			* 1./std::sqrt(M(2, 2) + M(5, 5))
-			* 1./std::sqrt(1. + std::pow(2.*s_th_a*ana_mosaic_v/cn.coll_v_post_ana, 2.))
-			* 1./std::sqrt(1. + std::pow(2.*s_th_m*mono_mosaic_v/cn.coll_v_pre_mono, 2.));
+			  t_real(1)/std::sqrt((M(1, 1) + M(4, 4)) * (M(0, 0) + M(3, 3)) - std::pow(M(0, 1) + M(3, 4), 2.))
+			* t_real(1)/std::sqrt(M(2, 2) + M(5, 5))
+			* t_real(1)/std::sqrt(t_real(1) + std::pow(t_real(2)*s_th_a*ana_mosaic_v/cn.coll_v_post_ana, t_real(2)))
+			* t_real(1)/std::sqrt(t_real(1) + std::pow(t_real(2)*s_th_m*mono_mosaic_v/cn.coll_v_pre_mono, t_real(2)));
 		res.dR0 /= cn.ki*cn.ki*cn.ki * angs*angs*angs;
 		//res.dR0 *= 2.*pi*hbar/mn /angs/angs*sec;
 	}

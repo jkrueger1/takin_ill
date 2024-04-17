@@ -7829,6 +7829,8 @@ requires tl2::is_mat<t_mat>
 /**
  * eigenvectors and -values of a complex matrix
  * @returns [ok, evals, evecs]
+ * @see http://www.math.utah.edu/software/lapack/lapack-z/zheev.html
+ * @see http://www.math.utah.edu/software/lapack/lapack-z/zgeev.html
  */
 template<class t_mat_cplx, class t_vec_cplx, class t_cplx = typename t_mat_cplx::value_type,
     class t_real = typename t_cplx::value_type>
@@ -8016,6 +8018,8 @@ eigenvec(const t_mat_cplx& mat,
 /**
  * eigenvectors and -values of a real matrix
  * @returns [ok, evals_re, evals_im, evecs_re, evecs_im]
+ * @see http://www.math.utah.edu/software/lapack/lapack-d/dsyev.html
+ * @see http://www.math.utah.edu/software/lapack/lapack-d/dgeev.html
  */
 template<class t_mat, class t_vec, class t_real = typename t_mat::value_type>
 std::tuple<bool, std::vector<t_real>, std::vector<t_real>, std::vector<t_vec>, std::vector<t_vec>>
@@ -8243,6 +8247,8 @@ eigenvec(const t_mat& mat, bool only_evals=false, bool is_symmetric=false, bool 
 /**
  * singular values of a real or complex matrix mat = U * diag{vals} * V^h
  * @returns [ ok, U, Vh, vals ]
+ * @see http://www.math.utah.edu/software/lapack/lapack-z/zgesvd.html
+ * @see http://www.math.utah.edu/software/lapack/lapack-d/dgesvd.html
  */
 template<class t_mat, class t_scalar = typename t_mat::value_type, class t_real = tl2::underlying_value_type<t_scalar>>
 std::tuple<bool, t_mat, t_mat, std::vector<t_real>>
@@ -8454,9 +8460,11 @@ std::tuple<bool, t_mat, t_mat> qr(const t_mat& mat)
 requires is_mat<t_mat> && is_vec<t_vec>
 {
 #ifdef __TLIBS2_USE_LAPACK__
+
 	return tl2_la::qr<t_mat, t_vec>(mat);
 
 #else
+
 	const std::size_t rows = mat.size1();
 	const std::size_t cols = mat.size2();
 	const std::size_t N = std::min(cols, rows);
@@ -8486,7 +8494,8 @@ requires is_mat<t_mat> && is_vec<t_vec>
 #endif
 
 	return std::make_tuple(true, Q, R);
-#endif
+
+#endif  // __TLIBS2_USE_LAPACK__
 }
 
 
@@ -8506,8 +8515,11 @@ requires is_mat<t_mat>
 		static_assert(t_mat::size1() == t_mat::size2());
 
 #ifdef __TLIBS2_USE_LAPACK__
+
 	return tl2_la::inv<t_mat>(mat);
+
 #else
+
 	using T = typename t_mat::value_type;
 	using t_vec = std::vector<T>;
 	const std::size_t N = mat.size1();
@@ -8535,6 +8547,7 @@ requires is_mat<t_mat>
 
 	matInv = matInv / fullDet;
 	return std::make_tuple(matInv, true);
+
 #endif
 }
 

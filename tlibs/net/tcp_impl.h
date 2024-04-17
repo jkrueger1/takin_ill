@@ -5,8 +5,8 @@
  * @license GPLv2 or GPLv3
  *
  * @desc based on Boost's example chat client/server (c) 2003-2015 by C. M. Kohlhoff:
- * @desc http://www.boost.org/doc/libs/1_61_0/doc/html/boost_asio/example/cpp11/chat/chat_client.cpp
- * @desc https://www.boost.org/doc/libs/1_61_0/doc/html/boost_asio/example/cpp11/chat/chat_server.cpp
+ * @desc   - http://www.boost.org/doc/libs/1_61_0/doc/html/boost_asio/example/cpp11/chat/chat_client.cpp
+ * @desc   - https://www.boost.org/doc/libs/1_61_0/doc/html/boost_asio/example/cpp11/chat/chat_server.cpp
  *
  * ----------------------------------------------------------------------------
  * tlibs -- a physical-mathematical C++ template library
@@ -356,7 +356,7 @@ bool TcpTxtServer<t_ch, t_str>::start_server(unsigned short iPort)
 			else
 			{
 				log_err("TCP server error.",
-					" Category: ", err.category().name(), 
+					" Category: ", err.category().name(),
 					", message: ", err.message(), ".");
 			}
 		});
@@ -374,7 +374,6 @@ bool TcpTxtServer<t_ch, t_str>::start_server(unsigned short iPort)
 				disconnect(1);
 			}
 		});
-		//this->m_pthread->join();
 	}
 	catch(const std::exception& ex)
 	{

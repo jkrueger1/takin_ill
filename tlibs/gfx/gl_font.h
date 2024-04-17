@@ -47,14 +47,14 @@ namespace tl {
 class FontMap
 {
 	protected:
-		bool m_bOk = 0;
+		bool m_bOk = false;
 		FT_Library m_ftLib = 0;
 		FT_Face m_ftFace = 0;
 
-		int m_iCharsPerLine=0, m_iLines=0;
-		int m_iTileH=0, m_iTileW=0;
-		int m_iPadH=DEF_FONT_SIZE/4, m_iPadW=DEF_FONT_SIZE/4;
-		int m_iLargeW=0, m_iLargeH=0;
+		int m_iCharsPerLine = 0, m_iLines = 0;
+		int m_iTileH = 0, m_iTileW = 0;
+		int m_iPadH = DEF_FONT_SIZE/4, m_iPadW = DEF_FONT_SIZE/4;
+		int m_iLargeW = 0, m_iLargeH = 0;
 		unsigned char *m_pcLarge = nullptr;
 
 		static const std::string m_strCharset;
@@ -75,7 +75,7 @@ class FontMap
 		unsigned int iGlyphW, unsigned int iGlyphH);
 
 	public:
-		FontMap(const char* pcFont/*=DEF_FONT*/, int iSize/*=DEF_FONT_SIZE*/);
+		FontMap(const char* pcFont, int iSize);
 		FontMap();
 		virtual ~FontMap();
 
@@ -88,8 +88,6 @@ class FontMap
 
 		const unsigned char* GetBuffer() const { return m_pcLarge; }
 		std::pair<int, int> GetOffset(char ch) const;
-
-		//static std::string get_font_file(const std::string& strFind);
 };
 
 
@@ -97,7 +95,7 @@ template<class T = GLdouble>
 class GlFontMap : public FontMap
 {
 	protected:
-		bool m_bOk = 0;
+		bool m_bOk = false;
 		GLuint m_tex = 0;
 		T m_dScale = 0.01;
 
@@ -106,15 +104,15 @@ class GlFontMap : public FontMap
 
 	public:
 		GlFontMap() = delete;
-		GlFontMap(const char* pcFont=DEF_FONT, int iSize=DEF_FONT_SIZE);
+		GlFontMap(const char* pcFont = DEF_FONT, int iSize = DEF_FONT_SIZE);
 		GlFontMap(FT_Face ftFace, int iSize=DEF_FONT_SIZE);
 		virtual ~GlFontMap();
 
 		virtual bool IsOk() const override { return m_bOk && FontMap::IsOk(); }
 
 		void BindTexture();
-		void DrawText(T dX, T dY, const std::string& str, bool bCenter=1);
-		void DrawText(T dX, T dY, T dZ, const std::string& str, bool bCenter=1);
+		void DrawText(T dX, T dY, const std::string& str, bool bCenter = true);
+		void DrawText(T dX, T dY, T dZ, const std::string& str, bool bCenter = true);
 
 		void SetScale(T dScale) { m_dScale = dScale; }
 };
@@ -122,10 +120,5 @@ class GlFontMap : public FontMap
 // --------------------------------------------------------------------------------
 
 }
-
-//
-//#ifdef TLIBS_INC_HDR_IMPLS
-//	#include "gl_font_impl.h"
-//#endif
 
 #endif

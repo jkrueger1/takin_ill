@@ -59,7 +59,7 @@ void FontMap::draw_tile(unsigned char* pcBuf,
 	unsigned int iYOffs = iPosY*iTileH + iGlyphYOffs;
 	unsigned int iXOffs = iPosX*iTileW + iGlyphXOffs;
 
-	for(unsigned int iY=0; iY<iGlyphH; ++iY)
+	for(unsigned int iY = 0; iY < iGlyphH; ++iY)
 	{
 		unsigned int iYLarge = iY+iYOffs;
 		if(iYLarge >= iH) break;
@@ -69,7 +69,7 @@ void FontMap::draw_tile(unsigned char* pcBuf,
 			break;
 		}
 
-		for(unsigned int iX=0; iX<iGlyphW; ++iX)
+		for(unsigned int iX = 0; iX < iGlyphW; ++iX)
 		{
 			unsigned int iXLarge = iX+iXOffs;
 			if(iXLarge >= iW) break;
@@ -86,6 +86,7 @@ void FontMap::draw_tile(unsigned char* pcBuf,
 	}
 }
 
+
 const std::string FontMap::m_strCharset =
 	std::string("ABCDEFGHIJKLMNOPQRSTUVWXYZ") +
 	std::string("abcdefghijklmnopqrstuvwxyz") +
@@ -93,7 +94,7 @@ const std::string FontMap::m_strCharset =
 	std::string(".,:;*/+-_#'\"!$%&()[]{}=?<>|~^ ");
 
 
-FontMap::FontMap() : m_bOk(0)
+FontMap::FontMap() : m_bOk(false)
 {
 	m_iCharsPerLine = int(std::ceil(std::sqrt(double(m_strCharset.length()))));
 	m_iLines = m_iCharsPerLine;
@@ -105,6 +106,7 @@ FontMap::FontMap() : m_bOk(0)
 	}
 }
 
+
 FontMap::FontMap(const char* pcFont, int iSize) : FontMap()
 {
 	if(!LoadFont(pcFont, iSize))
@@ -113,6 +115,7 @@ FontMap::FontMap(const char* pcFont, int iSize) : FontMap()
 		return;
 	}
 }
+
 
 bool FontMap::LoadFont(FT_Face ftFace, int iSize)
 {
@@ -189,9 +192,10 @@ bool FontMap::LoadFont(FT_Face ftFace, int iSize)
 		}
 	}
 
-	m_bOk = 1;
+	m_bOk = true;
 	return true;
 }
+
 
 bool FontMap::LoadFont(const char* pcFont, int iSize)
 {
@@ -202,6 +206,7 @@ bool FontMap::LoadFont(const char* pcFont, int iSize)
 
 	return LoadFont(m_ftFace, iSize);
 }
+
 
 void FontMap::dump(std::ostream& ostr) const
 {
@@ -219,6 +224,7 @@ void FontMap::dump(std::ostream& ostr) const
 		ostr << "\n";
 	}
 }
+
 
 void FontMap::dump(std::ostream& ostr, const std::pair<int,int>& pair) const
 {
@@ -240,6 +246,7 @@ void FontMap::dump(std::ostream& ostr, const std::pair<int,int>& pair) const
 	}
 }
 
+
 std::pair<int, int> FontMap::GetOffset(char ch) const
 {
 	t_offsmap::const_iterator iter = m_mapOffs.find(ch);
@@ -252,7 +259,7 @@ std::pair<int, int> FontMap::GetOffset(char ch) const
 
 void FontMap::UnloadFont()
 {
-	m_bOk = 0;
+	m_bOk = false;
 
 	m_mapOffs.clear();
 	if(m_pcLarge) { delete[] m_pcLarge; m_pcLarge = nullptr; }
@@ -286,8 +293,9 @@ GlFontMap<T>::GlFontMap(const char* pcFont, int iSize)
 		return;
 	}
 
-	m_bOk = 1;
+	m_bOk = true;
 }
+
 
 template<class T>
 GlFontMap<T>::GlFontMap(FT_Face ftFace, int iSize)
@@ -311,8 +319,9 @@ GlFontMap<T>::GlFontMap(FT_Face ftFace, int iSize)
 		return;
 	}
 
-	m_bOk = 1;
+	m_bOk = true;
 }
+
 
 template<class T>
 bool GlFontMap<T>::CreateFontTexture()
@@ -325,12 +334,12 @@ bool GlFontMap<T>::CreateFontTexture()
 	glBindTexture(GL_TEXTURE_2D, m_tex);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, /*GL_RGBA*/GL_ALPHA, m_iLargeW, m_iLargeH, 0, GL_ALPHA, GL_UNSIGNED_BYTE, m_pcLarge);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, m_iLargeW, m_iLargeH, 0, GL_ALPHA, GL_UNSIGNED_BYTE, m_pcLarge);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR/*_MIPMAP_LINEAR*/ /*GL_NEAREST_MIPMAP_NEAREST*/);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR /*GL_NEAREST*/);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE /*GL_REPEAT*/);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE /*GL_REPEAT*/);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	GLenum glerr = glGetError();
 	if(glerr != GL_NO_ERROR)
@@ -342,29 +351,29 @@ bool GlFontMap<T>::CreateFontTexture()
 	return true;
 }
 
+
 template<class T>
 void GlFontMap<T>::BindTexture()
 {
-	if(!m_bOk) return;
+	if(!m_bOk)
+		return;
 
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, m_tex);
 
 	glEnable(GL_BLEND);
-	//glDisable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glDisable(GL_LIGHTING);
-	//glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
-
-	//if(glGetError() != GL_NO_ERROR) log_err("Cannot bind texture.");
 }
+
 
 template<class T>
 void GlFontMap<T>::DrawText(T _dX, T _dY, const std::string& str, bool bCenter)
 {
-	if(!m_bOk) return;
+	if(!m_bOk)
+		return;
 
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -443,7 +452,8 @@ void GlFontMap<T>::DrawText(T _dX, T _dY, const std::string& str, bool bCenter)
 template<class T>
 void GlFontMap<T>::DrawText(T dX, T dY, T dZ, const std::string& str, bool bCenter)
 {
-	if(!m_bOk) return;
+	if(!m_bOk)
+		return;
 
 	T dXProj, dYProj;
 	gl_proj_pt<t_mat4_gen<T>, t_vec4_gen<T>, T>(dX, dY, dZ, dXProj, dYProj);

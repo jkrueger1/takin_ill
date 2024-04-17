@@ -3,6 +3,7 @@
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date aug-2015
  * @license GPLv2 or GPLv3
+ *
  * @desc see, e.g, (Williams 2012), pp. 273-299
  *
  * ----------------------------------------------------------------------------
@@ -52,6 +53,7 @@ namespace tl {
 
 /**
  * thread pool
+ * @see, e.g, (Williams 2012), pp. 273-299
  */
 template<class t_func, class t_startfunc = void(void)>
 class ThreadPool
@@ -65,7 +67,7 @@ class ThreadPool
 	protected:
 #ifdef USE_OWN_THREADPOOL
 		std::list<std::unique_ptr<std::thread>> m_lstThreads;
-		unsigned int m_tp;	// dummy variable to avoid some ifdefs
+		unsigned int m_tp;  // dummy variable to avoid some ifdefs
 
 		// signal to start jobs
 		std::promise<void> m_signalStartIn;
@@ -89,14 +91,14 @@ class ThreadPool
 	public:
 		ThreadPool(unsigned int iNumThreads = std::thread::hardware_concurrency(),
 			t_startfunc* pThStartFunc = nullptr)
-			: m_tp{iNumThreads}, m_pThStartFunc{pThStartFunc}
+				: m_tp{iNumThreads}, m_pThStartFunc{pThStartFunc}
 		{
 #ifdef USE_OWN_THREADPOOL
 			// start 'iNumThreads' threads
-			for(unsigned int iThread=0; iThread<iNumThreads; ++iThread)
+			for(unsigned int iThread = 0; iThread < iNumThreads; ++iThread)
 			{
 				m_lstThreads.emplace_back(
-					std::unique_ptr<std::thread>(new std::thread([this, pThStartFunc, iThread]()
+					std::make_unique<std::thread>([this, pThStartFunc, iThread]()
 					{
 						// callback to invoke before starting job thread
 						if(pThStartFunc) (*pThStartFunc)();
@@ -121,7 +123,7 @@ class ThreadPool
 							CallStartFunc();
 							task();
 						}
-					})));
+					}));
 			}
 #endif
 		}
@@ -197,10 +199,10 @@ class ThreadPool
 			// ensure that this is only called per-thread, not per-task
 			std::lock_guard<std::mutex> lockStart(m_mtxStart);
 
-			thread_local bool bThreadAlreadySeen{0};
+			thread_local bool bThreadAlreadySeen{ false };
 			if(m_pThStartFunc && !bThreadAlreadySeen)
 			{
-				bThreadAlreadySeen = 1;
+				bThreadAlreadySeen = true;
 				(*m_pThStartFunc)();
 			}
 		}

@@ -588,7 +588,7 @@ void ScanViewerDlg::PlotScan()
 		// calculate error
 		for(std::size_t iY=0; iY<m_vecY.size(); ++iY)
 		{
-			t_real err = tl::float_equal(m_vecY[iY], 0., g_dEps) ? 1. : std::sqrt(std::abs(m_vecY[iY]));
+			t_real err = tl::float_equal(m_vecY[iY], t_real(0), g_dEps) ? t_real(1) : std::sqrt(std::abs(m_vecY[iY]));
 			m_vecYErr.push_back(err);
 		}
 	}
@@ -613,7 +613,7 @@ void ScanViewerDlg::PlotScan()
 		// calculate error
 		for(std::size_t iY=0; iY<vecMon.size(); ++iY)
 		{
-			t_real err = tl::float_equal(vecMon[iY], 0., g_dEps) ? 1. : std::sqrt(std::abs(vecMon[iY]));
+			t_real err = tl::float_equal(vecMon[iY], t_real(0), g_dEps) ? t_real(1) : std::sqrt(std::abs(vecMon[iY]));
 			vecMonErr.push_back(err);
 		}
 	}
@@ -703,7 +703,7 @@ void ScanViewerDlg::PlotScan()
 	{
 		for(std::size_t iY=0; iY<m_vecY.size(); ++iY)
 		{
-			if(tl::float_equal(vecMon[iY], 0., g_dEps))
+			if(tl::float_equal(vecMon[iY], t_real(0), g_dEps))
 			{
 				tl::log_warn("Monitor counter is zero for point ", iY+1, ".");
 

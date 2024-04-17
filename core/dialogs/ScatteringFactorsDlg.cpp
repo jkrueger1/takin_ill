@@ -206,7 +206,7 @@ void ScatteringFactorsDlg::CalcBose()
 void ScatteringFactorsDlg::CalcBoseQuery()
 {
 	const tl::t_temperature_si<t_real> T = t_real(spinBoseT->value()) * kelvin;
-	const tl::t_energy_si<t_real> E = spinBoseEQuery->value() * meV;
+	const tl::t_energy_si<t_real> E = t_real(spinBoseEQuery->value()) * meV;
 
 	t_real bose = tl::bose(E, T);
 	std::string strbose = "Bose Factor: " + tl::var_to_str(bose, g_iPrec);

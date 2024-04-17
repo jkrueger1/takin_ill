@@ -81,6 +81,7 @@ t_momentum<Sys,Y> lam2p(const t_length<Sys,Y>& lam)
 	return get_h<Y>() / lam;
 }
 
+
 template<class Sys, class Y>
 t_length<Sys,Y> p2lam(const t_momentum<Sys,Y>& p)
 {
@@ -95,11 +96,13 @@ t_length<Sys,Y> k2lam(const t_wavenumber<Sys,Y>& k)
 	return Y(2.)*get_pi<Y>() / k;
 }
 
+
 template<class Sys, class Y>
 t_wavenumber<Sys,Y> lam2k(const t_length<Sys,Y>& lam)
 {
 	return Y(2.)*get_pi<Y>() / lam;
 }
+
 
 template<class Sys, class Y>
 t_momentum<Sys,Y> k2p(const t_wavenumber<Sys,Y>& k)
@@ -107,17 +110,20 @@ t_momentum<Sys,Y> k2p(const t_wavenumber<Sys,Y>& k)
 	return get_hbar<Y>()*k;
 }
 
+
 template<class Sys, class Y>
 t_wavenumber<Sys,Y> p2k(const t_momentum<Sys,Y>& p)
 {
 	return p/get_hbar<Y>();
 }
 
+
 template<class Sys, class Y>
 t_velocity<Sys,Y> k2v(const t_wavenumber<Sys,Y>& k)
 {
 	return k2p(k) / get_m_n<Y>();
 }
+
 
 template<class Sys, class Y>
 t_wavenumber<Sys,Y> v2k(const t_velocity<Sys,Y>& v)
@@ -139,11 +145,13 @@ t_energy<Sys,Y> omega2E(const t_freq<Sys,Y>& omega)
 	return get_hbar<Y>() * omega;
 }
 
+
 template<class Sys, class Y>
 t_freq<Sys,Y> E2omega(const t_energy<Sys,Y>& en)
 {
 	return en / get_hbar<Y>();
 }
+
 
 template<class Sys, class Y>
 t_energy<Sys,Y> k2E_direct(const t_wavenumber<Sys,Y>& k)
@@ -152,6 +160,7 @@ t_energy<Sys,Y> k2E_direct(const t_wavenumber<Sys,Y>& k)
 	t_energy<Sys,Y> E = p*p / (Y(2.)*get_m_n<Y>());
 	return E;
 }
+
 
 template<class Sys, class Y>
 t_wavenumber<Sys,Y> E2k_direct(const t_energy<Sys,Y>& _E, bool &bImag)
@@ -177,6 +186,7 @@ t_energy<Sys,Y> k2E(const t_wavenumber<Sys,Y>& k)
 	Y dE = get_KSQ2E<Y>() * dk*dk;
 	return dE * get_one_meV<Y>();
 }
+
 
 template<class Sys, class Y>
 t_wavenumber<Sys,Y> E2k(const t_energy<Sys,Y>& _E, bool &bImag)
@@ -206,12 +216,14 @@ t_length<Sys,Y> bragg_real_lam(const t_length<Sys,Y>& d,
 	return Y(2.)*d/n * units::sin(twotheta/Y(2.));
 }
 
+
 template<class Sys, class Y>
 t_length<Sys,Y> bragg_real_d(const t_length<Sys,Y>& lam,
 	const t_angle<Sys,Y>& twotheta, Y n = Y(1))
 {
 	return n * lam / (Y(2.)*units::sin(twotheta/Y(2.)));
 }
+
 
 template<class Sys, class Y>
 t_angle<Sys,Y> bragg_real_twotheta(const t_length<Sys,Y>& d,
@@ -237,6 +249,7 @@ t_angle<Sys,Y> bragg_recip_twotheta(const t_wavenumber<Sys,Y>& G,
 	return units::asin(dS) * Y(2);
 }
 
+
 template<class Sys, class Y>
 t_wavenumber<Sys,Y> bragg_recip_G(const t_length<Sys,Y>& lam,
 	const t_angle<Sys,Y>& twotheta, Y n = Y(1))
@@ -244,10 +257,14 @@ t_wavenumber<Sys,Y> bragg_recip_G(const t_length<Sys,Y>& lam,
 	return Y(4)*get_pi<Y>() / (n*lam) * units::sin(twotheta/Y(2));
 }
 
+
 template<class Sys, class Y>
 t_wavenumber<Sys,Y> bragg_recip_Q(const t_length<Sys,Y>& lam,
 	const t_angle<Sys,Y>& twotheta, Y n = Y(1))
-{ return bragg_recip_G<Sys,Y>(lam,twotheta,n); }
+{
+	return bragg_recip_G<Sys,Y>(lam,twotheta,n);
+}
+
 
 template<class Sys, class Y>
 t_length<Sys,Y> bragg_recip_lam(const t_wavenumber<Sys,Y>& G,
@@ -267,12 +284,14 @@ t_wavenumber<Sys,Y> bragg_recip_G(const t_wavenumber<Sys,Y>& k,
 	return Y(2)*k / n * units::sin(twotheta/Y(2));
 }
 
+
 template<class Sys, class Y>
 t_wavenumber<Sys,Y> bragg_recip_k(const t_wavenumber<Sys,Y>& G,
 	const t_angle<Sys,Y>& twotheta, Y n = Y(1))
 {
 	return n*G / (Y(2) * units::sin(twotheta/Y(2)));
 }
+
 
 template<class Sys, class Y>
 t_angle<Sys,Y> bragg_recip_twotheta(const t_wavenumber<Sys,Y>& G,
@@ -294,6 +313,7 @@ t_length<Sys,Y> G2d(const t_wavenumber<Sys,Y>& G)
 {
 	return Y(2.)*get_pi<Y>() / G;
 }
+
 
 template<class Sys, class Y>
 t_wavenumber<Sys,Y> d2G(const t_length<Sys,Y>& d)
@@ -363,9 +383,9 @@ t_wavenumber<Sys,Y> kinematic_plane(bool bFixedKi,
 
 	auto c = Y(2.)*get_m_n<Y>() / (get_hbar<Y>()*get_hbar<Y>());
 	t_wavenumber<Sys,Y> Q =
-		units::sqrt(c *
-		(Y(2.)*EiEf + dE - Y(2.)*units::cos(twotheta) *
-		units::sqrt(EiEf*(EiEf + dE))));
+		my_units_sqrt<t_wavenumber<Sys,Y>>(c *
+			(Y(2.)*EiEf + dE - Y(2.)*units::cos(twotheta) *
+			my_units_sqrt<t_wavenumber<Sys,Y>>(EiEf*(EiEf + dE))));
 
 	return Q;
 }
@@ -385,9 +405,12 @@ t_energy<Sys,Y> kinematic_plane(bool bFixedKi, bool bBranch,
 	const t_energy<Sys,Y>& EiEf, const t_wavenumber<Sys,Y>& Q,
 	const t_angle<Sys,Y>& twotheta)
 {
+	using t_cE = units::quantity<units::unit<typename units::derived_dimension<
+		units::length_base_dimension, -2>::type,
+		Sys>, Y>;
+
 	auto c = Y(2.)*get_m_n<Y>() / (get_hbar<Y>()*get_hbar<Y>());
 	auto c2 = c*c;
-
 	auto EiEf2 = EiEf*EiEf;
 
 	Y ctt = units::cos(twotheta);
@@ -397,10 +420,11 @@ t_energy<Sys,Y> kinematic_plane(bool bFixedKi, bool bBranch,
 	Y dSignFixedKf = bFixedKi ? Y(-1.) : Y(1.);
 
 	t_energy<Sys,Y> dE =
-			dSignFixedKf*Y(2.) * EiEf * ctt2
-			- dSignFixedKf*Y(2.) * EiEf
-			+ dSignFixedKf * Q*Q / c
-			+ dSign*Y(2.) * ctt/c * units::sqrt(c2*ctt2*EiEf2 - c2*EiEf2 + c*EiEf*Q*Q);
+		dSignFixedKf*Y(2.) * EiEf * ctt2
+		- dSignFixedKf*Y(2.) * EiEf
+		+ dSignFixedKf * Q*Q / c
+		+ dSign*Y(2.) * ctt/c * my_units_sqrt<t_cE>(
+			c2*ctt2*EiEf2 - c2*EiEf2 + c*EiEf*Q*Q);
 
 	return dE;
 }
@@ -416,13 +440,14 @@ t_energy<Sys,Y> kinematic_plane(bool bFixedKi, bool bBranch,
 template<class Sys, class Y>
 Y debye_waller_high_T(const t_temperature<Sys,Y>& T_D,
 	const t_temperature<Sys,Y>& T, const t_mass<Sys,Y>& M,
-	const t_wavenumber<Sys,Y>& Q, t_length_square<Sys,Y>* pZeta_sq=0)
+	const t_wavenumber<Sys,Y>& Q, t_length_square<Sys,Y>* pZeta_sq = nullptr)
 {
 	t_length_square<Sys,Y> zeta_sq;
 	zeta_sq = Y(9.)*get_hbar<Y>()/get_kB<Y>() / (T_D * M) * T/T_D * get_hbar<Y>();
 	Y dwf = units::exp(Y(-1./3.) * Q*Q * zeta_sq);
 
-	if(pZeta_sq) *pZeta_sq = zeta_sq;
+	if(pZeta_sq)
+		*pZeta_sq = zeta_sq;
 	return dwf;
 }
 
@@ -430,14 +455,15 @@ Y debye_waller_high_T(const t_temperature<Sys,Y>& T_D,
 template<class Sys, class Y>
 Y debye_waller_low_T(const t_temperature<Sys,Y>& T_D,
 	const t_temperature<Sys,Y>& T, const t_mass<Sys,Y>& M,
-	const t_wavenumber<Sys,Y>& Q, t_length_square<Sys,Y>* pZeta_sq=0)
+	const t_wavenumber<Sys,Y>& Q, t_length_square<Sys,Y>* pZeta_sq = nullptr)
 {
 	t_length_square<Sys,Y> zeta_sq;
 	zeta_sq = Y(9.)*get_hbar<Y>()/get_kB<Y>() / (Y(4.)*T_D*M) * get_hbar<Y>() *
 		(Y(1.) + Y(2./3.) * get_pi<Y>()*get_pi<Y>() * (T/T_D)*(T/T_D));
 	Y dwf = units::exp(Y(-1./3.) * Q*Q * zeta_sq);
 
-	if(pZeta_sq) *pZeta_sq = zeta_sq;
+	if(pZeta_sq)
+		*pZeta_sq = zeta_sq;
 	return dwf;
 }
 
@@ -481,6 +507,7 @@ t_angle<Sys,Y> get_angle_ki_Q(const t_wavenumber<Sys,Y>& ki,
 	return angle;
 }
 
+
 /**
  * Q_vec = ki_vec - kf_vec
  * ki_vec = Q_vec + kf_vec
@@ -523,6 +550,7 @@ t_angle<Sys,Y> get_mono_twotheta(const t_wavenumber<Sys,Y>& k,
 		tt = -tt;
 	return tt;
 }
+
 
 template<class Sys, class Y>
 t_wavenumber<Sys,Y> get_mono_k(const t_angle<Sys,Y>& _theta,
@@ -579,7 +607,6 @@ get_sample_Q(const t_wavenumber<Sys,Y>& ki,
 		Qsq = -Qsq;
 	}
 
-	//t_wavenumber<Sys,Y> Q = units::sqrt(Qsq);
 	t_wavenumber<Sys,Y> Q = my_units_sqrt<t_wavenumber<Sys,Y>>(Qsq);
 	return Q;
 }
@@ -610,7 +637,6 @@ t_wavenumber<Sys,Y> get_other_k(const t_energy<Sys,Y>& E,
 	if(k_sq*get_one_angstrom<Y>()*get_one_angstrom<Y>() < Y(0.))
 		throw Err("Scattering triangle not closed.");
 
-	//return units::sqrt(k_sq);
 	return my_units_sqrt<t_wavenumber<Sys,Y>>(k_sq);
 }
 

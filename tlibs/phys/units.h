@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * tlibs -- a physical-mathematical C++ template library
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -58,85 +58,85 @@ namespace co = boost::units::si::constants::codata;
 
 
 // general quantities
-template<class Sys, class T=double> using t_length =
+template<class Sys, class T = double> using t_length =
 	units::quantity<units::unit<units::length_dimension, Sys>, T>;
-template<class Sys, class T=double> using t_momentum =
+template<class Sys, class T = double> using t_momentum =
 	units::quantity<units::unit<units::momentum_dimension, Sys>, T>;
-template<class Sys, class T=double> using t_wavenumber =
+template<class Sys, class T = double> using t_wavenumber =
 	units::quantity<units::unit<units::wavenumber_dimension, Sys>, T>;
-template<class Sys, class T=double> using t_velocity =
+template<class Sys, class T = double> using t_velocity =
 	units::quantity<units::unit<units::velocity_dimension, Sys>, T>;
-template<class Sys, class T=double> using t_frequency =
+template<class Sys, class T = double> using t_frequency =
 	units::quantity<units::unit<units::frequency_dimension, Sys>, T>;
-template<class Sys, class T=double> using t_energy =
+template<class Sys, class T = double> using t_energy =
 	units::quantity<units::unit<units::energy_dimension, Sys>, T>;
-template<class Sys, class T=double> using t_angle =
+template<class Sys, class T = double> using t_angle =
 	units::quantity<units::unit<units::plane_angle_dimension, Sys>, T>;
-template<class Sys, class T=double> using t_temperature =
+template<class Sys, class T = double> using t_temperature =
 	units::quantity<units::unit<units::temperature_dimension, Sys>, T>;
-template<class Sys, class T=double> using t_mass =
+template<class Sys, class T = double> using t_mass =
 	units::quantity<units::unit<units::mass_dimension, Sys>, T>;
-template<class Sys, class T=double> using t_time =
+template<class Sys, class T = double> using t_time =
 	units::quantity<units::unit<units::time_dimension, Sys>, T>;
-template<class Sys, class T=double> using t_flux =
+template<class Sys, class T = double> using t_flux =
 	units::quantity<units::unit<units::magnetic_flux_density_dimension, Sys>, T>;
-template<class Sys, class T=double> using t_inductance =
+template<class Sys, class T = double> using t_inductance =
 	units::quantity<units::unit<units::inductance_dimension, Sys>, T>;
-template<class Sys, class T=double> using t_area =
+template<class Sys, class T = double> using t_area =
 	units::quantity<units::unit<units::area_dimension, Sys>, T>;
-template<class Sys, class T=double> using t_volume =
+template<class Sys, class T = double> using t_volume =
 	units::quantity<units::unit<units::volume_dimension, Sys>, T>;
 
-template<class Sys, class T=double> using t_length_inverse =
+template<class Sys, class T = double> using t_length_inverse =
 	units::quantity<units::unit<units::derived_dimension<units::length_base_dimension, -1>::type, Sys>, T>;
-template<class Sys, class T=double> using t_length_square =
+template<class Sys, class T = double> using t_length_square =
 	units::quantity<units::unit<units::derived_dimension<units::length_base_dimension, 2>::type, Sys>, T>;
-template<class Sys, class T=double> using t_momentum_square =
+template<class Sys, class T = double> using t_momentum_square =
 	units::quantity<units::unit<units::derived_dimension<units::momentum_dimension, 2>::type, Sys>, T>;
-template<class Sys, class T=double> using t_action =
+template<class Sys, class T = double> using t_action =
 	units::quantity<units::unit<typename units::derived_dimension
 	<units::mass_base_dimension,1, units::length_base_dimension,2, units::time_base_dimension,-1>::type, Sys>, T>;
-template<class Sys, class T=double> using t_energy_per_temperature =
+template<class Sys, class T = double> using t_energy_per_temperature =
 	units::quantity<units::unit<typename units::derived_dimension
 	<units::mass_base_dimension,1, units::length_base_dimension,2,
 	units::time_base_dimension,-2, units::temperature_base_dimension,-1>::type, Sys>, T>;
-template<class Sys, class T=double> using t_energy_per_field =
+template<class Sys, class T = double> using t_energy_per_field =
 	units::quantity<units::unit<typename units::derived_dimension
 	<units::current_base_dimension,1, units::length_base_dimension,2>::type, Sys>, T>;
-template<class Sys, class T=double> using t_inductance_per_length =
+template<class Sys, class T = double> using t_inductance_per_length =
 	units::quantity<units::unit<typename units::derived_dimension
 	<units::current_base_dimension,-2, units::length_base_dimension,1,
 	units::time_base_dimension,-2, units::mass_base_dimension,1>::type, Sys>, T>;
-template<class Sys, class T=double> using t_inv_flux_time =
+template<class Sys, class T = double> using t_inv_flux_time =
 	units::quantity<units::unit<typename units::derived_dimension
 	<units::current_base_dimension,1, units::time_base_dimension,1, units::mass_base_dimension,-1>::type, Sys>, T>;
-template<class Sys, class T=double> using t_dimensionless =
+template<class Sys, class T = double> using t_dimensionless =
 	units::quantity<units::unit<units::dimensionless_type, Sys>, T>;
 
 
 // synonyms
-template<class Sys, class T=double> using t_freq = t_frequency<Sys, T>;
-template<class Sys, class T=double> using t_temp = t_temperature<Sys, T>;
+template<class Sys, class T = double> using t_freq = t_frequency<Sys, T>;
+template<class Sys, class T = double> using t_temp = t_temperature<Sys, T>;
 
 
 // si quantities -- partial specialisations
-template<class Y=double> using t_length_si = t_length<units::si::system, Y>;
-template<class Y=double> using t_length_inverse_si = t_length_inverse<units::si::system, Y>;
-template<class Y=double> using t_momentum_si = t_momentum<units::si::system, Y>;
-template<class Y=double> using t_wavenumber_si = t_wavenumber<units::si::system, Y>;
-template<class Y=double> using t_velocity_si = t_velocity<units::si::system, Y>;
-template<class Y=double> using t_frequency_si = t_frequency<units::si::system, Y>;
-template<class Y=double> using t_energy_si = t_energy<units::si::system, Y>;
-template<class Y=double> using t_angle_si = t_angle<units::si::system, Y>;
-template<class Y=double> using t_temperature_si = t_temperature<units::si::system, Y>;
-template<class Y=double> using t_mass_si = t_mass<units::si::system, Y>;
-template<class Y=double> using t_time_si = t_time<units::si::system, Y>;
-template<class Y=double> using t_flux_si = t_flux<units::si::system, Y>;
-template<class Y=double> using t_inductance_si = t_inductance<units::si::system, Y>;
-template<class Y=double> using t_area_si = t_area<units::si::system, Y>;
-template<class Y=double> using t_action_si = t_action<units::si::system, Y>;
-template<class Y=double> using t_energy_per_temperature_si = t_energy_per_temperature<units::si::system, Y>;
-template<class Y=double> using t_inv_flux_time_si = t_inv_flux_time<units::si::system, Y>;
+template<class T = double> using t_length_si = t_length<units::si::system, T>;
+template<class T = double> using t_length_inverse_si = t_length_inverse<units::si::system, T>;
+template<class T = double> using t_momentum_si = t_momentum<units::si::system, T>;
+template<class T = double> using t_wavenumber_si = t_wavenumber<units::si::system, T>;
+template<class T = double> using t_velocity_si = t_velocity<units::si::system, T>;
+template<class T = double> using t_frequency_si = t_frequency<units::si::system, T>;
+template<class T = double> using t_energy_si = t_energy<units::si::system, T>;
+template<class T = double> using t_angle_si = t_angle<units::si::system, T>;
+template<class T = double> using t_temperature_si = t_temperature<units::si::system, T>;
+template<class T = double> using t_mass_si = t_mass<units::si::system, T>;
+template<class T = double> using t_time_si = t_time<units::si::system, T>;
+template<class T = double> using t_flux_si = t_flux<units::si::system, T>;
+template<class T = double> using t_inductance_si = t_inductance<units::si::system, T>;
+template<class T = double> using t_area_si = t_area<units::si::system, T>;
+template<class T = double> using t_action_si = t_action<units::si::system, T>;
+template<class T = double> using t_energy_per_temperature_si = t_energy_per_temperature<units::si::system, T>;
+template<class T = double> using t_inv_flux_time_si = t_inv_flux_time<units::si::system, T>;
 
 
 // si quantities -- full specialisations
@@ -162,87 +162,87 @@ typedef temperature temp;
 
 
 // constants
-template<class Y=double> t_energy<units::si::system, Y> get_one_meV()
-{ return Y(1e-3) * Y(co::e/units::si::coulombs)*units::si::coulombs*units::si::volts; }
-template<class Y=double> t_energy<units::si::system, Y> get_one_eV()
-{ return Y(1) * Y(co::e/units::si::coulombs)*units::si::coulombs*units::si::volts; }
-template<class Y=double> t_energy<units::si::system, Y> get_one_MeV()
-{ return Y(1e6) * Y(co::e/units::si::coulombs)*units::si::coulombs*units::si::volts; }
-template<class Y=double> t_length<units::si::system, Y> get_one_angstrom()
-{ return Y(1e-10) * units::si::meters; }
-template<class Y=double> t_length<units::si::system, Y> get_one_meter()
-{ return Y(1) * units::si::meters; }
-template<class Y=double> t_length<units::si::system, Y> get_one_femtometer()
-{ return Y(1e-15) * units::si::meters; }
-template<class Y=double> t_mass<units::si::system, Y> get_one_kg()
-{ return Y(1) * units::si::kilograms; }
-template<class Y=double> t_area<units::si::system, Y> get_one_barn()
-{ return Y(1e-28) * units::si::meters*units::si::meters; }
-template<class Y=double> t_temperature<units::si::system, Y> get_one_kelvin()
-{ return Y(1) * units::si::kelvins; }
-template<class Y=double> t_length<units::si::system, Y> get_one_centimeter()
-{ return Y(1e-2) * units::si::meters; }
-template<class Y=double> t_time<units::si::system, Y> get_one_second()
-{ return Y(1) * units::si::seconds; }
-template<class Y=double> t_time<units::si::system, Y> get_one_picosecond()
-{ return Y(1e-12) * units::si::seconds; }
-template<class Y=double> t_angle<units::si::system, Y> get_one_radian()
-{ return Y(1) * units::si::radians; }
-template<class Y=double> t_angle<units::si::system, Y> get_one_deg()
-{ return Y(get_pi<Y>()/Y(180.)) * units::si::radians; }
-template<class Y=double> t_flux<units::si::system, Y> get_one_tesla()
-{ return Y(1) * units::si::teslas; }
-template<class Y=double> t_flux<units::si::system, Y> get_one_kilogauss()
-{ return Y(0.1) * units::si::teslas; }
-template<class Y=double> t_inductance<units::si::system, Y> get_one_henry()
-{ return Y(1) * units::si::henry; }
+template<class T = double> t_energy<units::si::system, T> get_one_meV()
+{ return T(1e-3) * T(co::e/units::si::coulombs)*units::si::coulombs*units::si::volts; }
+template<class T = double> t_energy<units::si::system, T> get_one_eV()
+{ return T(1) * T(co::e/units::si::coulombs)*units::si::coulombs*units::si::volts; }
+template<class T = double> t_energy<units::si::system, T> get_one_MeV()
+{ return T(1e6) * T(co::e/units::si::coulombs)*units::si::coulombs*units::si::volts; }
+template<class T = double> t_length<units::si::system, T> get_one_angstrom()
+{ return T(1e-10) * units::si::meters; }
+template<class T = double> t_length<units::si::system, T> get_one_meter()
+{ return T(1) * units::si::meters; }
+template<class T = double> t_length<units::si::system, T> get_one_femtometer()
+{ return T(1e-15) * units::si::meters; }
+template<class T = double> t_mass<units::si::system, T> get_one_kg()
+{ return T(1) * units::si::kilograms; }
+template<class T = double> t_area<units::si::system, T> get_one_barn()
+{ return T(1e-28) * units::si::meters*units::si::meters; }
+template<class T = double> t_temperature<units::si::system, T> get_one_kelvin()
+{ return T(1) * units::si::kelvins; }
+template<class T = double> t_length<units::si::system, T> get_one_centimeter()
+{ return T(1e-2) * units::si::meters; }
+template<class T = double> t_time<units::si::system, T> get_one_second()
+{ return T(1) * units::si::seconds; }
+template<class T = double> t_time<units::si::system, T> get_one_picosecond()
+{ return T(1e-12) * units::si::seconds; }
+template<class T = double> t_angle<units::si::system, T> get_one_radian()
+{ return T(1) * units::si::radians; }
+template<class T = double> t_angle<units::si::system, T> get_one_deg()
+{ return T(get_pi<T>()/T(180.)) * units::si::radians; }
+template<class T = double> t_flux<units::si::system, T> get_one_tesla()
+{ return T(1) * units::si::teslas; }
+template<class T = double> t_flux<units::si::system, T> get_one_kilogauss()
+{ return T(0.1) * units::si::teslas; }
+template<class T = double> t_inductance<units::si::system, T> get_one_henry()
+{ return T(1) * units::si::henry; }
 
-template<class Y=double> t_mass<units::si::system, Y> get_m_n()
-{ return Y(co::m_n/units::si::kilograms)*units::si::kilograms; }
-template<class Y=double> t_mass<units::si::system, Y> get_m_e()
-{ return Y(co::m_e/units::si::kilograms)*units::si::kilograms; }
-template<class Y=double> t_mass<units::si::system, Y> get_amu()
-{ return Y(co::m_u/units::si::kilograms)*units::si::kilograms; }
-template<class Y=double> t_action<units::si::system, Y> get_hbar()
-{ return Y(co::hbar/units::si::joules/units::si::seconds)*units::si::joules*units::si::seconds; }
-template<class Y=double> t_action<units::si::system, Y> get_h()
-{ return get_hbar<Y>() * Y(2)*get_pi<Y>(); }
-template<class Y=double> t_velocity<units::si::system, Y> get_c()
-{ return Y(co::c/units::si::meters*units::si::seconds)*units::si::meters/units::si::seconds; }
-template<class Y=double> t_energy_per_temperature<units::si::system, Y> get_kB()
-{ return Y(co::k_B*units::si::kelvin/units::si::joules)/units::si::kelvin*units::si::joules; }
-template<class Y=double> t_energy_per_field<units::si::system, Y> get_mu_B()
-{ return Y(co::mu_B/units::si::joules*units::si::tesla)*units::si::joules/units::si::tesla; }
-template<class Y=double> t_energy_per_field<units::si::system, Y> get_mu_n()
-{ return Y(co::mu_n/units::si::joules*units::si::tesla)*units::si::joules/units::si::tesla; }
-template<class Y=double> t_energy_per_field<units::si::system, Y> get_mu_N()
-{ return Y(co::mu_N/units::si::joules*units::si::tesla)*units::si::joules/units::si::tesla; }
-template<class Y=double> t_energy_per_field<units::si::system, Y> get_mu_e()
-{ return Y(co::mu_e/units::si::joules*units::si::tesla)*units::si::joules/units::si::tesla; }
-template<class Y=double> t_inductance_per_length<units::si::system, Y> get_mu_0()
-{ return Y(co::mu_0/units::si::henry*units::si::meter)*units::si::henry/units::si::meter; }
-template<class Y=double> Y get_g_n() { return Y(co::g_n.value()); }
-template<class Y=double> Y get_g_e() { return Y(co::g_e.value()); }
-template<class Y=double> t_inv_flux_time<units::si::system, Y> get_gamma_n()
-{ return Y(co::gamma_n*units::si::tesla*units::si::seconds)/units::si::tesla/units::si::seconds; }
-template<class Y=double> t_inv_flux_time<units::si::system, Y> get_gamma_e()
-{ return Y(co::gamma_e*units::si::tesla*units::si::seconds)/units::si::tesla/units::si::seconds; }
-template<class Y=double> t_length<units::si::system, Y> get_r_e()
-{ return Y(co::r_e/units::si::meters)*units::si::meters; }
+template<class T = double> t_mass<units::si::system, T> get_m_n()
+{ return T(co::m_n/units::si::kilograms)*units::si::kilograms; }
+template<class T = double> t_mass<units::si::system, T> get_m_e()
+{ return T(co::m_e/units::si::kilograms)*units::si::kilograms; }
+template<class T = double> t_mass<units::si::system, T> get_amu()
+{ return T(co::m_u/units::si::kilograms)*units::si::kilograms; }
+template<class T = double> t_action<units::si::system, T> get_hbar()
+{ return T(co::hbar/units::si::joules/units::si::seconds)*units::si::joules*units::si::seconds; }
+template<class T = double> t_action<units::si::system, T> get_h()
+{ return get_hbar<T>() * T(2)*get_pi<T>(); }
+template<class T = double> t_velocity<units::si::system, T> get_c()
+{ return T(co::c/units::si::meters*units::si::seconds)*units::si::meters/units::si::seconds; }
+template<class T = double> t_energy_per_temperature<units::si::system, T> get_kB()
+{ return T(co::k_B*units::si::kelvin/units::si::joules)/units::si::kelvin*units::si::joules; }
+template<class T = double> t_energy_per_field<units::si::system, T> get_mu_B()
+{ return T(co::mu_B/units::si::joules*units::si::tesla)*units::si::joules/units::si::tesla; }
+template<class T = double> t_energy_per_field<units::si::system, T> get_mu_n()
+{ return T(co::mu_n/units::si::joules*units::si::tesla)*units::si::joules/units::si::tesla; }
+template<class T = double> t_energy_per_field<units::si::system, T> get_mu_N()
+{ return T(co::mu_N/units::si::joules*units::si::tesla)*units::si::joules/units::si::tesla; }
+template<class T = double> t_energy_per_field<units::si::system, T> get_mu_e()
+{ return T(co::mu_e/units::si::joules*units::si::tesla)*units::si::joules/units::si::tesla; }
+template<class T = double> t_inductance_per_length<units::si::system, T> get_mu_0()
+{ return T(co::mu_0/units::si::henry*units::si::meter)*units::si::henry/units::si::meter; }
+template<class T = double> T get_g_n() { return T(co::g_n.value()); }
+template<class T = double> T get_g_e() { return T(co::g_e.value()); }
+template<class T = double> t_inv_flux_time<units::si::system, T> get_gamma_n()
+{ return T(co::gamma_n*units::si::tesla*units::si::seconds)/units::si::tesla/units::si::seconds; }
+template<class T = double> t_inv_flux_time<units::si::system, T> get_gamma_e()
+{ return T(co::gamma_e*units::si::tesla*units::si::seconds)/units::si::tesla/units::si::seconds; }
+template<class T = double> t_length<units::si::system, T> get_r_e()
+{ return T(co::r_e/units::si::meters)*units::si::meters; }
 
 
 // template constants
 #if __cplusplus >= 201402L
-	template<class Y=double> const t_length_si<Y> t_meters = get_one_meter<Y>();
-	template<class Y=double> const t_flux_si<Y> t_teslas = Y(1)*units::si::teslas;
-	template<class Y=double> const t_time_si<Y> t_seconds = Y(1)*units::si::seconds;
-	template<class Y=double> const t_temperature_si<Y> t_kelvins = Y(1)*units::si::kelvins;
-	template<class Y=double> const t_area_si<Y> t_barns = Y(1e-28)*units::si::meters*units::si::meters;
-	template<class Y=double> const t_angle_si<Y> t_radians = Y(1)*units::si::radians;
-	template<class Y=double> const t_angle_si<Y> t_degrees = get_pi<Y>()/Y(180)*units::si::radians;
+	template<class T = double> const t_length_si<T> t_meters = get_one_meter<T>();
+	template<class T = double> const t_flux_si<T> t_teslas = T(1)*units::si::teslas;
+	template<class T = double> const t_time_si<T> t_seconds = T(1)*units::si::seconds;
+	template<class T = double> const t_temperature_si<T> t_kelvins = T(1)*units::si::kelvins;
+	template<class T = double> const t_area_si<T> t_barns = T(1e-28)*units::si::meters*units::si::meters;
+	template<class T = double> const t_angle_si<T> t_radians = T(1)*units::si::radians;
+	template<class T = double> const t_angle_si<T> t_degrees = get_pi<T>()/T(180)*units::si::radians;
 
-	template<class Y=double> const t_energy_si<Y> t_meV = get_one_meV<Y>();
-	template<class Y=double> const t_length_si<Y> t_angstrom = get_one_angstrom<Y>();
+	template<class T = double> const t_energy_si<T> t_meV = get_one_meV<T>();
+	template<class T = double> const t_length_si<T> t_angstrom = get_one_angstrom<T>();
 #endif
 
 
@@ -271,26 +271,27 @@ static const flux tesla = teslas;
 static const area barn = barns;
 
 
-
 // helper functions
 template<class t_quant>
 t_quant my_units_sqrt(const decltype(t_quant() * t_quant())& val)
 {
 	using t_quant_sq = decltype(t_quant() * t_quant());
-	using Y = typename t_quant::value_type;
+	using T = typename t_quant::value_type;
 
-	t_quant one_quant = t_quant::from_value(Y(1));
-	t_quant_sq one_quant_sq = t_quant_sq::from_value(Y(1));
+	t_quant one_quant = t_quant::from_value(T(1));
+	t_quant_sq one_quant_sq = t_quant_sq::from_value(T(1));
 
-	Y valsq = Y(val / one_quant_sq);
+	T valsq = T(val / one_quant_sq);
 	return std::sqrt(valsq) * one_quant;
 }
+
 
 template<class t_quant>
 decltype(t_quant()*t_quant()) my_units_pow2(const t_quant& val)
 {
 	return val*val;
 }
+
 
 template<class t_elem, template<class...> class t_vec=boost::numeric::ublas::vector>
 t_elem my_units_norm2(const t_vec<t_elem>& vec)
