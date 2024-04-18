@@ -1127,7 +1127,7 @@ std::tuple<std::string, int> MolDynDlg::SplitDataString(const std::string& data)
 	std::string atomtype = data.substr(0, idx);
 	std::string atomidx = data.substr(idx + std::strlen(DATA_SEP));
 
-	return std::make_tuple(atomtype, std::stoi(atomidx));
+	return std::make_tuple(atomtype, tl2::stoval<int>(atomidx));
 }
 
 

@@ -245,10 +245,9 @@ void StructFactDlg::FindSG()
 		if(!itemx || !itemy || !itemz)
 			return;
 
-		t_real posx=0, posy=0, posz=0;
-		std::istringstream{itemx->text().toStdString()} >> posx;
-		std::istringstream{itemy->text().toStdString()} >> posy;
-		std::istringstream{itemz->text().toStdString()} >> posz;
+		t_real posx = tl2::stoval<t_real>(itemx->text().toStdString());
+		t_real posy = tl2::stoval<t_real>(itemy->text().toStdString());
+		t_real posz = tl2::stoval<t_real>(itemz->text().toStdString());
 
 		ostr << "\t(" << (row+1) << "): (" << posx << ", " << posy << ", " << posz << ")\n";
 		vecFinal.emplace_back(t_vec{{posx, posy, posz}});

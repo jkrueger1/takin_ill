@@ -35,12 +35,14 @@ CliLexer::CliLexer(CliParserContext *ctx)
 	: yyFlexLexer(), m_pContext(ctx)
 {}
 
-template<> double str_to_real(const std::string& str) { return std::stod(str); }
-template<> float str_to_real(const std::string& str) { return std::stof(str); }
 
 void CliLexer::LexerError(const char *err)
 {
-	if(m_pContext) m_pContext->PrintError(std::string("Lexer error: ") + err + std::string("."));
+	if(!m_pContext)
+		return;
+
+	m_pContext->PrintError(
+		std::string("Lexer error: ") + err + std::string("."));
 }
 // ----------------------------------------------------------------------------
 

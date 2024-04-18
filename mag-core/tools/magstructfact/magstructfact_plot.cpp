@@ -101,18 +101,17 @@ void MagStructFactDlg::Sync3DItem(int row)
 	auto *itemsc = m_nuclei->item(row, COL_RAD);
 	auto *itemCol = m_nuclei->item(row, COL_COL);
 
-	t_real_gl posx=0, posy=0, posz=0, M=1, ReMX=0, ReMY=0, ReMZ=1, ImMX=0, ImMY=0, ImMZ=1, scale=1;
-	std::istringstream{itemx->text().toStdString()} >> posx;
-	std::istringstream{itemy->text().toStdString()} >> posy;
-	std::istringstream{itemz->text().toStdString()} >> posz;
-	std::istringstream{itemM->text().toStdString()} >> M;
-	std::istringstream{itemReMX->text().toStdString()} >> ReMX;
-	std::istringstream{itemReMY->text().toStdString()} >> ReMY;
-	std::istringstream{itemReMZ->text().toStdString()} >> ReMZ;
-	std::istringstream{itemImMX->text().toStdString()} >> ImMX;
-	std::istringstream{itemImMY->text().toStdString()} >> ImMY;
-	std::istringstream{itemImMZ->text().toStdString()} >> ImMZ;
-	std::istringstream{itemsc->text().toStdString()} >> scale;
+	t_real_gl posx = tl2::stoval<t_real_gl>(itemx->text().toStdString());
+	t_real_gl posy = tl2::stoval<t_real_gl>(itemy->text().toStdString());
+	t_real_gl posz = tl2::stoval<t_real_gl>(itemz->text().toStdString());
+	t_real_gl M = tl2::stoval<t_real_gl>(itemM->text().toStdString());
+	t_real_gl ReMX = tl2::stoval<t_real_gl>(itemReMX->text().toStdString());
+	t_real_gl ReMY = tl2::stoval<t_real_gl>(itemReMY->text().toStdString());
+	t_real_gl ReMZ = tl2::stoval<t_real_gl>(itemReMZ->text().toStdString());
+	t_real_gl ImMX = tl2::stoval<t_real_gl>(itemImMX->text().toStdString());
+	t_real_gl ImMY = tl2::stoval<t_real_gl>(itemImMY->text().toStdString());
+	t_real_gl ImMZ = tl2::stoval<t_real_gl>(itemImMZ->text().toStdString());
+	t_real_gl scale = tl2::stoval<t_real_gl>(itemsc->text().toStdString());
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	qreal r=1, g=1, b=1;
@@ -188,10 +187,10 @@ void MagStructFactDlg::PickerIntersection(const t_vec3_gl* pos, std::size_t objI
 				auto *itemY = m_nuclei->item(row, COL_Y);
 				auto *itemZ = m_nuclei->item(row, COL_Z);
 
-				t_vec r = tl2::create<t_vec>({0,0,0});
-				std::istringstream{itemX->text().toStdString()} >> r[0];
-				std::istringstream{itemY->text().toStdString()} >> r[1];
-				std::istringstream{itemZ->text().toStdString()} >> r[2];
+				t_vec r = tl2::create<t_vec>({ 0, 0, 0 });
+				r[0] = tl2::stoval<t_real>(itemX->text().toStdString());
+				r[1] = tl2::stoval<t_real>(itemY->text().toStdString());
+				r[2] = tl2::stoval<t_real>(itemZ->text().toStdString());
 				t_vec rlab = m_crystA * r;
 
 				std::ostringstream ostr; ostr.precision(g_prec);

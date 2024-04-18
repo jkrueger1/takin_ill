@@ -25,8 +25,8 @@
 # ----------------------------------------------------------------------------
 #
 
+cmake_minimum_required(VERSION 3.5)
 project(magsgbrowser)
-cmake_minimum_required(VERSION 3.0)
 
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets)
 

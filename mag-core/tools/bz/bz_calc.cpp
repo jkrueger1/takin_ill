@@ -97,13 +97,12 @@ void BZDlg::CalcB(bool full_recalc)
 	if(m_ignoreCalc)
 		return;
 
-	t_real a,b,c, alpha,beta,gamma;
-	std::istringstream{m_editA->text().toStdString()} >> a;
-	std::istringstream{m_editB->text().toStdString()} >> b;
-	std::istringstream{m_editC->text().toStdString()} >> c;
-	std::istringstream{m_editAlpha->text().toStdString()} >> alpha;
-	std::istringstream{m_editBeta->text().toStdString()} >> beta;
-	std::istringstream{m_editGamma->text().toStdString()} >> gamma;
+	t_real a = tl2::stoval<t_real>(m_editA->text().toStdString());
+	t_real b = tl2::stoval<t_real>(m_editB->text().toStdString());
+	t_real c = tl2::stoval<t_real>(m_editC->text().toStdString());
+	t_real alpha = tl2::stoval<t_real>(m_editAlpha->text().toStdString());
+	t_real beta = tl2::stoval<t_real>(m_editBeta->text().toStdString());
+	t_real gamma = tl2::stoval<t_real>(m_editGamma->text().toStdString());
 
 	if(tl2::equals<t_real>(a, 0., g_eps) || a <= 0. ||
 		tl2::equals<t_real>(b, 0., g_eps) || b <= 0. ||
@@ -118,9 +117,9 @@ void BZDlg::CalcB(bool full_recalc)
 	}
 
 	t_mat crystB = tl2::B_matrix<t_mat>(a, b, c,
-		alpha/180.*tl2::pi<t_real>,
-		beta/180.*tl2::pi<t_real>,
-		gamma/180.*tl2::pi<t_real>);
+		alpha/t_real(180.)*tl2::pi<t_real>,
+		beta/t_real(180.)*tl2::pi<t_real>,
+		gamma/t_real(180.)*tl2::pi<t_real>);
 
 	bool ok = true;
 	t_mat crystA = tl2::unit<t_mat>(3);
@@ -329,11 +328,11 @@ void BZDlg::CalcBZCut()
 				t_vec pt1 = tl2::create<t_vec>({
 					bz_verts[bz_idx][0],
 					bz_verts[bz_idx][1],
-					z_comp ? *z_comp : 0. });
+					z_comp ? *z_comp : t_real(0.) });
 				t_vec pt2 = tl2::create<t_vec>({
 					bz_verts[bz_idx2][0],
 					bz_verts[bz_idx2][1],
-					z_comp ? *z_comp : 0. });
+					z_comp ? *z_comp : t_real(0.) });
 				tl2::set_eps_0(pt1, g_eps);
 				tl2::set_eps_0(pt2, g_eps);
 

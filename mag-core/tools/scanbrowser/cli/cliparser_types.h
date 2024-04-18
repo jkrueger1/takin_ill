@@ -29,7 +29,7 @@
 
 #include <memory>
 
-#include "../../defs.h"
+#include "libs/defs.h"
 
 
 class CliParserContext;

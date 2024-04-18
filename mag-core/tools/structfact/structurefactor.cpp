@@ -39,7 +39,7 @@ namespace consts = si::constants;
 #include <fstream>
 #include <memory>
 
-#include "../defs.h"
+#include "libs/defs.h"
 #include "tlibs2/libs/maths.h"
 using namespace tl2;
 using namespace tl2_ops;

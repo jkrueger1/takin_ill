@@ -25,8 +25,9 @@
 # ----------------------------------------------------------------------------
 #
 
+cmake_minimum_required(VERSION 3.5)
 project(moldyn)
-cmake_minimum_required(VERSION 3.0)
+
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/../../tlibs2/cmake")
 
 set(CMAKE_VERBOSE_MAKEFILE TRUE)

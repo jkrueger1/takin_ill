@@ -40,7 +40,7 @@
 
 #include "tlibs2/libs/qt/glplot.h"
 #include "tlibs2/libs/maths.h"
-#include "../defs.h"
+#include "libs/defs.h"
 
 #include "moldyn-loader.h"
 

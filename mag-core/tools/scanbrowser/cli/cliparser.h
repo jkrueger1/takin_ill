@@ -39,6 +39,7 @@
 #include "cliparser_types.h"
 #include "cliparser_impl.h"
 
+#include "tlibs2/libs/str.h"
 #include "../data.h"
 
 
@@ -64,8 +65,6 @@ public:
 	CliLexer(CliParserContext *ctx = nullptr);
 	virtual yy::CliParser::symbol_type yylex(CliParserContext &ctx);
 };
-
-template<class t_real> t_real str_to_real(const std::string& str);
 
 // ----------------------------------------------------------------------------
 

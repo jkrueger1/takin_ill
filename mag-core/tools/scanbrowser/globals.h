@@ -27,7 +27,7 @@
 #define __SCANBROWSER_GLOBALS_H__
 
 
-#include "../defs.h"
+#include "libs/defs.h"
 #include "command.h"
 
 

@@ -27,6 +27,7 @@
  */
 
 #include "trafos.h"
+#include "defs.h"
 
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QPushButton>
@@ -35,8 +36,6 @@
 #include <QtWidgets/QLabel>
 
 #include <boost/math/quaternion.hpp>
-
-#include "defs.h"
 
 
 

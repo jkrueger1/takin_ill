@@ -1136,8 +1136,9 @@ requires is_mat<t_mat> && is_vec<t_vec>
  * @see https://doi.org/10.1016/B978-044451050-1/50002-1
  */
 template<class t_vec, class T = t_vec, template<class...> class t_cont = std::vector,
-	class t_cplx = std::complex<double>>
-T structure_factor(const t_cont<T>& Ms_or_bs, const t_cont<t_vec>& Rs, const t_vec& Q, const t_vec* fs=nullptr)
+	class t_cplx = std::complex<typename t_vec::value_type>>
+T structure_factor(const t_cont<T>& Ms_or_bs, const t_cont<t_vec>& Rs,
+	const t_vec& Q, const t_vec* fs = nullptr)
 requires is_basic_vec<t_vec>
 {
 	using t_real = typename t_cplx::value_type;

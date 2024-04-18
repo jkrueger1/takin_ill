@@ -33,8 +33,7 @@
 namespace math = boost::math;
 
 #include "tlibs2/libs/maths.h"
-
-#include "../defs.h"
+#include "libs/defs.h"
 
 
 using t_vec = tl2::vec<t_real, std::vector>;

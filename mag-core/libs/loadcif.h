@@ -157,10 +157,10 @@ std::vector<t_mat> get_cif_ops(gemmi::cif::Block& block)
 			auto M = op.float_seitz();
 
 			t_mat mat = tl2::create<t_mat>({
-				std::get<0>(std::get<0>(M)), std::get<1>(std::get<0>(M)), std::get<2>(std::get<0>(M)), std::get<3>(std::get<0>(M)),
-				std::get<0>(std::get<1>(M)), std::get<1>(std::get<1>(M)), std::get<2>(std::get<1>(M)), std::get<3>(std::get<1>(M)),
-				std::get<0>(std::get<2>(M)), std::get<1>(std::get<2>(M)), std::get<2>(std::get<2>(M)), std::get<3>(std::get<2>(M)),
-				std::get<0>(std::get<3>(M)), std::get<1>(std::get<3>(M)), std::get<2>(std::get<3>(M)), std::get<3>(std::get<3>(M)) });
+				t_real(std::get<0>(std::get<0>(M))), t_real(std::get<1>(std::get<0>(M))), t_real(std::get<2>(std::get<0>(M))), t_real(std::get<3>(std::get<0>(M))),
+				t_real(std::get<0>(std::get<1>(M))), t_real(std::get<1>(std::get<1>(M))), t_real(std::get<2>(std::get<1>(M))), t_real(std::get<3>(std::get<1>(M))),
+				t_real(std::get<0>(std::get<2>(M))), t_real(std::get<1>(std::get<2>(M))), t_real(std::get<2>(std::get<2>(M))), t_real(std::get<3>(std::get<2>(M))),
+				t_real(std::get<0>(std::get<3>(M))), t_real(std::get<1>(std::get<3>(M))), t_real(std::get<2>(std::get<3>(M))), t_real(std::get<3>(std::get<3>(M))) });
 
 			ops.emplace_back(std::move(mat));
 		}
@@ -192,10 +192,10 @@ std::vector<t_mat> get_sg_ops(const std::string& sgname)
 		auto M = op.float_seitz();
 
 		t_mat mat = tl2::create<t_mat>({
-			std::get<0>(std::get<0>(M)), std::get<1>(std::get<0>(M)), std::get<2>(std::get<0>(M)), std::get<3>(std::get<0>(M)),
-			std::get<0>(std::get<1>(M)), std::get<1>(std::get<1>(M)), std::get<2>(std::get<1>(M)), std::get<3>(std::get<1>(M)),
-			std::get<0>(std::get<2>(M)), std::get<1>(std::get<2>(M)), std::get<2>(std::get<2>(M)), std::get<3>(std::get<2>(M)),
-			std::get<0>(std::get<3>(M)), std::get<1>(std::get<3>(M)), std::get<2>(std::get<3>(M)), std::get<3>(std::get<3>(M)) });
+			t_real(std::get<0>(std::get<0>(M))), t_real(std::get<1>(std::get<0>(M))), t_real(std::get<2>(std::get<0>(M))), t_real(std::get<3>(std::get<0>(M))),
+			t_real(std::get<0>(std::get<1>(M))), t_real(std::get<1>(std::get<1>(M))), t_real(std::get<2>(std::get<1>(M))), t_real(std::get<3>(std::get<1>(M))),
+			t_real(std::get<0>(std::get<2>(M))), t_real(std::get<1>(std::get<2>(M))), t_real(std::get<2>(std::get<2>(M))), t_real(std::get<3>(std::get<2>(M))),
+			t_real(std::get<0>(std::get<3>(M))), t_real(std::get<1>(std::get<3>(M))), t_real(std::get<2>(std::get<3>(M))), t_real(std::get<3>(std::get<3>(M))) });
 
 		ops.emplace_back(std::move(mat));
 	}
@@ -252,19 +252,29 @@ load_cif(const std::string& filename, t_real eps = 1e-6)
 			std::vector<std::string>{}, Lattice<t_real>{}, std::vector<t_mat>{});
 
 	// get the block
-	/*const*/ auto& block = cif.sole_block();
+	auto& block = cif.sole_block();
 
 
 	// lattice
 	t_real a{}, b{}, c{}, alpha{}, beta{}, gamma{};
-	if(auto val = block.find_values("_cell_length_a"); val.length()) a = tl2::stoval<t_real>(val[0]);
-	if(auto val = block.find_values("_cell_length_b"); val.length()) b = tl2::stoval<t_real>(val[0]);
-	if(auto val = block.find_values("_cell_length_c"); val.length()) c = tl2::stoval<t_real>(val[0]);
-	if(auto val = block.find_values("_cell_angle_alpha"); val.length()) alpha = tl2::stoval<t_real>(val[0]);
-	if(auto val = block.find_values("_cell_angle_beta"); val.length()) beta = tl2::stoval<t_real>(val[0]);
-	if(auto val = block.find_values("_cell_angle_gamma"); val.length()) gamma = tl2::stoval<t_real>(val[0]);
+	if(auto val = block.find_values("_cell_length_a"); val.length())
+		a = tl2::stoval<t_real>(val[0]);
+	if(auto val = block.find_values("_cell_length_b"); val.length())
+		b = tl2::stoval<t_real>(val[0]);
+	if(auto val = block.find_values("_cell_length_c"); val.length())
+		c = tl2::stoval<t_real>(val[0]);
+	if(auto val = block.find_values("_cell_angle_alpha"); val.length())
+		alpha = tl2::stoval<t_real>(val[0]);
+	if(auto val = block.find_values("_cell_angle_beta"); val.length())
+		beta = tl2::stoval<t_real>(val[0]);
+	if(auto val = block.find_values("_cell_angle_gamma"); val.length())
+		gamma = tl2::stoval<t_real>(val[0]);
 
-	Lattice<t_real> latt{.a=a, .b=b, .c=c, .alpha=alpha, .beta=beta, .gamma=gamma};
+	Lattice<t_real> latt
+	{
+		.a = a, .b = b, .c = c,
+		.alpha = alpha, .beta = beta, .gamma = gamma
+	};
 
 
 	// fractional atom positions

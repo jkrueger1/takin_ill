@@ -117,11 +117,10 @@ void StructFactDlg::Add3DItem(int row)
 	auto *itemsc = m_nuclei->item(row, COL_RAD);
 	auto *itemCol = m_nuclei->item(row, COL_COL);
 
-	t_real_gl posx=0, posy=0, posz=0, scale=1;
-	std::istringstream{itemx->text().toStdString()} >> posx;
-	std::istringstream{itemy->text().toStdString()} >> posy;
-	std::istringstream{itemz->text().toStdString()} >> posz;
-	std::istringstream{itemsc->text().toStdString()} >> scale;
+	t_real_gl posx = tl2::stoval<t_real_gl>(itemx->text().toStdString());
+	t_real_gl posy = tl2::stoval<t_real_gl>(itemy->text().toStdString());
+	t_real_gl posz = tl2::stoval<t_real_gl>(itemz->text().toStdString());
+	t_real_gl scale = tl2::stoval<t_real_gl>(itemsc->text().toStdString());
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	qreal r=1, g=1, b=1;
@@ -167,10 +166,10 @@ void StructFactDlg::PickerIntersection(
 				auto *itemY = m_nuclei->item(row, COL_Y);
 				auto *itemZ = m_nuclei->item(row, COL_Z);
 
-				t_vec r = tl2::create<t_vec>({0,0,0});
-				std::istringstream{itemX->text().toStdString()} >> r[0];
-				std::istringstream{itemY->text().toStdString()} >> r[1];
-				std::istringstream{itemZ->text().toStdString()} >> r[2];
+				t_vec r = tl2::create<t_vec>({ 0, 0, 0 });
+				r[0] = tl2::stoval<t_real>(itemX->text().toStdString());
+				r[1] = tl2::stoval<t_real>(itemY->text().toStdString());
+				r[2] = tl2::stoval<t_real>(itemZ->text().toStdString());
 				t_vec rlab = m_crystA * r;
 
 				std::ostringstream ostr; ostr.precision(g_prec);

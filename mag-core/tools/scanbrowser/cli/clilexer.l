@@ -71,7 +71,7 @@ real     {uinteger}(\.[0-9]*)?|\.[0-9]+
 
 {real}([eE]{integer})? {
 	//std::cerr << "matched: " << yytext << std::endl;
-	return yy::CliParser::make_TOK_REAL(str_to_real<t_real>(yytext));
+	return yy::CliParser::make_TOK_REAL(tl2::stoval<t_real, std::string>(yytext));
 }
 
 ["'][^"'\n]*["'] {
@@ -85,7 +85,8 @@ real     {uinteger}(\.[0-9]*)?|\.[0-9]+
 
 
 . {
-	ctx.PrintError(std::string("Lexer error: Unknown token: \"") + yytext + std::string("\""));
+	ctx.PrintError(std::string("Lexer error: Unknown token: \"")
+		+ yytext + std::string("\""));
 }
 
 

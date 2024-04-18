@@ -240,13 +240,12 @@ bool MagStructFactDlg::Save(const QString& filename)
 
 
 	// lattice
-	t_real a,b,c, alpha,beta,gamma;
-	std::istringstream{m_editA->text().toStdString()} >> a;
-	std::istringstream{m_editB->text().toStdString()} >> b;
-	std::istringstream{m_editC->text().toStdString()} >> c;
-	std::istringstream{m_editAlpha->text().toStdString()} >> alpha;
-	std::istringstream{m_editBeta->text().toStdString()} >> beta;
-	std::istringstream{m_editGamma->text().toStdString()} >> gamma;
+	t_real a = tl2::stoval<t_real>(m_editA->text().toStdString());
+	t_real b = tl2::stoval<t_real>(m_editB->text().toStdString());
+	t_real c = tl2::stoval<t_real>(m_editC->text().toStdString());
+	t_real alpha = tl2::stoval<t_real>(m_editAlpha->text().toStdString());
+	t_real beta = tl2::stoval<t_real>(m_editBeta->text().toStdString());
+	t_real gamma = tl2::stoval<t_real>(m_editGamma->text().toStdString());
 
 	node.put<t_real>("sfact.xtal.a", a);
 	node.put<t_real>("sfact.xtal.b", b);
@@ -265,18 +264,17 @@ bool MagStructFactDlg::Save(const QString& filename)
 	// fourier component list
 	for(int row=0; row<m_nuclei->rowCount(); ++row)
 	{
-		t_real MMag{}, x{},y{},z{}, ReMx{}, ReMy{}, ReMz{}, ImMx{}, ImMy{}, ImMz{}, scale{};
-		std::istringstream{m_nuclei->item(row, COL_M_MAG)->text().toStdString()} >> MMag;
-		std::istringstream{m_nuclei->item(row, COL_X)->text().toStdString()} >> x;
-		std::istringstream{m_nuclei->item(row, COL_Y)->text().toStdString()} >> y;
-		std::istringstream{m_nuclei->item(row, COL_Z)->text().toStdString()} >> z;
-		std::istringstream{m_nuclei->item(row, COL_ReM_X)->text().toStdString()} >> ReMx;
-		std::istringstream{m_nuclei->item(row, COL_ReM_Y)->text().toStdString()} >> ReMy;
-		std::istringstream{m_nuclei->item(row, COL_ReM_Z)->text().toStdString()} >> ReMz;
-		std::istringstream{m_nuclei->item(row, COL_ImM_X)->text().toStdString()} >> ImMx;
-		std::istringstream{m_nuclei->item(row, COL_ImM_Y)->text().toStdString()} >> ImMy;
-		std::istringstream{m_nuclei->item(row, COL_ImM_Z)->text().toStdString()} >> ImMz;
-		std::istringstream{m_nuclei->item(row, COL_RAD)->text().toStdString()} >> scale;
+		t_real MMag = tl2::stoval<t_real>(m_nuclei->item(row, COL_M_MAG)->text().toStdString());
+		t_real x = tl2::stoval<t_real>(m_nuclei->item(row, COL_X)->text().toStdString());
+		t_real y = tl2::stoval<t_real>(m_nuclei->item(row, COL_Y)->text().toStdString());
+		t_real z = tl2::stoval<t_real>(m_nuclei->item(row, COL_Z)->text().toStdString());
+		t_real ReMx = tl2::stoval<t_real>(m_nuclei->item(row, COL_ReM_X)->text().toStdString());
+		t_real ReMy = tl2::stoval<t_real>(m_nuclei->item(row, COL_ReM_Y)->text().toStdString());
+		t_real ReMz = tl2::stoval<t_real>(m_nuclei->item(row, COL_ReM_Z)->text().toStdString());
+		t_real ImMx = tl2::stoval<t_real>(m_nuclei->item(row, COL_ImM_X)->text().toStdString());
+		t_real ImMy = tl2::stoval<t_real>(m_nuclei->item(row, COL_ImM_Y)->text().toStdString());
+		t_real ImMz = tl2::stoval<t_real>(m_nuclei->item(row, COL_ImM_Z)->text().toStdString());
+		t_real scale = tl2::stoval<t_real>(m_nuclei->item(row, COL_RAD)->text().toStdString());
 
 		pt::ptree itemNode;
 		itemNode.put<std::string>("name", m_nuclei->item(row, COL_NAME)->text().toStdString());
@@ -300,12 +298,10 @@ bool MagStructFactDlg::Save(const QString& filename)
 	// propagation vectors list
 	for(int row=0; row<m_propvecs->rowCount(); ++row)
 	{
-		t_real x{},y{},z{};
-		int iConj{0};
-		std::istringstream{m_propvecs->item(row, PROP_COL_X)->text().toStdString()} >> x;
-		std::istringstream{m_propvecs->item(row, PROP_COL_Y)->text().toStdString()} >> y;
-		std::istringstream{m_propvecs->item(row, PROP_COL_Z)->text().toStdString()} >> z;
-		std::istringstream{m_propvecs->item(row, PROP_COL_CONJ)->text().toStdString()} >> iConj;
+		t_real x = tl2::stoval<t_real>(m_propvecs->item(row, PROP_COL_X)->text().toStdString());
+		t_real y = tl2::stoval<t_real>(m_propvecs->item(row, PROP_COL_Y)->text().toStdString());
+		t_real z = tl2::stoval<t_real>(m_propvecs->item(row, PROP_COL_Z)->text().toStdString());
+		int iConj = tl2::stoval<int>(m_propvecs->item(row, PROP_COL_CONJ)->text().toStdString());
 
 		pt::ptree itemNode;
 		itemNode.put<std::string>("name", m_propvecs->item(row, PROP_COL_NAME)->text().toStdString());

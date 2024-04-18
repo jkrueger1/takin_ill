@@ -31,7 +31,7 @@
 #include <iostream>
 
 #include "tlibs2/libs/maths.h"
-#include "../defs.h"
+#include "libs/defs.h"
 
 
 using namespace tl2;

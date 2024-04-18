@@ -214,7 +214,7 @@ calc_delaunay(int dim, const std::vector<t_vec>& verts,
 
 				t_vec vec = tl2::create<t_vec>(dim);
 				for(int i=0; i<dim; ++i)
-					vec[i] = t_real{pt[i]};
+					vec[i] = t_real(pt[i]);
 
 				voronoi.emplace_back(std::move(vec));
 			}
@@ -244,7 +244,7 @@ calc_delaunay(int dim, const std::vector<t_vec>& verts,
 
 				t_vec vec = tl2::create<t_vec>(dim);
 				for(int i=0; i<dim; ++i)
-					vec[i] = t_real{pt[i]};
+					vec[i] = t_real(pt[i]);
 
 				thetriag.emplace_back(std::move(vec));
 			}
@@ -276,7 +276,7 @@ calc_delaunay(int dim, const std::vector<t_vec>& verts,
 
 				t_vec vec = tl2::create<t_vec>(dim);
 				for(int i=0; i<dim; ++i)
-					vec[i] = t_real{pt[i]};
+					vec[i] = t_real(pt[i]);
 
 				voronoi.emplace_back(std::move(vec));
 			}

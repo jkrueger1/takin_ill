@@ -276,11 +276,10 @@ void StructFactDlg::TableItemChanged(QTableWidgetItem *item)
 			auto *itemsc = m_nuclei->item(row, COL_RAD);
 			auto *itemCol = m_nuclei->item(row, COL_COL);
 
-			t_real_gl posx=0, posy=0, posz=0, scale=1;
-			std::istringstream{itemx->text().toStdString()} >> posx;
-			std::istringstream{itemy->text().toStdString()} >> posy;
-			std::istringstream{itemz->text().toStdString()} >> posz;
-			std::istringstream{itemsc->text().toStdString()} >> scale;
+			t_real_gl posx = tl2::stoval<t_real_gl>(itemx->text().toStdString());
+			t_real_gl posy = tl2::stoval<t_real_gl>(itemy->text().toStdString());
+			t_real_gl posz = tl2::stoval<t_real_gl>(itemz->text().toStdString());
+			t_real_gl scale = tl2::stoval<t_real_gl>(itemsc->text().toStdString());
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 			qreal r=1, g=1, b=1;
@@ -347,15 +346,14 @@ void StructFactDlg::GenerateFromSG()
 
 		// iterate nuclei
 		int orgRowCnt = m_nuclei->rowCount();
-		for(int row=0; row<orgRowCnt; ++row)
+		for(int row = 0; row < orgRowCnt; ++row)
 		{
-			t_real bRe{}, bIm{}, x{},y{},z{}, scale{};
-			std::istringstream{m_nuclei->item(row, COL_SCATLEN_RE)->text().toStdString()} >> bRe;
-			std::istringstream{m_nuclei->item(row, COL_SCATLEN_IM)->text().toStdString()} >> bIm;
-			std::istringstream{m_nuclei->item(row, COL_X)->text().toStdString()} >> x;
-			std::istringstream{m_nuclei->item(row, COL_Y)->text().toStdString()} >> y;
-			std::istringstream{m_nuclei->item(row, COL_Z)->text().toStdString()} >> z;
-			std::istringstream{m_nuclei->item(row, COL_RAD)->text().toStdString()} >> scale;
+			t_real bRe = tl2::stoval<t_real>(m_nuclei->item(row, COL_SCATLEN_RE)->text().toStdString());
+			t_real bIm = tl2::stoval<t_real>(m_nuclei->item(row, COL_SCATLEN_IM)->text().toStdString());
+			t_real x = tl2::stoval<t_real>(m_nuclei->item(row, COL_X)->text().toStdString());
+			t_real y = tl2::stoval<t_real>(m_nuclei->item(row, COL_Y)->text().toStdString());
+			t_real z = tl2::stoval<t_real>(m_nuclei->item(row, COL_Z)->text().toStdString());
+			t_real scale = tl2::stoval<t_real>(m_nuclei->item(row, COL_RAD)->text().toStdString());
 			std::string name = m_nuclei->item(row, COL_NAME)->text().toStdString();
 			std::string col = m_nuclei->item(row, COL_COL)->text().toStdString();
 
@@ -412,13 +410,12 @@ std::vector<NuclPos> StructFactDlg::GetNuclei() const
 		}
 
 		NuclPos nucl;
-		t_real _bRe, _bIm;
 		nucl.name = name->text().toStdString();
-		std::istringstream{bRe->text().toStdString()} >> _bRe;
-		std::istringstream{bIm->text().toStdString()} >> _bIm;
-		std::istringstream{x->text().toStdString()} >> nucl.pos[0];
-		std::istringstream{y->text().toStdString()} >> nucl.pos[1];
-		std::istringstream{z->text().toStdString()} >> nucl.pos[2];
+		t_real _bRe = tl2::stoval<t_real>(bRe->text().toStdString());
+		t_real _bIm = tl2::stoval<t_real>(bIm->text().toStdString());
+		nucl.pos[0] = tl2::stoval<t_real>(x->text().toStdString());
+		nucl.pos[1] = tl2::stoval<t_real>(y->text().toStdString());
+		nucl.pos[2] = tl2::stoval<t_real>(z->text().toStdString());
 		nucl.b = t_cplx{_bRe, _bIm};
 
 		vec.emplace_back(std::move(nucl));
@@ -447,16 +444,17 @@ void StructFactDlg::CalcB(bool bFullRecalc)
 	if(m_ignoreCalc)
 		return;
 
-	t_real a,b,c, alpha,beta,gamma;
-	std::istringstream{m_editA->text().toStdString()} >> a;
-	std::istringstream{m_editB->text().toStdString()} >> b;
-	std::istringstream{m_editC->text().toStdString()} >> c;
-	std::istringstream{m_editAlpha->text().toStdString()} >> alpha;
-	std::istringstream{m_editBeta->text().toStdString()} >> beta;
-	std::istringstream{m_editGamma->text().toStdString()} >> gamma;
+	t_real a = tl2::stoval<t_real>(m_editA->text().toStdString());
+	t_real b = tl2::stoval<t_real>(m_editB->text().toStdString());
+	t_real c = tl2::stoval<t_real>(m_editC->text().toStdString());
+	t_real alpha = tl2::stoval<t_real>(m_editAlpha->text().toStdString());
+	t_real beta = tl2::stoval<t_real>(m_editBeta->text().toStdString());
+	t_real gamma = tl2::stoval<t_real>(m_editGamma->text().toStdString());
 
 	m_crystB = tl2::B_matrix<t_mat>(a, b, c,
-		alpha/180.*tl2::pi<t_real>, beta/180.*tl2::pi<t_real>, gamma/180.*tl2::pi<t_real>);
+		alpha/t_real(180.)*tl2::pi<t_real>,
+		beta/t_real(180.)*tl2::pi<t_real>,
+		gamma/t_real(180.)*tl2::pi<t_real>);
 
 	bool ok = true;
 	std::tie(m_crystA, ok) = tl2::inv(m_crystB);

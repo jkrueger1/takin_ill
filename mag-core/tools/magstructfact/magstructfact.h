@@ -49,7 +49,7 @@
 #include "tlibs2/libs/maths.h"
 #include "tlibs2/libs/qt/numerictablewidgetitem.h"
 
-#include "../defs.h"
+#include "libs/defs.h"
 
 
 // columns of Fourier components table

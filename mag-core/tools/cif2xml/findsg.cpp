@@ -25,7 +25,8 @@
 
 #include "libs/loadcif.h"
 #include "tlibs2/libs/maths.h"
-#include "../defs.h"
+#include "tlibs2/libs/str.h"
+#include "libs/defs.h"
 
 #include <gemmi/version.hpp>
 #include <boost/algorithm/string.hpp>
@@ -76,7 +77,7 @@ int main(int argc, char** argv)
 		// convert to real vector
 		t_vec vecPos;
 		for(const std::string& str : vecstr)
-			vecPos.emplace_back(std::stod(str));
+			vecPos.emplace_back(tl2::stoval<t_real>(str));
 
 		// fill up possibly missing coordinates
 		while(vecPos.size() < 3)

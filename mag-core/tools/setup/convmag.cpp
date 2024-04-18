@@ -41,7 +41,7 @@ namespace ptree = boost::property_tree;
 namespace algo = boost::algorithm;
 
 #include "tlibs2/libs/maths.h"
-#include "../defs.h"
+#include "libs/defs.h"
 
 
 using t_mat = tl2::mat<t_real, std::vector>;

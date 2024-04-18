@@ -46,7 +46,7 @@
 #include "tlibs2/libs/str.h"
 #include "tlibs2/libs/qt/helper.h"
 
-#include "../defs.h"
+#include "libs/defs.h"
 
 #include <boost/version.hpp>
 #include <boost/config.hpp>
