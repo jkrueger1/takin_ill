@@ -34,8 +34,6 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QToolButton>
-#include <QtWidgets/QFileDialog>
-#include <QtWidgets/QMessageBox>
 
 #include <iostream>
 

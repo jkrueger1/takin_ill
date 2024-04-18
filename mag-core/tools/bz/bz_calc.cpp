@@ -111,8 +111,8 @@ void BZDlg::CalcB(bool full_recalc)
 		tl2::equals<t_real>(beta, 0., g_eps) || beta <= 0. ||
 		tl2::equals<t_real>(gamma, 0., g_eps) || gamma <= 0.)
 	{
-		QMessageBox::critical(this, "Brillouin Zones",
-			"Error: Invalid lattice.");
+		//QMessageBox::critical(this, "Brillouin Zones", "Error: Invalid lattice.");
+		m_status->setText("<font color=\"red\">Error: Invalid lattice.</font>");
 		return;
 	}
 
@@ -126,8 +126,7 @@ void BZDlg::CalcB(bool full_recalc)
 	std::tie(crystA, ok) = tl2::inv(crystB);
 	if(!ok)
 	{
-		QMessageBox::critical(this, "Brillouin Zones",
-			"Error: Cannot invert B matrix.");
+		QMessageBox::critical(this, "Brillouin Zones", "Error: Cannot invert B matrix.");
 		return;
 	}
 
@@ -139,6 +138,8 @@ void BZDlg::CalcB(bool full_recalc)
 		t_mat_gl matA{m_crystA};
 		m_plot->GetRenderer()->SetBTrafo(m_crystB, &matA);
 	}
+
+	m_status->setText("B calculated successfully.");
 
 	if(full_recalc)
 		CalcBZ();
@@ -188,6 +189,8 @@ void BZDlg::CalcBZ(bool full_recalc)
 	// set bz description string
 	m_descrBZ = bzcalc.Print(g_prec);
 	m_descrBZJSON = bzcalc.PrintJSON(g_prec);
+
+	m_status->setText("Brillouin zone calculated successfully.");
 
 	if(full_recalc)
 		CalcBZCut();
@@ -465,7 +468,8 @@ void BZDlg::CalcFormulas()
 		}
 		catch(const std::exception& ex)
 		{
-			m_status->setText(ex.what());
+			m_status->setText((std::string("<font color=\"red\">")
+				+ ex.what() + std::string("</font>")).c_str());
 		}
 	}
 }

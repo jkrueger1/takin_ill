@@ -28,9 +28,6 @@
 
 #include "bz.h"
 
-#include <QtWidgets/QTabWidget>
-#include <QtWidgets/QMessageBox>
-
 #include <iostream>
 #include <tuple>
 
