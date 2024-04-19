@@ -27,7 +27,6 @@
  */
 
 #include "ConvoDlg.h"
-#include "libs/version.h"
 
 #include "tlibs/time/chrono.h"
 #include "tlibs/time/stopwatch.h"
@@ -203,14 +202,12 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 
 
 
+		// meta data
 		std::ostringstream ostrOut;
 		ostrOut.precision(g_iPrec);
+
 		ostrOut << "#\n";
-		ostrOut << "# Takin/Monteconvo version " << TAKIN_VER << "\n";
-		ostrOut << "# DOI: https://dx.doi.org/10.5281/zenodo.4117437\n";
-		//ostrOut << "# URL: https://code.ill.fr/scientific-software/takin\n";
-		ostrOut << "# URL: https://github.com/ILLGrenoble/takin\n";
-		ostrOut << "# Timestamp: " << tl::epoch_to_str(tl::epoch()) << "\n";
+		write_takin_metadata(ostrOut);
 		ostrOut << "# MC neutrons: " << iNumNeutrons << "\n";
 		ostrOut << "# MC sample steps: " << iNumSampleSteps << "\n";
 		ostrOut << "# Scale: " << dScale << "\n";
@@ -226,7 +223,9 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 			<< std::left << std::setw(g_iPrec*2) << "k" << " "
 			<< std::left << std::setw(g_iPrec*2) << "l" << " "
 			<< std::left << std::setw(g_iPrec*2) << "E" << " "
-			<< std::left << std::setw(g_iPrec*2) << "S(Q,E)" << "\n";
+			<< std::left << std::setw(g_iPrec*2) << "S(Q, E)" << " "
+			<< std::left << std::setw(g_iPrec*2) << "S_scaled(Q, E)"
+			<< "\n";
 
 		QMetaObject::invokeMethod(editStartTime, "setText",
 			Q_ARG(const QString&, QString(watch.GetStartTimeStr().c_str())));
@@ -366,20 +365,22 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 				tl::log_warn("S(Q,E) is invalid.");
 			}
 
+			const t_real dXVal = (*pVecScanX)[iStep];
+			t_real dSScale = dScale*(dS + dSlope*dXVal) + dOffs;
+			if(dSScale < 0.)
+				dSScale = 0.;
+
 			ostrOut << std::left << std::setw(g_iPrec*2) << vecH[iStep] << " "
 				<< std::left << std::setw(g_iPrec*2) << vecK[iStep] << " "
 				<< std::left << std::setw(g_iPrec*2) << vecL[iStep] << " "
 				<< std::left << std::setw(g_iPrec*2) << vecE[iStep] << " "
-				<< std::left << std::setw(g_iPrec*2) << dS << "\n";
-
-			const t_real dXVal = (*pVecScanX)[iStep];
-			t_real dYVal = dScale*(dS + dSlope*dXVal) + dOffs;
-			if(dYVal < 0.)
-				dYVal = 0.;
+				<< std::left << std::setw(g_iPrec*2) << dS << " "
+				<< std::left << std::setw(g_iPrec*2) << dSScale
+				<< "\n";
 
 			m_vecQ.push_back(dXVal);
 			m_vecS.push_back(dS);
-			m_vecScaledS.push_back(dYVal);
+			m_vecScaledS.push_back(dSScale);
 
 			static const std::vector<t_real> vecNull;
 			bool bIsLastStep = (iStep == lstFuts.size()-1);
@@ -727,9 +728,12 @@ void ConvoDlg::Start2D()
 		std::ostringstream ostrOut;
 		ostrOut.precision(g_iPrec);
 		ostrOut << "#\n";
-		ostrOut << "# Takin/Monteconvo version " << TAKIN_VER << "\n";
+		write_takin_metadata(ostrOut);
 		ostrOut << "# MC neutrons: " << iNumNeutrons << "\n";
 		ostrOut << "# MC sample steps: " << iNumSampleSteps << "\n";
+		//ostrOut << "# Scale: " << dScale << "\n";
+		//ostrOut << "# Slope: " << dSlope << "\n";
+		//ostrOut << "# Offset: " << dOffs << "\n";
 		if(m_strLastFile != "")
 			ostrOut << "# File: " << m_strLastFile << "\n";
 		ostrOut << "#\n";
@@ -1038,7 +1042,7 @@ void ConvoDlg::StartDisp()
 		std::ostringstream ostrOut;
 		ostrOut.precision(g_iPrec);
 		ostrOut << "#\n";
-		ostrOut << "# Takin/Monteconvo version " << TAKIN_VER << "\n";
+		write_takin_metadata(ostrOut);
 		ostrOut << "# Format: h k l E1 w1 E2 w2 ... En wn\n";
 		ostrOut << "#\n";
 

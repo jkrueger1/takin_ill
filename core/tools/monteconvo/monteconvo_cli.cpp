@@ -47,9 +47,7 @@
 #include "tools/convofit/scan.h"
 #include "TASReso.h"
 
-#include "libs/version.h"
 #include "libs/globals.h"
-
 #include "tlibs/file/file.h"
 #include "tlibs/file/prop.h"
 #include "tlibs/log/log.h"
@@ -426,10 +424,11 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 	reso.SetOptimalFocus(get_reso_focus(cfg.mono_foc, cfg.ana_foc));
 
 
+	// meta data
 	std::ostringstream ostrOut;
 	ostrOut.precision(g_iPrec);
 	ostrOut << "#\n";
-	ostrOut << "# Takin/Monteconvo version " << TAKIN_VER << "\n";
+	write_takin_metadata(ostrOut);
 	ostrOut << "# MC neutrons: " << cfg.neutron_count << "\n";
 	ostrOut << "# MC sample steps: " << cfg.sample_step_count << "\n";
 	ostrOut << "# Scale: " << cfg.S_scale << "\n";
@@ -810,9 +809,12 @@ static bool start_convo_2d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 	std::ostringstream ostrOut;
 	ostrOut.precision(g_iPrec);
 	ostrOut << "#\n";
-	ostrOut << "# Takin/Monteconvo version " << TAKIN_VER << "\n";
+	write_takin_metadata(ostrOut);
 	ostrOut << "# MC neutrons: " << cfg.neutron_count << "\n";
 	ostrOut << "# MC sample steps: " << cfg.sample_step_count << "\n";
+	ostrOut << "# Scale: " << cfg.S_scale << "\n";
+	ostrOut << "# Slope: " << cfg.S_slope << "\n";
+	ostrOut << "# Offset: " << cfg.S_offs << "\n";
 	ostrOut << "#\n";
 	ostrOut << std::left << std::setw(g_iPrec*2) << "# h" << " "
 		<< std::left << std::setw(g_iPrec*2) << "k" << " "

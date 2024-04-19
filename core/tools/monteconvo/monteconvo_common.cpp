@@ -27,7 +27,8 @@
  */
 
 #include "monteconvo_common.h"
-
+#include "libs/version.h"
+#include "tlibs/time/chrono.h"
 
 
 ResoFocus get_reso_focus(int iFocMono, int iFocAna)
@@ -77,4 +78,18 @@ bool load_scan_file(const std::string& _strFile, Scan& scan,
 	}
 
     return bLoaded;
+}
+
+
+void write_takin_metadata(std::ostream& ostrOut)
+{
+	const char* pcUser = std::getenv("USER");
+	if(!pcUser)
+		pcUser = "";
+
+	ostrOut << "# Takin/Monteconvo version " << TAKIN_VER << "\n";
+	ostrOut << "# DOI: https://dx.doi.org/10.5281/zenodo.4117437\n";
+	ostrOut << "# URL: https://github.com/ILLGrenoble/takin\n";
+	ostrOut << "# Timestamp: " << tl::epoch_to_str(tl::epoch()) << "\n";
+	ostrOut << "# User: " << pcUser << "\n";
 }

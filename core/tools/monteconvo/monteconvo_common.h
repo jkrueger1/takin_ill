@@ -100,4 +100,7 @@ extern bool load_scan_file(const std::string& _strFile, Scan& scan,
 	const Filter& filter=Filter());
 
 
+extern void write_takin_metadata(std::ostream& ostr);
+
+
 #endif
