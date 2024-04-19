@@ -31,6 +31,8 @@
 #include <boost/scope_exit.hpp>
 #include <boost/program_options.hpp>
 
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <thread>
 #include <atomic>
@@ -272,8 +274,22 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 	if(!load_sqw_params(pSqw.get(), xml, g_strXmlRoot + "monteconvo/"))
 		return false;
 
+
 	// override model parameters
-	pSqw->SetVars(sqw_params);
+	std::unordered_set<std::string> ignored_params{{ "scale", "slope", "offs" }};
+	std::unordered_map<std::string, std::string> all_params;
+	pSqw->SetVars(sqw_params, true, &ignored_params, &all_params);
+
+	// override non-S(Q,E) parameters
+	auto iter_scale = all_params.find("scale");
+	auto iter_slope = all_params.find("slope");
+	auto iter_offs = all_params.find("offs");
+	if(iter_scale != all_params.end())
+		cfg.S_scale = tl::str_to_var<t_real>(iter_scale->second);
+	if(iter_slope != all_params.end())
+		cfg.S_slope = tl::str_to_var<t_real>(iter_slope->second);
+	if(iter_offs != all_params.end())
+		cfg.S_offs = tl::str_to_var<t_real>(iter_offs->second);
 
 
 	Filter filter;
@@ -427,7 +443,9 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 		<< std::left << std::setw(g_iPrec*2) << "k" << " "
 		<< std::left << std::setw(g_iPrec*2) << "l" << " "
 		<< std::left << std::setw(g_iPrec*2) << "E" << " "
-		<< std::left << std::setw(g_iPrec*2) << "S(Q,E)" << "\n";
+		<< std::left << std::setw(g_iPrec*2) << "S(Q, E)" << " "
+		<< std::left << std::setw(g_iPrec*2) << "S_scaled(Q, E)"
+		<< "\n";
 
 
 	std::vector<t_real_reso> vecQ, vecS, vecScaledS;
@@ -531,20 +549,22 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 			tl::log_warn("S(Q, E) is invalid.");
 		}
 
+		const t_real dXVal = (*pVecScanX)[iStep];
+		t_real dSScale = cfg.S_scale*(dS + cfg.S_slope*dXVal) + cfg.S_offs;
+		if(dSScale < 0.)
+			dSScale = 0.;
+
 		ostrOut << std::left << std::setw(g_iPrec*2) << vecH[iStep] << " "
 			<< std::left << std::setw(g_iPrec*2) << vecK[iStep] << " "
 			<< std::left << std::setw(g_iPrec*2) << vecL[iStep] << " "
 			<< std::left << std::setw(g_iPrec*2) << vecE[iStep] << " "
-			<< std::left << std::setw(g_iPrec*2) << dS << "\n";
-
-		const t_real dXVal = (*pVecScanX)[iStep];
-		t_real dYVal = cfg.S_scale*(dS + cfg.S_slope*dXVal) + cfg.S_offs;
-		if(dYVal < 0.)
-			dYVal = 0.;
+			<< std::left << std::setw(g_iPrec*2) << dS << " "
+			<< std::left << std::setw(g_iPrec*2) << dSScale
+			<< "\n";
 
 		vecQ.push_back(dXVal);
 		vecS.push_back(dS);
-		vecScaledS.push_back(dYVal);
+		vecScaledS.push_back(dSScale);
 
 		static const std::vector<t_real> vecNull;
 		bool bIsLastStep = (iStep == lstFuts.size()-1);
@@ -578,7 +598,7 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 		std::vector<t_real> vecSFuncY;
 		vecSFuncY.reserve(iNumScanPts);
 
-		for(std::size_t iScanPt=0; iScanPt<iNumScanPts; ++iScanPt)
+		for(std::size_t iScanPt = 0; iScanPt < iNumScanPts; ++iScanPt)
 		{
 			const ScanPoint& pt = scan.vecPoints[iScanPt];
 			t_real E = pt.E / tl::one_meV;
@@ -631,7 +651,7 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 /**
  * create 2d convolution
  */
-static bool start_convo_2d(const ConvoConfig& cfg, const tl::Prop<std::string>& xml, const std::string& sqw_params)
+static bool start_convo_2d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, const std::string& sqw_params)
 {
 	// load S(Q, E) model
 	std::shared_ptr<SqwBase> pSqw = create_sqw_model(cfg.sqw, cfg.sqw_conf);
@@ -642,8 +662,22 @@ static bool start_convo_2d(const ConvoConfig& cfg, const tl::Prop<std::string>& 
 	if(!load_sqw_params(pSqw.get(), xml, g_strXmlRoot+"monteconvo/"))
 		return false;
 
+
 	// override model parameters
-	pSqw->SetVars(sqw_params);
+	std::unordered_set<std::string> ignored_params{{ "scale", "slope", "offs" }};
+	std::unordered_map<std::string, std::string> all_params;
+	pSqw->SetVars(sqw_params, true, &ignored_params, &all_params);
+
+	// override non-S(Q,E) parameters
+	auto iter_scale = all_params.find("scale");
+	auto iter_slope = all_params.find("slope");
+	auto iter_offs = all_params.find("offs");
+	if(iter_scale != all_params.end())
+		cfg.S_scale = tl::str_to_var<t_real>(iter_scale->second);
+	if(iter_slope != all_params.end())
+		cfg.S_slope = tl::str_to_var<t_real>(iter_slope->second);
+	if(iter_offs != all_params.end())
+		cfg.S_offs = tl::str_to_var<t_real>(iter_offs->second);
 
 
 	std::string strAutosave = cfg.autosave;
@@ -784,7 +818,9 @@ static bool start_convo_2d(const ConvoConfig& cfg, const tl::Prop<std::string>& 
 		<< std::left << std::setw(g_iPrec*2) << "k" << " "
 		<< std::left << std::setw(g_iPrec*2) << "l" << " "
 		<< std::left << std::setw(g_iPrec*2) << "E" << " "
-		<< std::left << std::setw(g_iPrec*2) << "S(Q,E)" << "\n";
+		<< std::left << std::setw(g_iPrec*2) << "S(Q, E)" << " "
+		<< std::left << std::setw(g_iPrec*2) << "S_scaled(Q, E)"
+		<< "\n";
 
 
 	std::vector<t_real> vecH; vecH.reserve(cfg.step_count*cfg.step_count);
@@ -900,11 +936,19 @@ static bool start_convo_2d(const ConvoConfig& cfg, const tl::Prop<std::string>& 
 			tl::log_warn("S(Q, E) is invalid.");
 		}
 
+
+		// TODO: include slope(s)
+		t_real dSScale = cfg.S_scale*dS + cfg.S_offs;
+		if(dSScale < 0.)
+			dSScale = 0.;
+
 		ostrOut << std::left << std::setw(g_iPrec*2) << vecH[iStep] << " "
 			<< std::left << std::setw(g_iPrec*2) << vecK[iStep] << " "
 			<< std::left << std::setw(g_iPrec*2) << vecL[iStep] << " "
 			<< std::left << std::setw(g_iPrec*2) << vecE[iStep] << " "
-			<< std::left << std::setw(g_iPrec*2) << dS << "\n";
+			<< std::left << std::setw(g_iPrec*2) << dS << " "
+			<< std::left << std::setw(g_iPrec*2) << dSScale
+			<< "\n";
 
 
 		bool bIsLastStep = (iStep == lstFuts.size()-1);
