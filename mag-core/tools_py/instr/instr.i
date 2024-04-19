@@ -40,9 +40,11 @@
 
 %template(VecStr) std::vector<std::string>;
 %template(VecD) std::vector<double>;
-%template(ArrD3) std::array<double,3>;
-%template(ArrD5) std::array<double,5>;
-%template(ArrB3) std::array<bool,3>;
+%template(ArrD2) std::array<double, 2>;
+%template(ArrD3) std::array<double, 3>;
+%template(ArrD4) std::array<double, 4>;
+%template(ArrD5) std::array<double, 5>;
+%template(ArrB3) std::array<bool, 3>;
 %template(MapStrStr) std::unordered_map<std::string, std::string>;
 
 %include "../../tlibs2/libs/instr.h"

@@ -23,18 +23,10 @@
 # ----------------------------------------------------------------------------
 #
 
-import os
 import math
 import instr
-import scipy.constants as co
 
-
-#
-# get energy transfer from ki and kf
-#
-def get_E(ki, kf):
-	E_to_k2 = 2.*co.neutron_mass/co.hbar**2. * co.elementary_charge/1000. * 1e-20
-	return (ki**2. - kf**2.) / E_to_k2
+import instrhelper
 
 
 #
@@ -53,7 +45,7 @@ def load_data(datfile):
 
 	for point_idx in range(cntcol.size()):
 		(h, k, l, ki, kf) = dat.GetScanHKLKiKf(point_idx)
-		E = get_E(ki, kf)
+		E = instrhelper.get_E(ki, kf)
 
 		counts = cntcol[point_idx]
 		counts_err = math.sqrt(counts)
@@ -72,6 +64,8 @@ def load_data(datfile):
 # load all instrument data files in a directory
 #
 def load_all(dir):
+	import os
+
 	for datfile in os.listdir(dir):
 		load_data(dir + "/" + datfile)
 
