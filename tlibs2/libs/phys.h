@@ -613,7 +613,7 @@ Y ana_effic_factor(const t_wavenumber<Sys, Y>& kf, const t_length<Sys, Y>& d)
 
 
 /**
- * Bose distribution
+ * Bose distribution (occupation number including detailed balance)
  * @see (Shirane 2002), p. 28
  * @see https://en.wikipedia.org/wiki/Bose%E2%80%93Einstein_statistics
  *
@@ -622,7 +622,7 @@ Y ana_effic_factor(const t_wavenumber<Sys, Y>& kf, const t_length<Sys, Y>& d)
  *                           = exp(E/kT)
  * which is the detailed balance, S(+Q, +E) / S(-Q, -E), see (Shirane 2002), p. 26.
  */
-template<class t_real=double>
+template<class t_real = double>
 t_real bose(t_real E, t_real T)
 {
 	const t_real _kB = kB<t_real> * kelvin<t_real>/meV<t_real>;
@@ -639,7 +639,7 @@ t_real bose(t_real E, t_real T)
  * Bose factor with a lower cutoff energy
  * @see https://en.wikipedia.org/wiki/Bose%E2%80%93Einstein_statistics
  */
-template<class t_real=double>
+template<class t_real = double>
 t_real bose_cutoff(t_real E, t_real T, t_real E_cutoff=t_real(0.02))
 {
 	t_real dB;
@@ -674,10 +674,9 @@ Y bose(const t_energy<Sys,Y>& E, const t_temperature<Sys,Y>& T,
  * DHO
  * @see B. Fak, B. Dorner, Physica B 234-236 (1997) pp. 1107-1108, doi: https://doi.org/10.1016/S0921-4526(97)00121-X
  */
-template<class t_real=double>
+template<class t_real = double>
 t_real DHO_model(t_real E, t_real T, t_real E0, t_real hwhm, t_real amp, t_real offs)
 {
-	//if(E0*E0 - hwhm*hwhm < 0.) return 0.;
 	return std::abs(bose<t_real>(E, T)*amp/(E0*pi<t_real>) *
 		(hwhm/((E-E0)*(E-E0) + hwhm*hwhm) - hwhm/((E+E0)*(E+E0) + hwhm*hwhm)))
 		+ offs;

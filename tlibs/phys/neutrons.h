@@ -917,7 +917,6 @@ Y bose(const t_energy<Sys,Y>& E, const t_temperature<Sys,Y>& T,
 template<class t_real=double>
 t_real DHO_model(t_real E, t_real T, t_real E0, t_real hwhm, t_real amp, t_real offs)
 {
-	//if(E0*E0 - hwhm*hwhm < 0.) return 0.;
 	return std::abs(bose<t_real>(E, T)*amp/(E0*get_pi<t_real>()) *
 		(hwhm/((E-E0)*(E-E0) + hwhm*hwhm) - hwhm/((E+E0)*(E+E0) + hwhm*hwhm)))
 		+ offs;

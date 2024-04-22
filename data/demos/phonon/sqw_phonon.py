@@ -62,6 +62,7 @@ def gauss(x, x0, sig, amp):
 # see: B. Fak, B. Dorner, Physica B 234-236 (1997) pp. 1107-1108
 #
 def DHO(E, T, E0, hwhm, amp):
+	#E0 = np.sqrt(E0**2 - hwhm**2)
 	return np.abs(bose(E, T)*amp/(E0*np.pi) *
 		(hwhm/((E-E0)**2. + hwhm**2.) - hwhm/((E+E0)**2. + hwhm**2.)))
 
