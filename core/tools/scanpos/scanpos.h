@@ -106,7 +106,7 @@ bool make_plot(std::ostream& ostr,
 		"%b %d, %Y at %H:%M:%S (%Z).") << "\n";
 	(*pOstr) << "#\n\n";
 
-	(*pOstr) << "#set term pdf enhanced color font \"Helvetica, 16\"\n";
+	(*pOstr) << "#set term pdf enhanced color font \"NimbusSans-Regular, 16\"\n";
 	(*pOstr) << "#set output \"" << "scanpos.pdf\"\n\n";
 
 	(*pOstr) << "col_bragg = \"#ff0000\"\n";

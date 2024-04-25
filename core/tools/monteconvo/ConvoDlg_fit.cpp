@@ -84,7 +84,7 @@ public:
 
 		// set model parameters, [ident, val, err]
 		std::vector<std::tuple<std::string, std::string, std::string>> sqwparams;
-		for(std::size_t paramidx=0; paramidx<params.size(); ++paramidx)
+		for(std::size_t paramidx = 0; paramidx < params.size(); ++paramidx)
 		{
 			const std::string& name = std::get<0>((*m_sqwparams)[paramidx]);
 			sqwparams.emplace_back(std::make_tuple(name, tl::var_to_str(params[paramidx]), ""));
@@ -149,7 +149,7 @@ void ConvoDlg::StartFit()
 
 	// get fit parameters
 	std::ostringstream ostrZeroErr;
-	bool bAnyErrorNonZero = 0;
+	bool bAnyErrorNonZero = false;
 
 
 	std::ostringstream ostrFitParamMsg;
@@ -197,7 +197,7 @@ void ConvoDlg::StartFit()
 		if(tl::float_equal(err, t_real{0}))
 			ostrZeroErr << varname << ", ";
 		else
-			bAnyErrorNonZero = 1;
+			bAnyErrorNonZero = true;
 
 		std::ostringstream ostrLim;
 		ostrLim.precision(g_iPrec);

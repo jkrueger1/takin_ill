@@ -239,8 +239,11 @@ std::ostream& operator<<(std::ostream& ostr, const Ellipsoid4d<t_real>& ell)
 // --------------------------------------------------------------------------------
 
 
+/**
+ * get points on ellipse
+ */
 template<class t_real>
-ublas::vector<t_real> Ellipse2d<t_real>::operator()(t_real t, bool bAddOffs/*=1*/) const
+ublas::vector<t_real> Ellipse2d<t_real>::operator()(t_real t, bool bAddOffs) const
 {
 	ublas::vector<t_real> vec = tl::make_vec<ublas::vector<t_real>>
 		({ x_hwhm * std::cos(t_real(2)*tl::get_pi<t_real>()*t),
@@ -274,15 +277,15 @@ void Ellipse2d<t_real>::GetCurvePoints(std::vector<t_real>& x, std::vector<t_rea
 		y[i] = vec[1];
 	}
 
-	if(pLRTB)	// bounding rect
+	if(pLRTB)  // bounding rect
 	{
 		auto pairX = std::minmax_element(x.begin(), x.end());
 		auto pairY = std::minmax_element(y.begin(), y.end());
 
-		*(pLRTB+0) = *pairX.first;	// left
-		*(pLRTB+1) = *pairX.second;	// right
-		*(pLRTB+2) = *pairY.second;	// top
-		*(pLRTB+3) = *pairY.first;	// bottom
+		*(pLRTB+0) = *pairX.first;   // left
+		*(pLRTB+1) = *pairX.second;  // right
+		*(pLRTB+2) = *pairY.second;  // top
+		*(pLRTB+3) = *pairY.first;   // bottom
 	}
 }
 

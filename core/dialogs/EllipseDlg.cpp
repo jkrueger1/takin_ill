@@ -1,12 +1,12 @@
 /**
  * Ellipse Dialog
  * @author Tobias Weber <tobias.weber@tum.de>
- * @date 2013 - 2016
+ * @date 2013 - 2024
  * @license GPLv2
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -27,24 +27,38 @@
  */
 
 #include "EllipseDlg.h"
+
 #include "tlibs/string/string.h"
 #include "tlibs/string/spec_char.h"
+#include "tlibs/time/chrono.h"
 #include "tlibs/helper/flags.h"
+#include "libs/version.h"
 
 #include <future>
+#include <fstream>
+
+#include <QFileDialog>
+
+
+#define ELLIPSE_DLG_TITLE "Resolution Ellipses"
 
 
 EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett, Qt::WindowFlags fl)
 	: QDialog(pParent, fl), m_pSettings(pSett)
 {
 	setupUi(this);
-	setWindowTitle(m_pcTitle);
+	setWindowTitle(ELLIPSE_DLG_TITLE);
 
 	if(m_pSettings)
 	{
+		// font
 		QFont font;
 		if(m_pSettings->contains("main/font_gen") && font.fromString(m_pSettings->value("main/font_gen", "").toString()))
 			setFont(font);
+
+		// window geometry
+		if(m_pSettings->contains("reso/ellipse_geo"))
+			restoreGeometry(m_pSettings->value("reso/ellipse_geo").toByteArray());
 
 		m_bCenterOn0 = m_pSettings->value("reso/center_around_origin", 1).toInt() != 0;
 	}
@@ -57,8 +71,9 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett, Qt::WindowFlags fl)
 	m_vecMCXCurvePoints.resize(4);
 	m_vecMCYCurvePoints.resize(4);
 
-	QwtPlot* pPlots[] = {plot1, plot2, plot3, plot4};
-	for(unsigned int i=0; i<4; ++i)
+	// generate plots
+	QwtPlot* pPlots[] = { plot1, plot2, plot3, plot4 };
+	for(unsigned int i = 0; i < 4; ++i)
 	{
 		m_vecplotwrap.push_back(std::unique_ptr<QwtPlotWrapper>(new QwtPlotWrapper(pPlots[i], 3)));
 		m_vecplotwrap[i]->GetPlot()->setMinimumSize(200,200);
@@ -89,14 +104,14 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett, Qt::WindowFlags fl)
 		}
 	}
 
+	// connections
 	QObject::connect(comboCoord, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
 		this, &EllipseDlg::Calc);
 	QObject::connect(checkCenter, static_cast<void(QCheckBox::*)(bool)>(&QCheckBox::toggled),
 		this, &EllipseDlg::SetCenterOn0);
+	QObject::connect(btnSave, &QPushButton::clicked, this, &EllipseDlg::SaveEllipses);
 
-	if(m_pSettings && m_pSettings->contains("reso/ellipse_geo"))
-		restoreGeometry(m_pSettings->value("reso/ellipse_geo").toByteArray());
-	m_bReady = 1;
+	m_bReady = true;
 }
 
 
@@ -108,7 +123,7 @@ EllipseDlg::~EllipseDlg()
 
 void EllipseDlg::SetTitle(const char* pcTitle)
 {
-	QString strTitle = m_pcTitle;
+	QString strTitle = ELLIPSE_DLG_TITLE;
 	strTitle += " - ";
 	strTitle += pcTitle;
 	this->setWindowTitle(strTitle);
@@ -266,7 +281,7 @@ void EllipseDlg::Calc()
 				m_vecMCXCurvePoints[iEll].resize(pvecMC->size());
 				m_vecMCYCurvePoints[iEll].resize(pvecMC->size());
 
-				for(std::size_t iMC=0; iMC<pvecMC->size(); ++iMC)
+				for(std::size_t iMC = 0; iMC < pvecMC->size(); ++iMC)
 				{
 					const ublas::vector<t_real_reso>& vecMC = (*pvecMC)[iMC];
 					m_vecMCXCurvePoints[iEll][iMC] = vecMC[iP[0]];
@@ -291,10 +306,10 @@ void EllipseDlg::Calc()
 			m_elliProj[iEll] = tasks_ell_proj[iEll].get();
 			m_elliSlice[iEll] = tasks_ell_slice[iEll].get();
 
-			std::vector<t_real_reso>& vecXProj = m_vecXCurvePoints[iEll*2+0];
-			std::vector<t_real_reso>& vecYProj = m_vecYCurvePoints[iEll*2+0];
-			std::vector<t_real_reso>& vecXSlice = m_vecXCurvePoints[iEll*2+1];
-			std::vector<t_real_reso>& vecYSlice = m_vecYCurvePoints[iEll*2+1];
+			std::vector<t_real_reso>& vecXProj = m_vecXCurvePoints[iEll*2 + 0];
+			std::vector<t_real_reso>& vecYProj = m_vecYCurvePoints[iEll*2 + 0];
+			std::vector<t_real_reso>& vecXSlice = m_vecXCurvePoints[iEll*2 + 1];
+			std::vector<t_real_reso>& vecYSlice = m_vecYCurvePoints[iEll*2 + 1];
 			std::vector<t_real_reso>& vecXMC = m_vecMCXCurvePoints[iEll];
 			std::vector<t_real_reso>& vecYMC = m_vecMCYCurvePoints[iEll];
 
@@ -385,6 +400,168 @@ void EllipseDlg::SetParams(const EllipseDlgParams& params)
 
 	Calc();
 }
+
+
+/**
+ * export ellipses as gnuplot script
+ */
+void EllipseDlg::SaveEllipses()
+{
+	const std::string strXmlRoot("taz/");
+
+	QFileDialog::Option fileopt = QFileDialog::Option(0);
+	if(m_pSettings && !m_pSettings->value("main/native_dialogs", 1).toBool())
+		fileopt = QFileDialog::DontUseNativeDialog;
+
+	QString strDirLast = ".";
+	if(m_pSettings)
+		strDirLast = m_pSettings->value("reso/last_dir_ellipse", ".").toString();
+	QString qstrFile = QFileDialog::getSaveFileName(this,
+		"Save resolution ellipses", strDirLast, "Gnuplot files (*.gpl)",
+		nullptr, fileopt);
+
+	if(qstrFile == "")
+		return;
+
+	std::string strExport = R"RAWSTR(#!gnuplot --persist
+#
+# Resolution ellipse plot.
+# Created with Takin %%TAKIN_VER%% (https://dx.doi.org/10.5281/zenodo.4117437).
+# Date: %%DATE%%.
+#
+
+# -----------------------------------------------------------------------------
+# output to a file
+# -----------------------------------------------------------------------------
+#set term pdf color enhanced font "NimbusSans-Regular, 54" size 20, 15
+#set output "reso.pdf"
+# -----------------------------------------------------------------------------
+
+
+# -----------------------------------------------------------------------------
+# resolution ellipse
+# -----------------------------------------------------------------------------
+ellipse_x(t, hwhm_x, hwhm_y, angle, offs_x) = \
+	hwhm_x*cos(2*pi*t)*cos(angle) - hwhm_y*sin(2*pi*t)*sin(angle) + offs_x
+ellipse_y(t, hwhm_x, hwhm_y, angle, offs_y) = \
+	hwhm_x*cos(2*pi*t)*sin(angle) + hwhm_y*sin(2*pi*t)*cos(angle) + offs_y
+# -----------------------------------------------------------------------------
+
+
+set parametric
+set multiplot layout 2, 2 #margins 0.15, 0.95, 0.15, 0.95 spacing 0.15, 0.15
+set border linewidth 2
+set trange [ 0 : 1 ]
+
+
+# -----------------------------------------------------------------------------
+# ellipse parameters
+# -----------------------------------------------------------------------------
+%%PARAMETERS%%
+# -----------------------------------------------------------------------------
+
+
+# -----------------------------------------------------------------------------
+# plots
+# -----------------------------------------------------------------------------
+# ellipse colours
+col_proj  = "#ff0000"
+col_slice = "#0000ff"
+
+linew = 2
+
+
+%%PLOTS%%
+# -----------------------------------------------------------------------------
+)RAWSTR";
+
+	std::string strFile = qstrFile.toStdString();
+	std::string strDir = tl::get_dir(strFile);
+	if(tl::get_fileext(strFile, 1) != "gpl")
+		strFile += ".gpl";
+
+	std::string labels_x[] =
+	{
+		"set xlabel \"Q_{||} - <Q> (Å⁻¹)\"",
+		"set xlabel \"Q_{⟂} - <Q> (Å⁻¹)\"",
+		"set xlabel \"Q_z - <Q> (Å⁻¹)\"",
+		"set xlabel \"Q_{||} - <Q> (Å⁻¹)\"",
+	};
+
+	std::string labels_y[] =
+	{
+		"set ylabel \"E (meV)\"",
+		"set ylabel \"E (meV)\"",
+		"set ylabel \"E (meV)\"",
+		"set ylabel \"Q_{⟂} - <Q> (Å⁻¹)\"",
+	};
+
+	std::ostringstream ostrParams, ostrPlots;
+	ostrParams.precision(g_iPrec);
+	ostrPlots.precision(g_iPrec);
+	std::size_t num_ellis = std::min(m_elliProj.size(), m_elliSlice.size());
+	for(std::size_t elli_idx = 0; elli_idx < num_ellis; ++elli_idx)
+	{
+		ostrParams << "hwhm_proj_" << (elli_idx+1) << "_x  = " << m_elliProj[elli_idx].x_hwhm << "\n";
+		ostrParams << "hwhm_proj_" << (elli_idx+1) << "_y  = " << m_elliProj[elli_idx].y_hwhm << "\n";
+		ostrParams << "angle_proj_" << (elli_idx+1) << "   = " << m_elliProj[elli_idx].phi << "\n";
+		ostrParams << "offs_proj_" << (elli_idx+1) << "_x  = " << m_elliProj[elli_idx].x_offs << "\n";
+		ostrParams << "offs_proj_" << (elli_idx+1) << "_y  = " << m_elliProj[elli_idx].y_offs << "\n\n";
+
+		ostrParams << "hwhm_slice_" << (elli_idx+1) << "_x = " << m_elliSlice[elli_idx].x_hwhm << "\n";
+		ostrParams << "hwhm_slice_" << (elli_idx+1) << "_y = " << m_elliSlice[elli_idx].y_hwhm << "\n";
+		ostrParams << "angle_slice_" << (elli_idx+1) << "  = " << m_elliSlice[elli_idx].phi << "\n";
+		ostrParams << "offs_slice_" << (elli_idx+1) << "_x = " << m_elliSlice[elli_idx].x_offs << "\n";
+		ostrParams << "offs_slice_" << (elli_idx+1) << "_y = " << m_elliSlice[elli_idx].y_offs << "\n";
+
+
+		ostrPlots << labels_x[elli_idx] << "\n";
+		ostrPlots << labels_y[elli_idx] << "\n\n";
+		ostrPlots << "plot \\\n";
+		ostrPlots << "\tellipse_x(t, hwhm_proj_" << (elli_idx+1)
+			<< "_x, hwhm_proj_" << (elli_idx+1)
+			<< "_y, angle_proj_" << (elli_idx+1)
+			<< ", offs_proj_" << (elli_idx+1)
+			<< "_x),\\\n";
+		ostrPlots << "\tellipse_y(t, hwhm_proj_" << (elli_idx+1)
+			<< "_x, hwhm_proj_" << (elli_idx+1)
+			<< "_y, angle_proj_" << (elli_idx+1) << ", offs_proj_" << (elli_idx+1)
+			<<  "_y) \\\n";
+		ostrPlots << "\t\tlinewidth linew linecolor rgb col_proj notitle, \\\n";
+		ostrPlots << "\tellipse_x(t, hwhm_slice_" << (elli_idx+1)
+			<< "_x, hwhm_slice_" <<(elli_idx+1)
+			<< "_y, angle_slice_" << (elli_idx+1)
+			<< ", offs_slice_" << (elli_idx+1)
+			<< "_x),\\\n";
+		ostrPlots << "\tellipse_y(t, hwhm_slice_" << (elli_idx+1)
+			<< "_x, hwhm_slice_" << (elli_idx+1)
+			<< "_y, angle_slice_" << (elli_idx+1)
+			<< ", offs_slice_" << (elli_idx+1)
+			<< "_y) \\\n";
+		ostrPlots << "\t\tlinewidth linew linecolor rgb col_slice notitle\n";
+
+
+		if(elli_idx < num_ellis - 1)
+		{
+			ostrParams << "\n\n";
+			ostrPlots << "\n\n";
+		}
+	}
+
+	tl::find_all_and_replace<std::string>(strExport, "%%PARAMETERS%%", ostrParams.str());
+	tl::find_all_and_replace<std::string>(strExport, "%%PLOTS%%", ostrPlots.str());
+	tl::find_all_and_replace<std::string>(strExport, "%%TAKIN_VER%%", TAKIN_VER);
+	tl::find_all_and_replace<std::string>(strExport, "%%DATE%%",
+		tl::epoch_to_str<t_real_reso>(tl::epoch<t_real_reso>(), "%b %d, %Y; %H:%M:%S (%Z)"));
+
+	std::ofstream ofstr(strFile);
+	ofstr << strExport;
+	ofstr.flush();
+
+	if(m_pSettings)
+		m_pSettings->setValue("reso/last_dir_ellipse", QString(strDir.c_str()));
+}
+
 
 void EllipseDlg::accept()
 {

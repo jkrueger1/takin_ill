@@ -58,7 +58,7 @@ R"RAWSTR(#!gnuplot --persist
 # choose an output terminal
 #set term wxt
 set term qt
-#set term pdf color enhanced font "Helvetica, 14" size 4,3.5
+#set term pdf color enhanced font "NimbusSans-Regular, 14" size 4,3.5
 #set output "plot.pdf"
 # --------------------------------------------------------------------------------
 

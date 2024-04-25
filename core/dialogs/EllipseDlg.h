@@ -1,12 +1,12 @@
 /**
  * Ellipse Dialog
  * @author Tobias Weber <tobias.weber@tum.de>
- * @date 2013 - 2016
+ * @date 2013 - 2024
  * @license GPLv2
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -68,12 +68,10 @@ struct EllipseDlgParams
 
 class EllipseDlg : public QDialog, Ui::EllipseDlg
 { Q_OBJECT
-	private:
-		const char* m_pcTitle = "Resolution Ellipses";
-
 	protected:
-		bool m_bReady = 0;
-		bool m_bCenterOn0 = 1;
+		// plot windows ready?
+		bool m_bReady = false;
+
 		std::vector<std::unique_ptr<QwtPlotWrapper>> m_vecplotwrap;
 
 		std::vector<struct Ellipse2d<t_real_reso>> m_elliProj;
@@ -85,11 +83,14 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 		std::vector<std::vector<t_real_reso>> m_vecMCXCurvePoints;
 		std::vector<std::vector<t_real_reso>> m_vecMCYCurvePoints;
 
-		QSettings *m_pSettings = 0;
+		QSettings *m_pSettings = nullptr;
 
 	protected:
 		// pointers to original parameters
 		EllipseDlgParams m_params;
+
+		// center ellipses around (0, 0)
+		bool m_bCenterOn0 = true;
 
 		// copied or modified parameters
 		ublas::matrix<t_real_reso> m_reso, m_resoHKL, m_resoOrient;
@@ -112,6 +113,7 @@ class EllipseDlg : public QDialog, Ui::EllipseDlg
 
 	protected slots:
 		void cursorMoved(const QPointF& pt);
+		void SaveEllipses();
 
 	public slots:
 		void SetParams(const EllipseDlgParams& params);
