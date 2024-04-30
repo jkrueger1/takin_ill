@@ -26,9 +26,19 @@ kB = const.k / const.e * 1e3
 
 
 # dispersion relations
-def disp_phonon(q, amp, freq, offs):
-	return np.abs(amp*np.sin(freq*q)) + offs
+def disp_phonon(q, amp, freq, E0):
+	return np.abs(amp*np.sin(freq*q)) + E0
 
+
+#
+# power law
+# see: https://en.wikipedia.org/wiki/Landau_theory
+#
+def power_law(T, Tc, crit_exp, amp):
+	if T > Tc:
+		return amp * np.abs(T - Tc)**crit_exp
+	else:
+		return 0.
 
 
 # Bose factor
@@ -77,22 +87,26 @@ def DHO(E, T, E0, hwhm, amp):
 # global variables which can be accessed / changed by Takin
 #g_G = np.array([4., 4., 0.])	# Bragg peak
 
-g_h = 4.		# Bragg peak (hkl)
-g_k = 4.
-g_l = 0.
+g_h = 4.              #
+g_k = 4.              # Bragg peak (hkl)
+g_l = 0.              #
 
-g_amp = 20.		# amplitude of sinusoidal dispersion
-g_freq = np.pi/2.	# frequency of sinusoidal dispersion
-g_offs = 0.		# energy gap
-g_HWHM = 0.02		# linewidth
-g_S0 = 1.		# intensity
+g_amp = 20.           # amplitude of sinusoidal dispersion
+g_freq = np.pi/2.     # frequency of sinusoidal dispersion
+g_offs = 0.           # energy gap
+g_HWHM = 0.02         # linewidth
+g_S0 = 1.             # intensity
 
-g_inc_sig = 0.02	# incoherent width
-g_inc_amp = 1.		# incoherent intensity
+g_inc_sig = 0.02      # incoherent width
+g_inc_amp = 1.        # incoherent intensity
 
-g_T = 300.		# temperature
+g_T = 300.            # temperature
+g_bose_cut = 0.01     # lower cutoff energy for the Bose factor
 
-g_bose_cut = 0.02	# cutoff energy for Bose factor
+#g_use_powerlaw = 0    # alternatively use a power law for the energy gap
+#g_Tc = 50.            # critical temperature
+#g_critexp = 0.5       # critical exponent
+#g_amp_powerlaw = 1.0  # scaling factor of the power law
 
 
 #
@@ -113,7 +127,11 @@ def TakinDisp(h, k, l):
 		Q = np.array([h, k, l])
 		G = np.array([g_h, g_k, g_l])
 		q = la.norm(Q - G)
-		E_peak = disp_phonon(q, g_amp, g_freq, g_offs)
+
+		E0 = g_offs
+		#if g_use_powerlaw:
+		#	E0 = power_law(g_T, g_Tc, g_critexp, g_amp_powerlaw)
+		E_peak = disp_phonon(q, g_amp, g_freq, E0)
 	except ZeroDivisionError:
 		return [0., 0.]
 
