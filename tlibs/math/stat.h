@@ -373,7 +373,7 @@ T chi2(const t_func& func, std::size_t N,
 	using t_dat = typename std::remove_pointer<t_iter_dat>::type;
 	T tchi2 = T(0);
 
-	for(std::size_t i=0; i<N; ++i)
+	for(std::size_t i = 0; i < N; ++i)
 	{
 		T td = T(y[i]) - func(T(x[i]));
 		T tdy = dy ? T(dy[i]) : T(0.1*td);	// 10% error if none given

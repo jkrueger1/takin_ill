@@ -11,7 +11,7 @@
  *
  * ----------------------------------------------------------------------------
  * tlibs -- a physical-mathematical C++ template library
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -89,7 +89,7 @@ protected:
 	const t_real* m_pdy = nullptr;
 
 	t_real_min m_dSigma = 1.;
-	bool m_bDebug = 0;
+	bool m_bDebug = false;
 
 public:
 	Chi2Function(const MinuitFuncModel* fkt=0,
@@ -186,7 +186,7 @@ protected:
 	t_cont<const t_real*> m_vecpDY;
 
 	t_real_min m_dSigma = 1.;
-	bool m_bDebug = 0;
+	bool m_bDebug = false;
 
 public:
 	Chi2Function_mult() = default;
@@ -209,7 +209,8 @@ public:
 
 		const std::size_t iNumParamSets = pfkt->GetParamSetCount();
 		t_real_min dChi = t_real_min(0);
-		for(std::size_t iParamSet=0; iParamSet<iNumParamSets; ++iParamSet)
+
+		for(std::size_t iParamSet = 0; iParamSet < iNumParamSets; ++iParamSet)
 		{
 			pfkt->SetParamSet(iParamSet);
 			std::size_t iLen = pfkt->GetExpLen();
@@ -235,6 +236,7 @@ public:
 			if(m_bDebug && iNumParamSets>1)
 				tl::log_debug("Function ", iParamSet, " chi2 = ", dSingleChi, ".");
 		}
+
 		dChi /= t_real_min(iNumParamSets);
 		return dChi;
 	}
@@ -242,7 +244,7 @@ public:
 	t_real_min chi2(const std::vector<t_real_min>& vecParams) const
 	{
 		t_real_min dChi = t_real_min(0);
-		for(std::size_t iFkt=0; iFkt<m_vecFkt.size(); ++iFkt)
+		for(std::size_t iFkt = 0; iFkt < m_vecFkt.size(); ++iFkt)
 		{
 			const t_real_min dSingleChi = chi2(iFkt, vecParams);
 			dChi += dSingleChi;
@@ -250,6 +252,7 @@ public:
 			if(m_bDebug && m_vecFkt.size()>1)
 				tl::log_debug("Function ", iFkt, " chi2 = ", dSingleChi, ".");
 		}
+
 		dChi /= t_real_min(m_vecFkt.size());
 		return dChi;
 	}
@@ -288,7 +291,7 @@ protected:
 	const t_cont<t_real> *m_pvecY = nullptr;
 	const t_cont<t_real> *m_pvecDY = nullptr;
 
-	bool m_bDebug = 0;
+	bool m_bDebug = false;
 
 public:
 	Chi2Function_nd(const MinuitFuncModel_nd* fkt,
@@ -346,7 +349,7 @@ bool fit(t_func&& func,
 	std::vector<t_real_min>& vecErrs,
 	const std::vector<bool>* pVecFixed = nullptr,
 
-	bool bDebug=1) noexcept
+	bool bDebug = true) noexcept
 {
 	try
 	{

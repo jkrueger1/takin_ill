@@ -1,12 +1,12 @@
 /**
  * 3D Ellipsoid Dialog
  * @author Tobias Weber <tobias.weber@tum.de>
- * @date may-2013, 29-apr-2014
+ * @date 2013 - 2024
  * @license GPLv2
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -82,6 +82,7 @@ EllipseDlg3D::EllipseDlg3D(QWidget* pParent, QSettings* pSett)
 		pPlot->SetEnabled(1);
 }
 
+
 EllipseDlg3D::~EllipseDlg3D()
 {
 	for(PlotGl* pPlot : m_pPlots)
@@ -89,10 +90,12 @@ EllipseDlg3D::~EllipseDlg3D()
 	m_pPlots.clear();
 }
 
+
 void EllipseDlg3D::closeEvent(QCloseEvent* pEvt)
 {
 	QDialog::closeEvent(pEvt);
 }
+
 
 void EllipseDlg3D::accept()
 {
@@ -101,12 +104,14 @@ void EllipseDlg3D::accept()
 	QDialog::accept();
 }
 
+
 void EllipseDlg3D::hideEvent(QHideEvent *pEvt)
 {
 	for(std::size_t i=0; i<m_pPlots.size(); ++i)
 		m_pPlots[i]->SetEnabled(0);
 	QDialog::hideEvent(pEvt);
 }
+
 
 void EllipseDlg3D::showEvent(QShowEvent *pEvt)
 {
@@ -255,8 +260,8 @@ void EllipseDlg3D::Calc()
 
 void EllipseDlg3D::SetParams(const EllipseDlgParams& params)
 {
-    static const ublas::matrix<t_real_reso> mat0 = ublas::zero_matrix<t_real_reso>(4,4);
-    static const ublas::vector<t_real_reso> vec0 = ublas::zero_vector<t_real_reso>(4);
+	static const ublas::matrix<t_real_reso> mat0 = ublas::zero_matrix<t_real_reso>(4, 4);
+	static const ublas::vector<t_real_reso> vec0 = ublas::zero_vector<t_real_reso>(4);
 
 	if(params.reso) m_reso = *params.reso; else m_reso = mat0;
 	if(params.reso_v) m_reso_v = *params.reso_v; else m_reso_v = vec0;

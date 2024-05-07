@@ -109,20 +109,20 @@ tl::t_real_min SqwFuncModel::operator()(tl::t_real_min x_principal) const
 		elli = reso.GenerateMC_deferred(m_iNumNeutrons, vecNeutrons);
 
 	t_real dS = 0.;
-	t_real dhklE_mean[4] = {0., 0., 0., 0.};
+	t_real dhklE_mean[4] = { 0., 0., 0., 0. };
 
 	for(const ublas::vector<t_real_reso>& vecHKLE : vecNeutrons)
 	{
 		dS += t_real((*m_pSqw)(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]));
 
-		for(int i=0; i<4; ++i)
+		for(int i = 0; i < 4; ++i)
 			dhklE_mean[i] += t_real(vecHKLE[i]);
 	}
 
 	dS /= t_real(m_iNumNeutrons);
 	dS += m_pSqw->GetBackground(vecScanPos[0], vecScanPos[1], vecScanPos[2], vecScanPos[3]);
 
-	for(int i=0; i<4; ++i)
+	for(int i = 0; i < 4; ++i)
 		dhklE_mean[i] /= t_real(m_iNumNeutrons);
 
 	dS *= reso.GetResoResults().dR0 * reso.GetR0Scale();
