@@ -838,7 +838,7 @@ public:
 			}
 
 			const auto newdmis = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
-				dmi, symops, m_eps, false, true);
+				dmi, symops, m_eps, false, true, false, true);
 
 			// generate new general J matrices
 			t_real Jgen_arr[3][3]{};

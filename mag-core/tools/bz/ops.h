@@ -140,6 +140,13 @@ std::string get_op_properties(const t_mat& op)
 		prop += "centring";
 	}
 
+	if(tl2::det<t_mat>(tl2::submat<t_mat>(op, 3, 3)) < 0.)
+	{
+		if(prop.size())
+			prop += ", ";
+		prop += "reflecting";
+	}
+
 	return prop;
 }
 

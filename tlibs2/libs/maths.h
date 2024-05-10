@@ -7134,48 +7134,52 @@ requires is_vec<t_vec>
 
 
 /**
- * create positions using the given symmetry operations
+ * transform vectors, e.g. atomic positions, using the given symmetry operations
  */
 template<class t_vec, class t_mat, class t_real = typename t_vec::value_type,
 	template<class...> class t_cont = std::vector>
-t_cont<t_vec> apply_ops_hom(const t_vec& _atom, const t_cont<t_mat>& ops,
+t_cont<t_vec> apply_ops_hom(const t_vec& _vec, const t_cont<t_mat>& ops,
 	t_real eps = std::numeric_limits<t_real>::epsilon(),
-	bool keepInUnitCell = true, bool ignore_occupied = false, bool ret_hom = false)
+	bool keepInUnitCell = true, bool ignore_occupied = false,
+	bool ret_hom = false, bool is_pseudovector = false)
 requires is_vec<t_vec> && is_mat<t_mat>
 {
 	// convert vector to homogeneous coordinates
-	t_vec atom = _atom;
-	if(atom.size() == 3)
-		atom = create<t_vec>({ atom[0], atom[1], atom[2], 1 });
+	t_vec vec = _vec;
+	if(vec.size() == 3)
+		vec = create<t_vec>({ vec[0], vec[1], vec[2], 1 });
 
-	t_cont<t_vec> newatoms;
-	newatoms.reserve(ops.size());
+	t_cont<t_vec> newvecs;
+	newvecs.reserve(ops.size());
 
 	for(const auto& op : ops)
 	{
 		// apply symmetry operator
-		auto newatom = op * atom;
+		auto newvec = op * vec;
+
+		if(is_pseudovector)
+			newvec *= det<t_mat>(submat<t_mat>(op, 3, 3));
 
 		// return a homogeneous 4-vector or a 3-vector
 		if(!ret_hom)
-			newatom = create<t_vec>({newatom[0], newatom[1], newatom[2]});
+			newvec = create<t_vec>({ newvec[0], newvec[1], newvec[2] });
 
 		if(keepInUnitCell)
-			newatom = keep_atom_in_uc<t_vec>(newatom, 3);
+			newvec = keep_atom_in_uc<t_vec>(newvec, 3);
 
 		// position already occupied?
 		if(ignore_occupied ||
-			std::find_if(newatoms.begin(), newatoms.end(),
-				[&newatom, eps](const t_vec& vec) -> bool
+			std::find_if(newvecs.begin(), newvecs.end(),
+				[&newvec, eps](const t_vec& vec) -> bool
 		{
-			return tl2::equals<t_vec>(vec, newatom, eps);
-		}) == newatoms.end())
+			return tl2::equals<t_vec>(vec, newvec, eps);
+		}) == newvecs.end())
 		{
-			newatoms.emplace_back(std::move(newatom));
+			newvecs.emplace_back(std::move(newvec));
 		}
 	}
 
-	return newatoms;
+	return newvecs;
 }
 
 
