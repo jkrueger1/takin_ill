@@ -7147,7 +7147,7 @@ requires is_vec<t_vec> && is_mat<t_mat>
 	// convert vector to homogeneous coordinates
 	t_vec vec = _vec;
 	if(vec.size() == 3)
-		vec = create<t_vec>({ vec[0], vec[1], vec[2], 1 });
+		vec = create<t_vec>({ vec[0], vec[1], vec[2], 1. });
 
 	t_cont<t_vec> newvecs;
 	newvecs.reserve(ops.size());
@@ -7158,7 +7158,11 @@ requires is_vec<t_vec> && is_mat<t_mat>
 		auto newvec = op * vec;
 
 		if(is_pseudovector)
+		{
+			t_real oldw = newvec[3];
 			newvec *= det<t_mat>(submat<t_mat>(op, 3, 3));
+			newvec[3] = oldw;
+		}
 
 		// return a homogeneous 4-vector or a 3-vector
 		if(!ret_hom)
