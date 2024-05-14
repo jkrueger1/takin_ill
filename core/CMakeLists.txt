@@ -26,7 +26,7 @@
 # ----------------------------------------------------------------------------
 #
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 project(takin)
 
 message("System name: ${CMAKE_SYSTEM_NAME}.")
