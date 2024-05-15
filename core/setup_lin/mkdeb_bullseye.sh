@@ -93,6 +93,9 @@ cp -v bin/takinmod_py		${INSTDIR}/usr/local/bin
 cp -v bin/takinmod_jl		${INSTDIR}/usr/local/bin
 
 cp -rv res/*			${INSTDIR}/usr/local/share/takin/res/
+cp -rv data/demos		${INSTDIR}/usr/local/share/takin
+cp -rv data/samples		${INSTDIR}/usr/local/share/takin
+cp -rv data/instruments		${INSTDIR}/usr/local/share/takin
 cp -v *.txt			${INSTDIR}/usr/local/share/takin
 cp -rv 3rdparty_licenses/*	${INSTDIR}/usr/local/share/takin/3rdparty_licenses/
 cp -v setup_lin/takin.desktop	${INSTDIR}/usr/share/applications
