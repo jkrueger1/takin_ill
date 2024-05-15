@@ -39,7 +39,7 @@
 if ! sudo apt-get install cmake clang build-essential \
 	libboost-all-dev libclipper-dev libhdf5-dev \
 	qtchooser qtbase5-dev qttools5-dev-tools libqt5svg5-dev \
-	libqwt-qt5-dev libpython3-dev \
+	libqwt-qt5-dev libpython3-dev swig \
 	libfreetype6-dev libbz2-dev wget coreutils \
 	flex bison
 then
