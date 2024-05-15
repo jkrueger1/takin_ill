@@ -40,6 +40,7 @@ fi
 mkdir -p ${INSTDIR}/usr/local/bin
 mkdir -p ${INSTDIR}/usr/local/lib
 mkdir -p ${INSTDIR}/usr/local/lib/takin_plugins
+mkdir -p ${INSTDIR}/usr/local/lib/python3.12/dist-packages
 mkdir -p ${INSTDIR}/usr/local/share/takin/res
 mkdir -p ${INSTDIR}/usr/local/share/takin/3rdparty_licenses
 mkdir -p ${INSTDIR}/usr/share/applications
@@ -129,7 +130,7 @@ cp -v bin/takin_moldyn		${INSTDIR}/usr/local/bin
 cp -v plugins/*.so		${INSTDIR}/usr/local/lib/takin_plugins
 
 # copy py modules
-cp -v /pymods/*			${INSTDIR}/usr/local/lib/python3.12/dist-packages
+cp -v pymods/*			${INSTDIR}/usr/local/lib/python3.12/dist-packages
 
 
 # permissions
