@@ -149,6 +149,7 @@ cp -v takin.sh			${INSTDIR}/usr/local/bin
 
 # remove unnecessary files
 find ${INSTDIR} -type f -name ".dir" -exec rm -fv {} \; -print
+find ${INSTDIR} -type f -name ".pyc" -exec rm -fv {} \; -print
 rm -v ${INSTDIR}/usr/local/share/takin/CMakeLists.txt
 
 
