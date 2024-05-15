@@ -1,13 +1,13 @@
 #!/bin/bash
 #
-# builds minuit
+# builds qhull
 # @author Tobias Weber <tweber@ill.fr>
-# @date sep-2020
+# @date may-2024
 # @license GPLv2
 #
 # ----------------------------------------------------------------------------
 # Takin (inelastic neutron scattering software package)
-# Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+# Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
 #                          Grenoble, France).
 # Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
 #                          (TUM), Garching, Germany).
@@ -36,24 +36,25 @@ if [ "$1" == "--mingw" ]; then
 fi
 
 
-MINUIT_REMOTE=https://codeload.github.com/root-project/root/zip/refs/heads/latest-stable
-MINUIT_LOCAL=${MINUIT_REMOTE##*[/\\]}
+
+QHULL_REMOTE=https://codeload.github.com/qhull/qhull/zip/refs/heads/master
+QHULL_LOCAL=${QHULL_REMOTE##*[/\\]}
 
 
-rm -f "${MINUIT_LOCAL}"
+rm -f "${QHULL_LOCAL}"
 
 
-if ! wget ${MINUIT_REMOTE}; then
-	echo -e "Could not download ${MINUIT_REMOTE}."
+if ! wget ${QHULL_REMOTE}; then
+	echo -e "Could not download ${QHULL_REMOTE}."
 	exit -1
 fi
 
 
-unzip "${MINUIT_LOCAL}"
+unzip "${QHULL_LOCAL}"
 
 
-cd root-latest-stable/math/minuit2/
-mkdir build && cd build
+cd qhull-master
+mkdir build_lib && cd build_lib
 
 
 if [ $BUILD_FOR_MINGW -ne 0 ]; then

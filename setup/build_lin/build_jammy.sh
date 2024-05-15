@@ -101,11 +101,12 @@ fi
 
 if [ $build_externals -ne 0 ]; then
 	echo -e "\n================================================================================"
-	echo -e "Building external libraries (Minuit)..."
+	echo -e "Building external libraries (Minuit, Qhull)..."
 	echo -e "================================================================================\n"
 
 	pushd "${TAKIN_ROOT}/tmp"
 		"${TAKIN_ROOT}"/setup/externals/build_minuit.sh
+		"${TAKIN_ROOT}"/setup/externals/build_qhull.sh
 	popd
 fi
 

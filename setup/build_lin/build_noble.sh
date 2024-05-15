@@ -28,14 +28,14 @@
 #
 
 # individual building steps
-setup_buildenv=1
-setup_externals=1
-setup_externals2=1
+setup_buildenv=0
+setup_externals=0
+setup_externals2=0
 build_externals=1
-build_takin=1
-build_takin2=1
-build_plugins=1
-build_package=1
+build_takin=0
+build_takin2=0
+build_plugins=0
+build_package=0
 
 
 NUM_CORES=$(nproc)
@@ -101,11 +101,12 @@ fi
 
 if [ $build_externals -ne 0 ]; then
 	echo -e "\n================================================================================"
-	echo -e "Building external libraries (Minuit)..."
+	echo -e "Building external libraries (Minuit, Qhull)..."
 	echo -e "================================================================================\n"
 
 	pushd "${TAKIN_ROOT}/tmp"
 		"${TAKIN_ROOT}"/setup/externals/build_minuit.sh
+		"${TAKIN_ROOT}"/setup/externals/build_qhull.sh
 	popd
 fi
 
