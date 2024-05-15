@@ -128,6 +128,9 @@ cp -v bin/takin_moldyn		${INSTDIR}/usr/local/bin
 # copy plugins
 cp -v plugins/*.so		${INSTDIR}/usr/local/lib/takin_plugins
 
+# copy py modules
+cp -v /pymods/*			${INSTDIR}/usr/local/lib/python3.10/dist-packages
+
 
 # permissions
 chmod a+x ${INSTDIR}/usr/local/bin/*
@@ -136,6 +139,7 @@ chmod a+x ${INSTDIR}/usr/local/bin/*
 strip -v ${INSTDIR}/usr/local/bin/*
 strip -v ${INSTDIR}/usr/local/lib/*
 strip -v ${INSTDIR}/usr/local/lib/takin_plugins/*
+strip -v ${INSTDIR}/usr/local/lib/python3.10/dist-packages/*.so
 
 
 # startup script
