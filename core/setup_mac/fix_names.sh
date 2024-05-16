@@ -35,7 +35,7 @@ fix_libs=1
 NAME_TOOL=install_name_tool
 STRIP=strip
 
-PY_VER=3.11
+PY_VER=3.12
 echo -e "Py version: ${PY_VER}"
 
 # files whose linkage is to be changed

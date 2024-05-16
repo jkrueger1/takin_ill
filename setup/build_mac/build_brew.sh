@@ -28,13 +28,13 @@
 #
 
 # individual building steps
-setup_buildenv=0
-setup_externals=0
-setup_externals2=0
-build_takin=0
-build_takin2=0
-build_plugins=0
-build_py_modules=0
+setup_buildenv=1
+setup_externals=1
+setup_externals2=1
+build_takin=1
+build_takin2=1
+build_plugins=1
+build_py_modules=1
 build_package=1
 
 use_syspy=0

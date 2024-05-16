@@ -168,6 +168,14 @@ cp -v plugins/*.dylib ${DST_PLUGIN_DIR}
 chmod a+rx ${DST_PLUGIN_DIR}/*.dylib
 
 
+# copy py modules
+cp -rv pymods ${DST_PLUGIN_DIR}
+cp -v setup/install_pymods.py  ${DST_PLUGIN_DIR}
+chmod a+rx ${DST_PLUGIN_DIR}/pymods/*.so
+chmod a+rx ${DST_PLUGIN_DIR}/pymods/*.py
+chmod a+rx ${DST_PLUGIN_DIR}/install_pymods.py
+
+
 # copy binaries
 cp -v bin/takin "${BIN_DIR}"
 cp -v bin/takin_cif2xml "${BIN_DIR}"

@@ -10,8 +10,11 @@ import site
 import shutil
 
 
-magdyn     = [ "pymods/magdyn.py", "pymods/_magdyn_py.so" ]
-instr      = [ "pymods/instr.py", "pymods/_instr_py.so" ]
+create_links = True
+
+moddir     = "pymods/"
+magdyn     = [ "magdyn.py", "_magdyn_py.so" ]
+instr      = [ "instr.py", "_instr_py.so" ]
 
 
 sitepath = site.getusersitepackages()
@@ -22,12 +25,22 @@ if not os.path.isdir(sitepath):
 	os.makedirs(sitepath)
 
 
-print("Installing Takin/Magdyn...")
-for file in magdyn:
-	print("\t\"%s\" -> \"%s\"" % (file, sitepath))
-	shutil.copy(file, sitepath)
+def install_mod(files, msg):
+	print(msg)
 
-print("Installing Takin/Instr...")
-for file in instr:
-	print("\t\"%s\" -> \"%s\"" % (file, sitepath))
-	shutil.copy(file, sitepath)
+	for file in files:
+		file_src = moddir + file
+		file_dst = sitepath + "/" + file
+
+		print("\t\"%s\" -> \"%s\"" % (file_src, file_dst))
+
+		os.remove(file_dst)
+
+		if create_links:
+			os.symlink(os.path.abspath(file_src), file_dst)
+		else:
+			shutil.copy(file_src, sitepath)
+
+
+install_mod(magdyn, "Installing Takin/Magdyn...")
+install_mod(instr, "Installing Takin/Instr...")
