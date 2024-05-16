@@ -30,6 +30,7 @@
 #define __TLIB_FILE_HELPER__
 
 #include <boost/filesystem/path.hpp>
+#include <boost/filesystem/directory.hpp>
 #include <boost/filesystem/operations.hpp>
 
 #include <iostream>

@@ -28,18 +28,19 @@
 #
 
 # individual building steps
-setup_buildenv=1
-setup_externals=1
-setup_externals2=1
-build_takin=1
-build_takin2=1
-build_plugins=1
+setup_buildenv=0
+setup_externals=0
+setup_externals2=0
+build_takin=0
+build_takin2=0
+build_plugins=0
+build_py_modules=0
 build_package=1
 
 use_syspy=0
 
 
-export MACOSX_DEPLOYMENT_TARGET=10.10
+export MACOSX_DEPLOYMENT_TARGET=11.0
 
 NUM_CORES=$(nproc)
 
@@ -97,8 +98,17 @@ if [ $build_takin -ne 0 ]; then
 
 		mkdir -p build
 		cd build
-		cmake -DDISABLE_INTERPROC_XSI=True -DDEBUG=False ..
-		make -j${NUM_CORES}
+
+		#if ! cmake -DDISABLE_INTERPROC_XSI=True -DDEBUG=False ..; then
+		if ! cmake -DDEBUG=False ..; then
+			echo -e "Failed configuring core package."
+			exit -1
+		fi
+
+		if ! make -j${NUM_CORES}; then
+			echo -e "Failed building core package."
+			exit -1
+		fi
 	popd
 fi
 
@@ -112,8 +122,16 @@ if [ $build_takin2 -ne 0 ]; then
 		rm -rf build
 		mkdir -p build
 		cd build
-		cmake -DCMAKE_BUILD_TYPE=Release -DONLY_BUILD_FINISHED=True ..
-		make -j${NUM_CORES}
+
+		if ! cmake -DCMAKE_BUILD_TYPE=Release -DONLY_BUILD_FINISHED=True ..; then
+			echo -e "Failed configuring mag-core package."
+			exit -1
+		fi
+
+		if ! make -j${NUM_CORES}; then
+			echo -e "Failed building mag-core package."
+			exit -1
+		fi
 
 		# copy tools to Takin main dir
 		cp -v tools/cif2xml/takin_cif2xml "${TAKIN_ROOT}"/core/bin/
@@ -139,13 +157,69 @@ if [ $build_plugins -ne 0 ]; then
 		rm -rf build
 		mkdir -p build
 		cd build
-		cmake -DCMAKE_BUILD_TYPE=Release ..
-		make -j${NUM_CORES}
+
+		if ! cmake -DCMAKE_BUILD_TYPE=Release ..; then
+			echo -e "Failed configuring magnon plugin."
+			exit -1
+		fi
+
+		if ! make -j${NUM_CORES}; then
+			echo -e "Failed building magnon plugin."
+			exit -1
+		fi
 
 		# copy plugin to Takin main dir
 		cp -v libmagnonmod.dylib "${TAKIN_ROOT}"/core/plugins/
 	popd
 fi
+
+
+if [ $build_py_modules -ne 0 ]; then
+	echo -e "\n================================================================================"
+	echo -e "Building py modules..."
+	echo -e "================================================================================\n"
+
+	pushd "${TAKIN_ROOT}/mag-core/tools_py/magdyn"
+		rm -rf build
+		mkdir -p build
+		cd build
+
+		if ! cmake -DCMAKE_BUILD_TYPE=Release ..; then
+			echo -e "Failed configuring magnetic dynamics py module."
+			exit -1
+		fi
+
+		if ! make -j${NUM_CORES}; then
+			echo -e "Failed building magnetic dynamics py module."
+			exit -1
+		fi
+
+		cp -v _magdyn_py.dylib "${TAKIN_ROOT}"/core/pymods/
+		cp -v _magdyn_py.so "${TAKIN_ROOT}"/core/pymods/
+		cp -v magdyn.py "${TAKIN_ROOT}"/core/pymods/
+	popd
+
+	pushd "${TAKIN_ROOT}/mag-core/tools_py/instr"
+		rm -rf build
+		mkdir -p build
+		cd build
+
+		if ! cmake -DCMAKE_BUILD_TYPE=Release ..; then
+			echo -e "Failed configuring instrument data loader py module."
+			exit -1
+		fi
+
+		if ! make -j${NUM_CORES}; then
+			echo -e "Failed building instrument data loader py module."
+			exit -1
+		fi
+
+		cp -v _instr_py.dylib "${TAKIN_ROOT}"/core/pymods/
+		cp -v _instr_py.so "${TAKIN_ROOT}"/core/pymods/
+		cp -v instr.py "${TAKIN_ROOT}"/core/pymods/
+	popd
+fi
+
 
 
 if [ $build_package -ne 0 ]; then
@@ -197,4 +271,3 @@ if [ $build_package -ne 0 ]; then
 		echo -e "================================================================================\n"
 	fi
 fi
-

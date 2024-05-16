@@ -8,7 +8,7 @@
 #
 # ----------------------------------------------------------------------------
 # Takin (inelastic neutron scattering software package)
-# Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+# Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
 #                          Grenoble, France).
 # Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
 #                          (TUM), Garching, Germany).
@@ -122,8 +122,16 @@ if [ $build_takin -ne 0 ]; then
 
 		mkdir -p build
 		cd build
-		cmake -DDEBUG=False ..
-		make -j${NUM_CORES}
+
+		if ! cmake -DDEBUG=False ..; then
+			echo -e "Failed configuring core package."
+			exit -1
+		fi
+
+		if ! make -j${NUM_CORES}; then
+			echo -e "Failed building core package."
+			exit -1
+		fi
 	popd
 fi
 
@@ -137,8 +145,16 @@ if [ $build_takin2 -ne 0 ]; then
 		rm -rf build
 		mkdir -p build
 		cd build
-		cmake -DCMAKE_BUILD_TYPE=Release -DONLY_BUILD_FINISHED=True ..
-		make -j${NUM_CORES}
+
+		if ! cmake -DCMAKE_BUILD_TYPE=Release -DONLY_BUILD_FINISHED=True ..; then
+			echo -e "Failed configuring mag-core package."
+			exit -1
+		fi
+
+		if ! make -j${NUM_CORES}; then
+			echo -e "Failed building mag-core package."
+			exit -1
+		fi
 
 		# copy tools to Takin main dir
 		cp -v tools/cif2xml/takin_cif2xml "${TAKIN_ROOT}"/core/bin/
@@ -164,8 +180,16 @@ if [ $build_plugins -ne 0 ]; then
 		rm -rf build
 		mkdir -p build
 		cd build
-		cmake -DCMAKE_BUILD_TYPE=Release ..
-		make -j${NUM_CORES}
+
+		if ! cmake -DCMAKE_BUILD_TYPE=Release ..; then
+			echo -e "Failed configuring magnon plugin."
+			exit -1
+		fi
+
+		if ! make -j${NUM_CORES}; then
+			echo -e "Failed building magnon plugin."
+			exit -1
+		fi
 
 		# copy plugin to Takin main dir
 		cp -v libmagnonmod.so "${TAKIN_ROOT}"/core/plugins/

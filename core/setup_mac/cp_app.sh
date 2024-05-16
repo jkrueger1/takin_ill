@@ -39,21 +39,22 @@ DST_FRAMEWORK_DIR="${PRG}/Contents/Frameworks/"
 DST_LIB_DIR="${PRG}/Contents/Libraries/"
 DST_PLUGIN_DIR="${PRG}/Contents/PlugIns/"
 DST_SITEPACKAGES_DIR="${PRG}/Contents/site-packages"
-PLUGIN_DIR="/usr/local/opt/qt5/plugins/"
+QT_DIR=/usr/local/opt/qt@5
+PLUGIN_DIR="${QT_DIR}/plugins/"
 
 
 # -----------------------------------------------------------------------------
 # frameworks
 declare -a SRC_FRAMEWORKS=(
-	"/usr/local/opt/qt5/lib/QtCore.framework"
-	"/usr/local/opt/qt5/lib/QtGui.framework"
-	"/usr/local/opt/qt5/lib/QtWidgets.framework"
-	"/usr/local/opt/qt5/lib/QtOpenGL.framework"
-	"/usr/local/opt/qt5/lib/QtConcurrent.framework"
-	"/usr/local/opt/qt5/lib/QtXml.framework"
-	"/usr/local/opt/qt5/lib/QtSvg.framework"
-	"/usr/local/opt/qt5/lib/QtPrintSupport.framework"
-	"/usr/local/opt/qt5/lib/QtDBus.framework"
+	"${QT_DIR}/lib/QtCore.framework"
+	"${QT_DIR}/lib/QtGui.framework"
+	"${QT_DIR}/lib/QtWidgets.framework"
+	"${QT_DIR}/lib/QtOpenGL.framework"
+	"${QT_DIR}/lib/QtConcurrent.framework"
+	"${QT_DIR}/lib/QtXml.framework"
+	"${QT_DIR}/lib/QtSvg.framework"
+	"${QT_DIR}/lib/QtPrintSupport.framework"
+	"${QT_DIR}/lib/QtDBus.framework"
 	"/usr/local/opt/qwt-qt5/lib/qwt.framework"
 	"/Library/Frameworks/Python.framework"
 )
