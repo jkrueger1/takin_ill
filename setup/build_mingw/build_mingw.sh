@@ -28,16 +28,18 @@
 #
 
 # individual building steps
-setup_buildenv=0
+setup_buildenv=1
 setup_externals=1
 setup_externals2=1
 build_externals=1
-build_takin=0
-build_takin2=0
+build_takin=1
+build_takin2=1
+build_plugins=1
 build_package=1
 
 
 NUM_CORES=$(nproc)
+#NUM_CORES=1
 
 
 # get root dir of takin repos
@@ -104,8 +106,16 @@ if [ $build_takin -ne 0 ]; then
 
 		mkdir -p build
 		cd build
-		mingw64-cmake -DDEBUG=False ..
-		mingw64-make #-j${NUM_CORES}
+
+		if ! mingw64-cmake -DDEBUG=False ..; then
+			echo -e "Failed configuring core package."
+			exit -1
+		fi
+
+		if ! mingw64-make -j${NUM_CORES}; then
+			echo -e "Failed building core package."
+			exit -1
+		fi
 	popd
 fi
 
@@ -120,8 +130,15 @@ if [ $build_takin2 -ne 0 ]; then
 		mkdir -p build
 		cd build
 
-		mingw64-cmake -DCMAKE_BUILD_TYPE=Release -DONLY_BUILD_FINISHED=True ..
-		mingw64-make #-j${NUM_CORES}
+		if ! mingw64-cmake -DCMAKE_BUILD_TYPE=Release -DONLY_BUILD_FINISHED=True ..; then
+			echo -e "Failed configuring mag-core package."
+			exit -1
+		fi
+
+		if ! mingw64-make -j${NUM_CORES}; then
+			echo -e "Failed building mag-core package."
+			exit -1
+		fi
 
 		# copy tools to Takin main dir
 		cp -v tools/cif2xml/takin_cif2xml.exe "${TAKIN_ROOT}"/core/bin/
@@ -131,6 +148,32 @@ if [ $build_takin2 -ne 0 ]; then
 		cp -v tools/magdyn/takin_magdyn.exe "${TAKIN_ROOT}"/core/bin/
 		cp -v tools/structfact/takin_structfact.exe "${TAKIN_ROOT}"/core/bin/
 		cp -v tools/magstructfact/takin_magstructfact.exe "${TAKIN_ROOT}"/core/bin/
+	popd
+fi
+
+
+if [ $build_plugins -ne 0 ]; then
+	echo -e "\n================================================================================"
+	echo -e "Building Takin plugins..."
+	echo -e "================================================================================\n"
+
+	pushd "${TAKIN_ROOT}/magnon-plugin"
+		rm -rf build
+		mkdir -p build
+		cd build
+
+		if ! mingw64-cmake -DCMAKE_BUILD_TYPE=Release ..; then
+			echo -e "Failed configuring magnon plugin."
+			exit -1
+		fi
+
+		if ! mingw64-make -j${NUM_CORES}; then
+			echo -e "Failed building magnon plugin."
+			exit -1
+		fi
+
+		# copy plugin to Takin main dir
+		cp -v libmagnonmod.dll "${TAKIN_ROOT}"/core/plugins/
 	popd
 fi
 
