@@ -240,6 +240,11 @@ if [ $build_package -ne 0 ]; then
 		./setup_mac/cp_app.sh
 
 		echo -e "\n================================================================================"
+		echo -e "Cleaning up app directory..."
+		echo -e "================================================================================\n"
+		./setup_mac/clean_app.sh
+
+		echo -e "\n================================================================================"
 		echo -e "Fixing dynamic binding for local libraries..."
 		echo -e "================================================================================\n"
 		./setup_mac/fix_names.sh
@@ -249,7 +254,7 @@ if [ $build_package -ne 0 ]; then
 			echo -e "Using system python frameworks instead..."
 			echo -e "================================================================================\n"
 			./setup_mac/use_syspy.sh
-			./setup_mac/clean_py.sh
+			./setup_mac/clean_app.sh
 		fi
 
 		echo -e "\n================================================================================"

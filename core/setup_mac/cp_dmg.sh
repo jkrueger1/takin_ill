@@ -31,10 +31,6 @@
 echo -e "Removing any old file ..."
 rm -f takin.dmg
 
-echo -e "Cleaning temporary files ..."
-find takin.app -name ".DS_Store" -exec rm -fv {} \;
-find takin.app -name ".dir" -exec rm -fv {} \;
-find takin.app -type d -name "__pycache__" -exec rm -rfv {} \;
 
 echo -e "\nCreating a writable image ..."
 if ! hdiutil create takin.dmg -srcfolder takin.app -fs UDF -format "UDRW" -volname "takin"; then

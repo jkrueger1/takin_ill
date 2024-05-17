@@ -30,8 +30,6 @@
 # ----------------------------------------------------------------------------
 #
 
-clean_frameworks=1
-
 PRG="takin.app"
 
 BIN_DIR="${PRG}/Contents/MacOS/"
@@ -231,46 +229,4 @@ chmod a+x ${BIN_DIR}*
 find "${DST_FRAMEWORK_DIR}" -type d -print0 | xargs -0 chmod a+x
 find "${DST_LIB_DIR}" -type d -print0 | xargs -0 chmod a+x
 find "${DST_PLUGIN_DIR}" -type d -print0 | xargs -0 chmod a+x
-# -----------------------------------------------------------------------------
-
-
-
-# -----------------------------------------------------------------------------
-# delete unnecessary files
-if [ $clean_frameworks -ne 0 ]; then
-	# clean site-packages
-	rm -rfv ${DST_SITEPACKAGES_DIR}/PyQt5*
-	rm -rfv ${DST_SITEPACKAGES_DIR}/wheel*
-	rm -rfv ${DST_SITEPACKAGES_DIR}/setuptools*
-	rm -rfv ${DST_SITEPACKAGES_DIR}/pip*
-	rm -rfv ${DST_SITEPACKAGES_DIR}/distutils*
-	rm -rfv ${DST_SITEPACKAGES_DIR}/_distutils*
-	rm -rfv ${DST_SITEPACKAGES_DIR}/__pycache*
-	rm -rfv ${DST_SITEPACKAGES_DIR}/__pycache__*
-	rm -rfv ${DST_SITEPACKAGES_DIR}/pkg_*
-	rm -rfv ${DST_SITEPACKAGES_DIR}/sip*
-	rm -rfv ${DST_SITEPACKAGES_DIR}/site*
-	rm -rfv ${DST_SITEPACKAGES_DIR}/easy_*
-
-	# clean non-needed files from frameworks
-	find "${DST_FRAMEWORK_DIR}" -type d -name "Headers" -print0 | xargs -0 rm -rfv
-	find "${DST_FRAMEWORK_DIR}" -type d -name "Current" -print0 | xargs -0 rm -rfv
-	find "${DST_FRAMEWORK_DIR}" -name "*.pyc" -print0 | xargs -0 rm -rfv
-
-	declare -a QT_FW_LIBS=("QtCore" "QtGui" "QtWidgets" "QtConcurrent" "QtOpenGL"
-		"QtSvg" "QtXml" "QtDBus" "QtPrintSupport" "qwt")
-
-	for qlib in ${QT_FW_LIBS[@]}; do
-		rm -rfv ${DST_FRAMEWORK_DIR}/${qlib}.framework/Resources
-		rm -rfv ${DST_FRAMEWORK_DIR}/${qlib}.framework/Headers
-		rm -rfv ${DST_FRAMEWORK_DIR}/${qlib}.framework/${qlib}*
-	done
-
-	# remove old signatures
-	codesign --remove-signature ${DST_FRAMEWORK_DIR}/Python.framework/Versions/Current/Python
-fi
-
-
-find ${PRG} -type f -name ".dir" -exec rm -fv {} \; -print
-find ${PRG} -type f -name ".DS_Store" -exec rm -fv {} \; -print
 # -----------------------------------------------------------------------------
