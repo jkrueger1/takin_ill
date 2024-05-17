@@ -198,12 +198,18 @@ cp -v plugins/*.dylib "${DST_PLUGIN_DIR}"
 
 
 # data files
-cp -v setup_mac/Info.plist "${PRG}/Contents/"
 cp -rv data/res "${PRG}/Contents/"
 cp -rv doc/* "${PRG}/Contents/res/doc/"
-cp -v data/res/icons/takin.icns "${PRG}/Contents/Resources/"
-cp -v *.txt "${PRG}/Contents/Resources/"
 cp -rv 3rdparty_licenses "${PRG}/Contents/Resources/"
+
+cp -v data/res/icons/takin.icns "${PRG}/Contents/Resources/"
+cp -v setup_mac/Info.plist "${PRG}/Contents/"
+cp -v *.txt "${PRG}/Contents/Resources/"
+
+cp -rv data/instruments "${PRG}/Contents/Resources/"
+cp -rv data/samples "${PRG}/Contents/Resources/"
+cp -rv data/demos "${PRG}/Contents/Resources/"
+
 rm -v "${PRG}/Contents/Resources/CMakeLists.txt"
 
 

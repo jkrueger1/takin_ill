@@ -44,13 +44,15 @@ DST_PY_DIR="${DST_FRAMEWORK_DIR}/Python.framework/"
 find ${PRG} -type d -name "__pycache__" -exec rm -rfv {} \;
 find ${PRG} -type f -name ".dir" -exec rm -fv {} \; -print
 find ${PRG} -type f -name ".DS_Store" -exec rm -fv {} \; -print
+find ${PRG} -type f -name "*.o" -print0 | xargs -0 rm -rfv
+find ${PRG} -type f -name "*.ico" -print0 | xargs -0 rm -rfv
+find ${PRG} -type f -name ".*" -exec rm -fv {} \;
 
 
 # clean non-needed files from frameworks
 find "${DST_FRAMEWORK_DIR}" -type d -name "Headers" -print0 | xargs -0 rm -rfv
 find "${DST_FRAMEWORK_DIR}" -type d -name "Current" -print0 | xargs -0 rm -rfv
 find "${DST_FRAMEWORK_DIR}" -name "*.pyc" -print0 | xargs -0 rm -rfv
-find "${DST_FRAMEWORK_DIR}" -name "*.o" -print0 | xargs -0 rm -rfv
 
 declare -a QT_FW_LIBS=("QtCore" "QtGui" "QtWidgets" "QtConcurrent" "QtOpenGL"
 	"QtSvg" "QtXml" "QtDBus" "QtPrintSupport" "qwt")
@@ -68,9 +70,6 @@ done
 # ----------------------------------------------------------------------------
 # remove old signatures
 codesign --remove-signature ${DST_PY_DIR}/Versions/Current/Python
-
-
-find ${DST_PY_DIR} -type f -name ".*" -exec rm -fv {} \;
 
 
 # clean site-packages
@@ -147,8 +146,10 @@ fi
 
 
 # ----------------------------------------------------------------------------
-# strip libraries
+# strip binaries
 # ----------------------------------------------------------------------------
 find ${PRG} -name "*.so" -exec strip -v {} \; -print
 find ${PRG} -name "*.dylib" -exec strip -v {} \; -print
+
+strip -v ${PRG}/Contents/MacOS/*
 # ----------------------------------------------------------------------------
