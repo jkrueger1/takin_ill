@@ -106,6 +106,9 @@ pushd ${PRG}/Contents
 	ln -sf Frameworks/Python.framework/Versions/Current/lib/python3.12/site-packages
 popd
 
+rm -rfv ${DST_PY_DIR}/Versions/Current/lib/python3.12/test
+rm -rfv ${DST_PY_DIR}/Versions/Current/lib/python3.12/idlelib
+
 rm -rfv ${PRG}/Contents/site-packages/setuptools*
 rm -rfv ${PRG}/Contents/site-packages/pip*
 rm -rfv ${PRG}/Contents/site-packages/easy*
@@ -114,9 +117,6 @@ rm -rfv ${PRG}/Contents/site-packages/pkg_resources
 
 # remove app
 rm -rfv ${DST_PY_DIR}/Versions/Current/Resources/Python.app
-
-# remove tests
-rm -rfv ${DST_PY_DIR}/Versions/Current/lib/python3.12/test
 
 
 if [ $aggressive_py_cleaning -ne 0 ]; then
@@ -141,6 +141,8 @@ if [ $aggressive_py_cleaning -ne 0 ]; then
 
 		rm -rfv $file
 	done
+
+	find ${DST_PY_DIR} -type d -name "tests" -exec rm -rfv {} \;
 fi
 # ----------------------------------------------------------------------------
 
