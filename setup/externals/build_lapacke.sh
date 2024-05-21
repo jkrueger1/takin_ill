@@ -54,13 +54,14 @@ unzip "${LAPACK_LOCAL}"
 
 
 cd lapack-master
-mkdir build && cd build
+mkdir build_lapacke
+cd build_lapacke
 
 
 if [ $BUILD_FOR_MINGW -ne 0 ]; then
-	mingw64-cmake -DCMAKE_BUILD_TYPE=Release -DLAPACKE=TRUE ..
+	mingw64-cmake -DCMAKE_BUILD_TYPE=Release -DLAPACKE=TRUE ../lapack-master
 	mingw64-make -j${NUM_CORES} && sudo mingw64-make install
 else
-	cmake -DCMAKE_BUILD_TYPE=Release -DLAPACKE=TRUE -DBUILD_SHARED_LIBS=TRUE ..
+	cmake -DCMAKE_BUILD_TYPE=Release -DLAPACKE=TRUE -DBUILD_SHARED_LIBS=TRUE ../lapack-master
 	make -j${NUM_CORES} && sudo make install
 fi

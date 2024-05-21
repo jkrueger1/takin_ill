@@ -55,8 +55,7 @@ if [ $setup_buildenv -ne 0 ]; then
 	echo -e "================================================================================\n"
 
 	pushd "${TAKIN_ROOT}/core"
-	# TODO: set up mingw packages
-	#	./setup_lin/buildenv_focal.sh
+		./setup_mingw/buildenv.sh
 	popd
 fi
 
@@ -90,8 +89,10 @@ if [ $build_externals -ne 0 ]; then
 	echo -e "Building external libraries (Minuit)..."
 	echo -e "================================================================================\n"
 
+	mkdir -p "${TAKIN_ROOT}/tmp"
 	pushd "${TAKIN_ROOT}/tmp"
 		"${TAKIN_ROOT}"/setup/externals/build_minuit.sh --mingw
+		"${TAKIN_ROOT}"/setup/externals/build_lapacke.sh --mingw
 	popd
 fi
 

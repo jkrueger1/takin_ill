@@ -105,6 +105,7 @@ if [ $build_externals -ne 0 ]; then
 	echo -e "Building external libraries (Minuit, Qhull)..."
 	echo -e "================================================================================\n"
 
+	mkdir -p "${TAKIN_ROOT}/tmp"
 	pushd "${TAKIN_ROOT}/tmp"
 		"${TAKIN_ROOT}"/setup/externals/build_minuit.sh
 		"${TAKIN_ROOT}"/setup/externals/build_qhull.sh
