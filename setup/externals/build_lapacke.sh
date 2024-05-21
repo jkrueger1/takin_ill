@@ -53,7 +53,6 @@ fi
 unzip "${LAPACK_LOCAL}"
 
 
-cd lapack-master
 mkdir build_lapacke
 cd build_lapacke
 
