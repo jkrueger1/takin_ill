@@ -93,6 +93,7 @@ if [ $build_externals -ne 0 ]; then
 	pushd "${TAKIN_ROOT}/tmp"
 		"${TAKIN_ROOT}"/setup/externals/build_minuit.sh --mingw
 		"${TAKIN_ROOT}"/setup/externals/build_lapacke.sh --mingw
+		"${TAKIN_ROOT}"/setup/externals/build_qhull.sh --mingw
 	popd
 fi
 
@@ -196,7 +197,7 @@ if [ $build_package -ne 0 ]; then
 
 	if [ -e  "${TAKIN_ROOT}/tmp-mingw/takin.zip" ]; then
 		echo -e "\n================================================================================"
-		echo -e "The built Takin package can be found here:\n\t${TAKIN_ROOT}/tmp/takin.zip"
+		echo -e "The built Takin package can be found here:\n\t${TAKIN_ROOT}/tmp-mingw/takin.zip"
 		echo -e "================================================================================\n"
 	else
 		echo -e "\n================================================================================"

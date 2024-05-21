@@ -71,19 +71,23 @@ cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libbz2-1.dll		${INSTDIR}/
 cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/zlib1.dll		${INSTDIR}/
 cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/iconv.dll		${INSTDIR}/
 cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libpcre2-16-0.dll	${INSTDIR}/
+cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libpcre2-8-0.dll	${INSTDIR}/
+cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libpcre-1.dll		${INSTDIR}/
 cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libharfbuzz-0.dll	${INSTDIR}/
 cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libglib-2.0-0.dll	${INSTDIR}/
 cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libintl-8.dll		${INSTDIR}/
-cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libpcre-1.dll		${INSTDIR}/
 cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libssp-0.dll		${INSTDIR}/
 cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/lib/libMinuit2.dll		${INSTDIR}/
 cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/lib/libMinuit2Math.dll	${INSTDIR}/
+cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libMinuit2.dll		${INSTDIR}/
+cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libMinuit2Math.dll	${INSTDIR}/
 
 cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libboost_regex-x64.dll			${INSTDIR}/
 cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libboost_system-x64.dll		${INSTDIR}/
 cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libboost_iostreams-x64.dll		${INSTDIR}/
 cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libboost_filesystem-x64.dll		${INSTDIR}/
 cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libboost_program_options-x64.dll	${INSTDIR}/
+cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libboost_program_options-mt-x64.dll	${INSTDIR}/
 
 #cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libboost_python39.dll	${INSTDIR}/
 #cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libpython3.9.dll	${INSTDIR}/
@@ -100,11 +104,11 @@ cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/Qt5PrintSupport.dll	${INSTDIR}/
 cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/qwt-qt5.dll		${INSTDIR}/
 cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libfreetype-6.dll	${INSTDIR}/
 
-#cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/liblapack.dll		${INSTDIR}/
-#cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/liblapacke.dll	${INSTDIR}/
-#cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libblas.dll		${INSTDIR}/
+cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/liblapack.dll		${INSTDIR}/
+cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/liblapacke.dll		${INSTDIR}/
+cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libblas.dll		${INSTDIR}/
 #cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libquadmath-0.dll	${INSTDIR}/
-#cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libgfortran-5.dll	${INSTDIR}/
+cp -v /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libgfortran-5.dll	${INSTDIR}/
 
 
 # qt plugins
