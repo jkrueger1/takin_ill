@@ -36,10 +36,14 @@ if [ "$1" == "--mingw" ]; then
 fi
 
 
+#MINUIT_REMOTE=http://www.cern.ch/mathlibs/sw/5_34_14/Minuit2/Minuit2-5.34.14.tar.gz
+#MINUIT_DIR=${MINUIT_LOCAL%.tar.gz}
+
 MINUIT_REMOTE=https://codeload.github.com/root-project/root/zip/refs/heads/latest-stable
+MINUIT_DIR=root-latest-stable
+
+
 MINUIT_LOCAL=${MINUIT_REMOTE##*[/\\]}
-
-
 rm -f "${MINUIT_LOCAL}"
 
 
@@ -49,16 +53,18 @@ if ! wget ${MINUIT_REMOTE}; then
 fi
 
 
-rm -rf root-latest-stable
+rm -rf ${MINUIT_DIR}
 unzip "${MINUIT_LOCAL}"
-cd root-latest-stable/math/minuit2/
+cd ${MINUIT_DIR}/math/minuit2/
 mkdir build && cd build
 
 
 if [ $BUILD_FOR_MINGW -ne 0 ]; then
+	#mingw64-configure --disable-openmp
 	mingw64-cmake -DCMAKE_BUILD_TYPE=Release ..
-	mingw64-make -j${NUM_CORES} && sudo mingw64-make install
+	mingw64-make -j${NUM_CORES} && sudo mingw64-make install/strip
 else
+	#./configure --disable-openmp
 	cmake -DCMAKE_BUILD_TYPE=Release ..
-	make -j${NUM_CORES} && sudo make install
+	make -j${NUM_CORES} && sudo make install/strip
 fi

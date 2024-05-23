@@ -47,4 +47,3 @@ convert ${FILE%\.svg}.png ${FILE%\.svg}.ico
 
 # remove temporary file
 rm ${FILE%\.svg}.png
-

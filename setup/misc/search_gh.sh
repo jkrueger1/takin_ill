@@ -3,7 +3,7 @@
 # search gh log data
 # @author Tobias Weber <tweber@ill.fr>
 # @date 11-jul-20
-# @license see 'LICENSE' file
+# @license GPLv3
 #
 # ----------------------------------------------------------------------------
 # mag-core (part of the Takin software suite)

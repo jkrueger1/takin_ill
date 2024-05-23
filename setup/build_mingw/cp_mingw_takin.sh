@@ -43,12 +43,13 @@ mkdir -p ${INSTDIR}
 
 
 # main programs
-cp -v bin/*.exe		${INSTDIR}/
+cp -v bin/*.exe			${INSTDIR}/
 
 
 # info files
 cp -v *.txt			${INSTDIR}/
 cp -rv 3rdparty_licenses/	${INSTDIR}/
+rm -v ${INSTDIR}/CMakeLists.txt
 
 
 # examples
@@ -66,53 +67,53 @@ gunzip -v ${INSTDIR}/res/data/*
 
 
 # libraries
-cp -v $MINGW_BIN_DIR/libstdc++-6.dll	${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libstdc++-6.dll		${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libwinpthread-1.dll	${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libpng16-16.dll	${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libpng16-16.dll		${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libgcc_s_sjlj-1.dll	${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libgcc_s_seh-1.dll	${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libgcc_s_seh-1.dll		${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libbz2-1.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/zlib1.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/iconv.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libpcre2-16-0.dll	${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libpcre2-8-0.dll	${INSTDIR}/
+cp -v $MINGW_BIN_DIR/zlib1.dll			${INSTDIR}/
+cp -v $MINGW_BIN_DIR/iconv.dll			${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libpcre2-16-0.dll		${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libpcre2-8-0.dll		${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libpcre-1.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libharfbuzz-0.dll	${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libglib-2.0-0.dll	${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libharfbuzz-0.dll		${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libglib-2.0-0.dll		${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libintl-8.dll		${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libssp-0.dll		${INSTDIR}/
 cp -v $MINGW_LIB_DIR/libMinuit2.dll		${INSTDIR}/
-cp -v $MINGW_LIB_DIR/libMinuit2Math.dll	${INSTDIR}/
+cp -v $MINGW_LIB_DIR/libMinuit2Math.dll		${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libMinuit2.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libMinuit2Math.dll	${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libMinuit2Math.dll		${INSTDIR}/
 
-cp -v $MINGW_BIN_DIR/libboost_regex-x64.dll			${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libboost_regex-x64.dll		${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libboost_system-x64.dll		${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libboost_iostreams-x64.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libboost_filesystem-x64.dll		${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libboost_filesystem-x64.dll	${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libboost_program_options-x64.dll	${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libboost_program_options-mt-x64.dll	${INSTDIR}/
 
 #cp -v $MINGW_BIN_DIR/libboost_python39.dll	${INSTDIR}/
-#cp -v $MINGW_BIN_DIR/libpython3.9.dll	${INSTDIR}/
+#cp -v $MINGW_BIN_DIR/libpython3.9.dll		${INSTDIR}/
 #cp -v $MINGW_BIN_DIR/libcrypto-1_1-x64.dll	${INSTDIR}/
 #cp -v $MINGW_BIN_DIR/libffi-6.dll		${INSTDIR}/
 
 cp -v $MINGW_BIN_DIR/Qt5Core.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/Qt5Gui.dll		${INSTDIR}/
+cp -v $MINGW_BIN_DIR/Qt5Gui.dll			${INSTDIR}/
 cp -v $MINGW_BIN_DIR/Qt5Widgets.dll		${INSTDIR}/
 cp -v $MINGW_BIN_DIR/Qt5OpenGL.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/Qt5Svg.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/Qt5Xml.dll		${INSTDIR}/
+cp -v $MINGW_BIN_DIR/Qt5Svg.dll			${INSTDIR}/
+cp -v $MINGW_BIN_DIR/Qt5Xml.dll			${INSTDIR}/
 cp -v $MINGW_BIN_DIR/Qt5PrintSupport.dll	${INSTDIR}/
 cp -v $MINGW_BIN_DIR/qwt-qt5.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libfreetype-6.dll	${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libfreetype-6.dll		${INSTDIR}/
 
 cp -v $MINGW_BIN_DIR/liblapack.dll		${INSTDIR}/
 cp -v $MINGW_BIN_DIR/liblapacke.dll		${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libblas.dll		${INSTDIR}/
-#cp -v $MINGW_BIN_DIR/libquadmath-0.dll	${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libgfortran-5.dll	${INSTDIR}/
+#cp -v $MINGW_BIN_DIR/libquadmath-0.dll		${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libgfortran-5.dll		${INSTDIR}/
 
 
 # qt plugins
@@ -136,7 +137,6 @@ find ${INSTDIR}/ \( -name "*.exe" -o -name "*.dll" \) -exec strip -v {} \; -prin
 # access rights
 find ${INSTDIR}/ -name "*.dll" -exec chmod a-x {} \; -print
 find ${INSTDIR}/ -name "*.exe" -exec chmod a+x {} \; -print
-
 
 
 echo -e "[Paths]\nPlugins = lib/plugins\n" > ${INSTDIR}/qt.conf

@@ -2,7 +2,7 @@
 # compiles proposal details for instrumental report
 # @author Tobias Weber <tweber@ill.fr>
 # @date feb-19
-# @license see 'LICENSE' file
+# @license GPLv3
 #
 
 import sys

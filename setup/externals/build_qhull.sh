@@ -57,9 +57,11 @@ mkdir build_lib && cd build_lib
 
 
 if [ $BUILD_FOR_MINGW -ne 0 ]; then
-	mingw64-cmake -DCMAKE_BUILD_TYPE=Release ..
-	mingw64-make -j${NUM_CORES} && sudo mingw64-make install
+	mingw64-cmake -DCMAKE_BUILD_TYPE=Release \
+		-DQHULL_ENABLE_TESTING=False -DBUILD_APPLICATIONS=False ..
+	mingw64-make -j${NUM_CORES} && sudo mingw64-make install/strip
 else
-	cmake -DCMAKE_BUILD_TYPE=Release ..
-	make -j${NUM_CORES} && sudo make install
+	cmake -DCMAKE_BUILD_TYPE=Release \
+		-DQHULL_ENABLE_TESTING=False -DBUILD_APPLICATIONS=False ..
+	make -j${NUM_CORES} && sudo make install/strip
 fi

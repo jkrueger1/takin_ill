@@ -58,8 +58,8 @@ cd build_lapacke
 
 if [ $BUILD_FOR_MINGW -ne 0 ]; then
 	mingw64-cmake -DCMAKE_BUILD_TYPE=Release -DLAPACKE=TRUE ../lapack-master
-	mingw64-make -j${NUM_CORES} && sudo mingw64-make install
+	mingw64-make -j${NUM_CORES} && sudo mingw64-make install/strip
 else
 	cmake -DCMAKE_BUILD_TYPE=Release -DLAPACKE=TRUE -DBUILD_SHARED_LIBS=TRUE ../lapack-master
-	make -j${NUM_CORES} && sudo make install
+	make -j${NUM_CORES} && sudo make install/strip
 fi
