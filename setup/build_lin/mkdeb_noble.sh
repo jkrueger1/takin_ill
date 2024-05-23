@@ -99,7 +99,7 @@ cp -rv data/samples		${INSTDIR}/usr/local/share/takin
 cp -rv data/instruments		${INSTDIR}/usr/local/share/takin
 cp -v *.txt			${INSTDIR}/usr/local/share/takin
 cp -rv 3rdparty_licenses/*	${INSTDIR}/usr/local/share/takin/3rdparty_licenses/
-cp -v setup_lin/takin.desktop	${INSTDIR}/usr/share/applications
+cp -v ../setup/build_lin/takin.desktop	${INSTDIR}/usr/share/applications
 cp -v /usr/local/lib/libMinuit2.so ${INSTDIR}/usr/local/lib
 
 # if we have the minuit so file (i.e. if it's not statically linked),

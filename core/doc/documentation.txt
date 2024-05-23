@@ -1,2 +1,0 @@
-The user documentation has moved to:
-https://github.com/ILLGrenoble/takin/wiki

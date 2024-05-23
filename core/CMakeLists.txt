@@ -507,11 +507,6 @@ target_link_libraries(takin
 )
 
 
-# pre-build
-add_custom_target(prebuild-script
-	COMMAND cd ${PROJECT_SOURCE_DIR} && ./setup/prebuild.sh ${PROJECT_SOURCE_DIR} ${QT_MOC_EXECUTABLE})
-
-
 if(CMAKE_BUILD_TYPE STREQUAL "Release" AND USE_STRIP)
 	add_custom_command(TARGET takin POST_BUILD
 		COMMAND strip -v $<TARGET_FILE:takin>
@@ -519,8 +514,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release" AND USE_STRIP)
 	)
 endif()
 
-
-add_dependencies(takin prebuild-script)
 
 if(USE_GENTAB)
 	add_dependencies(takin gentab)
@@ -546,7 +539,7 @@ add_executable(takinmod_py
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 	target_link_options(takinmod_py
 		# create an __info_plist section in the binary
-		PRIVATE LINKER:-sectcreate,__TEXT,__info_plist,${PROJECT_SOURCE_DIR}/setup_mac/InfoModPy.plist
+		PRIVATE LINKER:-sectcreate,__TEXT,__info_plist,${PROJECT_SOURCE_DIR}/../setup/build_mac/plists/InfoModPy.plist
 	)
 endif()
 

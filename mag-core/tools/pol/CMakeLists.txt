@@ -99,7 +99,7 @@ endif()
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 	target_link_options(takin_pol
 		# create an __info_plist section in the binary
-		PRIVATE LINKER:-sectcreate,__TEXT,__info_plist,${PROJECT_SOURCE_DIR}/../../setup_mac/InfoPol.plist
+		PRIVATE LINKER:-sectcreate,__TEXT,__info_plist,${PROJECT_SOURCE_DIR}/../../../setup/build_mac/plists/InfoPol.plist
 	)
 endif()
 

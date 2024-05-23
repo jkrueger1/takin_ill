@@ -50,9 +50,8 @@ if ! wget ${QHULL_REMOTE}; then
 fi
 
 
+rm -rf qhull-master
 unzip "${QHULL_LOCAL}"
-
-
 cd qhull-master
 mkdir build_lib && cd build_lib
 

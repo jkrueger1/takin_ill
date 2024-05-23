@@ -27,7 +27,8 @@
 # ----------------------------------------------------------------------------
 #
 
-LICDIR=3rdparty_licenses
+LICDIR=../core/3rdparty_licenses
+
 
 echo -e "Downloading license texts...\n"
 

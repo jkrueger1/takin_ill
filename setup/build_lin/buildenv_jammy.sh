@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# install all packages needed for building on jammy
+# install all packages needed for building on jammy (and noble)
 # @author Tobias Weber <tobias.weber@tum.de>
 # @date 28-jul-20
 # @license GPLv2
@@ -47,3 +47,6 @@ then
 	exit -1
 fi
 # -----------------------------------------------------------------------------
+
+#	g++-10 llvm llvm-dev \
+#	liblapacke-dev libqcustomplot-dev libqhull-dev

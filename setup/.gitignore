@@ -6,3 +6,5 @@ root-latest-stable/**
 
 lapack-master.*
 lapack-master/**
+
+tmp/**

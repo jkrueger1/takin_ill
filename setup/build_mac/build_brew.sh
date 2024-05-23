@@ -30,7 +30,6 @@
 # individual building steps
 setup_buildenv=1
 setup_externals=1
-setup_externals2=1
 build_takin=1
 build_takin2=1
 build_plugins=1
@@ -57,33 +56,33 @@ if [ $setup_buildenv -ne 0 ]; then
 	echo -e "Setting up build environment..."
 	echo -e "================================================================================\n"
 
-	pushd "${TAKIN_ROOT}/core"
-		./setup_mac/buildenv_brew.sh
+	pushd "${TAKIN_ROOT}/setup"
+		if ! ./build_mac/buildenv_brew.sh; then
+			exit -1
+		fi
 	popd
 fi
 
 
 if [ $setup_externals -ne 0 ]; then
 	echo -e "\n================================================================================"
-	echo -e "Getting external dependencies (1/2)..."
+	echo -e "Getting external dependencies..."
 	echo -e "================================================================================\n"
 
 	pushd "${TAKIN_ROOT}/core"
 		rm -rf tmp
-		./setup/setup_externals.sh
-		./setup/get_3rdparty_licenses.sh
+		if ! ../setup/externals/setup_externals.sh; then
+			exit -1
+		fi
+		if ! ../setup/externals/get_3rdparty_licenses.sh; then
+			exit -1
+		fi
 	popd
-fi
-
-
-if [ $setup_externals2 -ne 0 ]; then
-	echo -e "\n================================================================================"
-	echo -e "Getting external dependencies (2/2)..."
-	echo -e "================================================================================\n"
 
 	pushd "${TAKIN_ROOT}/mag-core"
-		rm -rf ext
-		./setup/setup_externals.sh
+		if ! ../setup/externals/setup_externals_mag.sh; then
+			exit -1
+		fi
 	popd
 fi
 
@@ -94,7 +93,7 @@ if [ $build_takin -ne 0 ]; then
 	echo -e "================================================================================\n"
 
 	pushd "${TAKIN_ROOT}/core"
-		./setup/clean.sh
+		../setup/build_general/clean.sh
 
 		mkdir -p build
 		cd build
@@ -232,35 +231,49 @@ if [ $build_package -ne 0 ]; then
 		echo -e "\n================================================================================"
 		echo -e "Creating icons..."
 		echo -e "================================================================================\n"
-		./setup_mac/mk_icon.sh
+		if ! ../setup/build_mac/mk_icon.sh; then
+			exit -1
+		fi
 
 		echo -e "\n================================================================================"
 		echo -e "Creating app directory..."
 		echo -e "================================================================================\n"
-		./setup_mac/cp_app.sh
+		if ! ../setup/build_mac/cp_app.sh; then
+			exit -1
+		fi
 
 		echo -e "\n================================================================================"
 		echo -e "Cleaning up app directory..."
 		echo -e "================================================================================\n"
-		./setup_mac/clean_app.sh
+		if ! ../setup/build_mac/clean_app.sh; then
+			exit -1
+		fi
 
 		echo -e "\n================================================================================"
 		echo -e "Fixing dynamic binding for local libraries..."
 		echo -e "================================================================================\n"
-		./setup_mac/fix_names.sh
+		if ! ../setup/build_mac/fix_names.sh; then
+			exit -1
+		fi
 
 		if [ $use_syspy -ne 0 ]; then
 			echo -e "\n================================================================================"
 			echo -e "Using system python frameworks instead..."
 			echo -e "================================================================================\n"
-			./setup_mac/use_syspy.sh
-			./setup_mac/clean_app.sh
+			if ! ../setup/build_mac/use_syspy.sh; then
+				exit -1
+			fi
+			if ! ../setup/build_mac/clean_app.sh; then
+				exit -1
+			fi
 		fi
 
 		echo -e "\n================================================================================"
 		echo -e "Building Takin package..."
 		echo -e "================================================================================\n"
-		./setup_mac/cp_dmg.sh
+		if ! ../setup/build_mac/cp_dmg.sh; then
+			exit -1
+		fi
 
 		cp -v takin.dmg ../tmp/takin.dmg
 	popd

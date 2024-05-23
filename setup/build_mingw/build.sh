@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# takin bionic build script
+# takin mingw build script
 # @author Tobias Weber <tweber@ill.fr>
 # @date sep-2020
 # @license GPLv2
@@ -30,14 +30,15 @@
 # individual building steps
 setup_buildenv=1
 setup_externals=1
-setup_externals2=1
 build_externals=1
 build_takin=1
 build_takin2=1
+build_plugins=1
 build_package=1
 
 
 NUM_CORES=$(nproc)
+#NUM_CORES=1
 
 
 # get root dir of takin repos
@@ -52,33 +53,33 @@ if [ $setup_buildenv -ne 0 ]; then
 	echo -e "Setting up build environment..."
 	echo -e "================================================================================\n"
 
-	pushd "${TAKIN_ROOT}/core"
-		./setup_lin/buildenv_focal.sh
+	pushd "${TAKIN_ROOT}/setup"
+		if ! ./build_mingw/buildenv.sh; then
+			exit -1
+		fi
 	popd
 fi
 
 
 if [ $setup_externals -ne 0 ]; then
 	echo -e "\n================================================================================"
-	echo -e "Getting external dependencies (1/2)..."
+	echo -e "Getting external dependencies..."
 	echo -e "================================================================================\n"
 
 	pushd "${TAKIN_ROOT}/core"
 		rm -rf tmp
-		./setup/setup_externals.sh
-		./setup/get_3rdparty_licenses.sh
+		if ! ../setup/externals/setup_externals.sh; then
+			exit -1
+		fi
+		if ! ../setup/externals/get_3rdparty_licenses.sh; then
+			exit -1
+		fi
 	popd
-fi
-
-
-if [ $setup_externals2 -ne 0 ]; then
-	echo -e "\n================================================================================"
-	echo -e "Getting external dependencies (2/2)..."
-	echo -e "================================================================================\n"
 
 	pushd "${TAKIN_ROOT}/mag-core"
-		rm -rf ext
-		./setup/setup_externals.sh
+		if ! ../setup/externals/setup_externals_mag.sh; then
+			exit -1
+		fi
 	popd
 fi
 
@@ -88,8 +89,17 @@ if [ $build_externals -ne 0 ]; then
 	echo -e "Building external libraries (Minuit)..."
 	echo -e "================================================================================\n"
 
+	mkdir -p "${TAKIN_ROOT}/tmp"
 	pushd "${TAKIN_ROOT}/tmp"
-		"${TAKIN_ROOT}"/setup/externals/build_minuit.sh
+		if ! "${TAKIN_ROOT}"/setup/externals/build_minuit.sh --mingw; then
+			exit -1
+		fi
+		if ! "${TAKIN_ROOT}"/setup/externals/build_lapacke.sh --mingw; then
+			exit -1
+		fi
+		if ! "${TAKIN_ROOT}"/setup/externals/build_qhull.sh --mingw; then
+			exit -1
+		fi
 	popd
 fi
 
@@ -100,12 +110,20 @@ if [ $build_takin -ne 0 ]; then
 	echo -e "================================================================================\n"
 
 	pushd "${TAKIN_ROOT}/core"
-		./setup/clean.sh
+		../setup/build_general/clean.sh
 
 		mkdir -p build
 		cd build
-		cmake -DDEBUG=False -DUSE_CUSTOM_THREADPOOL=True ..
-		make -j${NUM_CORES}
+
+		if ! mingw64-cmake -DDEBUG=False ..; then
+			echo -e "Failed configuring core package."
+			exit -1
+		fi
+
+		if ! mingw64-make -j${NUM_CORES}; then
+			echo -e "Failed building core package."
+			exit -1
+		fi
 	popd
 fi
 
@@ -120,20 +138,53 @@ if [ $build_takin2 -ne 0 ]; then
 		mkdir -p build
 		cd build
 
-		CC=clang-10 CXX=clang++-10 cmake -DCMAKE_BUILD_TYPE=Release -DONLY_BUILD_FINISHED=True ..
-		make -j${NUM_CORES}
+		if ! mingw64-cmake -DCMAKE_BUILD_TYPE=Release -DONLY_BUILD_FINISHED=True ..; then
+			echo -e "Failed configuring mag-core package."
+			exit -1
+		fi
+
+		if ! mingw64-make -j${NUM_CORES}; then
+			echo -e "Failed building mag-core package."
+			exit -1
+		fi
 
 		# copy tools to Takin main dir
-		cp -v tools/cif2xml/takin_cif2xml "${TAKIN_ROOT}"/core/bin/
-		cp -v tools/cif2xml/takin_findsg "${TAKIN_ROOT}"/core/bin/
-		cp -v tools/pol/takin_pol "${TAKIN_ROOT}"/core/bin/
-		cp -v tools/bz/takin_bz "${TAKIN_ROOT}"/core/bin/
-		cp -v tools/structfact/takin_structfact "${TAKIN_ROOT}"/core/bin/
-		cp -v tools/magstructfact/takin_magstructfact "${TAKIN_ROOT}"/core/bin/
-		cp -v tools/magdyn/takin_magdyn "${TAKIN_ROOT}"/core/bin/
-		cp -v tools/scanbrowser/takin_scanbrowser "${TAKIN_ROOT}"/core/bin/
-		cp -v tools/magsgbrowser/takin_magsgbrowser "${TAKIN_ROOT}"/core/bin/
-		cp -v tools/moldyn/takin_moldyn "${TAKIN_ROOT}"/core/bin/
+		cp -v tools/cif2xml/takin_cif2xml.exe "${TAKIN_ROOT}"/core/bin/
+		cp -v tools/cif2xml/takin_findsg.exe "${TAKIN_ROOT}"/core/bin/
+		cp -v tools/pol/takin_pol.exe "${TAKIN_ROOT}"/core/bin/
+		cp -v tools/bz/takin_bz.exe "${TAKIN_ROOT}"/core/bin/
+		cp -v tools/structfact/takin_structfact.exe "${TAKIN_ROOT}"/core/bin/
+		cp -v tools/magstructfact/takin_magstructfact.exe "${TAKIN_ROOT}"/core/bin/
+		cp -v tools/magdyn/takin_magdyn.exe "${TAKIN_ROOT}"/core/bin/
+		cp -v tools/scanbrowser/takin_scanbrowser.exe "${TAKIN_ROOT}"/core/bin/
+		cp -v tools/magsgbrowser/takin_magsgbrowser.exe "${TAKIN_ROOT}"/core/bin/
+		cp -v tools/moldyn/takin_moldyn.exe "${TAKIN_ROOT}"/core/bin/
+	popd
+fi
+
+
+if [ $build_plugins -ne 0 ]; then
+	echo -e "\n================================================================================"
+	echo -e "Building Takin plugins..."
+	echo -e "================================================================================\n"
+
+	pushd "${TAKIN_ROOT}/magnon-plugin"
+		rm -rf build
+		mkdir -p build
+		cd build
+
+		if ! mingw64-cmake -DCMAKE_BUILD_TYPE=Release ..; then
+			echo -e "Failed configuring magnon plugin."
+			exit -1
+		fi
+
+		if ! mingw64-make -j${NUM_CORES}; then
+			echo -e "Failed building magnon plugin."
+			exit -1
+		fi
+
+		# copy plugin to Takin main dir
+		cp -v libmagnonmod.dll "${TAKIN_ROOT}"/core/plugins/
 	popd
 fi
 
@@ -144,15 +195,20 @@ if [ $build_package -ne 0 ]; then
 	echo -e "================================================================================\n"
 
 	pushd "${TAKIN_ROOT}"
-		rm -rf tmp
+		rm -rf tmp-mingw
 		cd core
-		./setup_lin/mkdeb_bionic.sh "${TAKIN_ROOT}/tmp/takin"
+		if ! ../setup/build_mingw/cp_mingw_takin.sh "${TAKIN_ROOT}/tmp-mingw/takin"; then
+			exit -1
+		fi
+
+		cd ../tmp-mingw
+		zip -9 -r takin.zip takin
 	popd
 
 
-	if [ -e  "${TAKIN_ROOT}/tmp/takin.deb" ]; then
+	if [ -e  "${TAKIN_ROOT}/tmp-mingw/takin.zip" ]; then
 		echo -e "\n================================================================================"
-		echo -e "The built Takin package can be found here:\n\t${TAKIN_ROOT}/tmp/takin.deb"
+		echo -e "The built Takin package can be found here:\n\t${TAKIN_ROOT}/tmp-mingw/takin.zip"
 		echo -e "================================================================================\n"
 	else
 		echo -e "\n================================================================================"

@@ -3,7 +3,7 @@
 # downloads external libraries
 # @author Tobias Weber <tweber@ill.fr>
 # @date 6-apr-18
-# @license GPLv3, see 'LICENSE' file
+# @license GPLv3
 #
 # ----------------------------------------------------------------------------
 # mag-core (part of the Takin software suite)

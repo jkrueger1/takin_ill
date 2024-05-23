@@ -6,8 +6,6 @@
 #
 # copy framework libs
 #
-# pack with: hdiutil create takin.dmg -verbose -srcfolder takin.app -fs UDF -format "UDBZ" -volname "takin"
-#
 # ----------------------------------------------------------------------------
 # Takin (inelastic neutron scattering software package)
 # Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
@@ -168,7 +166,7 @@ chmod a+rx ${DST_PLUGIN_DIR}/*.dylib
 
 # copy py modules
 cp -rv pymods ${DST_PLUGIN_DIR}
-cp -v setup/install_pymods.py  ${DST_PLUGIN_DIR}
+cp -v ../setup/build_general/install_pymods.py  ${DST_PLUGIN_DIR}
 chmod a+rx ${DST_PLUGIN_DIR}/pymods/*.so
 chmod a+rx ${DST_PLUGIN_DIR}/pymods/*.py
 chmod a+rx ${DST_PLUGIN_DIR}/install_pymods.py
@@ -203,7 +201,7 @@ cp -rv doc/* "${PRG}/Contents/res/doc/"
 cp -rv 3rdparty_licenses "${PRG}/Contents/Resources/"
 
 cp -v data/res/icons/takin.icns "${PRG}/Contents/Resources/"
-cp -v setup_mac/Info.plist "${PRG}/Contents/"
+cp -v ../setup/build_mac/plists/Info.plist "${PRG}/Contents/"
 cp -v *.txt "${PRG}/Contents/Resources/"
 
 cp -rv data/instruments "${PRG}/Contents/Resources/"

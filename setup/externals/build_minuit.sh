@@ -49,9 +49,8 @@ if ! wget ${MINUIT_REMOTE}; then
 fi
 
 
+rm -rf root-latest-stable
 unzip "${MINUIT_LOCAL}"
-
-
 cd root-latest-stable/math/minuit2/
 mkdir build && cd build
 

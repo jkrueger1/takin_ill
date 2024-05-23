@@ -50,9 +50,8 @@ if ! wget ${LAPACK_REMOTE}; then
 fi
 
 
+rm -rf build_lapacke
 unzip "${LAPACK_LOCAL}"
-
-
 mkdir build_lapacke
 cd build_lapacke
 
