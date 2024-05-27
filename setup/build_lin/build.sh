@@ -129,15 +129,12 @@ if [ $build_takin -ne 0 ]; then
 	pushd "${TAKIN_ROOT}/core"
 		../setup/build_general/clean.sh
 
-		mkdir -p build
-		cd build
-
-		if ! cmake -DDEBUG=False ..; then
+		if ! cmake -DDEBUG=False -B build . ; then
 			echo -e "Failed configuring core package."
 			exit -1
 		fi
 
-		if ! make -j${NUM_CORES}; then
+		if ! cmake --build build --parallel ${NUM_CORES} ; then
 			echo -e "Failed building core package."
 			exit -1
 		fi
@@ -152,15 +149,13 @@ if [ $build_takin2 -ne 0 ]; then
 
 	pushd "${TAKIN_ROOT}/mag-core"
 		rm -rf build
-		mkdir -p build
-		cd build
 
-		if ! cmake -DCMAKE_BUILD_TYPE=Release -DONLY_BUILD_FINISHED=True ..; then
+		if ! cmake -DCMAKE_BUILD_TYPE=Release -DONLY_BUILD_FINISHED=True -B build . ; then
 			echo -e "Failed configuring mag-core package."
 			exit -1
 		fi
 
-		if ! make -j${NUM_CORES}; then
+		if ! cmake --build build --parallel ${NUM_CORES} ; then
 			echo -e "Failed building mag-core package."
 			exit -1
 		fi
@@ -187,15 +182,13 @@ if [ $build_plugins -ne 0 ]; then
 
 	pushd "${TAKIN_ROOT}/magnon-plugin"
 		rm -rf build
-		mkdir -p build
-		cd build
 
-		if ! cmake -DCMAKE_BUILD_TYPE=Release ..; then
+		if ! cmake -DCMAKE_BUILD_TYPE=Release -B build . ; then
 			echo -e "Failed configuring magnon plugin."
 			exit -1
 		fi
 
-		if ! make -j${NUM_CORES}; then
+		if ! cmake --build build --parallel ${NUM_CORES} ; then
 			echo -e "Failed building magnon plugin."
 			exit -1
 		fi
@@ -213,15 +206,13 @@ if [ $build_py_modules -ne 0 ]; then
 
 	pushd "${TAKIN_ROOT}/mag-core/tools_py/magdyn"
 		rm -rf build
-		mkdir -p build
-		cd build
 
-		if ! cmake -DCMAKE_BUILD_TYPE=Release ..; then
+		if ! cmake -DCMAKE_BUILD_TYPE=Release -B build . ; then
 			echo -e "Failed configuring magnetic dynamics py module."
 			exit -1
 		fi
 
-		if ! make -j${NUM_CORES}; then
+		if ! cmake --build --parallel ${NUM_CORES} ; then
 			echo -e "Failed building magnetic dynamics py module."
 			exit -1
 		fi
@@ -232,15 +223,13 @@ if [ $build_py_modules -ne 0 ]; then
 
 	pushd "${TAKIN_ROOT}/mag-core/tools_py/instr"
 		rm -rf build
-		mkdir -p build
-		cd build
 
-		if ! cmake -DCMAKE_BUILD_TYPE=Release ..; then
+		if ! cmake -DCMAKE_BUILD_TYPE=Release -B build . ; then
 			echo -e "Failed configuring instrument data loader py module."
 			exit -1
 		fi
 
-		if ! make -j${NUM_CORES}; then
+		if ! cmake --build build --parallel ${NUM_CORES}; then
 			echo -e "Failed building instrument data loader py module."
 			exit -1
 		fi

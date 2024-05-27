@@ -56,15 +56,13 @@ fi
 rm -rf ${MINUIT_DIR}
 unzip "${MINUIT_LOCAL}"
 cd ${MINUIT_DIR}/math/minuit2/
-mkdir build && cd build
 
 
 if [ $BUILD_FOR_MINGW -ne 0 ]; then
-	#mingw64-configure --disable-openmp
+	mkdir build && cd build
 	mingw64-cmake -DCMAKE_BUILD_TYPE=Release ..
 	mingw64-make -j${NUM_CORES} && sudo mingw64-make install/strip
 else
-	#./configure --disable-openmp
-	cmake -DCMAKE_BUILD_TYPE=Release ..
-	make -j${NUM_CORES} && sudo make install/strip
+	cmake -DCMAKE_BUILD_TYPE=Release -B build .
+	cmake -build build --parallel ${NUM_CORES} && sudo cmake --install --strip build
 fi
