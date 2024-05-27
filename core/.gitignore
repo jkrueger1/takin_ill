@@ -46,7 +46,7 @@ cmake_install.cmake
 Makefile
 
 tmp
-tmp/*
+tmp/**
 
 tlibs
 tlibs/*
