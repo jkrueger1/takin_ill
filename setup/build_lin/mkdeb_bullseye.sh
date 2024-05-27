@@ -128,6 +128,9 @@ cp -v bin/takin_moldyn		${INSTDIR}/usr/local/bin
 # copy plugins
 cp -v plugins/*.so		${INSTDIR}/usr/local/lib/takin_plugins
 
+# copy py modules
+cp -v pymods/*			${INSTDIR}/usr/local/lib/python3.9/dist-packages
+
 
 # permissions
 chmod a+x ${INSTDIR}/usr/local/bin/*
@@ -136,6 +139,7 @@ chmod a+x ${INSTDIR}/usr/local/bin/*
 strip -v ${INSTDIR}/usr/local/bin/*
 strip -v ${INSTDIR}/usr/local/lib/*
 strip -v ${INSTDIR}/usr/local/lib/takin_plugins/*
+strip -v ${INSTDIR}/usr/local/lib/python3.9/dist-packages/*.so
 
 
 # startup script
@@ -144,6 +148,7 @@ cp -v takin.sh			${INSTDIR}/usr/local/bin
 
 # remove unnecessary files
 find ${INSTDIR} -type f -name ".dir" -exec rm -fv {} \; -print
+find ${INSTDIR} -type f -name "*.pyc" -exec rm -fv {} \; -print
 rm -v ${INSTDIR}/usr/local/share/takin/CMakeLists.txt
 
 
