@@ -26,8 +26,8 @@
 # ----------------------------------------------------------------------------
 #
 
+cmake_minimum_required(VERSION 3.5)
 project (hermelin)
-cmake_minimum_required(VERSION 3.0)
 
 set(CMAKE_VERBOSE_MAKEFILE TRUE)
 set(CMAKE_BUILD_TYPE Release)
@@ -37,7 +37,8 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/.."
 set(CMAKE_BINARY_DIR "${CMAKE_SOURCE_DIR}")
 
 
-add_custom_command(OUTPUT script.cc tokens.h
+add_custom_command(
+	OUTPUT script.cc tokens.h
 	COMMAND bison --defines=${PROJECT_SOURCE_DIR}/tokens.h --output-file=${PROJECT_SOURCE_DIR}/script.cc ${PROJECT_SOURCE_DIR}/lang/script.yy
 )
 
@@ -66,7 +67,7 @@ include_directories("${Minuit2_INCLUDE_DIRS}")
 #link_directories("/usr/lib64/root")
 
 
-file(GLOB lang "lang/*.cpp" "lang/*.h" "${PROJECT_SOURCE_DIR}/script.cc" "${PROJECT_SOURCE_DIR}/tokens.h")
+file(GLOB lang "lang/*.cpp" "lang/*.h")
 file(GLOB runtime "runtime/*.cpp" "runtime/*.h")
 file(GLOB tlibs
 	"../math/linalg2.cpp" "../math/rand.cpp"
@@ -77,8 +78,8 @@ file(GLOB tlibs
 )
 
 
-add_executable(hermelin
-	${lang} ${runtime} ${tlibs} "${PROJECT_SOURCE_DIR}/script.cc" "${PROJECT_SOURCE_DIR}/tokens.h"
+add_executable(hermelin ${lang} ${runtime} ${tlibs}
+	${PROJECT_SOURCE_DIR}/script.cc ${PROJECT_SOURCE_DIR}/tokens.h
 )
 
 target_link_libraries(hermelin

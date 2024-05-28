@@ -75,6 +75,11 @@ else
 fi
 
 
+# make temporary dir for building
+rm -rf "${TAKIN_ROOT}/tmp"
+mkdir -p "${TAKIN_ROOT}/tmp"
+
+
 if [ $setup_buildenv -ne 0 ]; then
 	echo -e "\n================================================================================"
 	echo -e "Setting up build environment..."
@@ -94,7 +99,6 @@ if [ $setup_externals -ne 0 ]; then
 	echo -e "================================================================================\n"
 
 	pushd "${TAKIN_ROOT}/core"
-		rm -rf tmp
 		if ! ../setup/externals/setup_externals.sh; then
 			exit -1
 		fi
@@ -116,7 +120,6 @@ if [ $build_externals -ne 0 ]; then
 	echo -e "Building external libraries (Minuit, Qhull)..."
 	echo -e "================================================================================\n"
 
-	mkdir -p "${TAKIN_ROOT}/tmp"
 	pushd "${TAKIN_ROOT}/tmp"
 		if ! "${TAKIN_ROOT}"/setup/externals/build_minuit.sh; then
 			exit -1
@@ -124,6 +127,9 @@ if [ $build_externals -ne 0 ]; then
 		if ! "${TAKIN_ROOT}"/setup/externals/build_qhull.sh; then
 			exit -1
 		fi
+		#if ! "${TAKIN_ROOT}"/setup/externals/build_lapacke.sh; then
+		#	exit -1
+		#fi
 	popd
 fi
 
@@ -223,7 +229,6 @@ if [ $build_package -ne 0 ]; then
 	echo -e "================================================================================\n"
 
 	pushd "${TAKIN_ROOT}"
-		rm -rf tmp
 		cd core
 		if ! ../setup/build_lin/mkdeb_${distri}.sh "${TAKIN_ROOT}/tmp/takin"; then
 			exit -1
