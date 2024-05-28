@@ -23,38 +23,86 @@
 #
 
 cmake_minimum_required(VERSION 3.5)
-project(magtools)
+project(mag-core)
 
+option(BUILD_PY_MODULES "build py modules" TRUE)
 option(ONLY_BUILD_FINISHED "only build finished tools" TRUE)
 
 
 # cif converter
+message("\n================================================================================")
+message("Configuring cif2xml...")
+message("================================================================================")
 add_subdirectory(tools/cif2xml)
 
 # polarisation tool
+message("\n================================================================================")
+message("Configuring pol...")
+message("================================================================================")
 add_subdirectory(tools/pol)
 
-# nuclear and magnetic structure factor tools
+# nuclear structure factor tool
+message("\n================================================================================")
+message("Configuring structfact...")
+message("================================================================================")
 add_subdirectory(tools/structfact)
+
+# magnetic structure factor tool
+message("\n================================================================================")
+message("Configuring magstructfact...")
+message("================================================================================")
 add_subdirectory(tools/magstructfact)
 
 # Brillouin zone tool
+message("\n================================================================================")
+message("Configuring bz...")
+message("================================================================================")
 add_subdirectory(tools/bz)
 
-# magnon dynamics tool
+# magnetic dynamics tool
+message("\n================================================================================")
+message("Configuring magdyn...")
+message("================================================================================")
 add_subdirectory(tools/magdyn)
 
 # molecular dynamics tool
+message("\n================================================================================")
+message("Configuring moldyn...")
+message("================================================================================")
 add_subdirectory(tools/moldyn)
 
 
 if(NOT ONLY_BUILD_FINISHED)
 	# scan browser tool
+	message("\n================================================================================")
+	message("Configuring scanbrowser...")
+	message("================================================================================")
 	add_subdirectory(tools/scanbrowser)
 
 	# setup tools
+	message("\n================================================================================")
+	message("Configuring setup...")
+	message("================================================================================")
 	add_subdirectory(tools/setup)
 
 	# magnetic structure factor browser
+	message("\n================================================================================")
+	message("Configuring magsgbrowser...")
+	message("================================================================================")
 	add_subdirectory(tools/magsgbrowser)
+endif()
+
+
+if(BUILD_PY_MODULES)
+	# magnetic dynamics
+	message("\n================================================================================")
+	message("Configuring py-magdyn...")
+	message("================================================================================")
+	add_subdirectory(tools_py/magdyn)
+
+	# instrument data file loader
+	message("\n================================================================================")
+	message("Configuring py-instr...")
+	message("================================================================================")
+	add_subdirectory(tools_py/instr)
 endif()

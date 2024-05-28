@@ -68,6 +68,13 @@ echo -e "Distribution name: \"${distri}\"."
 echo -e "Number of cores for building: ${NUM_CORES}."
 
 
+if [ $build_py_modules -ne 0 ]; then
+	__BUILD_PY_MODULES=True
+else
+	__BUILD_PY_MODULES=False
+fi
+
+
 if [ $setup_buildenv -ne 0 ]; then
 	echo -e "\n================================================================================"
 	echo -e "Setting up build environment..."
@@ -150,7 +157,9 @@ if [ $build_takin2 -ne 0 ]; then
 	pushd "${TAKIN_ROOT}/mag-core"
 		rm -rf build
 
-		if ! cmake -DCMAKE_BUILD_TYPE=Release -DONLY_BUILD_FINISHED=True -B build . ; then
+		if ! cmake -DCMAKE_BUILD_TYPE=Release \
+			-DONLY_BUILD_FINISHED=True -DBUILD_PY_MODULES=$__BUILD_PY_MODULES \
+			-B build . ; then
 			echo -e "Failed configuring mag-core package."
 			exit -1
 		fi
@@ -161,16 +170,25 @@ if [ $build_takin2 -ne 0 ]; then
 		fi
 
 		# copy tools to Takin main dir
-		cp -v tools/cif2xml/takin_cif2xml "${TAKIN_ROOT}"/core/bin/
-		cp -v tools/cif2xml/takin_findsg "${TAKIN_ROOT}"/core/bin/
-		cp -v tools/pol/takin_pol "${TAKIN_ROOT}"/core/bin/
-		cp -v tools/bz/takin_bz "${TAKIN_ROOT}"/core/bin/
-		cp -v tools/structfact/takin_structfact "${TAKIN_ROOT}"/core/bin/
-		cp -v tools/magstructfact/takin_magstructfact "${TAKIN_ROOT}"/core/bin/
-		cp -v tools/magdyn/takin_magdyn "${TAKIN_ROOT}"/core/bin/
-		cp -v tools/scanbrowser/takin_scanbrowser "${TAKIN_ROOT}"/core/bin/
-		cp -v tools/magsgbrowser/takin_magsgbrowser "${TAKIN_ROOT}"/core/bin/
-		cp -v tools/moldyn/takin_moldyn "${TAKIN_ROOT}"/core/bin/
+		cp -v build/tools/cif2xml/takin_cif2xml "${TAKIN_ROOT}"/core/bin/
+		cp -v build/tools/cif2xml/takin_findsg "${TAKIN_ROOT}"/core/bin/
+		cp -v build/tools/pol/takin_pol "${TAKIN_ROOT}"/core/bin/
+		cp -v build/tools/bz/takin_bz "${TAKIN_ROOT}"/core/bin/
+		cp -v build/tools/structfact/takin_structfact "${TAKIN_ROOT}"/core/bin/
+		cp -v build/tools/magstructfact/takin_magstructfact "${TAKIN_ROOT}"/core/bin/
+		cp -v build/tools/magdyn/takin_magdyn "${TAKIN_ROOT}"/core/bin/
+		cp -v build/tools/scanbrowser/takin_scanbrowser "${TAKIN_ROOT}"/core/bin/
+		cp -v build/tools/magsgbrowser/takin_magsgbrowser "${TAKIN_ROOT}"/core/bin/
+		cp -v build/tools/moldyn/takin_moldyn "${TAKIN_ROOT}"/core/bin/
+
+		# copy py modules
+		if [ $build_py_modules -ne 0 ]; then
+			cp -v build/tools_py/magdyn/_magdyn_py.so "${TAKIN_ROOT}"/core/pymods/
+			cp -v build/tools_py/magdyn/magdyn.py "${TAKIN_ROOT}"/core/pymods/
+
+			cp -v build/tools_py/instr/_instr_py.so "${TAKIN_ROOT}"/core/pymods/
+			cp -v build/tools_py/instr/instr.py "${TAKIN_ROOT}"/core/pymods/
+		fi
 	popd
 fi
 
@@ -194,48 +212,7 @@ if [ $build_plugins -ne 0 ]; then
 		fi
 
 		# copy plugin to Takin main dir
-		cp -v libmagnonmod.so "${TAKIN_ROOT}"/core/plugins/
-	popd
-fi
-
-
-if [ $build_py_modules -ne 0 ]; then
-	echo -e "\n================================================================================"
-	echo -e "Building py modules..."
-	echo -e "================================================================================\n"
-
-	pushd "${TAKIN_ROOT}/mag-core/tools_py/magdyn"
-		rm -rf build
-
-		if ! cmake -DCMAKE_BUILD_TYPE=Release -B build . ; then
-			echo -e "Failed configuring magnetic dynamics py module."
-			exit -1
-		fi
-
-		if ! cmake --build --parallel ${NUM_CORES} ; then
-			echo -e "Failed building magnetic dynamics py module."
-			exit -1
-		fi
-
-		cp -v _magdyn_py.so "${TAKIN_ROOT}"/core/pymods/
-		cp -v magdyn.py "${TAKIN_ROOT}"/core/pymods/
-	popd
-
-	pushd "${TAKIN_ROOT}/mag-core/tools_py/instr"
-		rm -rf build
-
-		if ! cmake -DCMAKE_BUILD_TYPE=Release -B build . ; then
-			echo -e "Failed configuring instrument data loader py module."
-			exit -1
-		fi
-
-		if ! cmake --build build --parallel ${NUM_CORES}; then
-			echo -e "Failed building instrument data loader py module."
-			exit -1
-		fi
-
-		cp -v _instr_py.so "${TAKIN_ROOT}"/core/pymods/
-		cp -v instr.py "${TAKIN_ROOT}"/core/pymods/
+		cp -v build/libmagnonmod.so "${TAKIN_ROOT}"/core/plugins/
 	popd
 fi
 

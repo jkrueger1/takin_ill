@@ -63,5 +63,5 @@ if [ $BUILD_FOR_MINGW -ne 0 ]; then
 else
 	cmake -DCMAKE_BUILD_TYPE=Release \
 		-DQHULL_ENABLE_TESTING=False -DBUILD_APPLICATIONS=False  -B build_lib .
-	cmake --build build_lib --parallel ${NUM_CORES} && sudo cmake --install --strip build_lib
+	cmake --build build_lib --parallel ${NUM_CORES} && sudo cmake --install build_lib --strip
 fi

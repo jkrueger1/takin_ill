@@ -138,7 +138,8 @@ if [ $build_takin2 -ne 0 ]; then
 		mkdir -p build
 		cd build
 
-		if ! mingw64-cmake -DCMAKE_BUILD_TYPE=Release -DONLY_BUILD_FINISHED=True ..; then
+		if ! mingw64-cmake -DCMAKE_BUILD_TYPE=Release \
+			-DONLY_BUILD_FINISHED=True -DBUILD_PY_MODULES=False ..; then
 			echo -e "Failed configuring mag-core package."
 			exit -1
 		fi

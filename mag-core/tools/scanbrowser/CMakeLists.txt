@@ -25,7 +25,9 @@
 cmake_minimum_required(VERSION 3.5)
 project(scanbrowser)
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/../../../tlibs2/cmake")
+list(APPEND CMAKE_MODULE_PATH
+	"${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/../../../setup/cmake"
+)
 
 message("Build type: ${CMAKE_BUILD_TYPE}")
 

@@ -35,7 +35,7 @@ add_compile_options(-fvisibility=hidden)
 
 list(APPEND CMAKE_MODULE_PATH
 	"${PROJECT_SOURCE_DIR}"
-	"${PROJECT_SOURCE_DIR}/tlibs2/cmake"
+	"${PROJECT_SOURCE_DIR}/../setup/cmake"
 )
 
 

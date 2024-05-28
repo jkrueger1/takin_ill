@@ -34,7 +34,7 @@ add_compile_options(-Wall -Wextra -Weffc++)
 
 list(APPEND CMAKE_MODULE_PATH
 	"${PROJECT_SOURCE_DIR}"
-	"${PROJECT_SOURCE_DIR}/../../tlibs2/cmake"
+	"${PROJECT_SOURCE_DIR}/../../../setup/cmake"
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

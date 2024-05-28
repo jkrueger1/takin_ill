@@ -34,7 +34,7 @@ add_compile_options(-Wall -Wextra)
 
 list(APPEND CMAKE_MODULE_PATH
 	"${PROJECT_SOURCE_DIR}"
-	"${PROJECT_SOURCE_DIR}/../../tlibs2/cmake"
+	"${PROJECT_SOURCE_DIR}/../../setup/cmake"
 )
 
 set(CMAKE_VERBOSE_MAKEFILE TRUE)

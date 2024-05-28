@@ -31,6 +31,12 @@ set(CMAKE_VERBOSE_MAKEFILE TRUE)
 set(CMAKE_CXX_STANDARD 20)
 add_definitions(-std=c++20)
 option(BUILD_LIB "build as dynamic library" FALSE)
+add_compile_options(-Wall -Wextra)
+
+list(APPEND CMAKE_MODULE_PATH
+	"${PROJECT_SOURCE_DIR}"
+	"${PROJECT_SOURCE_DIR}/../../setup/cmake"
+)
 
 # system specific settings
 message("Building for ${CMAKE_SYSTEM_NAME} systems.")

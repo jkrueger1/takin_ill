@@ -51,6 +51,13 @@ TAKIN_ROOT=$(pwd)
 echo -e "Takin root dir: ${TAKIN_ROOT}"
 
 
+if [ $build_py_modules -ne 0 ]; then
+	__BUILD_PY_MODULES=True
+else
+	__BUILD_PY_MODULES=False
+fi
+
+
 if [ $setup_buildenv -ne 0 ]; then
 	echo -e "\n================================================================================"
 	echo -e "Setting up build environment..."
@@ -122,7 +129,8 @@ if [ $build_takin2 -ne 0 ]; then
 		mkdir -p build
 		cd build
 
-		if ! cmake -DCMAKE_BUILD_TYPE=Release -DONLY_BUILD_FINISHED=True ..; then
+		if ! cmake -DCMAKE_BUILD_TYPE=Release \
+			-DONLY_BUILD_FINISHED=True -DBUILD_PY_MODULES=$__BUILD_PY_MODULES ..; then
 			echo -e "Failed configuring mag-core package."
 			exit -1
 		fi
@@ -143,7 +151,18 @@ if [ $build_takin2 -ne 0 ]; then
 		cp -v tools/scanbrowser/takin_scanbrowser "${TAKIN_ROOT}"/core/bin/
 		cp -v tools/magsgbrowser/takin_magsgbrowser "${TAKIN_ROOT}"/core/bin/
 		cp -v tools/moldyn/takin_moldyn "${TAKIN_ROOT}"/core/bin/
-	popd
+
+		# copy py modules
+		if [ $build_py_modules -ne 0 ]; then
+			cp -v tools_py/magdyn/_magdyn_py.dylib "${TAKIN_ROOT}"/core/pymods/
+			cp -v tools_py/magdyn/_magdyn_py.so "${TAKIN_ROOT}"/core/pymods/
+			cp -v tools_py/magdyn/magdyn.py "${TAKIN_ROOT}"/core/pymods/
+
+			cp -v tools_py/instr/_instr_py.dylib "${TAKIN_ROOT}"/core/pymods/
+			cp -v tools_py/instr/_instr_py.so "${TAKIN_ROOT}"/core/pymods/
+			cp -v tools_py/instr/instr.py "${TAKIN_ROOT}"/core/pymods/
+		fi
+		popd
 fi
 
 
@@ -171,54 +190,6 @@ if [ $build_plugins -ne 0 ]; then
 		cp -v libmagnonmod.dylib "${TAKIN_ROOT}"/core/plugins/
 	popd
 fi
-
-
-if [ $build_py_modules -ne 0 ]; then
-	echo -e "\n================================================================================"
-	echo -e "Building py modules..."
-	echo -e "================================================================================\n"
-
-	pushd "${TAKIN_ROOT}/mag-core/tools_py/magdyn"
-		rm -rf build
-		mkdir -p build
-		cd build
-
-		if ! cmake -DCMAKE_BUILD_TYPE=Release ..; then
-			echo -e "Failed configuring magnetic dynamics py module."
-			exit -1
-		fi
-
-		if ! make -j${NUM_CORES}; then
-			echo -e "Failed building magnetic dynamics py module."
-			exit -1
-		fi
-
-		cp -v _magdyn_py.dylib "${TAKIN_ROOT}"/core/pymods/
-		cp -v _magdyn_py.so "${TAKIN_ROOT}"/core/pymods/
-		cp -v magdyn.py "${TAKIN_ROOT}"/core/pymods/
-	popd
-
-	pushd "${TAKIN_ROOT}/mag-core/tools_py/instr"
-		rm -rf build
-		mkdir -p build
-		cd build
-
-		if ! cmake -DCMAKE_BUILD_TYPE=Release ..; then
-			echo -e "Failed configuring instrument data loader py module."
-			exit -1
-		fi
-
-		if ! make -j${NUM_CORES}; then
-			echo -e "Failed building instrument data loader py module."
-			exit -1
-		fi
-
-		cp -v _instr_py.dylib "${TAKIN_ROOT}"/core/pymods/
-		cp -v _instr_py.so "${TAKIN_ROOT}"/core/pymods/
-		cp -v instr.py "${TAKIN_ROOT}"/core/pymods/
-	popd
-fi
-
 
 
 if [ $build_package -ne 0 ]; then

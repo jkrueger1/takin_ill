@@ -36,9 +36,6 @@ if [ "$1" == "--mingw" ]; then
 fi
 
 
-#MINUIT_REMOTE=http://www.cern.ch/mathlibs/sw/5_34_14/Minuit2/Minuit2-5.34.14.tar.gz
-#MINUIT_DIR=${MINUIT_LOCAL%.tar.gz}
-
 MINUIT_REMOTE=https://codeload.github.com/root-project/root/zip/refs/heads/latest-stable
 MINUIT_DIR=root-latest-stable
 
@@ -64,5 +61,5 @@ if [ $BUILD_FOR_MINGW -ne 0 ]; then
 	mingw64-make -j${NUM_CORES} && sudo mingw64-make install/strip
 else
 	cmake -DCMAKE_BUILD_TYPE=Release -B build .
-	cmake -build build --parallel ${NUM_CORES} && sudo cmake --install --strip build
+	cmake --build build --parallel ${NUM_CORES} && sudo cmake --install build --strip
 fi
