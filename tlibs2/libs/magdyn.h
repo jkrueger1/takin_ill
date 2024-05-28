@@ -483,7 +483,8 @@ public:
 		}
 		catch(const std::exception& ex)
 		{
-			std::cerr << "Error: Invalid site name \"" << name << "\"."
+			std::cerr << "Magdyn: "
+				<< "Error: Invalid site name \"" << name << "\"."
 				<< " Parser error: " << ex.what()
 				<< std::endl;
 		}
@@ -519,7 +520,8 @@ public:
 		}
 		catch(const std::exception& ex)
 		{
-			std::cerr << "Error: Invalid coupling name \"" << name << "\"."
+			std::cerr << "Magdyn: "
+				<< "Error: Invalid coupling name \"" << name << "\"."
 				<< " Parser error: " << ex.what()
 				<< std::endl;
 		}
@@ -708,7 +710,8 @@ public:
 		{
 			if(print_error)
 			{
-				std::cerr << "Error: Site index " << idx
+				std::cerr << "Magdyn: "
+					<< "Error: Site index " << idx
 					<< " is out of bounds."
 					<< std::endl;
 			}
@@ -730,7 +733,8 @@ public:
 		{
 			if(print_error)
 			{
-				std::cerr << "Error: Coupling index " << idx
+				std::cerr << "Magdyn: "
+					<< "Error: Coupling index " << idx
 					<< " is out of bounds."
 					<< std::endl;
 			}
@@ -831,7 +835,8 @@ public:
 				}
 				else
 				{
-					std::cerr << "Error parsing DMI component " << dmi_idx
+					std::cerr << "Magdyn: "
+						<< "Error parsing DMI component " << dmi_idx
 						<< " of term \"" << term.name << "\"."
 						<< std::endl;
 				}
@@ -856,7 +861,8 @@ public:
 					}
 					else
 					{
-						std::cerr << "Error parsing general J component ("
+						std::cerr << "Magdyn: "
+							<< "Error parsing general J component ("
 							<< J_idx1 << ", " << J_idx2
 							<< ") of term \"" << term.name << "\"."
 							<< std::endl;
@@ -883,7 +889,8 @@ public:
 
 				if(!sc1_ok || !sc2_ok)
 				{
-					std::cerr << "Could not find supercell for position generated from symop "
+					std::cerr << "Magdyn: "
+						<< "Could not find supercell for position generated from symop "
 						<< op_idx << "." << std::endl;
 				}
 
@@ -1136,7 +1143,8 @@ public:
 					}
 					else
 					{
-						std::cerr << "Error parsing position \""
+						std::cerr << "Magdyn: "
+							<< "Error parsing position \""
 							<< site.pos[idx] << "\""
 							<< " for site \"" << site.name << "\""
 							<< " and component " << idx
@@ -1153,7 +1161,8 @@ public:
 					}
 					else
 					{
-						std::cerr << "Error parsing spin direction \""
+						std::cerr << "Magdyn: "
+							<< "Error parsing spin direction \""
 							<< site.spin_dir[idx] << "\""
 							<< " for site \"" << site.name << "\""
 							<< " and component " << idx
@@ -1173,7 +1182,8 @@ public:
 					{
 						has_explicit_uv = false;
 
-						std::cerr << "Error parsing spin orthogonal plane \""
+						std::cerr << "Magdyn: "
+							<< "Error parsing spin orthogonal plane \""
 							<< site.spin_ortho[idx] << "\""
 							<< " for site \"" << site.name << "\""
 							<< " and component " << idx
@@ -1217,7 +1227,8 @@ public:
 		}
 		catch(const std::exception& ex)
 		{
-			std::cerr << "Error calculating site \"" << site.name << "\"."
+			std::cerr << "Magdyn: "
+				<< "Error calculating site \"" << site.name << "\"."
 				" Reason: " << ex.what() << std::endl;
 		}
 	}
@@ -1256,14 +1267,16 @@ public:
 
 			if(term.site1_calc >= GetMagneticSitesCount())
 			{
-				std::cerr << "Error: Unknown site 1 name \"" << term.site1 << "\"."
+				std::cerr << "Magdyn: "
+					<< "Error: Unknown site 1 name \"" << term.site1 << "\"."
 					<< " in coupling \"" << term.name << "\"."
 					<< std::endl;
 				return;
 			}
 			if(term.site2_calc >= GetMagneticSitesCount())
 			{
-				std::cerr << "Error: Unknown site 2 name \"" << term.site2 << "\"."
+				std::cerr << "Magdyn: "
+					<< "Error: Unknown site 2 name \"" << term.site2 << "\"."
 					<< " in coupling \"" << term.name << "\"."
 					<< std::endl;
 				return;
@@ -1276,7 +1289,8 @@ public:
 			}
 			else
 			{
-				std::cerr << "Error parsing J term \""
+				std::cerr << "Magdyn: "
+					<< "Error parsing J term \""
 					<< term.J << "\"."
 					<< std::endl;
 			}
@@ -1292,7 +1306,8 @@ public:
 					}
 					else
 					{
-						std::cerr << "Error parsing distance term \""
+						std::cerr << "Magdyn: "
+							<< "Error parsing distance term \""
 							<< term.dist[i]
 							<< "\" (index " << i << ")"
 							<< "." << std::endl;
@@ -1308,7 +1323,8 @@ public:
 					}
 					else
 					{
-						std::cerr << "Error parsing DMI term \""
+						std::cerr << "Magdyn: "
+							<< "Error parsing DMI term \""
 							<< term.dmi[i]
 							<< "\" (index " << i << ")"
 							<< "." << std::endl;
@@ -1327,7 +1343,8 @@ public:
 					}
 					else
 					{
-						std::cerr << "Error parsing general term \""
+						std::cerr << "Magdyn: "
+							<< "Error parsing general term \""
 							<< term.Jgen[i][j]
 							<< "\" (indices " << i << ", " << j << ")"
 							<< "." << std::endl;
@@ -1337,7 +1354,8 @@ public:
 		}
 		catch(const std::exception& ex)
 		{
-			std::cerr << "Error calculating coupling \"" << term.name << "\"."
+			std::cerr << "Magdyn: "
+				<< "Error calculating coupling \"" << term.name << "\"."
 				" Reason: " << ex.what() << "."
 				<< std::endl;
 		}
@@ -1586,7 +1604,8 @@ public:
 				if(chol_try >= m_tries_chol - 1)
 				{
 					using namespace tl2_ops;
-					std::cerr << "Warning: Cholesky decomposition failed at Q = "
+					std::cerr << "Magdyn: "
+						<< "Warning: Cholesky decomposition failed at Q = "
 						<< Qvec << "." << std::endl;
 					C_mat = std::move(_C);
 					break;
@@ -1601,7 +1620,8 @@ public:
 		if(chol_try > 0)
 		{
 			using namespace tl2_ops;
-			std::cerr << "Warning: Needed " << chol_try
+			std::cerr << "Magdyn: "
+				<< "Warning: Needed " << chol_try
 				<< " correction(s) for Cholesky decomposition at Q = "
 				<< Qvec << "." << std::endl;
 		}
@@ -1609,7 +1629,8 @@ public:
 		if(C_mat.size1() == 0 || C_mat.size2() == 0)
 		{
 			using namespace tl2_ops;
-			std::cerr << "Error: Invalid Cholesky decomposition at Q = "
+			std::cerr << "Magdyn: "
+				<< "Error: Invalid Cholesky decomposition at Q = "
 				<< Qvec << "." << std::endl;
 			return {};
 		}
@@ -1621,7 +1642,8 @@ public:
 		if(!is_herm)
 		{
 			using namespace tl2_ops;
-			std::cerr << "Warning: Hamiltonian is not hermitian at Q = "
+			std::cerr << "Magdyn: "
+				<< "Warning: Hamiltonian is not hermitian at Q = "
 				<< Qvec << "." << std::endl;
 		}
 
@@ -1633,7 +1655,8 @@ public:
 		if(!evecs_ok)
 		{
 			using namespace tl2_ops;
-			std::cerr << "Warning: Eigensystem calculation failed at Q = "
+			std::cerr << "Magdyn: "
+				<< "Warning: Eigensystem calculation failed at Q = "
 				<< Qvec << "." << std::endl;
 		}
 
@@ -1708,7 +1731,8 @@ public:
 		if(!inv_ok)
 		{
 			using namespace tl2_ops;
-			std::cerr << "Warning: Inversion failed at Q = "
+			std::cerr << "Magdyn: "
+				<< "Warning: Inversion failed at Q = "
 				<< Qvec << "." << std::endl;
 		}
 
@@ -2134,7 +2158,8 @@ public:
 		}
 		catch(const std::exception& ex)
 		{
-			std::cerr << "Error: Could not load \"" << filename << "\"."
+			std::cerr << "Magdyn: "
+				<< "Error: Could not load \"" << filename << "\"."
 				<< " Reason: " << ex.what()
 				<< std::endl;
 
@@ -2289,7 +2314,7 @@ public:
 						exchange_term.site1 = sites1[0]->name;
 					else
 					{
-						std::cerr
+						std::cerr << "Magdyn: "
 							<< "Error in coupling \"" << exchange_term.name
 							<< "\": Site 1 name \"" << *name1
 							<< "\" was not found." << std::endl;
@@ -2307,7 +2332,7 @@ public:
 						exchange_term.site2 = sites2[0]->name;
 					else
 					{
-						std::cerr
+						std::cerr << "Magdyn: "
 							<< "Error in coupling \"" << exchange_term.name
 							<< "\": Site 2 name \"" << *name2
 							<< "\" was not found." << std::endl;
@@ -2543,7 +2568,9 @@ protected:
 		const auto [spin_re, spin_im] = tl2::split_cplx<t_vec, t_vec_real>(spin_dir);
 
 		if(!tl2::equals_0<t_vec_real>(spin_im, m_eps))
-			std::cerr << "Warning: Spin vector should be purely real." << std::endl;
+			std::cerr << "Magdyn: "
+				<< "Warning: Spin vector should be purely real."
+				<< std::endl;
 
 		// only use real part, imaginary part should be zero
 		//spin_re /= tl2::norm<t_vec_real>(spin_re);

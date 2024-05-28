@@ -272,14 +272,14 @@ std::vector<int> MagStructFactDlg::GetSelectedRows(QTableWidget *pTab, bool sort
 /**
  * selected a new row
  */
-void MagStructFactDlg::TableCurCellChanged(int rowNew, int colNew, int rowOld, int colOld)
+void MagStructFactDlg::TableCurCellChanged(int /*rowNew*/, int /*colNew*/, int /*rowOld*/, int /*colOld*/)
 {}
 
 
 /**
  * hovered over new row
  */
-void MagStructFactDlg::TableCellEntered(const QModelIndex& idx)
+void MagStructFactDlg::TableCellEntered(const QModelIndex&)
 {}
 
 
@@ -398,7 +398,7 @@ void MagStructFactDlg::DelPropItem(int begin, int end)
 /**
  * item contents changed
  */
-void MagStructFactDlg::PropItemChanged(QTableWidgetItem *item)
+void MagStructFactDlg::PropItemChanged(QTableWidgetItem *)
 {
 	// update associated 3d object
 	//Sync3DItem(item->row());
@@ -421,7 +421,7 @@ void MagStructFactDlg::GenerateFromSG()
 	{
 		// symops of current space group
 		auto sgidx = m_comboSG->itemData(m_comboSG->currentIndex()).toInt();
-		if(sgidx < 0 || sgidx >= m_SGops.size())
+		if(sgidx < 0 || static_cast<std::size_t>(sgidx) >= m_SGops.size())
 		{
 			QMessageBox::critical(this, "Structure Factors", "Invalid space group selected.");
 			return;

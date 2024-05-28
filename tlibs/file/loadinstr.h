@@ -578,7 +578,8 @@ class FileRaw : public FileInstrBase<_t_real>
 
 		virtual std::string GetScanCommand() const override;
 
-		std::string GetColNameFromParam(const std::string& paramName, const std::string& defaultValue) const;
+		std::string GetColNameFromParam(const std::string& paramName,
+			const std::string& defaultValue) const;
 };
 
 

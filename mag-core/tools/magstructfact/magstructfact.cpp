@@ -698,7 +698,7 @@ void MagStructFactDlg::dropEvent(QDropEvent *evt)
 }
 
 
-void MagStructFactDlg::closeEvent(QCloseEvent *evt)
+void MagStructFactDlg::closeEvent(QCloseEvent *)
 {
 	if(m_sett)
 	{

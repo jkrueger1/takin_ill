@@ -7622,7 +7622,6 @@ requires tl2::is_mat<t_mat>
 		for(std::size_t j=0; j<N; ++j)
 			C(i, j) = outmat[i*N + j];
 
-	//std::cerr << "error value: " << err << std::endl;
 	return std::make_tuple(err == 0, C);
 }
 
@@ -7704,7 +7703,6 @@ requires tl2::is_mat<t_mat>
 		P(pivot[i]-1, i) = 1.;
 	}
 
-	//std::cerr << "error value: " << err << std::endl;
 	return std::make_tuple(err == 0, C, P);
 }
 
@@ -7797,7 +7795,6 @@ requires tl2::is_mat<t_mat>
 	t_mat perm = tl2::perm<t_mat>(outvec);
 	C = perm * C;
 
-	//std::cerr << "error value: " << err << std::endl;
 	return std::make_tuple(err == 0, C, D);
 }
 

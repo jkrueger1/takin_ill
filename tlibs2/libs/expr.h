@@ -646,7 +646,7 @@ public:
 		}
 
 		if(m_debug)
-			std::cerr << "Warning: No code available, interpreting AST." << std::endl;
+			std::cerr << "Expression: Warning: No code available, interpreting AST." << std::endl;
 		if(!m_ast)
 			throw std::runtime_error("Invalid AST.");
 

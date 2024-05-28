@@ -128,7 +128,6 @@ FileInstrBase<t_real>* FileInstrBase<t_real>::LoadInstr(const char* pcFile)
 		std::getline(*pIstr, strLine);
 		std::getline(*pIstr, strLine2);
 		std::getline(*pIstr, strLine3);
-		//pIstr->close();
 
 
 		trim(strLine);

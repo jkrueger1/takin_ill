@@ -479,7 +479,8 @@ t_scalar stoval(const t_str& str, bool pass_exception = false)
 	catch(const std::exception& ex)
 	{
 #ifdef __TLIBS2_SHOW_ERR__
-		std::cerr << "Conversion error: " << ex.what()
+		std::cerr << "String Lib: "
+			<< "Conversion error: " << ex.what()
 			<< "." << std::endl;
 #endif
 		if(pass_exception)
@@ -894,7 +895,9 @@ std::pair<bool, t_val> eval_expr(const t_str& str) noexcept
 	catch(const std::exception& ex)
 	{
 #ifdef __TLIBS2_SHOW_ERR__
-		std::cerr << "Parsing failed with error: " << ex.what() << "." << std::endl;
+		std::cerr << "String Lib: "
+			<< "Parsing failed with error: "
+			<< ex.what() << "." << std::endl;
 #endif
 		return std::make_pair(false, t_val(0));
 	}

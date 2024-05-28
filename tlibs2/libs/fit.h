@@ -270,7 +270,7 @@ public:
 	{
 		t_real_min dChi2 = chi2(vecParams);
 		if(m_bDebug)
-			std::cerr << "chi2 = " << dChi2 << std::endl;
+			std::cerr << "Fitter: chi2 = " << dChi2 << std::endl;
 		return dChi2;
 	}
 
@@ -351,7 +351,7 @@ bool fit(t_func&& func,
 	{
 		if(!vecX.size() || !vecY.size() || !vecYErr.size())
 		{
-			std::cerr << "No data given to fitter." << std::endl;
+			std::cerr << "Fitter: No data given to fitter." << std::endl;
 			return false;
 		}
 
@@ -359,7 +359,7 @@ bool fit(t_func&& func,
 		if(pVecFixed && std::all_of(pVecFixed->begin(), pVecFixed->end(),
 			[](bool b)->bool { return b; }))
 			{
-				std::cerr << "All parameters are fixed." << std::endl;
+				std::cerr << "Fitter: All parameters are fixed." << std::endl;
 				return false;
 			}
 
@@ -409,7 +409,7 @@ bool fit(t_func&& func,
 	}
 	catch(const std::exception& ex)
 	{
-		std::cerr << ex.what() << std::endl;
+		std::cerr << "Fitter: " << ex.what() << std::endl;
 	}
 
 	return false;
@@ -439,7 +439,7 @@ bool fit_expr(const std::string& func,
 	{
 		if(!vecX.size() || !vecY.size() || !vecYErr.size())
 		{
-			std::cerr << "No data given to fitter." << std::endl;
+			std::cerr << "Fitter: No data given to fitter." << std::endl;
 			return false;
 		}
 
@@ -447,7 +447,7 @@ bool fit_expr(const std::string& func,
 		if(pVecFixed && std::all_of(pVecFixed->begin(), pVecFixed->end(),
 			[](bool b)->bool { return b; }))
 			{
-				std::cerr << "All parameters are fixed." << std::endl;
+				std::cerr << "Fitter: All parameters are fixed." << std::endl;
 				return false;
 			}
 
@@ -497,7 +497,7 @@ bool fit_expr(const std::string& func,
 	}
 	catch(const std::exception& ex)
 	{
-		std::cerr << ex.what() << std::endl;
+		std::cerr << "Fitter: " << ex.what() << std::endl;
 	}
 
 	return false;
@@ -519,7 +519,7 @@ bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
 		if(pVecFixed && std::all_of(pVecFixed->begin(), pVecFixed->end(),
 			[](bool b)->bool { return b; }))
 			{
-				std::cerr << "All parameters are fixed." << std::endl;
+				std::cerr << "Fitter: All parameters are fixed." << std::endl;
 				return false;
 			}
 
@@ -551,7 +551,7 @@ bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
 	}
 	catch(const std::exception& ex)
 	{
-		std::cerr << ex.what() << std::endl;
+		std::cerr << "Fitter: " << ex.what() << std::endl;
 	}
 
 	return false;
@@ -573,7 +573,7 @@ bool minimise_expr(const std::string& func, const std::vector<std::string>& vecP
 		if(pVecFixed && std::all_of(pVecFixed->begin(), pVecFixed->end(),
 			[](bool b)->bool { return b; }))
 			{
-				std::cerr << "All parameters are fixed." << std::endl;
+				std::cerr << "Fitter: All parameters are fixed." << std::endl;
 				return false;
 			}
 
@@ -605,7 +605,7 @@ bool minimise_expr(const std::string& func, const std::vector<std::string>& vecP
 	}
 	catch(const std::exception& ex)
 	{
-		std::cerr << ex.what() << std::endl;
+		std::cerr << "Fitter: " << ex.what() << std::endl;
 	}
 
 	return false;
