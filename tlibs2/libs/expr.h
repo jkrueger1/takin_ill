@@ -45,6 +45,7 @@
 #include <sstream>
 #include <string>
 #include <regex>
+#include <unordered_set>
 #include <unordered_map>
 #include <vector>
 #include <stack>
@@ -79,7 +80,7 @@ t_num expr_modfunc(t_num t1, t_num t2)
 	else if constexpr(std::is_integral_v<t_num>)
 		return t1%t2;
 	else if constexpr(is_complex<t_num>)
-		throw std::runtime_error{"Invalid mod operation."};
+		throw std::runtime_error("Invalid mod operation.");
 	else
 		static_assert(tl2::bool_value<0, t_num>, "Invalid type for mod function.");
 
@@ -100,7 +101,7 @@ t_num expr_binop(char op, t_num val_left, t_num val_right)
 		case '^': return static_cast<t_num>(std::pow(val_left, val_right));
 	}
 
-	throw std::runtime_error{"Invalid binary operator."};
+	throw std::runtime_error("Invalid binary operator.");
 }
 
 
@@ -113,7 +114,7 @@ t_num expr_unop(char op, t_num val)
 		case '-': return -val;
 	}
 
-	throw std::runtime_error{"Invalid unary operator."};
+	throw std::runtime_error("Invalid unary operator.");
 }
 
 
@@ -576,6 +577,7 @@ public:
 	 */
 	bool parse(const std::string& str, bool codegen = true)
 	{
+		m_unknown_vars.clear();
 		m_code.clear();
 		m_ast = nullptr;
 
@@ -628,7 +630,48 @@ public:
 				m_ast = std::make_shared<ExprASTValue<t_num>>(t_num{});
 		}
 
+		if(m_unknown_vars.size())
+			ok = false;
+
 		return ok;
+	}
+
+
+	bool parse_noexcept(const std::string& str, bool codegen = true) noexcept
+	{
+		try
+		{
+			if(parse(str, codegen))
+			{
+				return true;
+			}
+			else
+			{
+				std::ostringstream ostr;
+				if(m_unknown_vars.size())
+					ostr << "Unknown variables: ";
+				else
+					ostr << "Invalid AST";
+
+				std::size_t var_idx = 0;
+				for(const std::string& unknown_var : m_unknown_vars)
+				{
+					ostr << "\"" << unknown_var << "\"";
+
+					if(var_idx < m_unknown_vars.size() - 1)
+						ostr << ", ";
+					++var_idx;
+				}
+				ostr << ".";
+
+				throw std::runtime_error(ostr.str());
+			}
+		}
+		catch(const std::exception& ex)
+		{
+			std::cerr << "Parser error: " << ex.what() << std::endl;
+			return false;
+		}
 	}
 
 
@@ -934,17 +977,15 @@ protected:
 		// nothing matches
 		if(longest_matching.size() == 0)
 		{
-			std::ostringstream ostr;
-			ostr << "Invalid input in lexer: \"" << input << "\".";
-			throw std::runtime_error(ostr.str());
+			throw std::runtime_error("Invalid input in lexer: \""
+				+ input + "\".");
 		}
 
 		// several possible matches
 		if(longest_matching.size() > 1)
 		{
-			std::ostringstream ostr;
-			ostr << "Warning: Ambiguous match in lexer for token \"" << longest_input << "\".";
-			throw std::runtime_error(ostr.str());
+			throw std::runtime_error("Ambiguous match in lexer for token \""
+				+ longest_input + "\".");
 		}
 
 		// found match
@@ -1240,9 +1281,7 @@ protected:
 					}
 					else
 					{
-						std::ostringstream ostr;
-						ostr << "Invalid function call to \"" << ident << "\".";
-						throw std::runtime_error(ostr.str());
+						throw std::runtime_error("Invalid function call to \"" + ident + "\".");
 					}
 				}
 			}
@@ -1252,9 +1291,14 @@ protected:
 			{
 				// register the variable if it doesn't exist yet
 				if(m_vars.find(ident) == m_vars.end() &&
-					m_consts.find(ident) == m_consts.end() &&
-					m_autoregister_var)
-					register_var(ident, t_num{});
+					m_consts.find(ident) == m_consts.end())
+				{
+					if(m_autoregister_var)
+						register_var(ident, t_num{});
+					else
+						m_unknown_vars.insert(ident);
+				}
+
 				return std::make_shared<ExprASTVar<t_num>>(ident);
 			}
 		}
@@ -1339,6 +1383,7 @@ private:
 
 	// automatically register unknown variable
 	bool m_autoregister_var = true;
+	std::unordered_set<std::string> m_unknown_vars{};
 
 	// ast root
 	std::shared_ptr<ExprAST<t_num>> m_ast{};

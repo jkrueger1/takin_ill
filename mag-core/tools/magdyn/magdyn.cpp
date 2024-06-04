@@ -27,6 +27,7 @@
  */
 
 #include "magdyn.h"
+#include "libs/loadcif.h"
 
 #include <QtCore/QMimeData>
 #include <iostream>
@@ -53,21 +54,41 @@ MagDynDlg::MagDynDlg(QWidget* pParent) : QDialog{pParent},
 
 	// create gui
 	CreateMainWindow();
-	CreateInfoDlg();
 	CreateMenuBar();
+
+	// create dialogs
+	CreateInfoDlg();
+	CreateNotesDlg();
 
 	// create input panels
 	CreateSitesPanel();
 	CreateExchangeTermsPanel();
-	CreateVariablesPanel();
+	CreateSamplePanel();
 	CreateSampleEnvPanel();
-	CreateNotesPanel();
+	CreateVariablesPanel();
 
 	// create output panels
 	CreateDispersionPanel();
 	CreateHamiltonPanel();
 	CreateCoordinatesPanel();
 	CreateExportPanel();
+
+
+	// get space groups and symops
+	auto spacegroups = get_sgs<t_mat_real>();
+	m_SGops.reserve(spacegroups.size());
+	for(auto [sgnum, descr, ops] : spacegroups)
+	{
+		for(QComboBox* combo : {m_comboSG, m_comboSGSites, m_comboSGTerms})
+		{
+			if(!combo)
+				continue;
+			combo->addItem(descr.c_str(), m_comboSGSites->count());
+		}
+
+		m_SGops.emplace_back(std::move(ops));
+	}
+
 
 	InitSettings();
 
@@ -115,6 +136,12 @@ MagDynDlg::~MagDynDlg()
 	{
 		delete m_table_import_dlg;
 		m_table_import_dlg = nullptr;
+	}
+
+	if(m_notes_dlg)
+	{
+		delete m_notes_dlg;
+		m_notes_dlg = nullptr;
 	}
 
 	if(m_info_dlg)

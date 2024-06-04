@@ -312,13 +312,13 @@ void MagDynDlg::StructPlotAfterGLInitialisation()
 	// GL device info
 	auto [strGlVer, strGlShaderVer, strGlVendor, strGlRenderer]
 		= m_structplot->GetRenderer()->GetGlDescr();
-	m_labelGlInfos[0]->setText(
+	m_info_dlg->SetGlInfo(0,
 		QString("GL Version: %1.").arg(strGlVer.c_str()));
-	m_labelGlInfos[1]->setText(
+	m_info_dlg->SetGlInfo(1,
 		QString("GL Shader Version: %1.").arg(strGlShaderVer.c_str()));
-	m_labelGlInfos[2]->setText(
+	m_info_dlg->SetGlInfo(2,
 		QString("GL Vendor: %1.").arg(strGlVendor.c_str()));
-	m_labelGlInfos[3]->setText(
+	m_info_dlg->SetGlInfo(3,
 		QString("GL Device: %1.").arg(strGlRenderer.c_str()));
 
 	StructPlotSync();

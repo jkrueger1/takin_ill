@@ -333,6 +333,9 @@ public:
 		// clear temperature, -1: don't use
 		m_temperature = -1.;
 
+		// clear form factor
+		m_magffact_formula = "";
+
 		// clear ordering wave vector
 		m_ordering = tl2::zero<t_vec_real>(3);
 		m_is_incommensurate = false;
@@ -406,6 +409,37 @@ public:
 
 
 
+	const std::string& GetMagneticFormFactor() const
+	{
+		return m_magffact_formula;
+	}
+
+
+
+	void SetMagneticFormFactor(const std::string& ffact)
+	{
+		m_magffact_formula = ffact;
+		if(m_magffact_formula == "")
+			return;
+
+		// parse the given formula
+		m_magffact = GetExprParser();
+		m_magffact.SetInvalid0(false);
+		m_magffact.register_var("Q", 0.);
+
+		if(!m_magffact.parse_noexcept(ffact))
+		{
+			m_magffact_formula = "";
+
+			std::cerr << "Magdyn error: "
+				<< "Magnetic form facor formula: \""
+				<< ffact << "\" could not be parsed."
+				<< std::endl;
+		}
+	}
+
+
+
 	const MagneticSite& GetMagneticSite(t_size idx) const
 	{
 		if(!CheckMagneticSite(idx))
@@ -469,23 +503,19 @@ public:
 				return idx;
 		}
 
-		try
+		// alternatively try to parse the expression for the index
+		tl2::ExprParser<t_size> parser;
+		parser.SetInvalid0(false);
+		parser.SetAutoregisterVariables(false);
+		if(parser.parse_noexcept(name))
 		{
-			// alternatively try to parse the expression for the index
-			tl2::ExprParser<t_size> parser;
-			parser.SetInvalid0(false);
-			parser.SetAutoregisterVariables(false);
-			if(parser.parse(name))
-			{
-				if(t_size idx = parser.eval(); idx < GetMagneticSitesCount())
-					return idx;
-			}
+			if(t_size idx = parser.eval(); idx < GetMagneticSitesCount())
+				return idx;
 		}
-		catch(const std::exception& ex)
+		else
 		{
-			std::cerr << "Magdyn: "
-				<< "Error: Invalid site name \"" << name << "\"."
-				<< " Parser error: " << ex.what()
+			std::cerr << "Magdyn error: "
+				<< "Invalid site name \"" << name << "\"."
 				<< std::endl;
 		}
 
@@ -506,23 +536,19 @@ public:
 				return idx;
 		}
 
-		try
+		// alternatively try to parse the expression for the index
+		tl2::ExprParser<t_size> parser;
+		parser.SetInvalid0(false);
+		parser.SetAutoregisterVariables(false);
+		if(parser.parse_noexcept(name))
 		{
-			// alternatively try to parse the expression for the index
-			tl2::ExprParser<t_size> parser;
-			parser.SetInvalid0(false);
-			parser.SetAutoregisterVariables(false);
-			if(parser.parse(name))
-			{
-				if(t_size idx = parser.eval(); idx < GetExchangeTermsCount())
-					return idx;
-			}
+			if(t_size idx = parser.eval(); idx < GetExchangeTermsCount())
+				return idx;
 		}
-		catch(const std::exception& ex)
+		else
 		{
-			std::cerr << "Magdyn: "
-				<< "Error: Invalid coupling name \"" << name << "\"."
-				<< " Parser error: " << ex.what()
+			std::cerr << "Magdyn error: "
+				<< "Invalid coupling name \"" << name << "\"."
 				<< std::endl;
 		}
 
@@ -710,8 +736,8 @@ public:
 		{
 			if(print_error)
 			{
-				std::cerr << "Magdyn: "
-					<< "Error: Site index " << idx
+				std::cerr << "Magdyn error: "
+					<< "Site index " << idx
 					<< " is out of bounds."
 					<< std::endl;
 			}
@@ -733,8 +759,8 @@ public:
 		{
 			if(print_error)
 			{
-				std::cerr << "Magdyn: "
-					<< "Error: Coupling index " << idx
+				std::cerr << "Magdyn error: "
+					<< "Coupling index " << idx
 					<< " is out of bounds."
 					<< std::endl;
 			}
@@ -758,6 +784,7 @@ public:
 	{
 		CalcExternalField();
 		CalcMagneticSites();
+
 		MagneticSites newsites;
 
 		for(const MagneticSite& site : GetMagneticSites())
@@ -793,6 +820,7 @@ public:
 		CalcExternalField();
 		CalcMagneticSites();
 		CalcExchangeTerms();
+
 		ExchangeTerms newterms;
 		tl2::ExprParser<t_cplx> parser = GetExprParser();
 
@@ -829,14 +857,14 @@ public:
 				if(term.dmi[dmi_idx] == "")
 					continue;
 
-				if(parser.parse(term.dmi[dmi_idx]))
+				if(parser.parse_noexcept(term.dmi[dmi_idx]))
 				{
 					dmi[dmi_idx] = parser.eval().real();
 				}
 				else
 				{
-					std::cerr << "Magdyn: "
-						<< "Error parsing DMI component " << dmi_idx
+					std::cerr << "Magdyn error: "
+						<< "Parsing DMI component " << dmi_idx
 						<< " of term \"" << term.name << "\"."
 						<< std::endl;
 				}
@@ -855,14 +883,14 @@ public:
 					if(term.Jgen[J_idx1][J_idx2] == "")
 						continue;
 
-					if(parser.parse(term.Jgen[J_idx1][J_idx2]))
+					if(parser.parse_noexcept(term.Jgen[J_idx1][J_idx2]))
 					{
 						Jgen_arr[J_idx1][J_idx2] = parser.eval().real();
 					}
 					else
 					{
-						std::cerr << "Magdyn: "
-							<< "Error parsing general J component ("
+						std::cerr << "Magdyn error: "
+							<< "Parsing general J component ("
 							<< J_idx1 << ", " << J_idx2
 							<< ") of term \"" << term.name << "\"."
 							<< std::endl;
@@ -889,7 +917,7 @@ public:
 
 				if(!sc1_ok || !sc2_ok)
 				{
-					std::cerr << "Magdyn: "
+					std::cerr << "Magdyn error: "
 						<< "Could not find supercell for position generated from symop "
 						<< op_idx << "." << std::endl;
 				}
@@ -958,6 +986,7 @@ public:
 		CalcExternalField();
 		CalcMagneticSites();
 		CalcExchangeTerms();
+
 		ExchangeTerms newterms;
 		std::vector<PossibleCoupling> couplings;
 
@@ -1129,22 +1158,33 @@ public:
 				site.g_e = tl2::g_e<t_real> * tl2::unit<t_mat>(3);
 
 			// spin magnitude
-			if(parser.parse(site.spin_mag))
+			if(parser.parse_noexcept(site.spin_mag))
+			{
 				site.spin_mag_calc = parser.eval().real();
+			}
+			else
+			{
+				std::cerr << "Magdyn error: "
+					<< "Parsing spin magnitude \""
+					<< site.spin_mag << "\""
+					<< " for site \"" << site.name << "\""
+					<< "." << std::endl;
+			}
+				
 
 			for(std::uint8_t idx = 0; idx < 3; ++idx)
 			{
 				// position
 				if(site.pos[idx] != "")
 				{
-					if(parser.parse(site.pos[idx]))
+					if(parser.parse_noexcept(site.pos[idx]))
 					{
 						site.pos_calc[idx] = parser.eval().real();
 					}
 					else
 					{
-						std::cerr << "Magdyn: "
-							<< "Error parsing position \""
+						std::cerr << "Magdyn error: "
+							<< "Parsing position \""
 							<< site.pos[idx] << "\""
 							<< " for site \"" << site.name << "\""
 							<< " and component " << idx
@@ -1155,14 +1195,14 @@ public:
 				// spin direction
 				if(site.spin_dir[idx] != "")
 				{
-					if(parser.parse(site.spin_dir[idx]))
+					if(parser.parse_noexcept(site.spin_dir[idx]))
 					{
 						site.spin_dir_calc[idx] = parser.eval();
 					}
 					else
 					{
-						std::cerr << "Magdyn: "
-							<< "Error parsing spin direction \""
+						std::cerr << "Magdyn error: "
+							<< "Parsing spin direction \""
 							<< site.spin_dir[idx] << "\""
 							<< " for site \"" << site.name << "\""
 							<< " and component " << idx
@@ -1173,7 +1213,7 @@ public:
 				// orthogonal spin direction
 				if(site.spin_ortho[idx] != "")
 				{
-					if(parser.parse(site.spin_ortho[idx]))
+					if(parser.parse_noexcept(site.spin_ortho[idx]))
 					{
 						site.spin_ortho_calc[idx] = parser.eval();
 						site.spin_ortho_conj_calc[idx] = std::conj(site.spin_ortho_calc[idx]);
@@ -1182,8 +1222,8 @@ public:
 					{
 						has_explicit_uv = false;
 
-						std::cerr << "Magdyn: "
-							<< "Error parsing spin orthogonal plane \""
+						std::cerr << "Magdyn error: "
+							<< "Parsing spin orthogonal plane \""
 							<< site.spin_ortho[idx] << "\""
 							<< " for site \"" << site.name << "\""
 							<< " and component " << idx
@@ -1227,8 +1267,8 @@ public:
 		}
 		catch(const std::exception& ex)
 		{
-			std::cerr << "Magdyn: "
-				<< "Error calculating site \"" << site.name << "\"."
+			std::cerr << "Magdyn error: "
+				<< "Calculating site \"" << site.name << "\"."
 				" Reason: " << ex.what() << std::endl;
 		}
 	}
@@ -1267,30 +1307,30 @@ public:
 
 			if(term.site1_calc >= GetMagneticSitesCount())
 			{
-				std::cerr << "Magdyn: "
-					<< "Error: Unknown site 1 name \"" << term.site1 << "\"."
+				std::cerr << "Magdyn error: "
+					<< "Unknown site 1 name \"" << term.site1 << "\"."
 					<< " in coupling \"" << term.name << "\"."
 					<< std::endl;
 				return;
 			}
 			if(term.site2_calc >= GetMagneticSitesCount())
 			{
-				std::cerr << "Magdyn: "
-					<< "Error: Unknown site 2 name \"" << term.site2 << "\"."
+				std::cerr << "Magdyn error: "
+					<< "Unknown site 2 name \"" << term.site2 << "\"."
 					<< " in coupling \"" << term.name << "\"."
 					<< std::endl;
 				return;
 			}
 
 			// symmetric interaction
-			if(parser.parse(term.J))
+			if(parser.parse_noexcept(term.J))
 			{
 				term.J_calc = parser.eval();
 			}
 			else
 			{
-				std::cerr << "Magdyn: "
-					<< "Error parsing J term \""
+				std::cerr << "Magdyn error: "
+					<< "Parsing J term \""
 					<< term.J << "\"."
 					<< std::endl;
 			}
@@ -1300,14 +1340,14 @@ public:
 				// distance
 				if(term.dist[i] != "")
 				{
-					if(parser.parse(term.dist[i]))
+					if(parser.parse_noexcept(term.dist[i]))
 					{
 						term.dist_calc[i] = parser.eval().real();
 					}
 					else
 					{
-						std::cerr << "Magdyn: "
-							<< "Error parsing distance term \""
+						std::cerr << "Magdyn error: "
+							<< "Parsing distance term \""
 							<< term.dist[i]
 							<< "\" (index " << i << ")"
 							<< "." << std::endl;
@@ -1317,14 +1357,14 @@ public:
 				// dmi
 				if(term.dmi[i] != "")
 				{
-					if(parser.parse(term.dmi[i]))
+					if(parser.parse_noexcept(term.dmi[i]))
 					{
 						term.dmi_calc[i] = parser.eval();
 					}
 					else
 					{
-						std::cerr << "Magdyn: "
-							<< "Error parsing DMI term \""
+						std::cerr << "Magdyn error: "
+							<< "Parsing DMI term \""
 							<< term.dmi[i]
 							<< "\" (index " << i << ")"
 							<< "." << std::endl;
@@ -1337,14 +1377,14 @@ public:
 					if(term.Jgen[i][j] == "")
 						continue;
 
-					if(parser.parse(term.Jgen[i][j]))
+					if(parser.parse_noexcept(term.Jgen[i][j]))
 					{
 						term.Jgen_calc(i, j) = parser.eval();
 					}
 					else
 					{
-						std::cerr << "Magdyn: "
-							<< "Error parsing general term \""
+						std::cerr << "Magdyn error: "
+							<< "Parsing general term \""
 							<< term.Jgen[i][j]
 							<< "\" (indices " << i << ", " << j << ")"
 							<< "." << std::endl;
@@ -1354,9 +1394,9 @@ public:
 		}
 		catch(const std::exception& ex)
 		{
-			std::cerr << "Magdyn: "
-				<< "Error calculating coupling \"" << term.name << "\"."
-				" Reason: " << ex.what() << "."
+			std::cerr << "Magdyn error: "
+				<< "Calculating coupling \"" << term.name << "\"."
+				<< " Reason: " << ex.what() << "."
 				<< std::endl;
 		}
 	}
@@ -1604,8 +1644,8 @@ public:
 				if(chol_try >= m_tries_chol - 1)
 				{
 					using namespace tl2_ops;
-					std::cerr << "Magdyn: "
-						<< "Warning: Cholesky decomposition failed at Q = "
+					std::cerr << "Magdyn warning: "
+						<< "Cholesky decomposition failed at Q = "
 						<< Qvec << "." << std::endl;
 					C_mat = std::move(_C);
 					break;
@@ -1620,8 +1660,8 @@ public:
 		if(chol_try > 0)
 		{
 			using namespace tl2_ops;
-			std::cerr << "Magdyn: "
-				<< "Warning: Needed " << chol_try
+			std::cerr << "Magdyn warning: "
+				<< "Needed " << chol_try
 				<< " correction(s) for Cholesky decomposition at Q = "
 				<< Qvec << "." << std::endl;
 		}
@@ -1629,8 +1669,8 @@ public:
 		if(C_mat.size1() == 0 || C_mat.size2() == 0)
 		{
 			using namespace tl2_ops;
-			std::cerr << "Magdyn: "
-				<< "Error: Invalid Cholesky decomposition at Q = "
+			std::cerr << "Magdyn error: "
+				<< "Invalid Cholesky decomposition at Q = "
 				<< Qvec << "." << std::endl;
 			return {};
 		}
@@ -1642,8 +1682,8 @@ public:
 		if(!is_herm)
 		{
 			using namespace tl2_ops;
-			std::cerr << "Magdyn: "
-				<< "Warning: Hamiltonian is not hermitian at Q = "
+			std::cerr << "Magdyn warning: "
+				<< "Hamiltonian is not hermitian at Q = "
 				<< Qvec << "." << std::endl;
 		}
 
@@ -1655,8 +1695,8 @@ public:
 		if(!evecs_ok)
 		{
 			using namespace tl2_ops;
-			std::cerr << "Magdyn: "
-				<< "Warning: Eigensystem calculation failed at Q = "
+			std::cerr << "Magdyn warning: "
+				<< "Eigensystem calculation failed at Q = "
 				<< Qvec << "." << std::endl;
 		}
 
@@ -1731,8 +1771,8 @@ public:
 		if(!inv_ok)
 		{
 			using namespace tl2_ops;
-			std::cerr << "Magdyn: "
-				<< "Warning: Inversion failed at Q = "
+			std::cerr << "Magdyn warning: "
+				<< "Inversion failed at Q = "
 				<< Qvec << "." << std::endl;
 		}
 
@@ -2158,8 +2198,8 @@ public:
 		}
 		catch(const std::exception& ex)
 		{
-			std::cerr << "Magdyn: "
-				<< "Error: Could not load \"" << filename << "\"."
+			std::cerr << "Magdyn error: "
+				<< "Could not load \"" << filename << "\"."
 				<< " Reason: " << ex.what()
 				<< std::endl;
 
@@ -2314,10 +2354,11 @@ public:
 						exchange_term.site1 = sites1[0]->name;
 					else
 					{
-						std::cerr << "Magdyn: "
-							<< "Error in coupling \"" << exchange_term.name
-							<< "\": Site 1 name \"" << *name1
-							<< "\" was not found." << std::endl;
+						std::cerr << "Magdyn error: "
+							<< "Site 1 name \"" << *name1 << "\" "
+							<< "was not found "
+							<< "in coupling \"" << exchange_term.name << "\"."
+							<< std::endl;
 					}
 				}
 				else
@@ -2332,10 +2373,11 @@ public:
 						exchange_term.site2 = sites2[0]->name;
 					else
 					{
-						std::cerr << "Magdyn: "
-							<< "Error in coupling \"" << exchange_term.name
-							<< "\": Site 2 name \"" << *name2
-							<< "\" was not found." << std::endl;
+						std::cerr << "Magdyn error: "
+							<< "Site 2 name \"" << *name2 << "\" "
+							<< "was not found "
+							<< "in coupling \"" << exchange_term.name << "\"."
+							<< std::endl;
 					}
 				}
 				else
@@ -2401,6 +2443,9 @@ public:
 		// temperature
 		m_temperature = node.get<t_real>("temperature", -1.);
 
+		// form factor
+		SetMagneticFormFactor(node.get<std::string>("magnetic_form_factor", ""));
+
 		// ordering vector
 		if(auto ordering = node.get_child_optional("ordering"); ordering)
 		{
@@ -2430,6 +2475,7 @@ public:
 		CalcExternalField();
 		CalcMagneticSites();
 		CalcExchangeTerms();
+
 		return true;
 	}
 
@@ -2468,6 +2514,9 @@ public:
 
 		// temperature
 		node.put<t_real>("temperature", m_temperature);
+
+		// form factor
+		node.put<std::string>("magnetic_form_factor", GetMagneticFormFactor());
 
 		// variables
 		for(const auto& var : GetVariables())
@@ -2568,9 +2617,11 @@ protected:
 		const auto [spin_re, spin_im] = tl2::split_cplx<t_vec, t_vec_real>(spin_dir);
 
 		if(!tl2::equals_0<t_vec_real>(spin_im, m_eps))
-			std::cerr << "Magdyn: "
-				<< "Warning: Spin vector should be purely real."
+		{
+			std::cerr << "Magdyn warning: "
+				<< "Spin vector should be purely real."
 				<< std::endl;
+		}
 
 		// only use real part, imaginary part should be zero
 		//spin_re /= tl2::norm<t_vec_real>(spin_re);
@@ -2615,6 +2666,10 @@ private:
 
 	// bose cutoff energy to avoid infinities
 	t_real m_bose_cutoff{ 0.025 };
+
+	// formula for the magnetic form factor
+	std::string m_magffact_formula{};
+	tl2::ExprParser<t_cplx> m_magffact{};
 
 	// settings
 	bool m_is_incommensurate{ false };

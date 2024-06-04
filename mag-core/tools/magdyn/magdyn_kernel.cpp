@@ -234,6 +234,13 @@ void MagDynDlg::SyncToKernel()
 		m_dyn.SetTemperature(temp);
 	}
 
+	// get form factor
+	if(m_use_formfact->isChecked())
+	{
+		std::string ffact = m_ffact->toPlainText().toStdString();
+		m_dyn.SetMagneticFormFactor(ffact);
+	}
+
 	// get magnetic sites
 	for(int row=0; row<m_sitestab->rowCount(); ++row)
 	{

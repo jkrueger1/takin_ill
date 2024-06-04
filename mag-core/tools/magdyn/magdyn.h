@@ -33,6 +33,7 @@
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QSplitter>
 #include <QtWidgets/QDialog>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QTableWidget>
 #include <QtWidgets/QTableWidgetItem>
@@ -69,6 +70,8 @@
 #include "graph.h"
 #include "table_import.h"
 #include "trafos.h"
+#include "notes.h"
+#include "infos.h"
 
 using namespace tl2_mag;
 
@@ -233,6 +236,7 @@ protected:
 	QAction *m_autocalc{};
 	QAction *m_use_dmi{}, *m_use_genJ{};
 	QAction *m_use_field{}, *m_use_temperature{};
+	QAction *m_use_formfact{};
 	QAction *m_use_weights{}, *m_use_projector{};
 	QAction *m_unite_degeneracies{};
 	QAction *m_ignore_annihilation{};
@@ -272,15 +276,14 @@ protected:
 
 	// panels
 	QWidget *m_sitespanel{}, *m_termspanel{};
-	QWidget *m_sampleenviropanel{}, *m_varspanel{};
+	QWidget *m_samplepanel{}, *m_sampleenviropanel{};
 	QWidget *m_disppanel{}, *m_hamiltonianpanel{};
-	QWidget *m_notespanel{}, *m_coordinatespanel{};
-	QWidget *m_exportpanel{};
+	QWidget *m_coordinatespanel{}, *m_exportpanel{};
+	QWidget *m_varspanel{};
 
 	// sites
 	QTableWidget *m_sitestab{};
-	QComboBox *m_comboSG{};
-	std::vector<std::vector<t_mat_real>> m_SGops{};
+	QComboBox *m_comboSGSites{};
 	QDoubleSpinBox *m_xtallattice[3]{nullptr, nullptr, nullptr};
 	QDoubleSpinBox *m_xtalangles[3]{nullptr, nullptr, nullptr};
 
@@ -289,9 +292,14 @@ protected:
 	QDoubleSpinBox *m_maxdist{};
 	QSpinBox *m_maxSC{};
 	QSpinBox *m_maxcouplings{};
-	QComboBox *m_comboSG2{};  // copy of m_comboSG
+	QComboBox *m_comboSGTerms{};  // copy of m_comboSG
 	QDoubleSpinBox *m_ordering[3]{nullptr, nullptr, nullptr};
 	QDoubleSpinBox *m_normaxis[3]{nullptr, nullptr, nullptr};
+
+	// sample
+	std::vector<std::vector<t_mat_real>> m_SGops{};
+	QComboBox *m_comboSG{};
+	QPlainTextEdit *m_ffact{};    // magnetic form factor formula
 
 	// variables
 	QTableWidget *m_varstab{};
@@ -320,9 +328,6 @@ protected:
 	// temperature
 	QDoubleSpinBox *m_temperature{};
 
-	// notes
-	QPlainTextEdit *m_notes{};
-
 	// coordinates
 	QTableWidget *m_coordinatestab{};
 
@@ -335,9 +340,6 @@ protected:
 	// magnon dynamics calculator
 	t_magdyn m_dyn{};
 
-	// trafo calculator
-	TrafoCalculator *m_trafos{};
-
 	// settings dialog
 	QDialog *m_settings_dlg{};
 
@@ -347,7 +349,7 @@ protected:
 	QCheckBox *m_structplot_coordcross{};
 	QCheckBox *m_structplot_labels{};
 	QMenu *m_structplot_context{};
-	QLabel *m_labelGlInfos[4]{nullptr, nullptr, nullptr, nullptr};
+
 	tl2::GlPlot *m_structplot{};
 	std::unordered_map<std::size_t, AtomSiteInfo> m_structplot_atoms{};
 	std::unordered_map<std::size_t, ExchangeTermInfo> m_structplot_terms{};
@@ -355,25 +357,30 @@ protected:
 	std::optional<std::string> m_structplot_cur_atom{};
 	std::optional<std::string> m_structplot_cur_term{};
 
+	// dialogs
 	TableImportDlg *m_table_import_dlg{};  // table import dialog
-	QDialog *m_info_dlg{};                 // info dialog
+	NotesDlg *m_notes_dlg{};               // notes dialog
+	TrafoCalculator *m_trafos{};           // trafo calculator
+	InfoDlg *m_info_dlg{};                 // info dialog
 
 
 protected:
 	// set up gui
 	void CreateMainWindow();
-	void CreateInfoDlg();
 	void CreateMenuBar();
 
+	// set up dialogs
+	void CreateInfoDlg();
+	void CreateNotesDlg();
 	void InitSettingsDlg();
 	void InitSettings();
 
 	// set up input panels
 	void CreateSitesPanel();
 	void CreateExchangeTermsPanel();
+	void CreateSamplePanel();
 	void CreateVariablesPanel();
 	void CreateSampleEnvPanel();
-	void CreateNotesPanel();
 
 	// set up output panels
 	void CreateDispersionPanel();

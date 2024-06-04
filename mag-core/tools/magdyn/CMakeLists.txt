@@ -124,6 +124,8 @@ add_executable(takin_magdyn
 	defs.cpp defs.h settings.h
 	table_import.cpp table_import.h
 	trafos.cpp trafos.h
+	notes.cpp notes.h
+	infos.cpp infos.h
 
 	../../tlibs2/libs/magdyn.h
 	../../tlibs2/libs/qt/gl.cpp ../../tlibs2/libs/qt/gl.h

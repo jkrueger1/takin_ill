@@ -61,9 +61,6 @@ namespace pt = boost::property_tree;
 // precision
 extern int g_prec;
 
-// prefix to base64-encoded strings
-static const std::string g_b64_prefix = "__base64__";
-
 
 
 void MagDynDlg::Clear()
@@ -104,7 +101,7 @@ void MagDynDlg::Clear()
 	m_weight_min->setValue(0.);
 	m_weight_max->setValue(9999.);
 
-	m_notes->clear();
+	m_notes_dlg->ClearNotes();
 
 	// reset some options
 	for(int i = 0; i < 3; ++i)
@@ -205,18 +202,8 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 		}
 
 		// read in comment
-		if(auto optNotes = node.get_optional<std::string>("magdyn.meta.notes"))
-		{
-			if(optNotes->starts_with(g_b64_prefix))
-			{
-				m_notes->setPlainText(QByteArray::fromBase64(optNotes->substr(g_b64_prefix.length()).data(),
-					QByteArray::Base64Encoding | QByteArray::AbortOnBase64DecodingErrors));
-			}
-			else
-			{
-				m_notes->setPlainText(optNotes->data());
-			}
-		}
+		if(auto optNotes = node.get_optional<std::string>("magdyn.meta.notes"); optNotes)
+			m_notes_dlg->SetNotes(*optNotes);
 
 		const pt::ptree &magdyn = node.get_child("magdyn");
 
@@ -261,6 +248,8 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 			m_use_field->setChecked(*optVal);
 		if(auto optVal = magdyn.get_optional<bool>("config.use_temperature"))
 			m_use_temperature->setChecked(*optVal);
+		if(auto optVal = magdyn.get_optional<bool>("config.use_magffact"))
+			m_use_formfact->setChecked(*optVal);
 		if(auto optVal = magdyn.get_optional<bool>("config.use_weights"))
 			m_use_weights->setChecked(*optVal);
 		if(auto optVal = magdyn.get_optional<bool>("config.unite_degeneracies"))
@@ -372,6 +361,13 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 			m_temperature->setValue(temp);
 		if(!m_use_temperature->isChecked())
 			m_dyn.SetTemperature(-1.);
+
+		// form factor
+		std::string ffact = m_dyn.GetMagneticFormFactor();
+		if(ffact != "")
+			m_ffact->setPlainText(ffact.c_str());
+		if(!m_use_formfact->isChecked())
+			m_dyn.SetMagneticFormFactor("");
 
 		// clear old tables
 		DelTabItem(m_sitestab, -1);
@@ -616,8 +612,7 @@ bool MagDynDlg::Save(const QString& filename)
 		magdyn.put<std::string>("meta.doi_tlibs", "https://doi.org/10.5281/zenodo.5717779");
 
 		// save user comment as utf8 to avoid collisions with possible xml tags
-		magdyn.put<std::string>("meta.notes", g_b64_prefix + m_notes->toPlainText().toUtf8().toBase64(
-			QByteArray::Base64Encoding).constData());
+		magdyn.put<std::string>("meta.notes", m_notes_dlg->GetNotes());
 
 		// settings
 		magdyn.put<t_real>("config.h_start", m_q_start[0]->value());
@@ -641,6 +636,7 @@ bool MagDynDlg::Save(const QString& filename)
 		magdyn.put<bool>("config.use_genJ", m_allow_general_J && m_use_genJ->isChecked());
 		magdyn.put<bool>("config.use_field", m_use_field->isChecked());
 		magdyn.put<bool>("config.use_temperature", m_use_temperature->isChecked());
+		magdyn.put<bool>("config.use_magffact", m_use_formfact->isChecked());
 		magdyn.put<bool>("config.use_weights", m_use_weights->isChecked());
 		magdyn.put<bool>("config.unite_degeneracies", m_unite_degeneracies->isChecked());
 		magdyn.put<bool>("config.ignore_annihilation", m_ignore_annihilation->isChecked());

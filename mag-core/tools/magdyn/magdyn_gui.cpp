@@ -32,15 +32,6 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QLabel>
 
-#include <boost/version.hpp>
-#include <boost/config.hpp>
-
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/replace.hpp>
-namespace algo = boost::algorithm;
-
-#include "libs/loadcif.h"
-
 
 // instantiate settings dialog
 template class SettingsDlg<g_settingsvariables.size(), &g_settingsvariables>;
@@ -174,7 +165,8 @@ void MagDynDlg::CreateSitesPanel()
 	m_sitestab->setSelectionMode(QTableWidget::ContiguousSelection);
 	m_sitestab->setContextMenuPolicy(Qt::CustomContextMenu);
 
-	m_sitestab->verticalHeader()->setDefaultSectionSize(fontMetrics().lineSpacing() + 4);
+	m_sitestab->verticalHeader()->setDefaultSectionSize(
+		fontMetrics().lineSpacing() + 4);
 	m_sitestab->verticalHeader()->setVisible(true);
 
 	m_sitestab->setColumnCount(NUM_SITE_COLS);
@@ -256,7 +248,7 @@ void MagDynDlg::CreateSitesPanel()
 	btnMirrorAtoms->setToolTip("Flip the coordinates of the sites.");
 	btnShowStruct->setToolTip("Show a 3D view of the magnetic sites and couplings.");
 
-	m_comboSG = new QComboBox(m_sitespanel);
+	m_comboSGSites = new QComboBox(m_sitespanel);
 	QPushButton *btnGenBySG = new QPushButton(
 		QIcon::fromTheme("insert-object"),
 		"Generate", m_sitespanel);
@@ -266,7 +258,7 @@ void MagDynDlg::CreateSitesPanel()
 	btnDel->setFocusPolicy(Qt::StrongFocus);
 	btnUp->setFocusPolicy(Qt::StrongFocus);
 	btnDown->setFocusPolicy(Qt::StrongFocus);
-	m_comboSG->setFocusPolicy(Qt::StrongFocus);
+	m_comboSGSites->setFocusPolicy(Qt::StrongFocus);
 	btnGenBySG->setFocusPolicy(Qt::StrongFocus);
 
 	btnAdd->setSizePolicy(QSizePolicy{
@@ -280,51 +272,10 @@ void MagDynDlg::CreateSitesPanel()
 	btnGenBySG->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Fixed});
 
-	// get space groups and symops
-	auto spacegroups = get_sgs<t_mat_real>();
-	m_SGops.reserve(spacegroups.size());
-	for(auto [sgnum, descr, ops] : spacegroups)
-	{
-		m_comboSG->addItem(descr.c_str(), m_comboSG->count());
-		m_SGops.emplace_back(std::move(ops));
-	}
-
-	// crystal lattice and angles
-	const char* latticestr[] = {"a = ", "b = ", "c = "};
-	for(int i=0; i<3; ++i)
-	{
-		m_xtallattice[i] = new QDoubleSpinBox(m_sitespanel);
-		m_xtallattice[i]->setDecimals(3);
-		m_xtallattice[i]->setMinimum(0.001);
-		m_xtallattice[i]->setMaximum(99.999);
-		m_xtallattice[i]->setSingleStep(0.1);
-		m_xtallattice[i]->setValue(5);
-		m_xtallattice[i]->setPrefix(latticestr[i]);
-		m_xtallattice[i]->setSizePolicy(QSizePolicy{
-			QSizePolicy::Expanding, QSizePolicy::Fixed});
-	}
-
-	const char* anlesstr[] = {"α = ", "β = ", "γ = "};
-	for(int i=0; i<3; ++i)
-	{
-		m_xtalangles[i] = new QDoubleSpinBox(m_sitespanel);
-		m_xtalangles[i]->setDecimals(2);
-		m_xtalangles[i]->setMinimum(0.01);
-		m_xtalangles[i]->setMaximum(180.);
-		m_xtalangles[i]->setSingleStep(0.1);
-		m_xtalangles[i]->setValue(90);
-		m_xtalangles[i]->setPrefix(anlesstr[i]);
-		m_xtalangles[i]->setSuffix("°");
-		m_xtalangles[i]->setSizePolicy(QSizePolicy{
-			QSizePolicy::Expanding, QSizePolicy::Fixed});
-	}
 
 	auto grid = new QGridLayout(m_sitespanel);
 	grid->setSpacing(4);
 	grid->setContentsMargins(6, 6, 6, 6);
-
-	auto sep1 = new QFrame(m_sampleenviropanel); sep1->setFrameStyle(QFrame::HLine);
-	auto sep2 = new QFrame(m_sampleenviropanel); sep2->setFrameStyle(QFrame::HLine);
 
 	int y = 0;
 	grid->addWidget(m_sitestab, y,0,1,4);
@@ -335,6 +286,9 @@ void MagDynDlg::CreateSitesPanel()
 	grid->addWidget(btnMirrorAtoms, y,0,1,1);
 	grid->addWidget(btnShowStruct, y++,3,1,1);
 
+	auto sep1 = new QFrame(m_sampleenviropanel);
+	sep1->setFrameStyle(QFrame::HLine);
+
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
@@ -344,26 +298,9 @@ void MagDynDlg::CreateSitesPanel()
 		y++,0, 1,1);
 
 	grid->addWidget(new QLabel("Generate Sites From Space Group:"), y++,0,1,4);
-	grid->addWidget(m_comboSG, y,0,1,3);
+	grid->addWidget(m_comboSGSites, y,0,1,3);
 	grid->addWidget(btnGenBySG, y++,3,1,1);
 
-	grid->addItem(new QSpacerItem(8, 8,
-		QSizePolicy::Minimum, QSizePolicy::Fixed),
-		y++,0, 1,1);
-	grid->addWidget(sep2, y++,0, 1,4);
-	grid->addItem(new QSpacerItem(8, 8,
-		QSizePolicy::Minimum, QSizePolicy::Fixed),
-		y++,0, 1,1);
-
-	grid->addWidget(new QLabel("Crystal Definition"), y++,0,1,4);
-	grid->addWidget(new QLabel("Lattice (rlu):"), y,0,1,1);
-	grid->addWidget(m_xtallattice[0], y,1,1,1);
-	grid->addWidget(m_xtallattice[1], y,2,1,1);
-	grid->addWidget(m_xtallattice[2], y++,3,1,1);
-	grid->addWidget(new QLabel("Angles:"), y,0,1,1);
-	grid->addWidget(m_xtalangles[0], y,1,1,1);
-	grid->addWidget(m_xtalangles[1], y,2,1,1);
-	grid->addWidget(m_xtalangles[2], y++,3,1,1);
 
 	// table CustomContextMenu
 	QMenu *menuTableContext = new QMenu(m_sitestab);
@@ -412,15 +349,18 @@ void MagDynDlg::CreateSitesPanel()
 	connect(btnMirrorAtoms, &QAbstractButton::clicked, this, &MagDynDlg::MirrorAtoms);
 	connect(btnShowStruct, &QAbstractButton::clicked, this, &MagDynDlg::ShowStructurePlot);
 
-	connect(m_comboSG, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+	connect(m_comboSGSites, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
 		[this](int idx)
 	{
 		// synchronise with other sg combobox
-		if(m_comboSG2)
+		for(QComboBox* combo : {m_comboSG, m_comboSGTerms})
 		{
-			m_comboSG2->blockSignals(true);
-			m_comboSG2->setCurrentIndex(idx);
-			m_comboSG2->blockSignals(false);
+			if(!combo)
+				continue;
+
+			combo->blockSignals(true);
+			combo->setCurrentIndex(idx);
+			combo->blockSignals(false);
 		}
 	});
 
@@ -440,6 +380,7 @@ void MagDynDlg::CreateSitesPanel()
 	{
 		this->ShowTableContextMenu(m_sitestab, menuTableContext, menuTableContextNoItem, pt);
 	});
+
 
 	m_tabs_in->addTab(m_sitespanel, "Sites");
 }
@@ -617,21 +558,16 @@ void MagDynDlg::CreateExchangeTermsPanel()
 
 
 	// couplings from space group
-	m_comboSG2 = new QComboBox(m_termspanel);
+	m_comboSGTerms = new QComboBox(m_termspanel);
 	QPushButton *btnGenBySG = new QPushButton(
 		QIcon::fromTheme("insert-object"),
 		"Generate", m_termspanel);
 	btnGenBySG->setToolTip("Create couplings from space group symmetry operators.");
 
-	m_comboSG2->setFocusPolicy(Qt::StrongFocus);
+	m_comboSGTerms->setFocusPolicy(Qt::StrongFocus);
 	btnGenBySG->setFocusPolicy(Qt::StrongFocus);
 	btnGenBySG->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Fixed});
-
-	// copy space groups from other combobox
-	for(int item_idx=0; item_idx<m_comboSG->count(); ++item_idx)
-		m_comboSG2->addItem(m_comboSG->itemText(item_idx), m_comboSG2->count());
-
 
 	// ordering vector
 	m_ordering[0] = new QDoubleSpinBox(m_termspanel);
@@ -643,7 +579,7 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	m_normaxis[1] = new QDoubleSpinBox(m_termspanel);
 	m_normaxis[2] = new QDoubleSpinBox(m_termspanel);
 
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		m_ordering[i]->setDecimals(4);
 		m_ordering[i]->setMinimum(-9.9999);
@@ -671,9 +607,6 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	m_normaxis[2]->setPrefix("Nl = ");
 
 
-	auto sep1 = new QFrame(m_sampleenviropanel); sep1->setFrameStyle(QFrame::HLine);
-	auto sep2 = new QFrame(m_sampleenviropanel); sep2->setFrameStyle(QFrame::HLine);
-
 	// grid
 	auto grid = new QGridLayout(m_termspanel);
 	grid->setSpacing(4);
@@ -685,6 +618,11 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	grid->addWidget(btnDel, y,1,1,1);
 	grid->addWidget(btnUp, y,2,1,1);
 	grid->addWidget(btnDown, y++,3,1,1);
+
+	auto sep1 = new QFrame(m_sampleenviropanel);
+	sep1->setFrameStyle(QFrame::HLine);
+	auto sep2 = new QFrame(m_sampleenviropanel);
+	sep2->setFrameStyle(QFrame::HLine);
 
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
@@ -701,7 +639,7 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	grid->addWidget(btnGenByDist, y++,3,1,1);
 
 	grid->addWidget(new QLabel("Generate Coupling Terms From Space Group:"), y++,0,1,4);
-	grid->addWidget(m_comboSG2, y,0,1,3);
+	grid->addWidget(m_comboSGTerms, y,0,1,3);
 	grid->addWidget(btnGenBySG, y++,3,1,1);
 
 	grid->addItem(new QSpacerItem(8, 8,
@@ -769,15 +707,18 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	connect(btnGenBySG, &QAbstractButton::clicked,
 		this, &MagDynDlg::GenerateCouplingsFromSG);
 
-	connect(m_comboSG2, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+	connect(m_comboSGTerms, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
 		[this](int idx)
 	{
 		// synchronise with other sg combobox
-		if(m_comboSG)
+		for(QComboBox* combo : {m_comboSG, m_comboSGSites})
 		{
-			m_comboSG->blockSignals(true);
-			m_comboSG->setCurrentIndex(idx);
-			m_comboSG->blockSignals(false);
+			if(!combo)
+				continue;
+
+			combo->blockSignals(true);
+			combo->setCurrentIndex(idx);
+			combo->blockSignals(false);
 		}
 	});
 
@@ -804,7 +745,7 @@ void MagDynDlg::CreateExchangeTermsPanel()
 			this->CalcAll();
 	};
 
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		connect(m_ordering[i],
 			static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), calc_all);
@@ -813,7 +754,121 @@ void MagDynDlg::CreateExchangeTermsPanel()
 			static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), calc_all);
 	}
 
+
 	m_tabs_in->addTab(m_termspanel, "Couplings");
+}
+
+
+
+/**
+ * allows the user to specify the sample properties
+ */
+void MagDynDlg::CreateSamplePanel()
+{
+	m_samplepanel = new QWidget(this);
+
+	// crystal lattice and angles
+	const char* latticestr[] = {"a = ", "b = ", "c = "};
+	for(int i = 0; i < 3; ++i)
+	{
+		m_xtallattice[i] = new QDoubleSpinBox(m_samplepanel);
+		m_xtallattice[i]->setDecimals(3);
+		m_xtallattice[i]->setMinimum(0.001);
+		m_xtallattice[i]->setMaximum(99.999);
+		m_xtallattice[i]->setSingleStep(0.1);
+		m_xtallattice[i]->setValue(5);
+		m_xtallattice[i]->setPrefix(latticestr[i]);
+		m_xtallattice[i]->setSizePolicy(QSizePolicy{
+			QSizePolicy::Expanding, QSizePolicy::Fixed});
+	}
+
+	const char* anlesstr[] = {"α = ", "β = ", "γ = "};
+	for(int i = 0; i < 3; ++i)
+	{
+		m_xtalangles[i] = new QDoubleSpinBox(m_samplepanel);
+		m_xtalangles[i]->setDecimals(2);
+		m_xtalangles[i]->setMinimum(0.01);
+		m_xtalangles[i]->setMaximum(180.);
+		m_xtalangles[i]->setSingleStep(0.1);
+		m_xtalangles[i]->setValue(90);
+		m_xtalangles[i]->setPrefix(anlesstr[i]);
+		m_xtalangles[i]->setSuffix("°");
+		m_xtalangles[i]->setSizePolicy(QSizePolicy{
+			QSizePolicy::Expanding, QSizePolicy::Fixed});
+	}
+
+	// space groups
+	m_comboSG = new QComboBox(m_samplepanel);
+	m_comboSG->setFocusPolicy(Qt::StrongFocus);
+
+	// form factor
+	m_ffact = new QPlainTextEdit(m_samplepanel);
+	m_ffact->setEnabled(false);  // TODO
+
+
+	auto grid = new QGridLayout(m_samplepanel);
+	grid->setSpacing(4);
+	grid->setContentsMargins(6, 6, 6, 6);
+
+	int y = 0;
+	grid->addWidget(new QLabel("Crystal Definition"), y++,0,1,4);
+	grid->addWidget(new QLabel("Lattice (rlu):"), y,0,1,1);
+	grid->addWidget(m_xtallattice[0], y,1,1,1);
+	grid->addWidget(m_xtallattice[1], y,2,1,1);
+	grid->addWidget(m_xtallattice[2], y++,3,1,1);
+	grid->addWidget(new QLabel("Angles:"), y,0,1,1);
+	grid->addWidget(m_xtalangles[0], y,1,1,1);
+	grid->addWidget(m_xtalangles[1], y,2,1,1);
+	grid->addWidget(m_xtalangles[2], y++,3,1,1);
+	grid->addWidget(new QLabel("Space Group:"), y,0,1,1);
+	grid->addWidget(m_comboSG, y++,1,1,3);
+
+	auto sep1 = new QFrame(m_sampleenviropanel);
+	sep1->setFrameStyle(QFrame::HLine);
+
+	grid->addItem(new QSpacerItem(8, 8,
+		QSizePolicy::Minimum, QSizePolicy::Fixed),
+		y++,0, 1,1);
+	grid->addWidget(sep1, y++,0, 1,4);
+	grid->addItem(new QSpacerItem(8, 8,
+		QSizePolicy::Minimum, QSizePolicy::Fixed),
+		y++,0, 1,1);
+
+	grid->addWidget(new QLabel("Magnetic Form Factor"), y++,0,1,4);
+	grid->addWidget(new QLabel("Enter Formula, f_M(Q) = "), y++,0,1,1);
+	grid->addWidget(m_ffact, y++,0,1,4);
+
+	grid->addItem(new QSpacerItem(8, 8,
+		QSizePolicy::Minimum, QSizePolicy::Expanding),
+		y++,0, 1,1);
+
+
+	// connections
+	connect(m_comboSG, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+		[this](int idx)
+	{
+		// synchronise with other sg combobox
+		for(QComboBox* combo : {m_comboSGSites, m_comboSGTerms})
+		{
+			if(!combo)
+				continue;
+
+			combo->blockSignals(true);
+			combo->setCurrentIndex(idx);
+			combo->blockSignals(false);
+		}
+	});
+
+	auto calc_all = [this]()
+	{
+		if(this->m_autocalc->isChecked())
+			this->CalcAll();
+	};
+
+	connect(m_ffact, &QPlainTextEdit::textChanged, calc_all);
+
+
+	m_tabs_in->addTab(m_samplepanel, "Sample");
 }
 
 
@@ -1031,7 +1086,8 @@ void MagDynDlg::CreateSampleEnvPanel()
 	m_fieldstab->setSelectionMode(QTableWidget::ContiguousSelection);
 	m_fieldstab->setContextMenuPolicy(Qt::CustomContextMenu);
 
-	m_fieldstab->verticalHeader()->setDefaultSectionSize(fontMetrics().lineSpacing() + 4);
+	m_fieldstab->verticalHeader()->setDefaultSectionSize(
+		fontMetrics().lineSpacing() + 4);
 	m_fieldstab->verticalHeader()->setVisible(true);
 
 	m_fieldstab->setColumnCount(NUM_FIELD_COLS);
@@ -1140,7 +1196,7 @@ void MagDynDlg::CreateSampleEnvPanel()
 	m_temperature->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Fixed});
 
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		m_field_dir[i]->setDecimals(4);
 		m_field_dir[i]->setMinimum(-99.9999);
@@ -1180,9 +1236,12 @@ void MagDynDlg::CreateSampleEnvPanel()
 	grid->addWidget(m_field_dir[2], y++,3,1,1);
 	grid->addWidget(m_align_spins, y++,0,1,4);
 
-	auto sep1 = new QFrame(m_sampleenviropanel); sep1->setFrameStyle(QFrame::HLine);
-	auto sep2 = new QFrame(m_sampleenviropanel); sep2->setFrameStyle(QFrame::HLine);
-	auto sep3 = new QFrame(m_sampleenviropanel); sep3->setFrameStyle(QFrame::HLine);
+	auto sep1 = new QFrame(m_sampleenviropanel);
+	sep1->setFrameStyle(QFrame::HLine);
+	auto sep2 = new QFrame(m_sampleenviropanel);
+	sep2->setFrameStyle(QFrame::HLine);
+	auto sep3 = new QFrame(m_sampleenviropanel);
+	sep3->setFrameStyle(QFrame::HLine);
 
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
@@ -1244,7 +1303,7 @@ void MagDynDlg::CreateSampleEnvPanel()
 	connect(m_field_mag,
 		static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), calc_all);
 
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		connect(m_field_dir[i],
 			static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), calc_all);
@@ -1296,33 +1355,8 @@ void MagDynDlg::CreateSampleEnvPanel()
 		this->ShowTableContextMenu(m_fieldstab, menuTableContext, menuTableContextNoItem, pt);
 	});
 
+
 	m_tabs_in->addTab(m_sampleenviropanel, "Environment");
-}
-
-
-
-/**
- * allows to add comments to the file
- */
-void MagDynDlg::CreateNotesPanel()
-{
-	m_notespanel = new QWidget(this);
-
-	// notes/comments
-	m_notes = new QPlainTextEdit(m_notespanel);
-	m_notes->setReadOnly(false);
-	m_notes->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Expanding});
-
-	auto grid = new QGridLayout(m_notespanel);
-	grid->setSpacing(4);
-	grid->setContentsMargins(6, 6, 6, 6);
-
-	int y = 0;
-	grid->addWidget(new QLabel(QString("Comments / Notes:"), m_hamiltonianpanel), y++, 0, 1, 1);
-	grid->addWidget(m_notes, y++, 0, 1, 1);
-
-	m_tabs_in->addTab(m_notespanel, "Notes");
 }
 
 
@@ -1379,7 +1413,7 @@ void MagDynDlg::CreateDispersionPanel()
 	m_weight_min->setMinimum(-1.);	// -1: disable clamping
 	m_weight_max->setMinimum(-1.);	// -1: disable clamping
 
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		m_q_start[i]->setDecimals(4);
 		m_q_start[i]->setMinimum(-99.9999);
@@ -1435,7 +1469,7 @@ void MagDynDlg::CreateDispersionPanel()
 	grid->addWidget(m_weight_max, y++,3,1,1);
 
 	// signals
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		connect(m_q_start[i],
 			static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
@@ -1478,6 +1512,7 @@ void MagDynDlg::CreateDispersionPanel()
 	connect(m_plot, &QCustomPlot::mouseMove, this, &MagDynDlg::PlotMouseMove);
 	connect(m_plot, &QCustomPlot::mousePress, this, &MagDynDlg::PlotMousePress);
 
+
 	m_tabs_out->addTab(m_disppanel, "Dispersion");
 }
 
@@ -1504,7 +1539,7 @@ void MagDynDlg::CreateHamiltonPanel()
 	m_q[1] = new QDoubleSpinBox(m_hamiltonianpanel);
 	m_q[2] = new QDoubleSpinBox(m_hamiltonianpanel);
 
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		m_q[i]->setDecimals(4);
 		m_q[i]->setMinimum(-99.9999);
@@ -1530,7 +1565,7 @@ void MagDynDlg::CreateHamiltonPanel()
 	grid->addWidget(m_q[2], y++,3,1,1);
 
 	// signals
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		connect(m_q[i],
 			static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
@@ -1540,6 +1575,7 @@ void MagDynDlg::CreateHamiltonPanel()
 				this->CalcHamiltonian();
 		});
 	}
+
 
 	m_tabs_out->addTab(m_hamiltonianpanel, "Hamiltonian");
 }
@@ -1563,7 +1599,8 @@ void MagDynDlg::CreateCoordinatesPanel()
 	m_coordinatestab->setSelectionMode(QTableWidget::ContiguousSelection);
 	m_coordinatestab->setContextMenuPolicy(Qt::CustomContextMenu);
 
-	m_coordinatestab->verticalHeader()->setDefaultSectionSize(fontMetrics().lineSpacing() + 4);
+	m_coordinatestab->verticalHeader()->setDefaultSectionSize(
+		fontMetrics().lineSpacing() + 4);
 	m_coordinatestab->verticalHeader()->setVisible(true);
 
 	m_coordinatestab->setColumnCount(NUM_COORD_COLS);
@@ -1718,6 +1755,7 @@ void MagDynDlg::CreateCoordinatesPanel()
 		this->ShowTableContextMenu(m_coordinatestab, menuTableContext, menuTableContextNoItem, pt);
 	});
 
+
 	m_tabs_out->addTab(m_coordinatespanel, "Coordinates");
 }
 
@@ -1740,7 +1778,7 @@ void MagDynDlg::CreateExportPanel()
 	m_exportEndQ[2] = new QDoubleSpinBox(m_exportpanel);
 
 	// number of grid points
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		m_exportNumPoints[i] = new QSpinBox(m_exportpanel);
 		m_exportNumPoints[i]->setMinimum(1);
@@ -1763,7 +1801,7 @@ void MagDynDlg::CreateExportPanel()
 		"Export...", m_exportpanel);
 	btn_export->setFocusPolicy(Qt::StrongFocus);
 
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		m_exportStartQ[i]->setDecimals(4);
 		m_exportStartQ[i]->setMinimum(-99.9999);
@@ -1808,7 +1846,8 @@ void MagDynDlg::CreateExportPanel()
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
-	auto sep1 = new QFrame(m_sampleenviropanel); sep1->setFrameStyle(QFrame::HLine);
+	auto sep1 = new QFrame(m_sampleenviropanel);
+	sep1->setFrameStyle(QFrame::HLine);
 	grid->addWidget(sep1, y++, 0,1,4);
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
@@ -1822,10 +1861,12 @@ void MagDynDlg::CreateExportPanel()
 	grid->addWidget(m_exportNumPoints[1], y,2,1,1);
 	grid->addWidget(m_exportNumPoints[2], y++,3,1,1);
 
+	auto sep2 = new QFrame(m_sampleenviropanel);
+	sep2->setFrameStyle(QFrame::HLine);
+
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
-	auto sep2 = new QFrame(m_sampleenviropanel); sep2->setFrameStyle(QFrame::HLine);
 	grid->addWidget(sep2, y++, 0,1,4);
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
@@ -1840,10 +1881,12 @@ void MagDynDlg::CreateExportPanel()
 	labelBoseInfo->setWordWrap(true);
 	grid->addWidget(labelBoseInfo, y++,0,1,4);
 
+	auto sep3 = new QFrame(m_sampleenviropanel);
+	sep3->setFrameStyle(QFrame::HLine);
+
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
-	auto sep3 = new QFrame(m_sampleenviropanel); sep3->setFrameStyle(QFrame::HLine);
 	grid->addWidget(sep3, y++, 0,1,4);
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
@@ -1862,7 +1905,22 @@ void MagDynDlg::CreateExportPanel()
 	connect(btn_export, &QAbstractButton::clicked, this,
 		static_cast<void (MagDynDlg::*)()>(&MagDynDlg::ExportSQE));
 
+
 	m_tabs_out->addTab(m_exportpanel, "Export");
+}
+
+
+
+/**
+ * notes dialog
+ */
+void MagDynDlg::CreateNotesDlg()
+{
+	if(m_notes_dlg)
+		return;
+
+	m_notes_dlg = new NotesDlg(this, m_sett);
+	m_notes_dlg->setFont(this->font());
 }
 
 
@@ -1872,108 +1930,11 @@ void MagDynDlg::CreateExportPanel()
  */
 void MagDynDlg::CreateInfoDlg()
 {
-	auto infopanel = new QWidget(this);
-	auto grid = new QGridLayout(infopanel);
-	grid->setSpacing(4);
-	grid->setContentsMargins(6, 6, 6, 6);
+	if(m_info_dlg)
+		return;
 
-	auto sep1 = new QFrame(infopanel); sep1->setFrameStyle(QFrame::HLine);
-	auto sep2 = new QFrame(infopanel); sep2->setFrameStyle(QFrame::HLine);
-	auto sep3 = new QFrame(infopanel); sep3->setFrameStyle(QFrame::HLine);
-	auto sep4 = new QFrame(infopanel); sep4->setFrameStyle(QFrame::HLine);
-
-	std::string strBoost = BOOST_LIB_VERSION;
-	algo::replace_all(strBoost, "_", ".");
-
-	auto labelTitle = new QLabel("Takin / Magnetic Dynamics Calculator", infopanel);
-	auto fontTitle = labelTitle->font();
-	fontTitle.setBold(true);
-	labelTitle->setFont(fontTitle);
-	labelTitle->setAlignment(Qt::AlignHCenter);
-
-	auto labelAuthor = new QLabel("Written by Tobias Weber <tweber@ill.fr>.", infopanel);
-	labelAuthor->setAlignment(Qt::AlignHCenter);
-
-	auto labelDate = new QLabel("2022 - 2024.", infopanel);
-	labelDate->setAlignment(Qt::AlignHCenter);
-
-	auto labelPaper = new QLabel(
-		"This program implements the formalism from <br>"
-		"<a href=\"https://doi.org/10.1088/0953-8984/27/16/166002\">this paper</a> "
-		"(which is also available <a href=\"https://doi.org/10.48550/arXiv.1402.6069\">here</a>).",
-		infopanel);
-	labelPaper->setOpenExternalLinks(true);
-
-	// renderer infos
-	for(int i=0; i<4; ++i)
-	{
-		m_labelGlInfos[i] = new QLabel("", infopanel);
-		m_labelGlInfos[i]->setSizePolicy(
-			QSizePolicy::Ignored,
-			m_labelGlInfos[i]->sizePolicy().verticalPolicy());
-	}
-
-	int y = 0;
-	grid->addWidget(labelTitle, y++,0, 1,1);
-	grid->addWidget(labelAuthor, y++,0, 1,1);
-	grid->addWidget(labelDate, y++,0, 1,1);
-
-	grid->addItem(new QSpacerItem(16, 16,
-		QSizePolicy::Minimum, QSizePolicy::Fixed),
-		y++,0, 1,1);
-	grid->addWidget(sep1, y++,0, 1,1);
-
-	grid->addWidget(new QLabel(
-		QString("Compiler: ") +
-		QString(BOOST_COMPILER) + ".",
-		infopanel), y++,0, 1,1);
-	grid->addWidget(new QLabel(
-		QString("C++ Library: ") +
-		QString(BOOST_STDLIB) + ".",
-		infopanel), y++,0, 1,1);
-	grid->addWidget(new QLabel(
-		QString("Build Date: ") +
-		QString(__DATE__) + ", " +
-		QString(__TIME__) + ".",
-		infopanel), y++,0, 1,1);
-
-	grid->addWidget(sep2, y++,0, 1,1);
-
-	grid->addWidget(new QLabel(
-		QString("Qt Version: ") +
-		QString(QT_VERSION_STR) + ".",
-		infopanel), y++,0, 1,1);
-	grid->addWidget(new QLabel(
-		QString("Boost Version: ") +
-		strBoost.c_str() + ".",
-		infopanel), y++,0, 1,1);
-
-	grid->addWidget(sep3, y++,0, 1,1);
-	grid->addWidget(labelPaper, y++,0, 1,1);
-	grid->addWidget(sep4, y++,0, 1,1);
-
-	for(int i=0; i<4; ++i)
-		grid->addWidget(m_labelGlInfos[i], y++,0, 1,1);
-
-	grid->addItem(new QSpacerItem(16, 16,
-		QSizePolicy::Minimum, QSizePolicy::Expanding),
-		y++,0, 1,1);
-
-	// show info panel as a dialog
-	m_info_dlg = new QDialog(this);
-	m_info_dlg->setWindowTitle("About");
-	m_info_dlg->setSizeGripEnabled(true);
+	m_info_dlg = new InfoDlg(this, m_sett);
 	m_info_dlg->setFont(this->font());
-
-	QPushButton *infoDlgOk = new QPushButton("OK", m_info_dlg);
-	connect(infoDlgOk, &QAbstractButton::clicked,
-		m_info_dlg, &QDialog::accept);
-
-	auto dlgGrid = new QGridLayout(m_info_dlg);
-	dlgGrid->setSpacing(4);
-	dlgGrid->setContentsMargins(8, 8, 8, 8);
-	dlgGrid->addWidget(infopanel, 0,0, 1,4);
-	dlgGrid->addWidget(infoDlgOk, 1,3, 1,1);
 }
 
 
@@ -1997,6 +1958,7 @@ void MagDynDlg::CreateMenuBar()
 	// structure menu
 	auto menuStruct = new QMenu("Structure", m_menu);
 	auto acStructImport = new QAction("Import From Table...", menuStruct);
+	auto acStructNotes = new QAction("Notes...", menuStruct);
 	auto acStructView = new QAction("View...", menuStruct);
 
 	// dispersion menu
@@ -2014,7 +1976,7 @@ void MagDynDlg::CreateMenuBar()
 	m_plot_channel[0] = new QAction("Spin-Flip Channel 1", m_menuChannels);
 	m_plot_channel[1] = new QAction("Spin-Flip Channel 2", m_menuChannels);
 	m_plot_channel[2] = new QAction("Non-Spin-Flip Channel", m_menuChannels);
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		m_plot_channel[i]->setCheckable(true);
 		m_plot_channel[i]->setChecked(true);
@@ -2095,6 +2057,11 @@ void MagDynDlg::CreateMenuBar()
 	m_use_temperature->setToolTip("Enables the Bose factor.");
 	m_use_temperature->setCheckable(true);
 	m_use_temperature->setChecked(true);
+	m_use_formfact = new QAction("Use Form Factor", menuCalc);
+	m_use_formfact->setToolTip("Enables the magnetic form factor.");
+	m_use_formfact->setCheckable(true);
+	m_use_formfact->setChecked(false);
+	m_use_formfact->setEnabled(false);  // TODO
 	m_use_weights = new QAction("Use Neutron Spectral Weights", menuCalc);
 	m_use_weights->setToolTip("Enables calculation of the spin correlation function.");
 	m_use_weights->setCheckable(true);
@@ -2121,7 +2088,7 @@ void MagDynDlg::CreateMenuBar()
 	m_hamiltonian_comp[0] = new QAction("H(Q)", menuHamiltonians);
 	m_hamiltonian_comp[1] = new QAction("H(Q + O)", menuHamiltonians);
 	m_hamiltonian_comp[2] = new QAction("H(Q - O)", menuHamiltonians);
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		m_hamiltonian_comp[i]->setCheckable(true);
 		m_hamiltonian_comp[i]->setChecked(true);
@@ -2168,6 +2135,8 @@ void MagDynDlg::CreateMenuBar()
 
 	menuStruct->addAction(acStructImport);
 	menuStruct->addSeparator();
+	menuStruct->addAction(acStructNotes);
+	menuStruct->addSeparator();
 	menuStruct->addAction(acStructView);
 
 	m_menuDisp->addAction(m_plot_channels);
@@ -2187,6 +2156,7 @@ void MagDynDlg::CreateMenuBar()
 		menuCalc->addAction(m_use_genJ);
 	menuCalc->addAction(m_use_field);
 	menuCalc->addAction(m_use_temperature);
+	menuCalc->addAction(m_use_formfact);
 	menuCalc->addSeparator();
 	menuCalc->addAction(m_use_weights);
 	menuCalc->addAction(m_use_projector);
@@ -2242,6 +2212,16 @@ void MagDynDlg::CreateMenuBar()
 		}
 	};
 
+	connect(acStructNotes, &QAction::triggered, [this]()
+	{
+		if(!m_notes_dlg)
+			CreateNotesDlg();
+
+		m_notes_dlg->show();
+		m_notes_dlg->raise();
+		m_notes_dlg->activateWindow();
+	});
+
 	connect(acStructView, &QAction::triggered, this, &MagDynDlg::ShowStructurePlot);
 	connect(acStructImport, &QAction::triggered, this, &MagDynDlg::ShowTableImporter);
 	connect(m_use_dmi, &QAction::toggled, calc_all);
@@ -2249,6 +2229,7 @@ void MagDynDlg::CreateMenuBar()
 		connect(m_use_genJ, &QAction::toggled, calc_all);
 	connect(m_use_field, &QAction::toggled, calc_all);
 	connect(m_use_temperature, &QAction::toggled, calc_all);
+	connect(m_use_formfact, &QAction::toggled, calc_all_dyn);
 	connect(m_use_weights, &QAction::toggled, calc_all_dyn);
 	connect(m_use_projector, &QAction::toggled, calc_all_dyn);
 	connect(m_unite_degeneracies, &QAction::toggled, calc_all_dyn);
@@ -2266,7 +2247,7 @@ void MagDynDlg::CreateMenuBar()
 		this->PlotDispersion();
 	});
 
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		connect(m_hamiltonian_comp[i], &QAction::toggled, calc_all_dyn);
 
@@ -2304,12 +2285,15 @@ void MagDynDlg::CreateMenuBar()
 	// show preferences dialog
 	connect(acPreferences, &QAction::triggered, [this]()
 	{
-		m_settings_dlg = new t_SettingsDlg(this, m_sett);
-
-		dynamic_cast<t_SettingsDlg*>(m_settings_dlg)->AddChangedSettingsSlot([this]()
+		if(!m_settings_dlg)
 		{
-			MagDynDlg::InitSettings();
-		});
+			m_settings_dlg = new t_SettingsDlg(this, m_sett);
+
+			dynamic_cast<t_SettingsDlg*>(m_settings_dlg)->AddChangedSettingsSlot([this]()
+			{
+				MagDynDlg::InitSettings();
+			});
+		}
 
 		m_settings_dlg->show();
 		m_settings_dlg->raise();
