@@ -691,17 +691,28 @@ public:
 	void SetCrystalLattice(t_real a, t_real b, t_real c,
 		t_real alpha, t_real beta, t_real gamma)
 	{
-		m_xtallattice[0] = a;
-		m_xtallattice[1] = b;
-		m_xtallattice[2] = c;
+		try
+		{
+			m_xtallattice[0] = a;
+			m_xtallattice[1] = b;
+			m_xtallattice[2] = c;
 
-		m_xtalangles[0] = alpha;
-		m_xtalangles[1] = beta;
-		m_xtalangles[2] = gamma;
+			m_xtalangles[0] = alpha;
+			m_xtalangles[1] = beta;
+			m_xtalangles[2] = gamma;
 
-		// crystal fractional coordinate trafo matrices
-		m_xtalA = tl2::A_matrix<t_mat_real>(a, b, c, alpha, beta, gamma);
-		m_xtalB = tl2::B_matrix<t_mat_real>(a, b, c, alpha, beta, gamma);
+			// crystal fractional coordinate trafo matrices
+			m_xtalA = tl2::A_matrix<t_mat_real>(a, b, c, alpha, beta, gamma);
+			m_xtalB = tl2::B_matrix<t_mat_real>(a, b, c, alpha, beta, gamma);
+		}
+		catch(const std::exception& ex)
+		{
+			m_xtalA = m_xtalB = tl2::unit<t_mat_real>(3);
+
+			std::cerr << "Magdyn error: "
+				<< "Could not calculate crystal matrices."
+				<< std::endl;
+		}
 	}
 
 
@@ -2734,7 +2745,7 @@ private:
 	tl2::ExprParser<t_cplx> m_magffact{};
 
 	// crystal lattice
-	t_real m_xtallattice[3]{ 5., 5., 5. };
+	t_real m_xtallattice[3]{ 0., 0., 0. };
 	t_real m_xtalangles[3]{
 		t_real(0.5) * tl2::pi<t_real>,
 		t_real(0.5) * tl2::pi<t_real>,

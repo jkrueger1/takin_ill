@@ -358,7 +358,7 @@ struct _str_to_var_impl<T, t_str, 0>
 /**
  * tokenises string on any of the chars in strDelim
  */
-template<class T, class t_str = std::string, class t_cont=std::vector<T>>
+template<class T, class t_str = std::string, class t_cont = std::vector<T>>
 void get_tokens(const t_str& str, const t_str& strDelim, t_cont& vecRet)
 {
 	using t_char = typename t_str::value_type;
@@ -369,7 +369,7 @@ void get_tokens(const t_str& str, const t_str& strDelim, t_cont& vecRet)
 	boost::char_separator<t_char> delim(strDelim.c_str());
 	t_tokeniser tok(str, delim);
 
-	for(t_tokiter iter=tok.begin(); iter!=tok.end(); ++iter)
+	for(t_tokiter iter = tok.begin(); iter != tok.end(); ++iter)
 	{
 		vecRet.push_back(
 			_str_to_var_impl<T, t_str,
