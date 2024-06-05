@@ -284,7 +284,7 @@ public:
 						reinterpret_cast<const char*>(code + ip+identlen));
 					ip += identlen;
 
-					t_num  val = m_stack.top(); m_stack.pop();
+					t_num val = m_stack.top(); m_stack.pop();
 					context.register_var(ident, val);
 					m_stack.push(val);
 
@@ -541,7 +541,7 @@ public:
 
 private:
 	std::string m_ident{};
-	std::shared_ptr<ExprAST<t_num>> m_left{}, m_right{};
+	std::shared_ptr<ExprAST<t_num>> m_right{};
 };
 
 
@@ -646,7 +646,7 @@ class ExprParser
 
 public:
 	ExprParser(bool debug=false)
-		: m_debug{debug}, m_asts{}, m_code{},
+		: m_debug{debug}, m_asts{}, m_codes{},
 		m_vars{}, m_consts{}, m_funcs0{}, m_funcs1{}, m_funcs2{},
 		m_istr{}, m_lookahead_text{}
 	{
@@ -661,7 +661,7 @@ public:
 	bool parse(const std::string& expr, bool codegen = true)
 	{
 		m_unknown_vars.clear();
-		m_code.clear();
+		m_codes.clear();
 		m_asts.clear();
 
 		// split individual commands by ';'
@@ -674,7 +674,8 @@ public:
 			next_lookahead();
 
 			// no input given?
-			bool at_eof = (m_lookahead == (int)Token::TOK_INVALID || m_lookahead == (int)Token::TOK_END);
+			bool at_eof = (m_lookahead == (int)Token::TOK_INVALID ||
+				m_lookahead == (int)Token::TOK_END);
 			if(at_eof)
 			{
 				// interpret empty input as 0
@@ -687,7 +688,8 @@ public:
 
 			// check if there would be are more tokens available?
 			next_lookahead();
-			at_eof = (m_lookahead == (int)Token::TOK_INVALID || m_lookahead == (int)Token::TOK_END);
+			at_eof = (m_lookahead == (int)Token::TOK_INVALID ||
+				m_lookahead == (int)Token::TOK_END);
 			if(!at_eof)
 				throw std::underflow_error("Not all input tokens have been consumed.");
 
@@ -702,15 +704,17 @@ public:
 
 				if(codegen)
 				{
-					std::stringstream code;
-					ast->codegen(code);
+					std::stringstream str_code;
+					ast->codegen(str_code);
 
-					code.seekg(0, std::stringstream::end);
-					auto code_size = code.tellg();
-					code.seekg(0, std::stringstream::beg);
+					str_code.seekg(0, std::stringstream::end);
+					auto code_size = str_code.tellg();
+					str_code.seekg(0, std::stringstream::beg);
 
-					m_code.resize(code_size);
-					code.read(reinterpret_cast<char*>(m_code.data()), code_size);
+					t_code code;
+					code.resize(code_size);
+					str_code.read(reinterpret_cast<char*>(code.data()), code_size);
+					m_codes.emplace_back(std::move(code));
 				}
 			}
 			else
@@ -775,23 +779,34 @@ public:
 	t_num eval() const
 	{
 		t_num result{};
+		bool ran_vm = false;
 
+		std::size_t ast_idx = 0;
 		for(const t_ast& ast : m_asts)
 		{
 			// is compiled code available?
-			if(m_code.size())
+			if(ast_idx < m_codes.size() && m_codes[ast_idx].size())
 			{
 				// run generated code
 				ExprVM<t_num> vm{m_debug};
-				return vm.run(m_code.data(), m_code.size(), *this);
+				const t_code& code = m_codes[ast_idx];
+				result = vm.run(code.data(), code.size(), *this);
+				ran_vm = true;
 			}
 
 			if(m_debug)
 				std::cerr << "Expression: Warning: No code available, interpreting AST." << std::endl;
 			if(!ast)
-				throw std::runtime_error("Invalid AST.");
+			{
+				std::ostringstream ostrErr;
+				ostrErr << "Invalid AST #" << ast_idx;
+				throw std::runtime_error(ostrErr.str());
+			}
 
-			result = ast->eval(*this);
+			if(!ran_vm)
+				result = ast->eval(*this);
+
+			++ast_idx;
 		}
 
 		// return last result
@@ -1060,11 +1075,8 @@ protected:
 			if(longest_matching.size() == 0)
 			{
 				// ...ignore white spaces
-				if(c == ' ' || c == '\t')
+				if(c == ' ' || c == '\t' || c == '\n' || c == '\r')
 					continue;
-				// ...end on new line
-				if(c == '\n')
-					return std::make_tuple((int)Token::TOK_END, t_num{0}, longest_input);
 			}
 
 			input += c;
@@ -1129,7 +1141,8 @@ protected:
 		if(m_lookahead != expected)
 		{
 			std::ostringstream ostr;
-			ostr << "Could not match symbol! Expected: " << expected << ", got: " << m_lookahead << ".";
+			ostr << "Could not match symbol! Expected: "
+				<< expected << ", got: " << m_lookahead << ".";
 			throw std::runtime_error(ostr.str());
 		}
 	}
@@ -1413,6 +1426,7 @@ protected:
 			{
 				next_lookahead();
 				auto assign_val = plus_term();
+				register_var(ident, t_num{});
 
 				return std::make_shared<ExprASTAssign<t_num>>(
 					ident, assign_val);
@@ -1525,7 +1539,8 @@ private:
 	std::vector<t_ast> m_asts{};
 
 	// generated code
-	std::vector<std::uint8_t> m_code{};
+	using t_code = std::vector<std::uint8_t>;
+	std::vector<t_code> m_codes{};
 
 	// variables and constants
 	mutable std::unordered_map<std::string, t_num> m_vars{};

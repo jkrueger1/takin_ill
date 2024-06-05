@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_mat1, t_real, t_types)
 	//using t_mat_cplx = tl2::mat<t_cplx, std::vector>;
 
 
-	std::cout << tl2::stoval<unsigned int>("123") << std::endl;
+	std::cout << tl2::stoval<unsigned int>(std::string("123")) << std::endl;
 
 	std::vector vec1{{
 		tl2::create<t_vec>({1, 2, 3, 4, 5, 6, 7, 8, 9, 10}),

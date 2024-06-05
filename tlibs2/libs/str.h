@@ -160,7 +160,7 @@ template<class t_str = std::string>
 t_str trimmed(const t_str& str)
 {
 	t_str strret = str;
-	trim(strret);
+	trim<t_str>(strret);
 	return strret;
 }
 
@@ -343,7 +343,7 @@ struct _str_to_var_impl<T, t_str, 0>
 {
 	inline T operator()(const t_str& str) const
 	{
-		if(!trimmed(str).length())
+		if(!trimmed<t_str>(str).length())
 			return T();
 
 		T t{};
@@ -881,7 +881,7 @@ t_str get_py_string(const t_str& str)
 template<class t_str /*=std::string*/, class t_val /*=double*/>
 std::pair<bool, t_val> eval_expr(const t_str& str) noexcept
 {
-	if(trimmed(str).length() == 0)
+	if(trimmed<t_str>(str).length() == 0)
 		return std::make_pair(true, t_val(0));
 
 	try
