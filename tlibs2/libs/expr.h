@@ -788,14 +788,19 @@ public:
 			if(ast_idx < m_codes.size() && m_codes[ast_idx].size())
 			{
 				// run generated code
-				ExprVM<t_num> vm{m_debug};
 				const t_code& code = m_codes[ast_idx];
+
+				if(m_debug)
+				{
+					std::cerr << "Expression: Info: "
+						<< "Running VM for AST #" << ast_idx << "."
+						<< std::endl;
+				}
+				ExprVM<t_num> vm{m_debug};
 				result = vm.run(code.data(), code.size(), *this);
 				ran_vm = true;
 			}
 
-			if(m_debug)
-				std::cerr << "Expression: Warning: No code available, interpreting AST." << std::endl;
 			if(!ast)
 			{
 				std::ostringstream ostrErr;
@@ -804,7 +809,17 @@ public:
 			}
 
 			if(!ran_vm)
+			{
+				if(m_debug)
+				{
+					std::cerr << "Expression: Warning: "
+						<< "No code available, interpreting AST #"
+						<< ast_idx << "."
+						<< std::endl;
+				}
+
 				result = ast->eval(*this);
+			}
 
 			++ast_idx;
 		}
@@ -938,8 +953,8 @@ protected:
 		{
 #ifdef TL2_USE_UNITS
 			register_const("pi", __pi<t_num>);
-			register_const("hbar",  t_num(hbar<t_num>/meV<t_num>/sec<t_num>));      // hbar in [meV s]
-			register_const("kB",  t_num(kB<t_num>/meV<t_num>*kelvin<t_num>));       // kB in [meV / K]
+			register_const("hbar", t_num(hbar<t_num>/meV<t_num>/sec<t_num>));       // hbar in [meV s]
+			register_const("kB", t_num(kB<t_num>/meV<t_num>*kelvin<t_num>));        // kB in [meV / K]
 #endif
 		}
 
@@ -950,8 +965,8 @@ protected:
 
 			register_const("imag", t_num(0, 1));                                    // imaginary unit
 			register_const("pi", __pi<t_real>);
-			register_const("hbar",  t_real(hbar<t_real>/meV<t_real>/sec<t_real>));  // hbar in [meV s]
-			register_const("kB",  t_real(kB<t_real>/meV<t_real>*kelvin<t_real>));   // kB in [meV / K]
+			register_const("hbar", t_real(hbar<t_real>/meV<t_real>/sec<t_real>));   // hbar in [meV s]
+			register_const("kB", t_real(kB<t_real>/meV<t_real>*kelvin<t_real>));    // kB in [meV / K]
 		}
 
 		// integer constants
@@ -1071,6 +1086,7 @@ protected:
 
 			if(m_istr->eof())
 				break;
+
 			// if outside any other match...
 			if(longest_matching.size() == 0)
 			{

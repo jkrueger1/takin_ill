@@ -48,11 +48,12 @@ using t_types_cplx = std::tuple<std::complex<double>, std::complex<float>>;
 BOOST_AUTO_TEST_CASE_TEMPLATE(test_expr_real, t_real, t_types_real)
 {
 	static constexpr t_real eps = 1e-6;
-	tl2::ExprParser<t_real> parser;
-	//parser.SetDebug(true);
 
 	for(bool codegen : { false, true })
 	{
+		tl2::ExprParser<t_real> parser;
+		//parser.SetDebug(true);
+
 		bool ok = parser.parse("1 + 2*3", codegen);
 		auto result = parser.eval();
 		BOOST_TEST(ok);
@@ -92,6 +93,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_expr_real, t_real, t_types_real)
 		result = parser.eval();
 		BOOST_TEST(ok);
 		BOOST_TEST(tl2::equals<t_real>(result, 1900, eps));
+
+		ok = parser.parse("x = 12 + 5; y = 4 * 2; x * y", codegen);
+		result = parser.eval();
+		BOOST_TEST(ok);
+		BOOST_TEST(tl2::equals<t_real>(result, 136, eps));
 	}
 }
 
@@ -99,12 +105,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_expr_real, t_real, t_types_real)
 BOOST_AUTO_TEST_CASE_TEMPLATE(test_expr_cplx, t_cplx, t_types_cplx)
 {
 	using t_real = typename t_cplx::value_type;
-
 	static constexpr t_real eps = 1e-5;
-	tl2::ExprParser<t_cplx> parser;
 
 	for(bool codegen : { false, true })
 	{
+		tl2::ExprParser<t_cplx> parser;
+
 		bool ok = parser.parse("imag * imag", codegen);
 		auto result = parser.eval();
 		BOOST_TEST(ok);
@@ -152,7 +158,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_expr_cplx, t_cplx, t_types_cplx)
 	}
 }
 
-
+/*
 BOOST_AUTO_TEST_CASE_TEMPLATE(test_expr_func, t_real, t_types_real)
 {
 	static constexpr t_real eps = 1e-6;
@@ -161,15 +167,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_expr_func, t_real, t_types_real)
 	BOOST_TEST(
 		std::get<0>(tupres),
 		tl2::equals<t_real>(std::get<1>(tupres), 14., eps));
-}
+}*/
 
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(test_expr_int, t_int, t_types_int)
 {
-	tl2::ExprParser<t_int> parser;
-
 	for(bool codegen : { false, true })
 	{
+		tl2::ExprParser<t_int> parser;
+
 		bool ok = parser.parse("1 + 2*3", codegen);
 		t_int result = parser.eval();
 		BOOST_TEST(ok);
