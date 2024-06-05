@@ -223,17 +223,8 @@ void MagDynDlg::GeneratePossibleCouplings()
 		t_size sc_max = m_maxSC->value();
 		t_size couplings_max = m_maxcouplings->value();
 
-		t_real a = m_xtallattice[0]->value();
-		t_real b = m_xtallattice[1]->value();
-		t_real c = m_xtallattice[2]->value();
-		t_real alpha = m_xtalangles[0]->value() / 180. * tl2::pi<t_real>;
-		t_real beta = m_xtalangles[1]->value() / 180. * tl2::pi<t_real>;
-		t_real gamma = m_xtalangles[2]->value() / 180. * tl2::pi<t_real>;
-
 		SyncToKernel();
-		m_dyn.GeneratePossibleExchangeTerms(
-			a, b, c, alpha, beta, gamma,
-			dist_max, sc_max, couplings_max);
+		m_dyn.GeneratePossibleExchangeTerms(dist_max, sc_max, couplings_max);
 		SyncTermsFromKernel();
 
 		if(m_autocalc->isChecked())

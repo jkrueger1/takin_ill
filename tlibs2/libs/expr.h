@@ -697,6 +697,20 @@ public:
 	}
 
 
+	t_num eval_noexcept() const noexcept
+	{
+		try
+		{
+			return eval();
+		}
+		catch(const std::exception& ex)
+		{
+			std::cerr << "Parser error: " << ex.what() << std::endl;
+			return t_num{};
+		}
+	}
+
+
 protected:
 	// ------------------------------------------------------------------------
 	// tables / functions

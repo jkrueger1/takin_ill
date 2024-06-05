@@ -314,18 +314,6 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 			m_maxSC->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<int>("config.couplings_max_count"))
 			m_maxcouplings->setValue(*optVal);
-		if(auto optVal = magdyn.get_optional<t_real>("xtal.a"))
-			m_xtallattice[0]->setValue(*optVal);
-		if(auto optVal = magdyn.get_optional<t_real>("xtal.b"))
-			m_xtallattice[1]->setValue(*optVal);
-		if(auto optVal = magdyn.get_optional<t_real>("xtal.c"))
-			m_xtallattice[2]->setValue(*optVal);
-		if(auto optVal = magdyn.get_optional<t_real>("xtal.alpha"))
-			m_xtalangles[0]->setValue(*optVal);
-		if(auto optVal = magdyn.get_optional<t_real>("xtal.beta"))
-			m_xtalangles[1]->setValue(*optVal);
-		if(auto optVal = magdyn.get_optional<t_real>("xtal.gamma"))
-			m_xtalangles[2]->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<bool>("config.use_genJ"))
 		{
 			if(!m_allow_general_J && *optVal)
@@ -392,9 +380,16 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 
 		// variables
 		for(const auto& var : m_dyn.GetVariables())
-		{
 			AddVariableTabItem(-1, var.name, var.value);
-		}
+
+		// crystal lattice
+		const auto& xtal = m_dyn.GetCrystalLattice();
+		m_xtallattice[0]->setValue(xtal[0]);
+		m_xtallattice[1]->setValue(xtal[1]);
+		m_xtallattice[2]->setValue(xtal[2]);
+		m_xtalangles[0]->setValue(xtal[3] / tl2::pi<t_real> * 180.);
+		m_xtalangles[1]->setValue(xtal[4] / tl2::pi<t_real> * 180.);
+		m_xtalangles[2]->setValue(xtal[5] / tl2::pi<t_real> * 180.);
 
 		// sync magnetic sites and additional entries
 		SyncSitesFromKernel(magdyn.get_child_optional("atom_sites"));
@@ -677,12 +672,6 @@ bool MagDynDlg::Save(const QString& filename)
 		magdyn.put<t_real>("config.couplings_max_dist", m_maxdist->value());
 		magdyn.put<int>("config.couplings_max_supercell", m_maxSC->value());
 		magdyn.put<int>("config.couplings_max_count", m_maxcouplings->value());
-		magdyn.put<t_real>("xtal.a", m_xtallattice[0]->value());
-		magdyn.put<t_real>("xtal.b", m_xtallattice[1]->value());
-		magdyn.put<t_real>("xtal.c", m_xtallattice[2]->value());
-		magdyn.put<t_real>("xtal.alpha", m_xtalangles[0]->value());
-		magdyn.put<t_real>("xtal.beta", m_xtalangles[1]->value());
-		magdyn.put<t_real>("xtal.gamma", m_xtalangles[2]->value());
 
 		// save magnon calculator configuration
 		m_dyn.Save(magdyn);

@@ -166,7 +166,7 @@ void MagDynDlg::SyncToKernel()
 	m_varstab->blockSignals(true);
 
 	// get variables
-	for(int row=0; row<m_varstab->rowCount(); ++row)
+	for(int row = 0; row < m_varstab->rowCount(); ++row)
 	{
 		auto *name = m_varstab->item(row, COL_VARS_NAME);
 		auto *val_re = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
@@ -187,6 +187,15 @@ void MagDynDlg::SyncToKernel()
 
 		m_dyn.AddVariable(std::move(var));
 	}
+
+	// get crystal lattice
+	m_dyn.SetCrystalLattice(
+		m_xtallattice[0]->value(),
+		m_xtallattice[1]->value(),
+		m_xtallattice[2]->value(),
+		m_xtalangles[0]->value() / 180 * tl2::pi<t_real>,
+		m_xtalangles[1]->value() / 180 * tl2::pi<t_real>,
+		m_xtalangles[2]->value() / 180 * tl2::pi<t_real>);
 
 	// get ordering vector and rotation axis
 	{
@@ -242,7 +251,7 @@ void MagDynDlg::SyncToKernel()
 	}
 
 	// get magnetic sites
-	for(int row=0; row<m_sitestab->rowCount(); ++row)
+	for(int row = 0; row < m_sitestab->rowCount(); ++row)
 	{
 		auto *name = m_sitestab->item(row, COL_SITE_NAME);
 		auto *pos_x = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
@@ -314,7 +323,7 @@ void MagDynDlg::SyncToKernel()
 	m_dyn.CalcMagneticSites();
 
 	// get exchange terms
-	for(int row=0; row<m_termstab->rowCount(); ++row)
+	for(int row = 0; row < m_termstab->rowCount(); ++row)
 	{
 		auto *name = m_termstab->item(row, COL_XCH_NAME);
 		auto *dist_x = static_cast<tl2::NumericTableWidgetItem<t_real>*>(

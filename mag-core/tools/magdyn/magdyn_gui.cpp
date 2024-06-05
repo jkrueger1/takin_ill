@@ -748,10 +748,12 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	for(int i = 0; i < 3; ++i)
 	{
 		connect(m_ordering[i],
-			static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), calc_all);
+			static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+			calc_all);
 
 		connect(m_normaxis[i],
-			static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), calc_all);
+			static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+			calc_all);
 	}
 
 
@@ -803,7 +805,6 @@ void MagDynDlg::CreateSamplePanel()
 
 	// form factor
 	m_ffact = new QPlainTextEdit(m_samplepanel);
-	m_ffact->setEnabled(false);  // TODO
 
 
 	auto grid = new QGridLayout(m_samplepanel);
@@ -867,6 +868,15 @@ void MagDynDlg::CreateSamplePanel()
 
 	connect(m_ffact, &QPlainTextEdit::textChanged, calc_all);
 
+	for(int i = 0; i < 3; ++i)
+	{
+		connect(m_xtallattice[i],
+			static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+			calc_all);
+		connect(m_xtalangles[i],
+			static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+			calc_all);
+	}
 
 	m_tabs_in->addTab(m_samplepanel, "Sample");
 }
@@ -1301,16 +1311,19 @@ void MagDynDlg::CreateSampleEnvPanel()
 
 	// signals
 	connect(m_field_mag,
-		static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), calc_all);
+		static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+		calc_all);
 
 	for(int i = 0; i < 3; ++i)
 	{
 		connect(m_field_dir[i],
-			static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), calc_all);
+			static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+			calc_all);
 	}
 
 	connect(m_temperature,
-		static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), calc_all);
+		static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+		calc_all);
 
 	connect(m_align_spins, &QCheckBox::toggled, calc_all);
 
@@ -2061,7 +2074,6 @@ void MagDynDlg::CreateMenuBar()
 	m_use_formfact->setToolTip("Enables the magnetic form factor.");
 	m_use_formfact->setCheckable(true);
 	m_use_formfact->setChecked(false);
-	m_use_formfact->setEnabled(false);  // TODO
 	m_use_weights = new QAction("Use Neutron Spectral Weights", menuCalc);
 	m_use_weights->setToolTip("Enables calculation of the spin correlation function.");
 	m_use_weights->setCheckable(true);
@@ -2229,7 +2241,7 @@ void MagDynDlg::CreateMenuBar()
 		connect(m_use_genJ, &QAction::toggled, calc_all);
 	connect(m_use_field, &QAction::toggled, calc_all);
 	connect(m_use_temperature, &QAction::toggled, calc_all);
-	connect(m_use_formfact, &QAction::toggled, calc_all_dyn);
+	connect(m_use_formfact, &QAction::toggled, calc_all);
 	connect(m_use_weights, &QAction::toggled, calc_all_dyn);
 	connect(m_use_projector, &QAction::toggled, calc_all_dyn);
 	connect(m_unite_degeneracies, &QAction::toggled, calc_all_dyn);

@@ -250,12 +250,12 @@ struct t_EnergyAndWeight
 	// full dynamical structure factor
 	t_mat S{};
 	t_real weight_full{};
-	t_real weight_channel_full[3] = { 0., 0., 0. };
+	t_real weight_channel_full[3] { 0., 0., 0. };
 
 	// projected dynamical structure factor for neutron scattering
 	t_mat S_perp{};
 	t_real weight{};
-	t_real weight_channel[3] = { 0., 0., 0. };
+	t_real weight_channel[3] { 0., 0., 0. };
 };
 
 
@@ -317,6 +317,7 @@ public:
 	MagDyn& operator=(const MagDyn&) = default;
 
 
+
 	// --------------------------------------------------------------------
 	// cleanup functions
 	// --------------------------------------------------------------------
@@ -342,6 +343,11 @@ public:
 
 		// reset rotation axis
 		m_rotaxis = tl2::create<t_vec_real>({ 1., 0., 0. });
+
+		// clear crystal
+		m_xtallattice[0] = m_xtallattice[1] = m_xtallattice[2] = 0.;
+		m_xtalangles[0] = m_xtalangles[1] = m_xtalangles[2] = t_real(0.5) * tl2::pi<t_real>;
+		m_xtalA = m_xtalB = tl2::unit<t_mat_real>(3);
 	}
 
 
@@ -509,7 +515,7 @@ public:
 		parser.SetAutoregisterVariables(false);
 		if(parser.parse_noexcept(name))
 		{
-			if(t_size idx = parser.eval(); idx < GetMagneticSitesCount())
+			if(t_size idx = parser.eval_noexcept(); idx < GetMagneticSitesCount())
 				return idx;
 		}
 		else
@@ -542,7 +548,7 @@ public:
 		parser.SetAutoregisterVariables(false);
 		if(parser.parse_noexcept(name))
 		{
-			if(t_size idx = parser.eval(); idx < GetExchangeTermsCount())
+			if(t_size idx = parser.eval_noexcept(); idx < GetExchangeTermsCount())
 				return idx;
 		}
 		else
@@ -678,6 +684,35 @@ public:
 	void AddExchangeTerm(ExchangeTerm&& term)
 	{
 		m_exchange_terms.emplace_back(std::forward<ExchangeTerm&&>(term));
+	}
+
+
+
+	void SetCrystalLattice(t_real a, t_real b, t_real c,
+		t_real alpha, t_real beta, t_real gamma)
+	{
+		m_xtallattice[0] = a;
+		m_xtallattice[1] = b;
+		m_xtallattice[2] = c;
+
+		m_xtalangles[0] = alpha;
+		m_xtalangles[1] = beta;
+		m_xtalangles[2] = gamma;
+
+		// crystal fractional coordinate trafo matrices
+		m_xtalA = tl2::A_matrix<t_mat_real>(a, b, c, alpha, beta, gamma);
+		m_xtalB = tl2::B_matrix<t_mat_real>(a, b, c, alpha, beta, gamma);
+	}
+
+
+
+	t_vec_real GetCrystalLattice() const
+	{
+		return tl2::create<t_vec_real>(
+		{
+			m_xtallattice[0], m_xtallattice[1], m_xtallattice[2],
+			m_xtalangles[0], m_xtalangles[1], m_xtalangles[2],
+		});
 	}
 	// --------------------------------------------------------------------
 
@@ -859,7 +894,7 @@ public:
 
 				if(parser.parse_noexcept(term.dmi[dmi_idx]))
 				{
-					dmi[dmi_idx] = parser.eval().real();
+					dmi[dmi_idx] = parser.eval_noexcept().real();
 				}
 				else
 				{
@@ -885,7 +920,7 @@ public:
 
 					if(parser.parse_noexcept(term.Jgen[J_idx1][J_idx2]))
 					{
-						Jgen_arr[J_idx1][J_idx2] = parser.eval().real();
+						Jgen_arr[J_idx1][J_idx2] = parser.eval_noexcept().real();
 					}
 					else
 					{
@@ -955,8 +990,6 @@ public:
 	 * generate possible couplings up to a certain distance
 	 */
 	void GeneratePossibleExchangeTerms(
-		t_real a, t_real b, t_real c,
-		t_real alpha, t_real beta, t_real gamma,
 		t_real dist_max, t_size _sc_max,
 		std::optional<t_size> couplings_max)
 	{
@@ -990,9 +1023,6 @@ public:
 		ExchangeTerms newterms;
 		std::vector<PossibleCoupling> couplings;
 
-		// crystal fractional coordinate trafo matrix
-		t_mat_real A = tl2::A_matrix<t_mat_real>(a, b, c, alpha, beta, gamma);
-
 		// generate a list of supercell vectors
 		t_real sc_max = t_real(_sc_max);
 		for(t_real sc_h = -sc_max; sc_h <= sc_max; sc_h += 1.)
@@ -1018,8 +1048,8 @@ public:
 					coupling.pos2_sc = coupling.pos2_uc + sc_vec;
 
 					// transform to lab units for correct distance
-					coupling.pos1_uc_lab = A * coupling.pos1_uc;
-					coupling.pos2_sc_lab = A * coupling.pos2_sc;
+					coupling.pos1_uc_lab = m_xtalA * coupling.pos1_uc;
+					coupling.pos2_sc_lab = m_xtalA * coupling.pos2_sc;
 
 					coupling.dist = tl2::norm<t_vec_real>(
 						coupling.pos2_sc_lab - coupling.pos1_uc_lab);
@@ -1160,7 +1190,7 @@ public:
 			// spin magnitude
 			if(parser.parse_noexcept(site.spin_mag))
 			{
-				site.spin_mag_calc = parser.eval().real();
+				site.spin_mag_calc = parser.eval_noexcept().real();
 			}
 			else
 			{
@@ -1179,7 +1209,7 @@ public:
 				{
 					if(parser.parse_noexcept(site.pos[idx]))
 					{
-						site.pos_calc[idx] = parser.eval().real();
+						site.pos_calc[idx] = parser.eval_noexcept().real();
 					}
 					else
 					{
@@ -1197,7 +1227,7 @@ public:
 				{
 					if(parser.parse_noexcept(site.spin_dir[idx]))
 					{
-						site.spin_dir_calc[idx] = parser.eval();
+						site.spin_dir_calc[idx] = parser.eval_noexcept();
 					}
 					else
 					{
@@ -1215,7 +1245,7 @@ public:
 				{
 					if(parser.parse_noexcept(site.spin_ortho[idx]))
 					{
-						site.spin_ortho_calc[idx] = parser.eval();
+						site.spin_ortho_calc[idx] = parser.eval_noexcept();
 						site.spin_ortho_conj_calc[idx] = std::conj(site.spin_ortho_calc[idx]);
 					}
 					else
@@ -1325,7 +1355,7 @@ public:
 			// symmetric interaction
 			if(parser.parse_noexcept(term.J))
 			{
-				term.J_calc = parser.eval();
+				term.J_calc = parser.eval_noexcept();
 			}
 			else
 			{
@@ -1342,7 +1372,7 @@ public:
 				{
 					if(parser.parse_noexcept(term.dist[i]))
 					{
-						term.dist_calc[i] = parser.eval().real();
+						term.dist_calc[i] = parser.eval_noexcept().real();
 					}
 					else
 					{
@@ -1359,7 +1389,7 @@ public:
 				{
 					if(parser.parse_noexcept(term.dmi[i]))
 					{
-						term.dmi_calc[i] = parser.eval();
+						term.dmi_calc[i] = parser.eval_noexcept();
 					}
 					else
 					{
@@ -1379,7 +1409,7 @@ public:
 
 					if(parser.parse_noexcept(term.Jgen[i][j]))
 					{
-						term.Jgen_calc(i, j) = parser.eval();
+						term.Jgen_calc(i, j) = parser.eval_noexcept();
 					}
 					else
 					{
@@ -1881,17 +1911,32 @@ public:
 
 
 	/**
-	 * applies projectors and weight factors to get neutron intensities
+	 * applies projectors, form and weight factors to get neutron intensities
 	 * @note implements the formalism given by (Toth 2015)
 	 */
 	void CalcIntensities(const t_vec_real& Qvec, std::vector<EnergyAndWeight>&
 		energies_and_correlations) const
 	{
+		tl2::ExprParser<t_cplx> magffact = m_magffact;
+
 		for(EnergyAndWeight& E_and_S : energies_and_correlations)
 		{
 			// apply bose factor
 			if(m_temperature >= 0.)
 				E_and_S.S *= tl2::bose_cutoff(E_and_S.E, m_temperature, m_bose_cutoff);
+
+			// apply form factor
+			if(m_magffact_formula != "")
+			{
+				// get |Q| in units of A^(-1)
+				t_vec_real Q_invA = m_xtalB * Qvec;
+				t_real Q_abs = tl2::norm<t_vec_real>(Q_invA);
+
+				// evaluate form factor expression
+				magffact.register_var("Q", Q_abs);
+				t_real ffact = magffact.eval_noexcept().real();
+				E_and_S.S *= ffact;
+			}
 
 			// apply orthogonal projector for magnetic neutron scattering,
 			// see (Shirane 2002), p. 37, equation (2.64)
@@ -2472,6 +2517,15 @@ public:
 			SetRotationAxis(rotaxis);
 		}
 
+		// crystal lattice
+		t_real a = node.get<t_real>("xtal.a", 0.);
+		t_real b = node.get<t_real>("xtal.b", 0.);
+		t_real c = node.get<t_real>("xtal.c", 0.);
+		t_real alpha = node.get<t_real>("xtal.alpha", 90.) / 180. * tl2::pi<t_real>;
+		t_real beta = node.get<t_real>("xtal.beta", 90.) / 180. * tl2::pi<t_real>;
+		t_real gamma = node.get<t_real>("xtal.gamma", 90.) / 180. * tl2::pi<t_real>;
+		SetCrystalLattice(a, b, c, alpha, beta, gamma);
+
 		CalcExternalField();
 		CalcMagneticSites();
 		CalcExchangeTerms();
@@ -2585,6 +2639,14 @@ public:
 			node.add_child("exchange_terms.term", itemNode);
 		}
 
+		// crystal lattice
+		node.put<t_real>("xtal.a", m_xtallattice[0]);
+		node.put<t_real>("xtal.b", m_xtallattice[1]);
+		node.put<t_real>("xtal.c", m_xtallattice[2]);
+		node.put<t_real>("xtal.alpha", m_xtalangles[0] / tl2::pi<t_real> * 180.);
+		node.put<t_real>("xtal.beta", m_xtalangles[1] / tl2::pi<t_real> * 180.);
+		node.put<t_real>("xtal.gamma", m_xtalangles[2] / tl2::pi<t_real> * 180.);
+
 		return true;
 	}
 	// --------------------------------------------------------------------
@@ -2670,6 +2732,16 @@ private:
 	// formula for the magnetic form factor
 	std::string m_magffact_formula{};
 	tl2::ExprParser<t_cplx> m_magffact{};
+
+	// crystal lattice
+	t_real m_xtallattice[3]{ 5., 5., 5. };
+	t_real m_xtalangles[3]{
+		t_real(0.5) * tl2::pi<t_real>,
+		t_real(0.5) * tl2::pi<t_real>,
+		t_real(0.5) * tl2::pi<t_real>
+	};
+	t_mat_real m_xtalA{ tl2::unit<t_mat_real>(3) };
+	t_mat_real m_xtalB{ tl2::unit<t_mat_real>(3) };
 
 	// settings
 	bool m_is_incommensurate{ false };
