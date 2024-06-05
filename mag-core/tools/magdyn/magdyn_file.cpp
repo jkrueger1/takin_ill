@@ -274,8 +274,22 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 			m_rot_axis[2]->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<t_real>("config.field_angle"))
 			m_rot_angle->setValue(*optVal);
-		if(auto optVal = magdyn.get_optional<int>("config.spacegroup_index"))
-			m_comboSG->setCurrentIndex(*optVal);
+		bool found_sg = false;
+		if(auto optVal = magdyn.get_optional<std::string>("config.spacegroup"))
+		{
+			// set space group by name
+			int idx = m_comboSG->findText(optVal->c_str(), Qt::MatchContains);
+			if(idx >= 0)
+			{
+				m_comboSG->setCurrentIndex(idx);
+				found_sg = true;
+			}
+		}
+		if(!found_sg)
+		{
+			if(auto optVal = magdyn.get_optional<int>("config.spacegroup_index"))
+				m_comboSG->setCurrentIndex(*optVal);
+		}
 		if(auto optVal = magdyn.get_optional<t_real>("config.export_start_h"))
 			m_exportStartQ[0]->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<t_real>("config.export_start_k"))
@@ -649,6 +663,7 @@ bool MagDynDlg::Save(const QString& filename)
 		magdyn.put<t_real>("config.field_axis_k", m_rot_axis[1]->value());
 		magdyn.put<t_real>("config.field_axis_l", m_rot_axis[2]->value());
 		magdyn.put<t_real>("config.field_angle", m_rot_angle->value());
+		magdyn.put<std::string>("config.spacegroup", m_comboSG->currentText().toStdString());
 		magdyn.put<t_real>("config.spacegroup_index", m_comboSG->currentIndex());
 		magdyn.put<t_real>("config.export_start_h", m_exportStartQ[0]->value());
 		magdyn.put<t_real>("config.export_start_k", m_exportStartQ[1]->value());
