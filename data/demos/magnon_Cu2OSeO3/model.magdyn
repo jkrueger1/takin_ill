@@ -37,7 +37,8 @@
 		<field_axis_k>0</field_axis_k>
 		<field_axis_l>1</field_axis_l>
 		<field_angle>90</field_angle>
-		<spacegroup_index>520</spacegroup_index>
+		<spacegroup>P 21 3</spacegroup>
+		<spacegroup_index>525</spacegroup_index>
 		<export_start_h>-1</export_start_h>
 		<export_start_k>-1</export_start_k>
 		<export_start_l>-1</export_start_l>
