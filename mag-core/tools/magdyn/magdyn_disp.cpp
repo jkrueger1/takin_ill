@@ -39,6 +39,7 @@ namespace asio = boost::asio;
 #include <thread>
 #include <future>
 #include <mutex>
+#include <cstdint>
 
 #include "tlibs2/libs/phys.h"
 #include "tlibs2/libs/algos.h"
@@ -127,8 +128,13 @@ void MagDynDlg::PlotDispersion()
 	{
 		GraphWithWeights *graph = new GraphWithWeights(m_plot->xAxis, m_plot->yAxis);
 		QPen pen = graph->pen();
-		const QColor colFull(0xff, 0x00, 0x00);
+
+		// colour
+		std::uint32_t colPlot = 0xff0000;
+		std::istringstream{g_colPlot} >> std::hex >> colPlot;
+		const QColor colFull((colPlot&0xff0000) >> 16, (colPlot&0x00ff00) >> 8, colPlot&0x0000ff);
 		pen.setColor(colFull);
+
 		pen.setWidthF(1.);
 		graph->setPen(pen);
 		graph->setBrush(QBrush(pen.color(), Qt::SolidPattern));

@@ -89,6 +89,10 @@ extern QString g_theme, g_font;
 // use native menubar and dialogs?
 extern int g_use_native_menubar, g_use_native_dialogs;
 
+// plot colour
+extern std::string g_colPlot;
+
+
 // transfer the setting from the takin core program
 void get_settings_from_takin_core();
 // ----------------------------------------------------------------------------
@@ -100,7 +104,7 @@ void get_settings_from_takin_core();
 // ----------------------------------------------------------------------------
 #include "settings.h"
 
-constexpr std::array<SettingsVariable, 9> g_settingsvariables
+constexpr std::array<SettingsVariable, 10> g_settingsvariables
 {{
 	// epsilons and precisions
 	{
@@ -141,6 +145,13 @@ constexpr std::array<SettingsVariable, 9> g_settingsvariables
 		.description = "Maximum number of recent files.",
 		.key = "maxnum_recents",
 		.value = &g_maxnum_recents,
+	},
+
+	// colours
+	{
+		.description = "Plot colour.",
+		.key = "plot_colour",
+		.value = &g_colPlot,
 	},
 
 	// optional features

@@ -470,14 +470,23 @@ protected:
 		add_table_item_loop(seq, m_table);
 
 		// set value field editable
-		for(int row=0; row<m_table->rowCount(); ++row)
+		for(int row = 0; row < m_table->rowCount(); ++row)
 		{
+			// setting key
 			m_table->item(row, (int)SettingsColumn::SETTING)->setFlags(
 				m_table->item(row, (int)SettingsColumn::SETTING)->flags() & ~Qt::ItemIsEditable);
+
+			// type
 			m_table->item(row, (int)SettingsColumn::TYPE)->setFlags(
 				m_table->item(row, (int)SettingsColumn::TYPE)->flags() & ~Qt::ItemIsEditable);
-			m_table->item(row, (int)SettingsColumn::VALUE)->setFlags(
-				m_table->item(row, (int)SettingsColumn::VALUE)->flags() | Qt::ItemIsEditable);
+
+			// value
+			QTableWidgetItem *itemVal = m_table->item(row, (int)SettingsColumn::VALUE);
+			if(itemVal)
+			{
+				m_table->item(row, (int)SettingsColumn::VALUE)->setFlags(
+					itemVal->flags() | Qt::ItemIsEditable);
+			}
 		}
 	}
 
@@ -498,7 +507,7 @@ protected:
 		// gui settings
 		if(s_theme)
 		{
-			if(auto iter = s_defaults.find(std::string{"<theme>"}); iter!=s_defaults.end())
+			if(auto iter = s_defaults.find(std::string{"<theme>"}); iter != s_defaults.end())
 			{
 				if(std::holds_alternative<std::string>(iter->second))
 					*s_theme = std::get<std::string>(iter->second).c_str();
@@ -512,7 +521,7 @@ protected:
 		}
 		if(s_font)
 		{
-			if(auto iter = s_defaults.find(std::string{"<font>"}); iter!=s_defaults.end())
+			if(auto iter = s_defaults.find(std::string{"<font>"}); iter != s_defaults.end())
 			{
 				if(std::holds_alternative<std::string>(iter->second))
 					*s_font = std::get<std::string>(iter->second).c_str();
@@ -650,6 +659,8 @@ protected:
 			return "Integer";
 		else if constexpr (std::is_same_v<T, unsigned int>)
 			return "Integer, unsigned";
+		else if constexpr (std::is_same_v<T, std::string>)
+			return "String";
 		else
 			return "Unknown";
 	}
@@ -666,38 +677,49 @@ protected:
 		constexpr const auto* value = std::get<var.value.index()>(var.value);
 		using t_value = std::decay_t<decltype(*value)>;
 
-		t_value finalval = *value;
-		if(var.is_angle)
-			finalval = finalval / tl2::pi<t_real>*180;
+		table->setItem((int)idx, (int)SettingsColumn::SETTING,
+			new QTableWidgetItem{var.description});
+		table->setItem((int)idx, (int)SettingsColumn::TYPE,
+			new QTableWidgetItem{get_type_str<t_value>()});
 
-		table->setItem((int)idx, (int)SettingsColumn::SETTING, new QTableWidgetItem{var.description});
-		table->setItem((int)idx, (int)SettingsColumn::TYPE, new QTableWidgetItem{get_type_str<t_value>()});
+		if constexpr (!std::is_same_v<t_value, std::string>)
+		{  // non-string items
+			t_value finalval = *value;
 
-		if(var.editor == SettingsVariableEditor::YESNO)
-		{
-			QComboBox *combo = new QComboBox(table);
-			combo->addItem("No");
-			combo->addItem("Yes");
+			if(var.is_angle)
+				finalval = finalval / tl2::pi<t_real>*180;
 
-			combo->setCurrentIndex(finalval == 0 ? 0 : 1);
-			table->setCellWidget((int)idx, (int)SettingsColumn::VALUE, combo);
+			if(var.editor == SettingsVariableEditor::YESNO)
+			{
+				QComboBox *combo = new QComboBox(table);
+				combo->addItem("No");
+				combo->addItem("Yes");
+
+				combo->setCurrentIndex(finalval == 0 ? 0 : 1);
+				table->setCellWidget((int)idx, (int)SettingsColumn::VALUE, combo);
+			}
+			else if(var.editor == SettingsVariableEditor::COMBOBOX)
+			{
+				std::vector<std::string> config_tokens;
+				tl2::get_tokens_seq<std::string, std::string>(
+					var.editor_config, ";;", config_tokens, true);
+
+				QComboBox *combo = new QComboBox(table);
+				for(const std::string& config_token : config_tokens)
+					combo->addItem(config_token.c_str());
+
+				combo->setCurrentIndex((int)finalval);
+				table->setCellWidget((int)idx, (int)SettingsColumn::VALUE, combo);
+			}
+			else
+			{
+				QTableWidgetItem *item = new tl2::NumericTableWidgetItem<t_value>(finalval, 10);
+				table->setItem((int)idx, (int)SettingsColumn::VALUE, item);
+			}
 		}
-		if(var.editor == SettingsVariableEditor::COMBOBOX)
+		else  // string items
 		{
-			std::vector<std::string> config_tokens;
-			tl2::get_tokens_seq<std::string, std::string>(
-				var.editor_config, ";;", config_tokens, true);
-
-			QComboBox *combo = new QComboBox(table);
-			for(const std::string& config_token : config_tokens)
-				combo->addItem(config_token.c_str());
-
-			combo->setCurrentIndex((int)finalval);
-			table->setCellWidget((int)idx, (int)SettingsColumn::VALUE, combo);
-		}
-		else
-		{
-			QTableWidgetItem *item = new tl2::NumericTableWidgetItem<t_value>(finalval, 10);
+			QTableWidgetItem *item = new QTableWidgetItem{value->c_str()};
 			table->setItem((int)idx, (int)SettingsColumn::VALUE, item);
 		}
 	}
@@ -725,8 +747,10 @@ protected:
 	{
 		if(sett->contains(key))
 		{
-			*val = sett->value(key, *val).template value<T>();
-			//std::cout << key << ": " << *val << std::endl;
+			if constexpr (!std::is_same_v<T, std::string>)
+				*val = sett->value(key, *val).template value<T>();
+			else
+				*val = sett->value(key, val->c_str()).template value<QString>().toStdString();
 		}
 	}
 
@@ -838,18 +862,34 @@ protected:
 		constexpr auto* value = std::get<var.value.index()>(var.value);
 		using t_value = std::decay_t<decltype(*value)>;
 
-		t_value finalval = dynamic_cast<tl2::NumericTableWidgetItem<t_value>*>(
-			table->item((int)idx, (int)SettingsColumn::VALUE))->GetValue();
-		if(var.is_angle)
-			finalval = finalval / 180.*tl2::pi<t_real>;
+		t_value finalval{};
 
-		// alternatively use the value from the editor widget if available
-		if(var.editor == SettingsVariableEditor::YESNO ||
-			var.editor == SettingsVariableEditor::COMBOBOX)
+		if constexpr (!std::is_same_v<t_value, std::string>)
+		{  // non-string values
+			// use the value from the editor widget if available
+			if(var.editor == SettingsVariableEditor::YESNO ||
+				var.editor == SettingsVariableEditor::COMBOBOX)
+			{
+				QComboBox *combo = static_cast<QComboBox*>(
+					table->cellWidget((int)idx, (int)SettingsColumn::VALUE));
+
+				finalval = (t_value)combo->currentIndex();
+			}
+			else
+			{
+				finalval = dynamic_cast<tl2::NumericTableWidgetItem<t_value>*>(
+					table->item((int)idx,
+					(int)SettingsColumn::VALUE))->GetValue();
+
+				if(var.is_angle)
+					finalval = finalval / 180. * tl2::pi<t_real>;
+			}
+		}
+		else  // string values
 		{
-			QComboBox *combo = static_cast<QComboBox*>(
-				table->cellWidget((int)idx, (int)SettingsColumn::VALUE));
-			finalval = (t_value)combo->currentIndex();
+			finalval = dynamic_cast<QTableWidgetItem*>(
+				table->item((int)idx,
+				(int)SettingsColumn::VALUE))->text().toStdString();
 		}
 
 		// set the global variable
@@ -857,7 +897,12 @@ protected:
 
 		// write out the settings
 		if(sett)
-			sett->setValue(var.key, *value);
+		{
+			if constexpr (!std::is_same_v<t_value, std::string>)
+				sett->setValue(var.key, *value);
+			else
+				sett->setValue(var.key, value->c_str());				
+		}
 	}
 
 
