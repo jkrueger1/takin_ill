@@ -119,7 +119,7 @@ void MagDynDlg::SyncTermsFromKernel(boost::optional<const pt::ptree&> extra_info
 		const auto& term = m_dyn.GetExchangeTerm(term_index);
 
 		// default colour
-		std::string rgb = "#0x00bf00";
+		std::string rgb = "#00bf00";
 
 		// get additional data from exchange term entry
 		if(extra_infos && term_index < extra_infos->size())
@@ -128,7 +128,7 @@ void MagDynDlg::SyncTermsFromKernel(boost::optional<const pt::ptree&> extra_info
 			std::advance(termiter, term_index);
 
 			// read colour
-			rgb = termiter->second.get<std::string>("colour", "#0x00bf00");
+			rgb = termiter->second.get<std::string>("colour", "#00bf00");
 		}
 
 		AddTermTabItem(-1,

@@ -405,12 +405,15 @@ void MagDynDlg::StructPlotSync()
 		int _sc_z = int(std::round(sc_z));
 
 		// default colour for unit cell magnetic sites
-		t_real_gl rgb[3] {0., 0., 1.};
+		t_real_gl rgb[3] { 0., 0., 1. };
 
 		// get user-defined colour
 		bool user_col = false;
 		if(site_idx < std::size_t(m_sitestab->rowCount()))
-			user_col = get_colour<t_real_gl>(m_sitestab->item(site_idx, COL_SITE_RGB)->text().toStdString(), rgb);
+		{
+			user_col = get_colour<t_real_gl>(
+				m_sitestab->item(site_idx, COL_SITE_RGB)->text().toStdString(), rgb);
+		}
 
 		// no user-defined colour -> use default for super-cell magnetic sites
 		if(!user_col)
@@ -523,7 +526,8 @@ void MagDynDlg::StructPlotSync()
 		// get colour
 		t_real_gl rgb[3] {0., 0.75, 0.};
 		if(term_idx < std::size_t(m_termstab->rowCount()))
-			get_colour<t_real_gl>(m_termstab->item(term_idx, COL_XCH_RGB)->text().toStdString(), rgb);
+			get_colour<t_real_gl>(
+				m_termstab->item(term_idx, COL_XCH_RGB)->text().toStdString(), rgb);
 
 		t_real_gl scale = 1.;
 

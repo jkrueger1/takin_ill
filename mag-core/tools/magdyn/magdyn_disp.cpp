@@ -32,6 +32,7 @@
 namespace asio = boost::asio;
 
 #include "magdyn.h"
+#include "helper.h"
 
 #include <QtWidgets/QApplication>
 
@@ -39,7 +40,6 @@ namespace asio = boost::asio;
 #include <thread>
 #include <future>
 #include <mutex>
-#include <cstdint>
 
 #include "tlibs2/libs/phys.h"
 #include "tlibs2/libs/algos.h"
@@ -130,9 +130,9 @@ void MagDynDlg::PlotDispersion()
 		QPen pen = graph->pen();
 
 		// colour
-		std::uint32_t colPlot = 0xff0000;
-		std::istringstream{g_colPlot} >> std::hex >> colPlot;
-		const QColor colFull((colPlot&0xff0000) >> 16, (colPlot&0x00ff00) >> 8, colPlot&0x0000ff);
+		int col_comp[3] = { 0xff, 0, 0 };
+		get_colour<int>(g_colPlot, col_comp);
+		const QColor colFull(col_comp[0], col_comp[1], col_comp[2]);
 		pen.setColor(colFull);
 
 		pen.setWidthF(1.);
