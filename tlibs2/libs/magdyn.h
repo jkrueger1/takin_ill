@@ -1211,7 +1211,7 @@ public:
 					<< " for site \"" << site.name << "\""
 					<< "." << std::endl;
 			}
-				
+
 
 			for(std::uint8_t idx = 0; idx < 3; ++idx)
 			{
@@ -2242,13 +2242,6 @@ public:
 			std::ifstream ifstr{filename};
 			boost::property_tree::read_xml(ifstr, node);
 
-			// check signature
-			if(auto optInfo = node.get_optional<std::string>("magdyn.meta.info");
-				!optInfo || !(*optInfo==std::string{"magdyn_tool"}))
-			{
-				return false;
-			}
-
 			const auto &magdyn = node.get_child("magdyn");
 			return Load(magdyn);
 		}
@@ -2272,11 +2265,6 @@ public:
 	{
 		// properties tree
 		boost::property_tree::ptree node;
-
-		// write signature
-		node.put<std::string>("meta.info", "magdyn_tool");
-		node.put<std::string>("meta.date",
-			tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()));
 
 		if(!Save(node))
 			return false;
@@ -2303,6 +2291,13 @@ public:
 	 */
 	bool Load(const boost::property_tree::ptree& node)
 	{
+		// check signature
+		if(auto optInfo = node.get_optional<std::string>("meta.info");
+			!optInfo || !(*optInfo == std::string{"magdyn_tool"}))
+		{
+			return false;
+		}
+
 		Clear();
 
 		// variables
@@ -2551,6 +2546,11 @@ public:
 	 */
 	bool Save(boost::property_tree::ptree& node) const
 	{
+		// write signature
+		node.put<std::string>("meta.info", "magdyn_tool");
+		node.put<std::string>("meta.date", tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()));
+		node.put<std::string>("meta.doi_tlibs", "https://doi.org/10.5281/zenodo.5717779");
+
 		// external field
 		if(m_field.dir.size() == 3)
 		{

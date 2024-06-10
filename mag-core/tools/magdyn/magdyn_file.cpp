@@ -328,7 +328,11 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 			}
 		}
 
-		m_dyn.Load(magdyn);
+		if(!m_dyn.Load(magdyn))
+		{
+			QMessageBox::critical(this, "Magnetic Dynamics", "Cannot load magdyn file.");
+			return false;
+		}
 
 		// external field
 		m_field_dir[0]->setValue(m_dyn.GetExternalField().dir[0]);
@@ -613,12 +617,9 @@ bool MagDynDlg::Save(const QString& filename)
 		const char* user = std::getenv("USER");
 		if(!user) user = "";
 
-		magdyn.put<std::string>("meta.info", "magdyn_tool");
-		magdyn.put<std::string>("meta.date", tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()));
 		magdyn.put<std::string>("meta.user", user);
 		magdyn.put<std::string>("meta.url", "https://github.com/ILLGrenoble/takin");
 		magdyn.put<std::string>("meta.doi", "https://doi.org/10.5281/zenodo.4117437");
-		magdyn.put<std::string>("meta.doi_tlibs", "https://doi.org/10.5281/zenodo.5717779");
 
 		// save user comment as utf8 to avoid collisions with possible xml tags
 		magdyn.put<std::string>("meta.notes", m_notes_dlg->GetNotes());
@@ -674,7 +675,12 @@ bool MagDynDlg::Save(const QString& filename)
 		magdyn.put<int>("config.couplings_max_count", m_maxcouplings->value());
 
 		// save magnon calculator configuration
-		m_dyn.Save(magdyn);
+		if(!m_dyn.Save(magdyn))
+		{
+			QMessageBox::critical(this, "Magnetic Dynamics", "Cannot save magdyn file.");
+			return false;
+		}
+
 
 		// saved fields
 		for(int field_row = 0; field_row < m_fieldstab->rowCount(); ++field_row)

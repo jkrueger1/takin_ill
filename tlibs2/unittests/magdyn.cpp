@@ -40,6 +40,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_magdyn, t_real, t_types_real)
 {
 	static constexpr t_real eps = 1e-4;
 
+	// real type name
+	std::string real_name;
+	if constexpr(std::is_same_v<t_real, double>)
+		real_name = "double";
+	else if constexpr(std::is_same_v<t_real, float>)
+		real_name = "float";
+
+
+	// types
 	using t_cplx = std::complex<t_real>;
 	using t_mat = tl2::mat<t_cplx>;
 	using t_vec = tl2::vec<t_cplx>;
@@ -51,7 +60,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_magdyn, t_real, t_types_real)
 		t_mat_real, t_vec_real,
 		t_cplx, t_real,
 		std::size_t>;
-
 
 	// magnon calculator
 	t_magdyn magdyn{};
@@ -68,12 +76,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_magdyn, t_real, t_types_real)
 	// add a site
 	typename t_magdyn::MagneticSite site{};
 	site.name = "site";
+
 	site.pos[0] = "0";
 	site.pos[1] = "0";
 	site.pos[2] = "0";
+
 	site.spin_dir[0] = "0";
 	site.spin_dir[1] = "0";
 	site.spin_dir[2] = "1";
+
 	site.spin_mag = "1";
 
 	magdyn.CalcMagneticSite(site);
@@ -88,7 +99,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_magdyn, t_real, t_types_real)
 	coupling.site1 = "site";
 	coupling.site2 = "site";
 
-	coupling.dist[0] = "1.";
+	coupling.dist[0] = "1";
 	coupling.dist[1] = "0";
 	coupling.dist[2] = "0";
 
@@ -98,6 +109,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_magdyn, t_real, t_types_real)
 	magdyn.AddExchangeTerm(std::move(coupling));
 
 
+	// set propagation vector
 	t_vec_real prop = tl2::create<t_vec_real>({ 0.5, 0., 0. });
 	magdyn.SetOrderingWavevector(prop);
 
@@ -105,8 +117,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_magdyn, t_real, t_types_real)
 	magdyn.SetRotationAxis(rotax);
 
 
+	// calculate a point on the dispersion
 	auto Es_and_S = magdyn.CalcEnergies(0.1, 0., 0., false);
-	BOOST_TEST(Es_and_S.size() == 2);
+	BOOST_TEST(Es_and_S.size() == 2);  // + and - energy branch
 	BOOST_TEST(tl2::equals<t_real>(Es_and_S[0].E, -Es_and_S[1].E, eps));
 	BOOST_TEST(tl2::equals<t_real>(std::abs(Es_and_S[0].E), 0.5878, eps));
+	BOOST_TEST(tl2::equals<t_real>(std::abs(Es_and_S[0].weight), 0.6498, eps));
+
+
+	// calculate and save a dispersion branch
+	magdyn.SaveDispersion("disp_" + real_name + ".dat",
+		-1. ,0., 0.,  // from
+		+1., 0., 0.,  // to
+		256);
+
+
+	// save magnetic model
+	magdyn.Save("model_" + real_name + ".magdyn");
 }
