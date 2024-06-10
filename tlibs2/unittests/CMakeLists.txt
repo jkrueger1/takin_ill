@@ -96,8 +96,10 @@ add_executable(fit0 fit0.cpp)
 add_executable(fit1 fit1.cpp)
 add_executable(cov cov.cpp)
 add_executable(fft fft.cpp)
+add_executable(magdyn magdyn.cpp)
 
 target_link_libraries(expr Threads::Threads)
+target_link_libraries(magdyn ${Lapacke_LIBRARIES})
 target_link_libraries(mat0 ${Lapacke_LIBRARIES})
 target_link_libraries(mat2 ${Lapacke_LIBRARIES})
 target_link_libraries(rotation ${Lapacke_LIBRARIES})
@@ -115,6 +117,7 @@ target_link_libraries(fit1 ${Minuit2_LIBRARIES}) #OpenMP::OpenMP_CXX)
 # -----------------------------------------------------------------------------
 # run individual test cases
 add_test(expr expr)
+add_test(magdyn magdyn)
 add_test(cryst cryst)
 add_test(mat0 mat0)
 add_test(mat1 mat1)

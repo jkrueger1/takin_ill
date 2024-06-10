@@ -4,8 +4,6 @@
  * @date 28-mar-20
  * @license GPLv3, see 'LICENSE' file
  *
- * g++-10 -std=c++20 -I.. -o expr expr.cpp ../libs/log.cpp
- *
  * ----------------------------------------------------------------------------
  * tlibs
  * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
@@ -158,7 +156,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_expr_cplx, t_cplx, t_types_cplx)
 	}
 }
 
-/*
+
 BOOST_AUTO_TEST_CASE_TEMPLATE(test_expr_func, t_real, t_types_real)
 {
 	static constexpr t_real eps = 1e-6;
@@ -167,7 +165,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_expr_func, t_real, t_types_real)
 	BOOST_TEST(
 		std::get<0>(tupres),
 		tl2::equals<t_real>(std::get<1>(tupres), 14., eps));
-}*/
+}
 
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(test_expr_int, t_int, t_types_int)
