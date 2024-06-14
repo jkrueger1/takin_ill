@@ -162,6 +162,9 @@ using t_strarr33 = std::array<std::array<std::string, 3>, 3>;
  */
 template<class t_mat, class t_vec, class t_vec_real,
 	class t_size, class t_real = typename t_vec_real::value_type>
+#ifndef SWIG  // TODO: remove this as soon as swig understands concepts
+requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
+#endif
 struct t_MagneticSite
 {
 	// ------------------------------------------------------------------------
@@ -196,6 +199,9 @@ struct t_MagneticSite
  */
 template<class t_mat, class t_vec, class t_vec_real,
 	class t_size, class t_cplx = typename t_mat::value_type>
+#ifndef SWIG  // TODO: remove this as soon as swig understands concepts
+requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
+#endif
 struct t_ExchangeTerm
 {
 	// ------------------------------------------------------------------------
@@ -229,6 +235,9 @@ struct t_ExchangeTerm
  * terms related to an external magnetic field
  */
 template<class t_vec_real, class t_real>
+#ifndef SWIG  // TODO: remove this as soon as swig understands concepts
+requires tl2::is_vec<t_vec_real>
+#endif
 struct t_ExternalField
 {
 	bool align_spins{};          // align spins along external field
@@ -243,6 +252,9 @@ struct t_ExternalField
  * eigenenergies and spin-spin correlation matrix
  */
 template<class t_mat, class t_real>
+#ifndef SWIG  // TODO: remove this as soon as swig understands concepts
+requires tl2::is_mat<t_mat>
+#endif
 struct t_EnergyAndWeight
 {
 	t_real E{};
@@ -422,30 +434,6 @@ public:
 
 
 
-	void SetMagneticFormFactor(const std::string& ffact)
-	{
-		m_magffact_formula = ffact;
-		if(m_magffact_formula == "")
-			return;
-
-		// parse the given formula
-		m_magffact = GetExprParser();
-		m_magffact.SetInvalid0(false);
-		m_magffact.register_var("Q", 0.);
-
-		if(!m_magffact.parse_noexcept(ffact))
-		{
-			m_magffact_formula = "";
-
-			std::cerr << "Magdyn error: "
-				<< "Magnetic form facor formula: \""
-				<< ffact << "\" could not be parsed."
-				<< std::endl;
-		}
-	}
-
-
-
 	const MagneticSite& GetMagneticSite(t_size idx) const
 	{
 		if(!CheckMagneticSite(idx))
@@ -578,6 +566,30 @@ public:
 	void SetPhaseSign(t_real sign) { m_phase_sign = sign; }
 	void SetCholeskyMaxTries(t_size max_tries) { m_tries_chol = max_tries; }
 	void SetCholeskyInc(t_real delta) { m_delta_chol = delta; }
+
+
+
+	void SetMagneticFormFactor(const std::string& ffact)
+	{
+		m_magffact_formula = ffact;
+		if(m_magffact_formula == "")
+			return;
+
+		// parse the given formula
+		m_magffact = GetExprParser();
+		m_magffact.SetInvalid0(false);
+		m_magffact.register_var("Q", 0.);
+
+		if(!m_magffact.parse_noexcept(ffact))
+		{
+			m_magffact_formula = "";
+
+			std::cerr << "Magdyn error: "
+				<< "Magnetic form facor formula: \""
+				<< ffact << "\" could not be parsed."
+				<< std::endl;
+		}
+	}
 
 
 

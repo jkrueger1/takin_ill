@@ -31,7 +31,7 @@
 #define __TLIBS2_FILE_H__
 
 
-#if __has_include(<filesystem>) /*&& !defined(__APPLE_CC__)*/
+#if __has_include(<filesystem>)
 	#include <filesystem>
 	namespace fs = std::filesystem;
 #else
