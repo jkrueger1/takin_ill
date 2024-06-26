@@ -452,10 +452,13 @@ protected:
 
 	void ClearDispersion(bool replot = false);
 	void Clear();
+
 	void Load();
-	void ImportStructure();
 	void Save();
 	void SaveAs();
+
+	void ImportStructure();
+	void ExportToSunny();
 	void ExportSQE();
 
 	void SavePlotFigure();
@@ -513,7 +516,7 @@ public:
 	bool Save(const QString& filename);
 
 	bool ImportStructure(const QString& filename);
-
+	bool ExportToSunny(const QString& filename);
 	bool ExportSQE(const QString& filename);
 
 	void SetCurrentFileAndDir(const QString& filename);
