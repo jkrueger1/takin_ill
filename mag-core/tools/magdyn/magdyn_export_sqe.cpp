@@ -388,7 +388,8 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 	else if(format == EXPORT_HDF5)
 	{
 		const char* user = std::getenv("USER");
-		if(!user) user = "";
+		if(!user)
+			user = "";
 		tl2::set_h5_string<std::string>(*h5file, "meta_infos/type", "takin_grid");
 		tl2::set_h5_string<std::string>(*h5file, "meta_infos/description", "Takin/Magdyn grid format");
 		tl2::set_h5_string<std::string>(*h5file, "meta_infos/user", user);

@@ -601,7 +601,8 @@ bool MagDynDlg::Save(const QString& filename)
 		pt::ptree magdyn;
 
 		const char* user = std::getenv("USER");
-		if(!user) user = "";
+		if(!user)
+			user = "";
 
 		magdyn.put<std::string>("meta.user", user);
 		magdyn.put<std::string>("meta.url", "https://github.com/ILLGrenoble/takin");
