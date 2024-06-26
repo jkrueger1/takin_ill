@@ -1393,12 +1393,12 @@ void MagDynDlg::CreateDispersionPanel()
 		QSizePolicy::Expanding, QSizePolicy::Expanding});
 
 	// start and stop coordinates
-	m_q_start[0] = new QDoubleSpinBox(m_disppanel);
-	m_q_start[1] = new QDoubleSpinBox(m_disppanel);
-	m_q_start[2] = new QDoubleSpinBox(m_disppanel);
-	m_q_end[0] = new QDoubleSpinBox(m_disppanel);
-	m_q_end[1] = new QDoubleSpinBox(m_disppanel);
-	m_q_end[2] = new QDoubleSpinBox(m_disppanel);
+	m_Q_start[0] = new QDoubleSpinBox(m_disppanel);
+	m_Q_start[1] = new QDoubleSpinBox(m_disppanel);
+	m_Q_start[2] = new QDoubleSpinBox(m_disppanel);
+	m_Q_end[0] = new QDoubleSpinBox(m_disppanel);
+	m_Q_end[1] = new QDoubleSpinBox(m_disppanel);
+	m_Q_end[2] = new QDoubleSpinBox(m_disppanel);
 
 	// number of points in plot
 	m_num_points = new QSpinBox(m_disppanel);
@@ -1428,29 +1428,29 @@ void MagDynDlg::CreateDispersionPanel()
 
 	for(int i = 0; i < 3; ++i)
 	{
-		m_q_start[i]->setDecimals(4);
-		m_q_start[i]->setMinimum(-99.9999);
-		m_q_start[i]->setMaximum(+99.9999);
-		m_q_start[i]->setSingleStep(0.01);
-		m_q_start[i]->setValue(0.);
-		m_q_start[i]->setSuffix(" rlu");
-		m_q_start[i]->setSizePolicy(QSizePolicy{
+		m_Q_start[i]->setDecimals(4);
+		m_Q_start[i]->setMinimum(-99.9999);
+		m_Q_start[i]->setMaximum(+99.9999);
+		m_Q_start[i]->setSingleStep(0.01);
+		m_Q_start[i]->setValue(0.);
+		m_Q_start[i]->setSuffix(" rlu");
+		m_Q_start[i]->setSizePolicy(QSizePolicy{
 			QSizePolicy::Expanding, QSizePolicy::Fixed});
-		m_q_start[i]->setPrefix(hklPrefix[i]);
+		m_Q_start[i]->setPrefix(hklPrefix[i]);
 
-		m_q_end[i]->setDecimals(4);
-		m_q_end[i]->setMinimum(-99.9999);
-		m_q_end[i]->setMaximum(+99.9999);
-		m_q_end[i]->setSingleStep(0.01);
-		m_q_end[i]->setValue(0.);
-		m_q_end[i]->setSuffix(" rlu");
-		m_q_end[i]->setSizePolicy(QSizePolicy{
+		m_Q_end[i]->setDecimals(4);
+		m_Q_end[i]->setMinimum(-99.9999);
+		m_Q_end[i]->setMaximum(+99.9999);
+		m_Q_end[i]->setSingleStep(0.01);
+		m_Q_end[i]->setValue(0.);
+		m_Q_end[i]->setSuffix(" rlu");
+		m_Q_end[i]->setSizePolicy(QSizePolicy{
 			QSizePolicy::Expanding, QSizePolicy::Fixed});
-		m_q_end[i]->setPrefix(hklPrefix[i]);
+		m_Q_end[i]->setPrefix(hklPrefix[i]);
 	}
 
-	m_q_start[0]->setValue(-1.);
-	m_q_end[0]->setValue(+1.);
+	m_Q_start[0]->setValue(-1.);
+	m_Q_end[0]->setValue(+1.);
 
 	auto grid = new QGridLayout(m_disppanel);
 	grid->setSpacing(4);
@@ -1460,14 +1460,14 @@ void MagDynDlg::CreateDispersionPanel()
 	grid->addWidget(m_plot, y++,0,1,4);
 	grid->addWidget(
 		new QLabel(QString("Start Q:"), m_disppanel), y,0,1,1);
-	grid->addWidget(m_q_start[0], y,1,1,1);
-	grid->addWidget(m_q_start[1], y,2,1,1);
-	grid->addWidget(m_q_start[2], y++,3,1,1);
+	grid->addWidget(m_Q_start[0], y,1,1,1);
+	grid->addWidget(m_Q_start[1], y,2,1,1);
+	grid->addWidget(m_Q_start[2], y++,3,1,1);
 	grid->addWidget(
 		new QLabel(QString("End Q:"), m_disppanel), y,0,1,1);
-	grid->addWidget(m_q_end[0], y,1,1,1);
-	grid->addWidget(m_q_end[1], y,2,1,1);
-	grid->addWidget(m_q_end[2], y++,3,1,1);
+	grid->addWidget(m_Q_end[0], y,1,1,1);
+	grid->addWidget(m_Q_end[1], y,2,1,1);
+	grid->addWidget(m_Q_end[2], y++,3,1,1);
 	grid->addWidget(
 		new QLabel(QString("Q Count:"), m_disppanel), y,0,1,1);
 	grid->addWidget(m_num_points, y,1,1,1);
@@ -1484,14 +1484,14 @@ void MagDynDlg::CreateDispersionPanel()
 	// signals
 	for(int i = 0; i < 3; ++i)
 	{
-		connect(m_q_start[i],
+		connect(m_Q_start[i],
 			static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
 			[this]()
 		{
 			if(this->m_autocalc->isChecked())
 				this->CalcDispersion();
 		});
-		connect(m_q_end[i],
+		connect(m_Q_end[i],
 			static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
 			[this]()
 		{

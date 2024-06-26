@@ -156,7 +156,7 @@ void MagDynDlg::PlotDispersion()
 
 	// set ranges
 	auto [min_E_iter, max_E_iter] = std::minmax_element(m_Es_data.begin(), m_Es_data.end());
-	m_plot->xAxis->setRange(m_Q_start, m_Q_end);
+	m_plot->xAxis->setRange(m_Q_min, m_Q_max);
 	if(min_E_iter != m_Es_data.end() && max_E_iter != m_Es_data.end())
 	{
 		t_real E_range = *max_E_iter - *min_E_iter;
@@ -205,16 +205,16 @@ void MagDynDlg::CalcDispersion()
 
 	t_real Q_start[]
 	{
-		(t_real)m_q_start[0]->value(),
-		(t_real)m_q_start[1]->value(),
-		(t_real)m_q_start[2]->value(),
+		(t_real)m_Q_start[0]->value(),
+		(t_real)m_Q_start[1]->value(),
+		(t_real)m_Q_start[2]->value(),
 	};
 
 	t_real Q_end[]
 	{
-		(t_real)m_q_end[0]->value(),
-		(t_real)m_q_end[1]->value(),
-		(t_real)m_q_end[2]->value(),
+		(t_real)m_Q_end[0]->value(),
+		(t_real)m_Q_end[1]->value(),
+		(t_real)m_Q_end[2]->value(),
 	};
 
 	const t_real Q_range[]
@@ -244,8 +244,8 @@ void MagDynDlg::CalcDispersion()
 		m_ws_data_channel[i].reserve(num_pts*10);
 	}
 
-	m_Q_start = Q_start[m_Q_idx];
-	m_Q_end = Q_end[m_Q_idx];
+	m_Q_min = Q_start[m_Q_idx];
+	m_Q_max = Q_end[m_Q_idx];
 
 	// options
 	const bool is_comm = !m_dyn.IsIncommensurate();
@@ -675,12 +675,12 @@ void MagDynDlg::SetCoordinates(const t_vec_real& Qi, const t_vec_real& Qf, bool 
 	} BOOST_SCOPE_EXIT_END
 
 	// calculate the dispersion from Qi to Qf
-	m_q_start[0]->setValue(Qi[0]);
-	m_q_start[1]->setValue(Qi[1]);
-	m_q_start[2]->setValue(Qi[2]);
-	m_q_end[0]->setValue(Qf[0]);
-	m_q_end[1]->setValue(Qf[1]);
-	m_q_end[2]->setValue(Qf[2]);
+	m_Q_start[0]->setValue(Qi[0]);
+	m_Q_start[1]->setValue(Qi[1]);
+	m_Q_start[2]->setValue(Qi[2]);
+	m_Q_end[0]->setValue(Qf[0]);
+	m_Q_end[1]->setValue(Qf[1]);
+	m_Q_end[2]->setValue(Qf[2]);
 
 	// calculate the hamiltonian for Qi
 	m_q[0]->setValue(Qi[0]);
@@ -726,12 +726,12 @@ void MagDynDlg::SetCurrentCoordinate(int which)
 				this_->CalcDispersion();
 		} BOOST_SCOPE_EXIT_END
 
-		m_q_start[0]->setValue(hi->GetValue());
-		m_q_start[1]->setValue(ki->GetValue());
-		m_q_start[2]->setValue(li->GetValue());
-		m_q_end[0]->setValue(hf->GetValue());
-		m_q_end[1]->setValue(kf->GetValue());
-		m_q_end[2]->setValue(lf->GetValue());
+		m_Q_start[0]->setValue(hi->GetValue());
+		m_Q_start[1]->setValue(ki->GetValue());
+		m_Q_start[2]->setValue(li->GetValue());
+		m_Q_end[0]->setValue(hf->GetValue());
+		m_Q_end[1]->setValue(kf->GetValue());
+		m_Q_end[2]->setValue(lf->GetValue());
 	}
 
 	// send initial Q coordinates to hamiltonian calculation

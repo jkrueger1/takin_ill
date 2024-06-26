@@ -308,8 +308,8 @@ protected:
 	QCustomPlot *m_plot{};
 	std::vector<GraphWithWeights*> m_graphs{};
 	QMenu *m_menuDisp{};
-	QDoubleSpinBox *m_q_start[3]{nullptr, nullptr, nullptr};
-	QDoubleSpinBox *m_q_end[3]{nullptr, nullptr, nullptr};
+	QDoubleSpinBox *m_Q_start[3]{nullptr, nullptr, nullptr};
+	QDoubleSpinBox *m_Q_end[3]{nullptr, nullptr, nullptr};
 	QSpinBox *m_num_points{};
 	QDoubleSpinBox *m_weight_scale{}, *m_weight_min{}, *m_weight_max{};
 
@@ -543,7 +543,7 @@ private:
 	QVector<qreal> m_qs_data{}, m_Es_data{}, m_ws_data{};
 	QVector<qreal> m_qs_data_channel[3]{}, m_Es_data_channel[3]{}, m_ws_data_channel[3]{};
 	t_size m_Q_idx{};                 // plot x axis
-	t_real m_Q_start{}, m_Q_end{};    // plot x axis range
+	t_real m_Q_min{}, m_Q_max{};      // plot x axis range
 
 	// reference object handles
 	std::size_t m_structplot_sphere = 0;

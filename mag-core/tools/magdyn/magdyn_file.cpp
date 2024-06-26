@@ -194,17 +194,17 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 
 		// settings
 		if(auto optVal = magdyn.get_optional<t_real>("config.h_start"))
-			m_q_start[0]->setValue(*optVal);
+			m_Q_start[0]->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<t_real>("config.k_start"))
-			m_q_start[1]->setValue(*optVal);
+			m_Q_start[1]->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<t_real>("config.l_start"))
-			m_q_start[2]->setValue(*optVal);
+			m_Q_start[2]->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<t_real>("config.h_end"))
-			m_q_end[0]->setValue(*optVal);
+			m_Q_end[0]->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<t_real>("config.k_end"))
-			m_q_end[1]->setValue(*optVal);
+			m_Q_end[1]->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<t_real>("config.l_end"))
-			m_q_end[2]->setValue(*optVal);
+			m_Q_end[2]->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<t_real>("config.h"))
 			m_q[0]->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<t_real>("config.k"))
@@ -612,12 +612,12 @@ bool MagDynDlg::Save(const QString& filename)
 		magdyn.put<std::string>("meta.notes", m_notes_dlg->GetNotes());
 
 		// settings
-		magdyn.put<t_real>("config.h_start", m_q_start[0]->value());
-		magdyn.put<t_real>("config.k_start", m_q_start[1]->value());
-		magdyn.put<t_real>("config.l_start", m_q_start[2]->value());
-		magdyn.put<t_real>("config.h_end", m_q_end[0]->value());
-		magdyn.put<t_real>("config.k_end", m_q_end[1]->value());
-		magdyn.put<t_real>("config.l_end", m_q_end[2]->value());
+		magdyn.put<t_real>("config.h_start", m_Q_start[0]->value());
+		magdyn.put<t_real>("config.k_start", m_Q_start[1]->value());
+		magdyn.put<t_real>("config.l_start", m_Q_start[2]->value());
+		magdyn.put<t_real>("config.h_end", m_Q_end[0]->value());
+		magdyn.put<t_real>("config.k_end", m_Q_end[1]->value());
+		magdyn.put<t_real>("config.l_end", m_Q_end[2]->value());
 		magdyn.put<t_real>("config.h", m_q[0]->value());
 		magdyn.put<t_real>("config.k", m_q[1]->value());
 		magdyn.put<t_real>("config.l", m_q[2]->value());
@@ -820,16 +820,16 @@ void MagDynDlg::SaveDispersion()
 
 	const t_real Q_start[]
 	{
-		(t_real)m_q_start[0]->value(),
-		(t_real)m_q_start[1]->value(),
-		(t_real)m_q_start[2]->value(),
+		(t_real)m_Q_start[0]->value(),
+		(t_real)m_Q_start[1]->value(),
+		(t_real)m_Q_start[2]->value(),
 	};
 
 	const t_real Q_end[]
 	{
-		(t_real)m_q_end[0]->value(),
-		(t_real)m_q_end[1]->value(),
-		(t_real)m_q_end[2]->value(),
+		(t_real)m_Q_end[0]->value(),
+		(t_real)m_Q_end[1]->value(),
+		(t_real)m_Q_end[2]->value(),
 	};
 
 	const t_size num_pts = m_num_points->value();

@@ -83,6 +83,7 @@ void MagDynDlg::ExportToSunny()
 
 /**
  * export magnetic structure to the sunny tool (https://github.com/SunnySuite/Sunny.jl)
+ * TODO: handle incommensurate structures
  */
 bool MagDynDlg::ExportToSunny(const QString& filename)
 {
@@ -129,6 +130,8 @@ bool MagDynDlg::ExportToSunny(const QString& filename)
 
 	// --------------------------------------------------------------------
 	ofstr << "\n# magnetic sites and xtal lattice\n";
+	ofstr << "@printf(stderr, \"Setting up magnetic sites...\\n\")\n";
+
 	const auto& xtal = m_dyn.GetCrystalLattice();
 	ofstr << "magsites = Crystal(\n"
 		<< "\tlattice_vectors("
@@ -195,12 +198,14 @@ bool MagDynDlg::ExportToSunny(const QString& filename)
 		}
 	}
 
-	ofstr << "\n@printf(\"%s\", magsites)\n";
+	ofstr << "\n@printf(stderr, \"%s\", magsites)\n";
 	// --------------------------------------------------------------------
 
 
 	// --------------------------------------------------------------------
 	ofstr << "\n# magnetic couplings\n";
+	ofstr << "@printf(stderr, \"Setting up magnetic couplings...\\n\")\n";
+
 	for(const auto& term : m_dyn.GetExchangeTerms())
 	{
 		std::size_t idx1 = m_dyn.GetMagneticSiteIndex(term.site1) + 1;
@@ -237,27 +242,48 @@ bool MagDynDlg::ExportToSunny(const QString& filename)
 	}
 	// --------------------------------------------------------------------
 
-	ofstr << "\n@printf(\"%s\\n\", magsys)\n";
+	ofstr << "\n@printf(stderr, \"%s\\n\", magsys)\n";
 
 	// --------------------------------------------------------------------
 	ofstr << "\n# spin-wave calculation\n";
+	ofstr << "@printf(stderr, \"Calculating S(Q, E)...\\n\")\n";
+
 	ofstr << "calc = SpinWaveTheory(magsys)\n";
 
-	// TODO
+	t_real h1 = (t_real)m_Q_start[0]->value();
+	t_real k1 = (t_real)m_Q_start[1]->value();
+	t_real l1 = (t_real)m_Q_start[2]->value();
+	t_real h2 = (t_real)m_Q_end[0]->value();
+	t_real k2 = (t_real)m_Q_end[1]->value();
+	t_real l2 = (t_real)m_Q_end[2]->value();
 
-	/*ofstr << R"BLOCK(
+	ofstr << "momenta = collect(range([ "
+		<< h1 << ", " << k1 << ", " << l1 << " ], [ "
+		<< h2 << ", " << k2 << ", " << l2 << " ], "
+		<< m_num_points->value() << "))\n";
+	ofstr << "energies, correlations = intensities_bands(calc, momenta,\n"
+		<< "\tintensity_formula(calc, :perp; kernel = delta_function_kernel))\n";
+	// --------------------------------------------------------------------
+
+
+	// --------------------------------------------------------------------
+	ofstr << R"BLOCK(
 # output the dispersion and spin-spin correlation
-@printf("# %8s %10s %10s %10s %10s\n",
+@printf(stderr, "Outputting data, plot with: \n\t%s\n",
+	"gnuplot -p -e \"plot \\\"1.dat\\\" u 1:4:(\\\$5/4) w p pt 7 ps var\"")
+
+@printf(stdout, "# %8s %10s %10s %10s %10s\n",
 	"h (rlu)", "k (rlu)", "l (rlu)", "E (meV)", "S(Q, E)")
-for q_idx in 1:length(qpath)
-	Q = qpath[q_idx]
+for q_idx in 1:length(momenta)
 	for e_idx in 1:length(energies[q_idx, :])
-		@printf("%10.4f %10.4f %10.4f %10.4f %10.4f\n",
-			Q[1], Q[2], Q[3],
+		@printf(stdout, "%10.4f %10.4f %10.4f %10.4f %10.4f\n",
+			momenta[q_idx][1], momenta[q_idx][2], momenta[q_idx][3],
 			energies[q_idx, e_idx],
 			correlations[q_idx, e_idx])
 	end
-end)BLOCK";*/
+end
+)BLOCK";
+	// --------------------------------------------------------------------
 
 	return true;
 }
