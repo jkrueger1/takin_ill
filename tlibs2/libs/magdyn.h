@@ -46,6 +46,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <string>
+#include <string_view>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -187,6 +188,10 @@ struct t_MagneticSite
 	t_vec spin_dir_calc{};       // spin vector
 	t_vec spin_ortho_calc{};     // spin orthogonal vector
 	t_vec spin_ortho_conj_calc{};
+
+	t_vec ge_spin_dir_calc{};    // g_e * spin vector
+	t_vec ge_spin_ortho_calc{};  // g_e * spin orthogonal vector
+	t_vec ge_spin_ortho_conj_calc{};
 
 	t_real spin_mag_calc{};      // spin magnitude
 	// ------------------------------------------------------------------------
@@ -1292,7 +1297,8 @@ public:
 			// spin rotation of equation (9) from (Toth 2015)
 			if(m_field.align_spins)
 			{
-				std::tie(site.spin_ortho_calc, site.spin_dir_calc) = R_to_uv(m_rot_field);
+				std::tie(site.spin_ortho_calc, site.spin_dir_calc) =
+					R_to_uv(m_rot_field);
 			}
 			else
 			{
@@ -1317,6 +1323,12 @@ public:
 			}
 
 			site.spin_ortho_conj_calc = tl2::conj(site.spin_ortho_calc);
+
+			// multiply g factor
+			site.ge_spin_dir_calc = site.g_e * site.spin_dir_calc;
+			site.ge_spin_ortho_calc = site.g_e * site.spin_ortho_calc;
+			site.ge_spin_ortho_conj_calc = site.g_e * site.spin_ortho_conj_calc;
+
 		}
 		catch(const std::exception& ex)
 		{
@@ -1870,13 +1882,13 @@ public:
 				const MagneticSite& s_j = GetMagneticSite(j);
 
 				// get the pre-calculated u vectors
-				const t_vec& u_i = s_i.spin_ortho_calc;
-				const t_vec& u_j = s_j.spin_ortho_calc;
-				const t_vec& u_conj_i = s_i.spin_ortho_conj_calc;
-				const t_vec& u_conj_j = s_j.spin_ortho_conj_calc;
+				const t_vec& u_i = s_i.ge_spin_ortho_calc;
+				const t_vec& u_j = s_j.ge_spin_ortho_calc;
+				const t_vec& u_conj_i = s_i.ge_spin_ortho_conj_calc;
+				const t_vec& u_conj_j = s_j.ge_spin_ortho_conj_calc;
 
 				// pre-factors of equation (44) from (Toth 2015)
-				const t_real S_mag = 4. * std::sqrt(s_i.spin_mag_calc * s_j.spin_mag_calc);
+				const t_real S_mag = std::sqrt(s_i.spin_mag_calc * s_j.spin_mag_calc);
 				const t_cplx phase = std::exp(-m_phase_sign * s_imag * s_twopi *
 					tl2::inner<t_vec_real>(s_j.pos_calc - s_i.pos_calc, Qvec));
 
@@ -1963,8 +1975,6 @@ public:
 
 			// apply orthogonal projector for magnetic neutron scattering,
 			// see (Shirane 2002), p. 37, equation (2.64)
-			//t_vec bragg_rot = use_field ? m_rot_field * m_bragg : m_bragg;
-			//proj_neutron = tl2::ortho_projector<t_mat, t_vec>(bragg_rot, false);
 			t_mat proj_neutron = tl2::ortho_projector<t_mat, t_vec>(Qvec, false);
 			E_and_S.S_perp = proj_neutron * E_and_S.S * proj_neutron;
 
@@ -2378,6 +2388,16 @@ public:
 				if(magnetic_site.g_e.size1() == 0 || magnetic_site.g_e.size2() == 0)
 					magnetic_site.g_e = tl2::g_e<t_real> * tl2::unit<t_mat>(3);
 
+				for(std::uint8_t i = 0; i < 3; ++i)
+				for(std::uint8_t j = 0; j < 3; ++j)
+				{
+					std::string g_name = std::string{"gfactor_"}
+						+ std::string{g_comp_names[i]} + std::string{g_comp_names[j]};
+
+					if(auto g_comp = site.second.get_optional<t_cplx>(g_name); g_comp)
+						magnetic_site.g_e(i, j) = *g_comp;
+				}
+
 				AddMagneticSite(std::move(magnetic_site));
 			}
 		}
@@ -2462,16 +2482,17 @@ public:
 
 				exchange_term.J = term.second.get<std::string>("interaction", "0");
 
-				static const std::array<std::string, 3> comps{{"x", "y", "z"}};
 				for(std::uint8_t i = 0; i < 3; ++i)
 				{
 					exchange_term.dmi[i] = term.second.get<std::string>(
-						std::string("dmi_") + comps[i], "0");
+						std::string{"dmi_"} + std::string{g_comp_names[i]}, "0");
 
 					for(std::uint8_t j = 0; j < 3; ++j)
 					{
 						exchange_term.Jgen[i][j] = term.second.get<std::string>(
-							std::string("gen_") + comps[i] + comps[j], "0");
+							std::string{"gen_"} +
+							std::string{g_comp_names[i]} +
+							std::string{g_comp_names[j]}, "0");
 					}
 				}
 
@@ -2625,6 +2646,14 @@ public:
 
 			itemNode.put<std::string>("spin_magnitude", site.spin_mag);
 
+			for(std::uint8_t i = 0; i < site.g_e.size1(); ++i)
+			for(std::uint8_t j = 0; j < site.g_e.size2(); ++j)
+			{
+				itemNode.put<t_cplx>(std::string{"gfactor_"} +
+					std::string{g_comp_names[i]} +
+					std::string{g_comp_names[j]}, site.g_e(i, j));
+			}
+
 			node.add_child("atom_sites.site", itemNode);
 		}
 
@@ -2646,16 +2675,17 @@ public:
 
 			itemNode.put<std::string>("interaction", term.J);
 
-			static const std::array<std::string, 3> comps{{"x", "y", "z"}};
 			for(std::uint8_t i = 0; i < 3; ++i)
 			{
-				itemNode.put<std::string>(std::string("dmi_") +
-					comps[i], term.dmi[i]);
+				itemNode.put<std::string>(std::string{"dmi_"} +
+					std::string{g_comp_names[i]}, term.dmi[i]);
 
 				for(std::uint8_t j = 0; j < 3; ++j)
 				{
-					itemNode.put<std::string>(std::string("gen_") +
-						comps[i] + comps[j], term.Jgen[i][j]);
+					itemNode.put<std::string>(std::string{"gen_"} +
+						std::string{g_comp_names[i]} +
+						std::string{g_comp_names[j]},
+						term.Jgen[i][j]);
 				}
 			}
 
@@ -2785,6 +2815,8 @@ private:
 	// constants
 	static constexpr const t_cplx s_imag { t_real(0), t_real(1) };
 	static constexpr const t_real s_twopi { t_real(2)*tl2::pi<t_real> };
+	static constexpr const std::array<std::string_view, 3> g_comp_names
+		{ { "x", "y", "z" } };
 };
 
 }

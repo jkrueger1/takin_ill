@@ -3,14 +3,11 @@
  * @author Tobias Weber <tweber@ill.fr>
  * @date 26-june-2024
  * @license GPLv3, see 'LICENSE' file
- * @desc The present version was forked on 28-Dec-2018 from my privately developed "misc" project (https://github.com/t-weber/misc).
  *
  * ----------------------------------------------------------------------------
  * mag-core (part of the Takin software suite)
  * Copyright (C) 2018-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
- * "misc" project
- * Copyright (C) 2017-2022  Tobias WEBER (privately developed).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -87,6 +84,13 @@ void MagDynDlg::ExportToSunny()
  */
 bool MagDynDlg::ExportToSunny(const QString& filename)
 {
+	if(m_dyn.IsIncommensurate())
+	{
+		QMessageBox::critical(this, "Magnetic Dynamics",
+			"Exporting incommensurate structures is not yet supported.");
+		return false;
+	}
+
 	std::ofstream ofstr(filename.toStdString());
 	if(!ofstr)
 	{
@@ -231,9 +235,9 @@ bool MagDynDlg::ExportToSunny(const QString& filename)
 	}
 
 
-	ofstr << "\n# external field\n";
 	if(!tl2::equals_0<t_real>(field.mag, g_eps))
 	{
+		ofstr << "\n# external field\n";
 		ofstr << "set_external_field!(magsys, [ "
 			<< field.dir[0] << ", "
 			<< field.dir[1] << ", "
@@ -248,7 +252,7 @@ bool MagDynDlg::ExportToSunny(const QString& filename)
 	ofstr << "\n# spin-wave calculation\n";
 	ofstr << "@printf(stderr, \"Calculating S(Q, E)...\\n\")\n";
 
-	ofstr << "calc = SpinWaveTheory(magsys)\n";
+	ofstr << "calc = SpinWaveTheory(magsys; apply_g = true)\n";
 
 	t_real h1 = (t_real)m_Q_start[0]->value();
 	t_real k1 = (t_real)m_Q_start[1]->value();
@@ -261,8 +265,10 @@ bool MagDynDlg::ExportToSunny(const QString& filename)
 		<< h1 << ", " << k1 << ", " << l1 << " ], [ "
 		<< h2 << ", " << k2 << ", " << l2 << " ], "
 		<< m_num_points->value() << "))\n";
+	std::string proj = m_use_projector->isChecked() ? ":perp" : ":trace";
 	ofstr << "energies, correlations = intensities_bands(calc, momenta,\n"
-		<< "\tintensity_formula(calc, :perp; kernel = delta_function_kernel))\n";
+		<< "\tintensity_formula(calc, " << proj
+		<< "; kernel = delta_function_kernel))\n";
 	// --------------------------------------------------------------------
 
 
