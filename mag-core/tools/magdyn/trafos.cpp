@@ -58,7 +58,7 @@ TrafoCalculator::TrafoCalculator(QWidget* pParent, QSettings *sett)
 
 	// rotation tab
 	QLabel *labelAxis = new QLabel("Axis: ");
-	QLabel *labelAngle = new QLabel("Angle (deg.): ");
+	QLabel *labelAngle = new QLabel("Angle (\xc2\xb0): ");
 	QLabel *labelVecToRotate = new QLabel("Vector: ");
 
 	m_spinAxis[0] = new QDoubleSpinBox(rotationPanel);
@@ -73,7 +73,7 @@ TrafoCalculator::TrafoCalculator(QWidget* pParent, QSettings *sett)
 	m_spinAngle->setMaximum(360);
 	m_spinAngle->setDecimals(3);
 	m_spinAngle->setSingleStep(0.1);
-	m_spinAngle->setSuffix("°");
+	//m_spinAngle->setSuffix("\xc2\xb0");
 
 	m_spinVecToRotate[0] = new QDoubleSpinBox(rotationPanel);
 	m_spinVecToRotate[1] = new QDoubleSpinBox(rotationPanel);

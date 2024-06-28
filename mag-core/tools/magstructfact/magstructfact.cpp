@@ -185,11 +185,11 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 		auto sep1 = new QFrame(m_nucleipanel); sep1->setFrameStyle(QFrame::HLine);
 		pTabGrid->addWidget(sep1, ++y,0, 1,4);
 
-		pTabGrid->addWidget(new QLabel("Lattice (A):"), ++y,0,1,1);
+		pTabGrid->addWidget(new QLabel("Lattice (\xe2\x84\xab):"), ++y,0,1,1);
 		pTabGrid->addWidget(m_editA, y,1,1,1);
 		pTabGrid->addWidget(m_editB, y,2,1,1);
 		pTabGrid->addWidget(m_editC, y,3,1,1);
-		pTabGrid->addWidget(new QLabel("Angles (deg):"), ++y,0,1,1);
+		pTabGrid->addWidget(new QLabel("Angles (\xc2\xb0):"), ++y,0,1,1);
 		pTabGrid->addWidget(m_editAlpha, y,1,1,1);
 		pTabGrid->addWidget(m_editBeta, y,2,1,1);
 		pTabGrid->addWidget(m_editGamma, y,3,1,1);
@@ -549,7 +549,7 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 				m_status3D = new QLabel(/*m_dlgPlot*/ this);
 
 				comboCoordSys->addItem("Fractional Units (rlu)");
-				comboCoordSys->addItem("Lab Units (A)");
+				comboCoordSys->addItem("Lab Units (\xe2\x84\xab)");
 
 
 				m_plot->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
@@ -612,7 +612,7 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 				m_status3DSC = new QLabel(/*m_dlgPlotSC*/ this);
 
 				comboCoordSys->addItem("Fractional Units (rlu)");
-				comboCoordSys->addItem("Lab Units (A)");
+				comboCoordSys->addItem("Lab Units (\xe2\x84\xab)");
 
 
 				m_plotSC->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});

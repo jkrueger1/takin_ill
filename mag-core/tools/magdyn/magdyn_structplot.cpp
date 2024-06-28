@@ -151,7 +151,7 @@ void MagDynDlg::StructPlotPickerIntersection(
 		std::ostringstream ostr;
 		ostr.precision(g_prec_gui);
 		ostr << "Coupling " << *m_structplot_cur_term
-			<< " (length: " << iter_terms->second.term->length_calc << " Å)";
+			<< " (length: " << iter_terms->second.term->length_calc << " \xe2\x84\xab)";
 
 		m_structplot_cur_term = iter_terms->second.term->name;
 		m_structplot_status->setText(ostr.str().c_str());
@@ -169,14 +169,16 @@ void MagDynDlg::StructPlotDelete()
 {
 	if(m_structplot_cur_atom)
 	{
-		if(t_size idx = m_dyn.GetMagneticSiteIndex(*m_structplot_cur_atom); idx < m_dyn.GetMagneticSitesCount())
+		if(t_size idx = m_dyn.GetMagneticSiteIndex(*m_structplot_cur_atom);
+			idx < m_dyn.GetMagneticSitesCount())
 			DelTabItem(m_sitestab, idx, idx+1);
 		m_structplot_cur_atom = std::nullopt;
 	}
 
 	if(m_structplot_cur_term)
 	{
-		if(t_size idx = m_dyn.GetExchangeTermIndex(*m_structplot_cur_term); idx < m_dyn.GetExchangeTermsCount())
+		if(t_size idx = m_dyn.GetExchangeTermIndex(*m_structplot_cur_term);
+			idx < m_dyn.GetExchangeTermsCount())
 			DelTabItem(m_termstab, idx, idx+1);
 		m_structplot_cur_term = std::nullopt;
 	}

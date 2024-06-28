@@ -190,11 +190,11 @@ BZDlg::BZDlg(QWidget* pParent) : QDialog{pParent},
 		sep2->setFrameStyle(QFrame::HLine);
 		tabGrid->addWidget(sep2, ++y,0, 1,4);
 
-		tabGrid->addWidget(new QLabel("Lattice (Å):"), ++y,0,1,1);
+		tabGrid->addWidget(new QLabel("Lattice (\xe2\x84\xab):"), ++y,0,1,1);
 		tabGrid->addWidget(m_editA, y,1,1,1);
 		tabGrid->addWidget(m_editB, y,2,1,1);
 		tabGrid->addWidget(m_editC, y,3,1,1);
-		tabGrid->addWidget(new QLabel("Angles (deg):"), ++y,0,1,1);
+		tabGrid->addWidget(new QLabel("Angles (\xc2\xb0):"), ++y,0,1,1);
 		tabGrid->addWidget(m_editAlpha, y,1,1,1);
 		tabGrid->addWidget(m_editBeta, y,2,1,1);
 		tabGrid->addWidget(m_editGamma, y,3,1,1);

@@ -270,7 +270,7 @@ MolDynDlg::MolDynDlg(QWidget* pParent) : QMainWindow{pParent},
 
 		auto comboCoordSys = new QComboBox(this);
 		comboCoordSys->addItem("Fractional Units (rlu)");
-		comboCoordSys->addItem("Lab Units (A)");
+		comboCoordSys->addItem("Lab Units (\xe2\x84\xab)");
 		comboCoordSys->setFocusPolicy(Qt::StrongFocus);
 
 		m_spinScale = new QDoubleSpinBox(this);
@@ -435,7 +435,7 @@ void MolDynDlg::CalculateDistanceBetweenAtoms()
 		// output data file header infos
 		ofstr << "#\n";
 		ofstr << "# Column 1: Frame\n";
-		ofstr << "# Columns 2, 3, ...: Distances to first atom (A)\n";
+		ofstr << "# Columns 2, 3, ...: Distances to first atom (\xe2\x84\xab)\n";
 		ofstr << "# Atoms: ";
 
 		for(std::size_t objIdx=0; objIdx<objs.size(); ++objIdx)
@@ -520,7 +520,7 @@ void MolDynDlg::CalculatePositionsOfAtoms()
 		// output data file header infos
 		ofstr << "#\n";
 		ofstr << "# Column 1: Frame\n";
-		ofstr << "# Columns 2, 3, 4: x, y, z position of atom  (A)\n";
+		ofstr << "# Columns 2, 3, 4: x, y, z position of atom  (\xe2\x84\xab)\n";
 		ofstr << "# Atoms: ";
 
 		for(std::size_t objIdx=0; objIdx<objs.size(); ++objIdx)
@@ -608,7 +608,7 @@ void MolDynDlg::CalculateDeltaDistancesOfAtoms()
 		// output data file header infos
 		ofstr << "#\n";
 		ofstr << "# Column 1: Frame\n";
-		ofstr << "# Column 2, 3, ...: Distance deltas (A)\n";
+		ofstr << "# Column 2, 3, ...: Distance deltas (\xe2\x84\xab)\n";
 		ofstr << "# Atoms: ";
 
 		for(std::size_t objIdx=0; objIdx<objs.size(); ++objIdx)

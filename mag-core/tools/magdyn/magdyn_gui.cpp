@@ -367,11 +367,24 @@ void MagDynDlg::CreateSitesPanel()
 	connect(m_sitestab, &QTableWidget::itemSelectionChanged, [this]()
 	{
 		QList<QTableWidgetItem*> selected = m_sitestab->selectedItems();
-		if(selected.size())
+		if(selected.size() == 0)
+			return;
+
+		const QTableWidgetItem* item = *selected.begin();
+		m_sites_cursor_row = item->row();
+
+		if(m_sites_cursor_row < 0 ||
+			std::size_t(m_sites_cursor_row) >= m_dyn.GetMagneticSitesCount())
 		{
-			const QTableWidgetItem* item = *selected.begin();
-			m_sites_cursor_row = item->row();
+			m_status->setText("");
+			return;
 		}
+
+		const auto& site = m_dyn.GetMagneticSite(m_sites_cursor_row);
+		std::ostringstream ostr;
+		ostr.precision(g_prec_gui);
+		ostr << "Site " << site.name << ".";
+		m_status->setText(ostr.str().c_str());
 	});
 	connect(m_sitestab, &QTableWidget::itemChanged,
 		this, &MagDynDlg::SitesTableItemChanged);
@@ -632,7 +645,7 @@ void MagDynDlg::CreateExchangeTermsPanel()
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
 
-	grid->addWidget(new QLabel("Generate Possible Coupling Terms By Distance:"), y++,0,1,4);
+	grid->addWidget(new QLabel("Generate Possible Coupling Terms By Distance (\xe2\x84\xab):"), y++,0,1,4);
 	grid->addWidget(m_maxdist, y,0,1,1);
 	grid->addWidget(m_maxSC, y,1,1,1);
 	grid->addWidget(m_maxcouplings, y,2,1,1);
@@ -725,11 +738,24 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	connect(m_termstab, &QTableWidget::itemSelectionChanged, [this]()
 	{
 		QList<QTableWidgetItem*> selected = m_termstab->selectedItems();
-		if(selected.size())
+		if(selected.size() == 0)
+			return;
+
+		const QTableWidgetItem* item = *selected.begin();
+		m_terms_cursor_row = item->row();
+		if(m_terms_cursor_row < 0 ||
+			std::size_t(m_terms_cursor_row) >= m_dyn.GetExchangeTermsCount())
 		{
-			const QTableWidgetItem* item = *selected.begin();
-			m_terms_cursor_row = item->row();
+			m_status->setText("");
+			return;
 		}
+
+		const auto& term = m_dyn.GetExchangeTerm(m_terms_cursor_row);
+		std::ostringstream ostr;
+		ostr.precision(g_prec_gui);
+		ostr << "Coupling " << term.name
+			<< ": length = " << term.length_calc << " \xe2\x84\xab.";
+		m_status->setText(ostr.str().c_str());
 	});
 	connect(m_termstab, &QTableWidget::itemChanged,
 		this, &MagDynDlg::TermsTableItemChanged);
@@ -770,7 +796,7 @@ void MagDynDlg::CreateSamplePanel()
 	m_samplepanel = new QWidget(this);
 
 	// crystal lattice and angles
-	const char* latticestr[] = {"a = ", "b = ", "c = "};
+	const char* latticestr[] = { "a = ", "b = ", "c = " };
 	for(int i = 0; i < 3; ++i)
 	{
 		m_xtallattice[i] = new QDoubleSpinBox(m_samplepanel);
@@ -780,12 +806,12 @@ void MagDynDlg::CreateSamplePanel()
 		m_xtallattice[i]->setSingleStep(0.1);
 		m_xtallattice[i]->setValue(5);
 		m_xtallattice[i]->setPrefix(latticestr[i]);
-		m_xtallattice[i]->setSuffix(" Å");
+		//m_xtallattice[i]->setSuffix(" \xe2\x84\xab");
 		m_xtallattice[i]->setSizePolicy(QSizePolicy{
 			QSizePolicy::Expanding, QSizePolicy::Fixed});
 	}
 
-	const char* anlesstr[] = {"α = ", "β = ", "γ = "};
+	const char* anlesstr[] = { "α = ", "β = ", "γ = " };
 	for(int i = 0; i < 3; ++i)
 	{
 		m_xtalangles[i] = new QDoubleSpinBox(m_samplepanel);
@@ -795,7 +821,7 @@ void MagDynDlg::CreateSamplePanel()
 		m_xtalangles[i]->setSingleStep(0.1);
 		m_xtalangles[i]->setValue(90);
 		m_xtalangles[i]->setPrefix(anlesstr[i]);
-		m_xtalangles[i]->setSuffix("°");
+		//m_xtalangles[i]->setSuffix("\xc2\xb0");
 		m_xtalangles[i]->setSizePolicy(QSizePolicy{
 			QSizePolicy::Expanding, QSizePolicy::Fixed});
 	}
@@ -814,11 +840,11 @@ void MagDynDlg::CreateSamplePanel()
 
 	int y = 0;
 	grid->addWidget(new QLabel("Crystal Definition"), y++,0,1,4);
-	grid->addWidget(new QLabel("Lattice:"), y,0,1,1);
+	grid->addWidget(new QLabel("Lattice (\xe2\x84\xab):"), y,0,1,1);
 	grid->addWidget(m_xtallattice[0], y,1,1,1);
 	grid->addWidget(m_xtallattice[1], y,2,1,1);
 	grid->addWidget(m_xtallattice[2], y++,3,1,1);
-	grid->addWidget(new QLabel("Angles:"), y,0,1,1);
+	grid->addWidget(new QLabel("Angles (\xc2\xb0):"), y,0,1,1);
 	grid->addWidget(m_xtalangles[0], y,1,1,1);
 	grid->addWidget(m_xtalangles[1], y,2,1,1);
 	grid->addWidget(m_xtalangles[2], y++,3,1,1);
@@ -1009,11 +1035,11 @@ void MagDynDlg::CreateVariablesPanel()
 	connect(m_varstab, &QTableWidget::itemSelectionChanged, [this]()
 	{
 		QList<QTableWidgetItem*> selected = m_varstab->selectedItems();
-		if(selected.size())
-		{
-			const QTableWidgetItem* item = *selected.begin();
-			m_variables_cursor_row = item->row();
-		}
+		if(selected.size() == 0)
+			return;
+
+		const QTableWidgetItem* item = *selected.begin();
+		m_variables_cursor_row = item->row();
 	});
 	connect(m_varstab, &QTableWidget::itemChanged,
 		this, &MagDynDlg::VariablesTableItemChanged);
@@ -1071,7 +1097,7 @@ void MagDynDlg::CreateSampleEnvPanel()
 	m_rot_angle->setMaximum(+360);
 	m_rot_angle->setSingleStep(0.1);
 	m_rot_angle->setValue(90.);
-	m_rot_angle->setSuffix("°");
+	//m_rot_angle->setSuffix("\xc2\xb0");
 	m_rot_angle->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Fixed});
 
@@ -1269,7 +1295,7 @@ void MagDynDlg::CreateSampleEnvPanel()
 	grid->addWidget(m_rot_axis[0], y,1,1,1);
 	grid->addWidget(m_rot_axis[1], y,2,1,1);
 	grid->addWidget(m_rot_axis[2], y++,3,1,1);
-	grid->addWidget(new QLabel(QString("Angle:"),
+	grid->addWidget(new QLabel(QString("Angle (\xc2\xb0):"),
 		m_sampleenviropanel), y,0,1,1);
 	grid->addWidget(m_rot_angle, y,1,1,1);
 	grid->addWidget(btn_rotate_ccw, y,2,1,1);
@@ -1357,11 +1383,11 @@ void MagDynDlg::CreateSampleEnvPanel()
 	connect(m_fieldstab, &QTableWidget::itemSelectionChanged, [this]()
 	{
 		QList<QTableWidgetItem*> selected = m_fieldstab->selectedItems();
-		if(selected.size())
-		{
-			const QTableWidgetItem* item = *selected.begin();
-			m_fields_cursor_row = item->row();
-		}
+		if(selected.size() == 0)
+			return;
+
+		const QTableWidgetItem* item = *selected.begin();
+		m_fields_cursor_row = item->row();
 	});
 	connect(m_fieldstab, &QTableWidget::customContextMenuRequested,
 		[this, menuTableContext, menuTableContextNoItem](const QPoint& pt)
@@ -1757,11 +1783,12 @@ void MagDynDlg::CreateCoordinatesPanel()
 	connect(m_coordinatestab, &QTableWidget::itemSelectionChanged, [this]()
 	{
 		QList<QTableWidgetItem*> selected = m_coordinatestab->selectedItems();
-		if(selected.size())
-		{
-			const QTableWidgetItem* item = *selected.begin();
-			m_coordinates_cursor_row = item->row();
-		}
+		if(selected.size() == 0)
+			return;
+
+		const QTableWidgetItem* item = *selected.begin();
+		m_coordinates_cursor_row = item->row();
+
 	});
 	connect(m_coordinatestab, &QTableWidget::customContextMenuRequested,
 		[this, menuTableContext, menuTableContextNoItem](const QPoint& pt)

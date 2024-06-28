@@ -71,6 +71,9 @@ bool MagStructFactDlg::Load(const QString& filename)
 	BOOST_SCOPE_EXIT(this_)
 	{
 		this_->m_ignoreCalc = false;
+
+		this_->CalcB(false);
+		this_->Calc();
 	} BOOST_SCOPE_EXIT_END
 	m_ignoreCalc = true;
 
@@ -202,10 +205,6 @@ bool MagStructFactDlg::Load(const QString& filename)
 		QMessageBox::critical(this, "Structure Factors", ex.what());
 		return false;
 	}
-
-
-	CalcB(false);
-	Calc();
 
 	return true;
 }

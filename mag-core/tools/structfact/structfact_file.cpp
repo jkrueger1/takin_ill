@@ -71,6 +71,8 @@ bool StructFactDlg::Load(const QString& filename)
 	BOOST_SCOPE_EXIT(this_)
 	{
 		this_->m_ignoreCalc = false;
+		this_->CalcB(false);
+		this_->Calc();
 	} BOOST_SCOPE_EXIT_END
 	m_ignoreCalc = true;
 
@@ -162,9 +164,6 @@ bool StructFactDlg::Load(const QString& filename)
 		return false;
 	}
 
-
-	CalcB(false);
-	Calc();
 	return true;
 }
 
@@ -259,6 +258,8 @@ void StructFactDlg::ImportTAZ()
 	BOOST_SCOPE_EXIT(this_)
 	{
 		this_->m_ignoreCalc = false;
+		this_->CalcB(false);
+		this_->Calc();
 	} BOOST_SCOPE_EXIT_END
 	m_ignoreCalc = true;
 
@@ -345,8 +346,6 @@ void StructFactDlg::ImportTAZ()
 	}
 
 	GenerateFromSG();
-	CalcB(false);
-	Calc();
 }
 
 
@@ -412,6 +411,8 @@ void StructFactDlg::ImportCIF()
 	BOOST_SCOPE_EXIT(this_)
 	{
 		this_->m_ignoreCalc = false;
+		this_->CalcB(false);
+		this_->Calc();
 	} BOOST_SCOPE_EXIT_END
 	m_ignoreCalc = true;
 
@@ -485,8 +486,4 @@ void StructFactDlg::ImportCIF()
 	{
 		QMessageBox::critical(this, "Structure Factors", ex.what());
 	}
-
-
-	CalcB(false);
-	Calc();
 }

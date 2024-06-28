@@ -59,7 +59,7 @@ void StructFactDlg::ShowStructPlot()
 		m_status3D = new QLabel(/*m_dlgPlot*/ this);
 
 		comboCoordSys->addItem("Fractional Units (rlu)");
-		comboCoordSys->addItem("Lab Units (A)");
+		comboCoordSys->addItem("Lab Units (\xe2\x84\xab)");
 
 		m_plot->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
 		labCoordSys->setSizePolicy(QSizePolicy{QSizePolicy::Fixed, QSizePolicy::Fixed});

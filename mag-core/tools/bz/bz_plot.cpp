@@ -57,7 +57,7 @@ void BZDlg::ShowBZPlot()
 		//auto labCoordSys = new QLabel("Coordinate System:", this);
 		//auto comboCoordSys = new QComboBox(this);
 		//comboCoordSys->addItem("Fractional Units (rlu)");
-		//comboCoordSys->addItem("Lab Units (A)");
+		//comboCoordSys->addItem("Lab Units (\xe2\x84\xab)");
 
 		m_plot_coordcross = new QCheckBox("Show Coordinates", this);
 		m_plot_labels = new QCheckBox("Show Labels", this);
