@@ -203,7 +203,8 @@ struct t_MagneticSite
  * couplings between magnetic sites
  */
 template<class t_mat, class t_vec, class t_vec_real,
-	class t_size, class t_cplx = typename t_mat::value_type>
+	class t_size, class t_cplx = typename t_mat::value_type,
+	class t_real = typename t_vec_real::value_type>
 #ifndef SWIG  // TODO: remove this as soon as swig understands concepts
 requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
 #endif
@@ -227,6 +228,7 @@ struct t_ExchangeTerm
 	t_size site1_calc{};         // index of first magnetic site
 	t_size site2_calc{};         // index of second magnetic site
 	t_vec_real dist_calc{};      // distance between unit cells
+	t_real length_calc{};        // length of the coupling (in lab units)
 
 	t_cplx J_calc{};             // Heisenberg interaction
 	t_vec dmi_calc{};            // Dzyaloshinskij-Moriya interaction
@@ -313,7 +315,7 @@ public:
 	using MagneticSite = t_MagneticSite<t_mat, t_vec, t_vec_real, t_size, t_real>;
 	using MagneticSites = std::vector<MagneticSite>;
 
-	using ExchangeTerm = t_ExchangeTerm<t_mat, t_vec, t_vec_real, t_size, t_cplx>;
+	using ExchangeTerm = t_ExchangeTerm<t_mat, t_vec, t_vec_real, t_size, t_cplx, t_real>;
 	using ExchangeTerms = std::vector<ExchangeTerm>;
 
 	using ExternalField = t_ExternalField<t_vec_real, t_real>;
@@ -1061,29 +1063,27 @@ public:
 			const t_vec_real sc_vec = tl2::create<t_vec_real>({ sc_h, sc_k, sc_l });
 
 			for(t_size idx1 = 0; idx1 < GetMagneticSitesCount()-1; ++idx1)
+			for(t_size idx2 = idx1 + 1; idx2 < GetMagneticSitesCount(); ++idx2)
 			{
-				for(t_size idx2 = idx1+1; idx2 < GetMagneticSitesCount(); ++idx2)
-				{
-					PossibleCoupling coupling;
+				PossibleCoupling coupling;
 
-					coupling.idx1_uc = idx1;
-					coupling.idx2_uc = idx2;
+				coupling.idx1_uc = idx1;
+				coupling.idx2_uc = idx2;
 
-					coupling.pos1_uc = GetMagneticSite(idx1).pos_calc;
-					coupling.pos2_uc = GetMagneticSite(idx2).pos_calc;
+				coupling.pos1_uc = GetMagneticSite(idx1).pos_calc;
+				coupling.pos2_uc = GetMagneticSite(idx2).pos_calc;
 
-					coupling.sc_vec = sc_vec;
-					coupling.pos2_sc = coupling.pos2_uc + sc_vec;
+				coupling.sc_vec = sc_vec;
+				coupling.pos2_sc = coupling.pos2_uc + sc_vec;
 
-					// transform to lab units for correct distance
-					coupling.pos1_uc_lab = m_xtalA * coupling.pos1_uc;
-					coupling.pos2_sc_lab = m_xtalA * coupling.pos2_sc;
+				// transform to lab units for correct distance
+				coupling.pos1_uc_lab = m_xtalA * coupling.pos1_uc;
+				coupling.pos2_sc_lab = m_xtalA * coupling.pos2_sc;
 
-					coupling.dist = tl2::norm<t_vec_real>(
-						coupling.pos2_sc_lab - coupling.pos1_uc_lab);
-					if(coupling.dist <= dist_max)
-						couplings.emplace_back(std::move(coupling));
-				}
+				coupling.dist = tl2::norm<t_vec_real>(
+					coupling.pos2_sc_lab - coupling.pos1_uc_lab);
+				if(coupling.dist <= dist_max)
+					couplings.emplace_back(std::move(coupling));
 			}
 		}
 
@@ -1110,6 +1110,7 @@ public:
 			newterm.dist[0] = tl2::var_to_str(newterm.dist_calc[0]);
 			newterm.dist[1] = tl2::var_to_str(newterm.dist_calc[1]);
 			newterm.dist[2] = tl2::var_to_str(newterm.dist_calc[2]);
+			newterm.length_calc = coupling.dist;
 			newterm.J = "0";
 			newterm.name += "coupling_" + tl2::var_to_str(coupling_idx + 1);
 			newterms.emplace_back(std::move(newterm));
@@ -1353,7 +1354,7 @@ public:
 
 
 	/**
-	 * parse the exchange term expressions
+	 * parse the exchange term expressions and calculate all properties
 	 */
 	void CalcExchangeTerm(ExchangeTerm& term)
 	{
@@ -1456,6 +1457,16 @@ public:
 					}
 				}
 			}
+
+			const t_vec_real& pos1_uc = GetMagneticSite(term.site1_calc).pos_calc;
+			const t_vec_real& pos2_uc = GetMagneticSite(term.site2_calc).pos_calc;
+			t_vec_real pos2_sc = pos2_uc + term.dist_calc;
+
+			// transform to lab units for correct distance
+			t_vec_real pos1_uc_lab = m_xtalA * pos1_uc;
+			t_vec_real pos2_sc_lab = m_xtalA * pos2_sc;
+
+			term.length_calc = tl2::norm<t_vec_real>(pos2_sc_lab - pos1_uc_lab);
 		}
 		catch(const std::exception& ex)
 		{
@@ -1469,7 +1480,7 @@ public:
 
 
 	/**
-	 * parse all exchange term expressions
+	 * parse all exchange term expressions and calculate all properties
 	 */
 	void CalcExchangeTerms()
 	{

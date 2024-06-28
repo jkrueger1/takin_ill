@@ -780,6 +780,7 @@ void MagDynDlg::CreateSamplePanel()
 		m_xtallattice[i]->setSingleStep(0.1);
 		m_xtallattice[i]->setValue(5);
 		m_xtallattice[i]->setPrefix(latticestr[i]);
+		m_xtallattice[i]->setSuffix(" Å");
 		m_xtallattice[i]->setSizePolicy(QSizePolicy{
 			QSizePolicy::Expanding, QSizePolicy::Fixed});
 	}
@@ -813,7 +814,7 @@ void MagDynDlg::CreateSamplePanel()
 
 	int y = 0;
 	grid->addWidget(new QLabel("Crystal Definition"), y++,0,1,4);
-	grid->addWidget(new QLabel("Lattice (rlu):"), y,0,1,1);
+	grid->addWidget(new QLabel("Lattice:"), y,0,1,1);
 	grid->addWidget(m_xtallattice[0], y,1,1,1);
 	grid->addWidget(m_xtallattice[1], y,2,1,1);
 	grid->addWidget(m_xtallattice[2], y++,3,1,1);
@@ -1239,7 +1240,7 @@ void MagDynDlg::CreateSampleEnvPanel()
 	grid->addWidget(new QLabel(QString("Magnitude:"),
 		m_sampleenviropanel), y,0,1,1);
 	grid->addWidget(m_field_mag, y++,1,1,1);
-	grid->addWidget(new QLabel(QString("Direction:"),
+	grid->addWidget(new QLabel(QString("Direction (rlu):"),
 		m_sampleenviropanel), y,0,1,1);
 	grid->addWidget(m_field_dir[0], y,1,1,1);
 	grid->addWidget(m_field_dir[1], y,2,1,1);
@@ -1263,7 +1264,7 @@ void MagDynDlg::CreateSampleEnvPanel()
 
 	grid->addWidget(new QLabel(QString("Rotate Magnetic Field:"),
 		m_sampleenviropanel), y++,0,1,2);
-	grid->addWidget(new QLabel(QString("Axis:"),
+	grid->addWidget(new QLabel(QString("Axis (rlu):"),
 		m_sampleenviropanel), y,0,1,1);
 	grid->addWidget(m_rot_axis[0], y,1,1,1);
 	grid->addWidget(m_rot_axis[1], y,2,1,1);
@@ -1433,7 +1434,7 @@ void MagDynDlg::CreateDispersionPanel()
 		m_Q_start[i]->setMaximum(+99.9999);
 		m_Q_start[i]->setSingleStep(0.01);
 		m_Q_start[i]->setValue(0.);
-		m_Q_start[i]->setSuffix(" rlu");
+		//m_Q_start[i]->setSuffix(" rlu");
 		m_Q_start[i]->setSizePolicy(QSizePolicy{
 			QSizePolicy::Expanding, QSizePolicy::Fixed});
 		m_Q_start[i]->setPrefix(hklPrefix[i]);
@@ -1443,7 +1444,7 @@ void MagDynDlg::CreateDispersionPanel()
 		m_Q_end[i]->setMaximum(+99.9999);
 		m_Q_end[i]->setSingleStep(0.01);
 		m_Q_end[i]->setValue(0.);
-		m_Q_end[i]->setSuffix(" rlu");
+		//m_Q_end[i]->setSuffix(" rlu");
 		m_Q_end[i]->setSizePolicy(QSizePolicy{
 			QSizePolicy::Expanding, QSizePolicy::Fixed});
 		m_Q_end[i]->setPrefix(hklPrefix[i]);
@@ -1459,12 +1460,12 @@ void MagDynDlg::CreateDispersionPanel()
 	int y = 0;
 	grid->addWidget(m_plot, y++,0,1,4);
 	grid->addWidget(
-		new QLabel(QString("Start Q:"), m_disppanel), y,0,1,1);
+		new QLabel(QString("Start Q (rlu):"), m_disppanel), y,0,1,1);
 	grid->addWidget(m_Q_start[0], y,1,1,1);
 	grid->addWidget(m_Q_start[1], y,2,1,1);
 	grid->addWidget(m_Q_start[2], y++,3,1,1);
 	grid->addWidget(
-		new QLabel(QString("End Q:"), m_disppanel), y,0,1,1);
+		new QLabel(QString("End Q (rlu):"), m_disppanel), y,0,1,1);
 	grid->addWidget(m_Q_end[0], y,1,1,1);
 	grid->addWidget(m_Q_end[1], y,2,1,1);
 	grid->addWidget(m_Q_end[2], y++,3,1,1);

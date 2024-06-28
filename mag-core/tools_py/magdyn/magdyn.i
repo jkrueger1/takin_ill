@@ -100,14 +100,16 @@
 	tl2::vec<std::complex<double>>,
 	tl2::vec<double>,
 	std::size_t,
-	std::complex<double>>;
+	std::complex<double>,
+	double>;
 %template(VecExchangeTerm) std::vector<
 	tl2_mag::t_ExchangeTerm<
 		tl2::mat<std::complex<double>>,
 		tl2::vec<std::complex<double>>,
 		tl2::vec<double>,
 		std::size_t,
-		std::complex<double>>
+		std::complex<double>,
+		double>
 	>;
 
 %template(ExternalField) tl2_mag::t_ExternalField<

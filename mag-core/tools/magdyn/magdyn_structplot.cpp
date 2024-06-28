@@ -148,8 +148,13 @@ void MagDynDlg::StructPlotPickerIntersection(
 	if(auto iter_terms = m_structplot_terms.find(objIdx);
 		iter_terms != m_structplot_terms.end())
 	{
+		std::ostringstream ostr;
+		ostr.precision(g_prec_gui);
+		ostr << "Coupling " << *m_structplot_cur_term
+			<< " (length: " << iter_terms->second.term->length_calc << " Å)";
+
 		m_structplot_cur_term = iter_terms->second.term->name;
-		m_structplot_status->setText(("Coupling " + *m_structplot_cur_term).c_str());
+		m_structplot_status->setText(ostr.str().c_str());
 
 		return;
 	}
@@ -595,7 +600,8 @@ void MagDynDlg::StructPlotSync()
 			{
 				ExchangeTermInfo terminfo;
 				terminfo.term = &term;
-				m_structplot_terms.emplace(std::make_pair(objDmi, std::move(terminfo)));
+				m_structplot_terms.emplace(std::make_pair(
+					objDmi, std::move(terminfo)));
 			}
 
 			t_real_gl scale_dmi = 0.5;
