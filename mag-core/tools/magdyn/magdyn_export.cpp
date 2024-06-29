@@ -62,7 +62,8 @@ static std::string get_str_var(const std::string& var, bool add_brackets = false
 
 
 /**
- * export magnetic structure to the sunny tool (https://github.com/SunnySuite/Sunny.jl)
+ * export magnetic structure to the sunny tool
+ *   (https://github.com/SunnySuite/Sunny.jl)
  */
 void MagDynDlg::ExportToSunny()
 {
@@ -79,8 +80,8 @@ void MagDynDlg::ExportToSunny()
 
 
 /**
- * export magnetic structure to the sunny tool (https://github.com/SunnySuite/Sunny.jl)
- * TODO: handle incommensurate structures
+ * export magnetic structure to the sunny tool
+ *   (https://github.com/SunnySuite/Sunny.jl)
  */
 bool MagDynDlg::ExportToSunny(const QString& filename)
 {
