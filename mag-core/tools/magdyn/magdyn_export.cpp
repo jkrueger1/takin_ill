@@ -84,13 +84,6 @@ void MagDynDlg::ExportToSunny()
  */
 bool MagDynDlg::ExportToSunny(const QString& filename)
 {
-	if(m_dyn.IsIncommensurate())
-	{
-		QMessageBox::critical(this, "Magnetic Dynamics",
-			"Exporting incommensurate structures is not yet supported.");
-		return false;
-	}
-
 	std::ofstream ofstr(filename.toStdString());
 	if(!ofstr)
 	{
@@ -246,7 +239,37 @@ bool MagDynDlg::ExportToSunny(const QString& filename)
 	}
 	// --------------------------------------------------------------------
 
+
+	// --------------------------------------------------------------------
+	if(m_dyn.IsIncommensurate())
+	{
+		ofstr << "\n# supercell for incommensurate structure\n";
+
+		const t_vec_real& prop = m_dyn.GetOrderingWavevector();
+		const t_vec_real& axis = m_dyn.GetRotationAxis();
+		t_vec_real s0 = tl2::cross(prop, axis);
+		s0 /= tl2::norm(s0);
+
+		int sc_x = tl2::equals_0(prop[0], g_eps)
+			? 1 : int(std::ceil(t_real(1) / prop[0]));
+		int sc_y = tl2::equals_0(prop[1], g_eps)
+			? 1 : int(std::ceil(t_real(1) / prop[1]));
+		int sc_z = tl2::equals_0(prop[2], g_eps)
+			? 1 : int(std::ceil(t_real(1) / prop[2]));
+
+		ofstr << "magsys = reshape_supercell(magsys, [ "
+			<< sc_x << " 0 0; 0 " << sc_y << " 0; 0 0 " << sc_z
+			<< " ])\n";
+
+		ofstr << "set_spiral_order!(magsys; "
+			<< "k = [ " << prop[0] << ", " << prop[1] << ", " << prop[2] << " ], "
+			<< "axis = [ " << axis[0] << ", " << axis[1] << ", " << axis[2] << " ], "
+			<< "S0 = [ " << s0[0] << ", " << s0[1] << ", " << s0[2] << " ])\n";
+	}
+
 	ofstr << "\n@printf(stderr, \"%s\\n\", magsys)\n";
+	// --------------------------------------------------------------------
+
 
 	// --------------------------------------------------------------------
 	ofstr << "\n# spin-wave calculation\n";
@@ -275,8 +298,8 @@ bool MagDynDlg::ExportToSunny(const QString& filename)
 	// --------------------------------------------------------------------
 	ofstr << R"BLOCK(
 # output the dispersion and spin-spin correlation
-@printf(stderr, "Outputting data, plot with: \n\t%s\n",
-	"gnuplot -p -e \"plot \\\"1.dat\\\" u 1:4:(\\\$5/4) w p pt 7 ps var\"")
+@printf(stderr, "Outputting data, save to \"disp.dat\" and plot with: \n\t%s\n",
+	"gnuplot -p -e \"plot \\\"disp.dat\\\" u 1:4:(\\\$5/4) w p pt 7 ps var\"")
 
 @printf(stdout, "# %8s %10s %10s %10s %10s\n",
 	"h (rlu)", "k (rlu)", "l (rlu)", "E (meV)", "S(Q, E)")

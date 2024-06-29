@@ -2402,8 +2402,9 @@ public:
 				for(std::uint8_t i = 0; i < 3; ++i)
 				for(std::uint8_t j = 0; j < 3; ++j)
 				{
-					std::string g_name = std::string{"gfactor_"}
-						+ std::string{g_comp_names[i]} + std::string{g_comp_names[j]};
+					std::string g_name = std::string{"gfactor_"} +
+						std::string{g_comp_names[i]} +
+						std::string{g_comp_names[j]};
 
 					if(auto g_comp = site.second.get_optional<t_cplx>(g_name); g_comp)
 						magnetic_site.g_e(i, j) = *g_comp;

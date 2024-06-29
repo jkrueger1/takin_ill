@@ -289,6 +289,9 @@ void MagDynDlg::SyncToKernel()
 
 		t_magdyn::MagneticSite site;
 		site.name = name->text().toStdString();
+
+		// TODO: make this field configurable, currently it
+		// overrides any other values in the kernel
 		site.g_e = tl2::g_e<t_real> * tl2::unit<t_mat>(3);
 
 		site.pos[0] = pos_x->text().toStdString();
