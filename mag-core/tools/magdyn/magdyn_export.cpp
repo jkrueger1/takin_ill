@@ -226,14 +226,14 @@ bool MagDynDlg::ExportToSunny(const QString& filename)
 		{
 			ofstr	<< " +\n\t[\n"
 				<< "\t\t" << get_str_var(term.Jgen[0][0], true)
-				<< "   " << get_str_var(term.Jgen[0][1], true)
-				<< "  -" << get_str_var(term.Jgen[0][2], true) << ";"
-				<< "\n\t\t-" << get_str_var(term.Jgen[1][0], true)
-				<< "   " << get_str_var(term.Jgen[1][1], true)
-				<< "   " << get_str_var(term.Jgen[1][2], true) << ";"
+				<< "  " << get_str_var(term.Jgen[0][1], true)
+				<< "  " << get_str_var(term.Jgen[0][2], true) << ";"
+				<< "\n\t\t" << get_str_var(term.Jgen[1][0], true)
+				<< "  " << get_str_var(term.Jgen[1][1], true)
+				<< "  " << get_str_var(term.Jgen[1][2], true) << ";"
 				<< "\n\t\t" << get_str_var(term.Jgen[2][0], true)
-				<< "  -" << get_str_var(term.Jgen[2][1], true)
-				<< "   " << get_str_var(term.Jgen[2][2], true)
+				<< "  " << get_str_var(term.Jgen[2][1], true)
+				<< "  " << get_str_var(term.Jgen[2][2], true)
 				<< "\n\t]";
 		}
 
