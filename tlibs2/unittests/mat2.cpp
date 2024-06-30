@@ -25,7 +25,7 @@
  * ----------------------------------------------------------------------------
  */
 
-#define BOOST_TEST_MODULE La1
+#define BOOST_TEST_MODULE Mat2
 #include <boost/test/included/unit_test.hpp>
 namespace test = boost::unit_test;
 namespace testtools = boost::test_tools;

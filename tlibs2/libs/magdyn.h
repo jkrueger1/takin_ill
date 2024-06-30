@@ -186,12 +186,13 @@ struct t_MagneticSite
 	t_vec_real pos_calc{};       // magnetic site position
 
 	t_vec spin_dir_calc{};       // spin vector
-	t_vec spin_ortho_calc{};     // spin orthogonal vector
-	t_vec spin_ortho_conj_calc{};
+	t_vec trafo_z_calc{};        // trafo z vector (3rd column in trafo matrix)
+	t_vec trafo_plane_calc{};    // trafo orthogonal plane (1st and 2nd coumns)
+	t_vec trafo_plane_conj_calc{};
 
-	t_vec ge_spin_dir_calc{};    // g_e * spin vector
-	t_vec ge_spin_ortho_calc{};  // g_e * spin orthogonal vector
-	t_vec ge_spin_ortho_conj_calc{};
+	t_vec ge_trafo_z_calc{};     // g_e * trafo z vector
+	t_vec ge_trafo_plane_calc{}; // g_e * trafo orthogonal plane
+	t_vec ge_trafo_plane_conj_calc{};
 
 	t_real spin_mag_calc{};      // spin magnitude
 	// ------------------------------------------------------------------------
@@ -1206,13 +1207,14 @@ public:
 			tl2::ExprParser<t_cplx> parser = GetExprParser();
 
 			// spin direction and orthogonal plane
-			bool has_explicit_uv = true;
+			bool has_explicit_trafo = true;
 
 			// defaults
 			site.pos_calc = tl2::zero<t_vec_real>(3);
 			site.spin_dir_calc = tl2::zero<t_vec>(3);
-			site.spin_ortho_calc = tl2::zero<t_vec>(3);
-			site.spin_ortho_conj_calc = tl2::zero<t_vec>(3);
+			site.trafo_z_calc = tl2::zero<t_vec>(3);
+			site.trafo_plane_calc = tl2::zero<t_vec>(3);
+			site.trafo_plane_conj_calc = tl2::zero<t_vec>(3);
 			if(site.g_e.size1() == 0 || site.g_e.size2() == 0)
 				site.g_e = tl2::g_e<t_real> * tl2::unit<t_mat>(3);
 
@@ -1274,12 +1276,12 @@ public:
 				{
 					if(parser.parse_noexcept(site.spin_ortho[idx]))
 					{
-						site.spin_ortho_calc[idx] = parser.eval_noexcept();
-						site.spin_ortho_conj_calc[idx] = std::conj(site.spin_ortho_calc[idx]);
+						site.trafo_plane_calc[idx] = parser.eval_noexcept();
+						site.trafo_plane_conj_calc[idx] = std::conj(site.trafo_plane_calc[idx]);
 					}
 					else
 					{
-						has_explicit_uv = false;
+						has_explicit_trafo = false;
 
 						std::cerr << "Magdyn error: "
 							<< "Parsing spin orthogonal plane \""
@@ -1291,23 +1293,23 @@ public:
 				}
 				else
 				{
-					has_explicit_uv = false;
+					has_explicit_trafo = false;
 				}
 			}
 
 			// spin rotation of equation (9) from (Toth 2015)
 			if(m_field.align_spins)
 			{
-				std::tie(site.spin_ortho_calc, site.spin_dir_calc) =
-					R_to_uv(m_rot_field);
+				std::tie(site.trafo_plane_calc, site.trafo_z_calc) =
+					rot_to_trafo(m_rot_field);
 			}
 			else
 			{
-				if(!has_explicit_uv)
+				if(!has_explicit_trafo)
 				{
 					// calculate u and v from the spin rotation
-					std::tie(site.spin_ortho_calc, site.spin_dir_calc) =
-						spin_to_uv(site.spin_dir_calc);
+					std::tie(site.trafo_plane_calc, site.trafo_z_calc) =
+						spin_to_trafo(site.spin_dir_calc);
 				}
 
 				// TODO: normalise the v vector as well as the real and imaginary u vectors
@@ -1315,20 +1317,20 @@ public:
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
 				std::cout << "Site " << site.name << " u = "
-					<< site.spin_ortho_calc[0] << " " << site.spin_ortho_calc[1] << " " << site.spin_ortho_calc[2]
+					<< site.trafo_plane_calc[0] << " " << site.trafo_plane_calc[1] << " " << site.trafo_plane_calc[2]
 					<< std::endl;
 				std::cout << "Site " << site.name << " v = "
-					<< site.spin_dir_calc[0] << " " << site.spin_dir_calc[1] << " " << site.spin_dir_calc[2]
+					<< site.trafo_z_calc[0] << " " << site.trafo_z_calc[1] << " " << site.trafo_z_calc[2]
 					<< std::endl;
 #endif
 			}
 
-			site.spin_ortho_conj_calc = tl2::conj(site.spin_ortho_calc);
+			site.trafo_plane_conj_calc = tl2::conj(site.trafo_plane_calc);
 
 			// multiply g factor
-			site.ge_spin_dir_calc = site.g_e * site.spin_dir_calc;
-			site.ge_spin_ortho_calc = site.g_e * site.spin_ortho_calc;
-			site.ge_spin_ortho_conj_calc = site.g_e * site.spin_ortho_conj_calc;
+			site.ge_trafo_z_calc = site.g_e * site.trafo_z_calc;
+			site.ge_trafo_plane_calc = site.g_e * site.trafo_plane_calc;
+			site.ge_trafo_plane_conj_calc = site.g_e * site.trafo_plane_conj_calc;
 
 		}
 		catch(const std::exception& ex)
@@ -1617,18 +1619,18 @@ public:
 			const MagneticSite& s_i = GetMagneticSite(i);
 
 			// get the pre-calculated u and v vectors for the commensurate case
-			const t_vec& u_i      = s_i.spin_ortho_calc;
-			const t_vec& u_conj_i = s_i.spin_ortho_conj_calc;
-			const t_vec& v_i      = s_i.spin_dir_calc;
+			const t_vec& u_i      = s_i.trafo_plane_calc;
+			const t_vec& u_conj_i = s_i.trafo_plane_conj_calc;
+			const t_vec& v_i      = s_i.trafo_z_calc;
 
 			for(t_size j = 0; j < N; ++j)
 			{
 				const MagneticSite& s_j = GetMagneticSite(j);
 
 				// get the pre-calculated u and v vectors for the commensurate case
-				const t_vec& u_j      = s_j.spin_ortho_calc;
-				const t_vec& u_conj_j = s_j.spin_ortho_conj_calc;
-				const t_vec& v_j      = s_j.spin_dir_calc;
+				const t_vec& u_j      = s_j.trafo_plane_calc;
+				const t_vec& u_conj_j = s_j.trafo_plane_conj_calc;
+				const t_vec& v_j      = s_j.trafo_z_calc;
 
 				// get the pre-calculated exchange matrices for the (i, j) coupling
 				const t_indices indices_ij = std::make_pair(i, j);
@@ -1893,10 +1895,10 @@ public:
 				const MagneticSite& s_j = GetMagneticSite(j);
 
 				// get the pre-calculated u vectors
-				const t_vec& u_i = s_i.ge_spin_ortho_calc;
-				const t_vec& u_j = s_j.ge_spin_ortho_calc;
-				const t_vec& u_conj_i = s_i.ge_spin_ortho_conj_calc;
-				const t_vec& u_conj_j = s_j.ge_spin_ortho_conj_calc;
+				const t_vec& u_i = s_i.ge_trafo_plane_calc;
+				const t_vec& u_j = s_j.ge_trafo_plane_calc;
+				const t_vec& u_conj_i = s_i.ge_trafo_plane_conj_calc;
+				const t_vec& u_conj_j = s_j.ge_trafo_plane_conj_calc;
 
 				// pre-factors of equation (44) from (Toth 2015)
 				const t_real S_mag = std::sqrt(s_i.spin_mag_calc * s_j.spin_mag_calc);
@@ -2182,10 +2184,10 @@ public:
 			const MagneticSite& s_i = GetMagneticSite(term.site1_calc);
 			const MagneticSite& s_j = GetMagneticSite(term.site2_calc);
 
-			const t_mat J = CalcRealJ(term);  // Q=0 -> no rotation needed
+			const t_mat J = CalcRealJ(term);  // Q = 0 -> no rotation needed
 
-			const t_vec Si = s_i.spin_mag_calc * s_i.spin_dir_calc;
-			const t_vec Sj = s_j.spin_mag_calc * s_j.spin_dir_calc;
+			const t_vec Si = s_i.spin_mag_calc * s_i.trafo_z_calc;
+			const t_vec Sj = s_j.spin_mag_calc * s_j.trafo_z_calc;
 
 			E += tl2::inner_noconj<t_vec>(Si, J * Sj).real();
 		}
@@ -2724,13 +2726,13 @@ protected:
 	 * [001] directions into the vectors comprised of the matrix columns
 	 * @see equation (9) and (51) from (Toth 2015)
 	 */
-	std::tuple<t_vec, t_vec> R_to_uv(const t_mat& R)
+	std::tuple<t_vec, t_vec> rot_to_trafo(const t_mat& R)
 	{
-		const t_vec u = tl2::col<t_mat, t_vec>(R, 0)
+		const t_vec xy_plane = tl2::col<t_mat, t_vec>(R, 0)
 			 + s_imag * tl2::col<t_mat, t_vec>(R, 1);
-		const t_vec v = tl2::col<t_mat, t_vec>(R, 2);
+		const t_vec z = tl2::col<t_mat, t_vec>(R, 2);
 
-		return std::make_tuple(u, v);
+		return std::make_tuple(xy_plane, z);
 	}
 
 
@@ -2739,9 +2741,10 @@ protected:
 	 * rotate local spin to ferromagnetic [001] direction
 	 * @see equations (7) and (9) from (Toth 2015)
 	 */
-	std::tuple<t_vec, t_vec> spin_to_uv(const t_vec& spin_dir)
+	std::tuple<t_vec, t_vec> spin_to_trafo(const t_vec& spin_dir)
 	{
-		const auto [spin_re, spin_im] = tl2::split_cplx<t_vec, t_vec_real>(spin_dir);
+		const auto [spin_re, spin_im] =
+			tl2::split_cplx<t_vec, t_vec_real>(spin_dir);
 
 		if(!tl2::equals_0<t_vec_real>(spin_im, m_eps))
 		{
@@ -2750,13 +2753,12 @@ protected:
 				<< std::endl;
 		}
 
-		// only use real part, imaginary part should be zero
 		//spin_re /= tl2::norm<t_vec_real>(spin_re);
 		const t_mat_real _rot = tl2::rotation<t_mat_real, t_vec_real>(
 			spin_re, m_zdir, &m_rotaxis, m_eps);
 
 		const t_mat rot = tl2::convert<t_mat, t_mat_real>(_rot);
-		return R_to_uv(rot);
+		return rot_to_trafo(rot);
 	}
 
 
