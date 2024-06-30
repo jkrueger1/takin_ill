@@ -62,7 +62,7 @@ static std::string get_str_var(const std::string& var, bool add_brackets = false
 
 
 /**
- * export magnetic structure to the sunny tool
+ * export the magnetic structure to the sunny tool
  *   (https://github.com/SunnySuite/Sunny.jl)
  */
 void MagDynDlg::ExportToSunny()
@@ -80,7 +80,7 @@ void MagDynDlg::ExportToSunny()
 
 
 /**
- * export magnetic structure to the sunny tool
+ * export the magnetic structure to the sunny tool
  *   (https://github.com/SunnySuite/Sunny.jl)
  */
 bool MagDynDlg::ExportToSunny(const QString& filename)
@@ -209,8 +209,7 @@ bool MagDynDlg::ExportToSunny(const QString& filename)
 		std::size_t idx1 = m_dyn.GetMagneticSiteIndex(term.site1) + 1;
 		std::size_t idx2 = m_dyn.GetMagneticSiteIndex(term.site2) + 1;
 
-		// TODO: also add general exchange matrix, term.Jgen
-		ofstr << "set_exchange!(magsys," << " # " << term.name
+		ofstr	<< "set_exchange!(magsys," << " # " << term.name
 			<< "\n\t[\n"
 			<< "\t\t" << get_str_var(term.J, true)
 			<< "   " << get_str_var(term.dmi[2], true)
@@ -221,7 +220,24 @@ bool MagDynDlg::ExportToSunny(const QString& filename)
 			<< "\n\t\t" << get_str_var(term.dmi[1], true)
 			<< "  -" << get_str_var(term.dmi[0], true)
 			<< "   " << get_str_var(term.J, true)
-			<< "\n\t], Bond(" << idx1 << ", " << idx2 << ", [ "
+			<< "\n\t]";
+
+		if(!tl2::equals_0(term.Jgen_calc))
+		{
+			ofstr	<< " +\n\t[\n"
+				<< "\t\t" << get_str_var(term.Jgen[0][0], true)
+				<< "   " << get_str_var(term.Jgen[0][1], true)
+				<< "  -" << get_str_var(term.Jgen[0][2], true) << ";"
+				<< "\n\t\t-" << get_str_var(term.Jgen[1][0], true)
+				<< "   " << get_str_var(term.Jgen[1][1], true)
+				<< "   " << get_str_var(term.Jgen[1][2], true) << ";"
+				<< "\n\t\t" << get_str_var(term.Jgen[2][0], true)
+				<< "  -" << get_str_var(term.Jgen[2][1], true)
+				<< "   " << get_str_var(term.Jgen[2][2], true)
+				<< "\n\t]";
+		}
+
+		ofstr	<< ", Bond(" << idx1 << ", " << idx2 << ", [ "
 			<< get_str_var(term.dist[0]) << ", "
 			<< get_str_var(term.dist[1]) << ", "
 			<< get_str_var(term.dist[2])
