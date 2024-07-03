@@ -31,6 +31,9 @@
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QLabel>
+#include <QtWidgets/QMessageBox>
+
+#include <QtGui/QDesktopServices>
 
 
 // instantiate settings dialog
@@ -2161,8 +2164,11 @@ void MagDynDlg::CreateMenuBar()
 
 	// help menu
 	auto menuHelp = new QMenu("Help", m_menu);
+	QAction *acHelp = new QAction(
+		QIcon::fromTheme("help"),
+		"Show Help...", menuHelp);
 	QAction *acAboutQt = new QAction(
-		QIcon::fromTheme("help-about"),
+		QIcon::fromTheme("help-contents"),
 		"About Qt...", menuHelp);
 	QAction *acAbout = new QAction(
 		QIcon::fromTheme("help-about"),
@@ -2223,6 +2229,8 @@ void MagDynDlg::CreateMenuBar()
 	menuTools->addSeparator();
 	menuTools->addAction(acPreferences);
 
+	menuHelp->addAction(acHelp);
+	menuHelp->addSeparator();
 	menuHelp->addAction(acAboutQt);
 	menuHelp->addAction(acAbout);
 
@@ -2353,6 +2361,14 @@ void MagDynDlg::CreateMenuBar()
 		m_settings_dlg->show();
 		m_settings_dlg->raise();
 		m_settings_dlg->activateWindow();
+	});
+
+	// show info dialog
+	connect(acHelp, &QAction::triggered, [this]()
+	{
+		QUrl url("https://github.com/ILLGrenoble/takin/wiki/Modelling-Magnetic-Structures");
+		if(!QDesktopServices::openUrl(url))
+			QMessageBox::critical(this, "Error", "Could not open the wiki.");
 	});
 
 	connect(acAboutQt, &QAction::triggered, []()

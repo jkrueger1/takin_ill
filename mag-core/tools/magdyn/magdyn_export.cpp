@@ -213,15 +213,15 @@ bool MagDynDlg::ExportToSunny(const QString& filename)
 
 		ofstr	<< "set_exchange!(magsys," << " # " << term.name
 			<< "\n\t[\n"
-			<< "\t\t" << get_str_var(term.J, true)
-			<< "   " << get_str_var(term.dmi[2], true)
-			<< "  -" << get_str_var(term.dmi[1], true) << ";"
-			<< "\n\t\t-" << get_str_var(term.dmi[2], true)
-			<< "   " << get_str_var(term.J, true)
-			<< "   " << get_str_var(term.dmi[0], true) << ";"
-			<< "\n\t\t" << get_str_var(term.dmi[1], true)
-			<< "  -" << get_str_var(term.dmi[0], true)
-			<< "   " << get_str_var(term.J, true)
+			<< "\t\t" << get_str_var(term.J, true)             // 0,0
+			<< "   " << get_str_var(term.dmi[2], true)         // 0,1
+			<< "  -" << get_str_var(term.dmi[1], true) << ";"  // 0,2
+			<< "\n\t\t-" << get_str_var(term.dmi[2], true)     // 1,0
+			<< "   " << get_str_var(term.J, true)              // 1,1
+			<< "   " << get_str_var(term.dmi[0], true) << ";"  // 1,2
+			<< "\n\t\t" << get_str_var(term.dmi[1], true)      // 2,0
+			<< "  -" << get_str_var(term.dmi[0], true)         // 2,1
+			<< "   " << get_str_var(term.J, true)              // 2,2
 			<< "\n\t]";
 
 		if(!tl2::equals_0(term.Jgen_calc))

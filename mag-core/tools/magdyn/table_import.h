@@ -78,6 +78,8 @@ protected:
 	void ImportAtoms();
 	void ImportCouplings();
 
+	void ShowHelp();
+
 
 private:
 	QSettings *m_sett{};

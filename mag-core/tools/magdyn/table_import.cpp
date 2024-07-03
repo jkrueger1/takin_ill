@@ -32,6 +32,9 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QFrame>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QMessageBox>
+
+#include <QtGui/QDesktopServices>
 
 #include "tlibs2/libs/str.h"
 
@@ -150,6 +153,7 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 
 	QPushButton *btnImportAtoms = new QPushButton("Import Sites", this);
 	QPushButton *btnImportCouplings = new QPushButton("Import Couplings", this);
+	QPushButton *btnHelp = new QPushButton("Help", this);
 	QPushButton *btnOk = new QPushButton("Close", this);
 
 	// grid
@@ -187,6 +191,7 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	grid->addWidget(sep2, y++, 0, 1, 4);
 	grid->addWidget(btnImportAtoms, y, 0, 1, 1);
 	grid->addWidget(btnImportCouplings, y, 1, 1, 1);
+	grid->addWidget(btnHelp, y, 2, 1, 1);
 	grid->addWidget(btnOk, y++, 3, 1, 1);
 
 	if(m_sett)
@@ -243,6 +248,7 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	// connections
 	connect(btnImportAtoms, &QAbstractButton::clicked, this, &TableImportDlg::ImportAtoms);
 	connect(btnImportCouplings, &QAbstractButton::clicked, this, &TableImportDlg::ImportCouplings);
+	connect(btnHelp, &QAbstractButton::clicked, this, &TableImportDlg::ShowHelp);
 	connect(btnOk, &QAbstractButton::clicked, this, &QDialog::close);
 }
 
@@ -384,6 +390,18 @@ void TableImportDlg::ImportCouplings()
 	}
 
 	emit SetCouplingsSignal(couplings);
+}
+
+
+
+/**
+ * show the wiki's help page for importing structures
+ */
+void TableImportDlg::ShowHelp()
+{
+	QUrl url("https://github.com/ILLGrenoble/takin/wiki/Importing-Magnetic-Structures");
+	if(!QDesktopServices::openUrl(url))
+		QMessageBox::critical(this, "Error", "Could not open the wiki.");
 }
 
 
