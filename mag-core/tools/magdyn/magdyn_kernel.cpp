@@ -1,5 +1,5 @@
 /**
- * magnetic dynamics -- synchronisation with magdyn kernel
+ * magnetic dynamics -- synchronisation and interface with magdyn kernel
  * @author Tobias Weber <tweber@ill.fr>
  * @date 2022 - 2024
  * @license GPLv3, see 'LICENSE' file
@@ -427,4 +427,48 @@ void MagDynDlg::SyncToKernel()
 	ostrGS.precision(g_prec_gui);
 	ostrGS << "E0 = " << m_dyn.CalcGroundStateEnergy() << " meV";
 	m_statusFixed->setText(ostrGS.str().c_str());
+}
+
+
+
+/**
+ * get the site corresponding to the given table index
+ */
+const t_magdyn::MagneticSite* MagDynDlg::GetSiteFromTableIndex(int tab_idx)
+{
+	// use currently selected site if tab_idx < 0
+	if(tab_idx < 0)
+		tab_idx = m_sites_cursor_row;
+
+	auto *name = m_sitestab->item(tab_idx, COL_SITE_NAME);
+	if(!name)
+		return nullptr;
+
+	std::size_t site_idx = m_dyn.GetMagneticSiteIndex(name->text().toStdString());
+	if(site_idx >= m_dyn.GetMagneticSitesCount())
+		return nullptr;
+
+	return &m_dyn.GetMagneticSite(site_idx);
+}
+
+
+
+/**
+ * get the coupling corresponding to the given table index
+ */
+const t_magdyn::ExchangeTerm* MagDynDlg::GetTermFromTableIndex(int tab_idx)
+{
+	// use currently selected term if tab_idx < 0
+	if(tab_idx < 0)
+		tab_idx = m_terms_cursor_row;
+
+	auto *name = m_termstab->item(tab_idx, COL_XCH_NAME);
+	if(!name)
+		return nullptr;
+
+	std::size_t term_idx = m_dyn.GetExchangeTermIndex(name->text().toStdString());
+	if(term_idx >= m_dyn.GetExchangeTermsCount())
+		return nullptr;
+
+	return &m_dyn.GetExchangeTerm(term_idx);
 }

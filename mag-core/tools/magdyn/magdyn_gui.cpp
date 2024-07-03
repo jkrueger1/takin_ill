@@ -372,7 +372,6 @@ void MagDynDlg::CreateSitesPanel()
 
 		const QTableWidgetItem* item = *selected.begin();
 		m_sites_cursor_row = item->row();
-
 		if(m_sites_cursor_row < 0 ||
 			std::size_t(m_sites_cursor_row) >= m_dyn.GetMagneticSitesCount())
 		{
@@ -380,10 +379,16 @@ void MagDynDlg::CreateSitesPanel()
 			return;
 		}
 
-		const auto& site = m_dyn.GetMagneticSite(m_sites_cursor_row);
+		const auto* site = GetSiteFromTableIndex(m_sites_cursor_row);
+		if(!site)
+		{
+			m_status->setText("Invalid site selected.");
+			return;
+		}
+
 		std::ostringstream ostr;
 		ostr.precision(g_prec_gui);
-		ostr << "Site " << site.name << ".";
+		ostr << "Site " << site->name << ".";
 		m_status->setText(ostr.str().c_str());
 	});
 	connect(m_sitestab, &QTableWidget::itemChanged,
@@ -750,11 +755,17 @@ void MagDynDlg::CreateExchangeTermsPanel()
 			return;
 		}
 
-		const auto& term = m_dyn.GetExchangeTerm(m_terms_cursor_row);
+		const auto* term = GetTermFromTableIndex(m_terms_cursor_row);
+		if(!term)
+		{
+			m_status->setText("Invalid coupling selected.");
+			return;
+		}
+
 		std::ostringstream ostr;
 		ostr.precision(g_prec_gui);
-		ostr << "Coupling " << term.name
-			<< ": length = " << term.length_calc << " \xe2\x84\xab.";
+		ostr << "Coupling " << term->name
+			<< ": length = " << term->length_calc << " \xe2\x84\xab.";
 		m_status->setText(ostr.str().c_str());
 	});
 	connect(m_termstab, &QTableWidget::itemChanged,

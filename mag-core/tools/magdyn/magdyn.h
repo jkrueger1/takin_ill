@@ -507,6 +507,12 @@ protected:
 	void EnableInput();
 	void DisableInput();
 
+	// get the site corresponding to the given table index
+	const t_magdyn::MagneticSite* GetSiteFromTableIndex(int idx);
+
+	// get the coupling corresponding to the given table index
+	const t_magdyn::ExchangeTerm* GetTermFromTableIndex(int idx);
+
 
 public:
 	bool Load(const QString& filename, bool calc_dynamics = true);

@@ -333,7 +333,7 @@ void MagDynDlg::AddTermTabItem(
 
 	if(bclone)
 	{
-		for(int thecol=0; thecol<NUM_XCH_COLS; ++thecol)
+		for(int thecol = 0; thecol < NUM_XCH_COLS; ++thecol)
 		{
 			m_termstab->setItem(row, thecol,
 				m_termstab->item(m_terms_cursor_row, thecol)->clone());
