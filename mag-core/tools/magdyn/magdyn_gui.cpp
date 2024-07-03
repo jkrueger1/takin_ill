@@ -2165,10 +2165,10 @@ void MagDynDlg::CreateMenuBar()
 	// help menu
 	auto menuHelp = new QMenu("Help", m_menu);
 	QAction *acHelp = new QAction(
-		QIcon::fromTheme("help"),
+		QIcon::fromTheme("help-contents"),
 		"Show Help...", menuHelp);
 	QAction *acAboutQt = new QAction(
-		QIcon::fromTheme("help-contents"),
+		QIcon::fromTheme("help-about"),
 		"About Qt...", menuHelp);
 	QAction *acAbout = new QAction(
 		QIcon::fromTheme("help-about"),
