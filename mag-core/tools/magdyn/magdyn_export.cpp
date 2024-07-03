@@ -151,6 +151,8 @@ bool MagDynDlg::ExportToSunny(const QString& filename)
 	}
 
 	// save as the P1 space group, as we have already performed the symmetry operations
+	// (you can also manually set the crystal's space group and delete all
+	//  symmetry-equivalent positions and couplings in the generated file)
 	ofstr << "\t], 1)\n\n";
 
 
