@@ -27,6 +27,7 @@
  */
 
 #include "table_import.h"
+#include "defs.h"
 
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QLabel>
@@ -97,8 +98,6 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	m_spinCouplingName = new QSpinBox(this);
 	m_spinCouplingAtom1 = new QSpinBox(this);
 	m_spinCouplingAtom2 = new QSpinBox(this);
-	m_checkIndices1Based = new QCheckBox(this);
-	m_checkUniteIncompleteTokens = new QCheckBox(this);
 	m_spinCouplingDX = new QSpinBox(this);
 	m_spinCouplingDY = new QSpinBox(this);
 	m_spinCouplingDZ = new QSpinBox(this);
@@ -117,10 +116,6 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	m_spinCouplingDMIX->setPrefix("DMIx = ");
 	m_spinCouplingDMIY->setPrefix("DMIy = ");
 	m_spinCouplingDMIZ->setPrefix("DMIz = ");
-	m_checkIndices1Based->setText("1-Based");
-	m_checkIndices1Based->setToolTip("Are the indices 1-based or 0-based?");
-	m_checkUniteIncompleteTokens->setText("Unite Tokens");
-	m_checkUniteIncompleteTokens->setToolTip("Unite incomplete tokens, e.g. bracket expressions.");
 
 	m_spinCouplingName->setValue(0);
 	m_spinCouplingAtom1->setValue(1);
@@ -132,8 +127,6 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	m_spinCouplingDMIX->setValue(7);
 	m_spinCouplingDMIY->setValue(8);
 	m_spinCouplingDMIZ->setValue(9);
-	m_checkIndices1Based->setChecked(false);
-	m_checkUniteIncompleteTokens->setChecked(true);
 
 	for(QSpinBox* spin : {m_spinCouplingName, m_spinCouplingAtom1, m_spinCouplingAtom2,
 		m_spinCouplingDX, m_spinCouplingDY, m_spinCouplingDZ,
@@ -150,6 +143,21 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 
 	QFrame *sep2 = new QFrame(this);
 	sep2->setFrameStyle(QFrame::HLine);
+
+	m_checkIndices1Based = new QCheckBox(this);
+	m_checkUniteIncompleteTokens = new QCheckBox(this);
+	m_checkIgnoreSymmetricCoupling = new QCheckBox(this);
+
+	m_checkIndices1Based->setText("1-Based Indices");
+	m_checkIndices1Based->setToolTip("Are the indices 1-based or 0-based?");
+	m_checkIgnoreSymmetricCoupling->setText("Ignore Symmetric");
+	m_checkIgnoreSymmetricCoupling->setToolTip("Ignore couplings with flipped site indices and inverted distance vectors.");
+	m_checkUniteIncompleteTokens->setText("Unite Tokens");
+	m_checkUniteIncompleteTokens->setToolTip("Unite incomplete tokens, e.g. bracket expressions.");
+
+	m_checkIndices1Based->setChecked(false);
+	m_checkUniteIncompleteTokens->setChecked(true);
+	m_checkIgnoreSymmetricCoupling->setChecked(false);
 
 	QPushButton *btnImportAtoms = new QPushButton("Import Sites", this);
 	QPushButton *btnImportCouplings = new QPushButton("Import Couplings", this);
@@ -176,9 +184,7 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	grid->addWidget(labelCouplingIdx, y++, 0, 1, 4);
 	grid->addWidget(m_spinCouplingName, y, 0, 1, 1);
 	grid->addWidget(m_spinCouplingAtom1, y, 1, 1, 1);
-	grid->addWidget(m_spinCouplingAtom2, y, 2, 1, 1);
-	grid->addWidget(m_checkIndices1Based, y++, 3, 1, 1);
-	grid->addWidget(m_checkUniteIncompleteTokens, y, 3, 1, 1);
+	grid->addWidget(m_spinCouplingAtom2, y++, 2, 1, 1);
 	grid->addWidget(m_spinCouplingDX, y, 0, 1, 1);
 	grid->addWidget(m_spinCouplingDY, y, 1, 1, 1);
 	grid->addWidget(m_spinCouplingDZ, y++, 2, 1, 1);
@@ -189,6 +195,9 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	grid->addWidget(labelCouplings, y++, 0, 1, 4);
 	grid->addWidget(m_editCouplings, y++, 0, 1, 4);
 	grid->addWidget(sep2, y++, 0, 1, 4);
+	grid->addWidget(m_checkIndices1Based, y, 0, 1, 1);
+	grid->addWidget(m_checkUniteIncompleteTokens, y, 1, 1, 1);
+	grid->addWidget(m_checkIgnoreSymmetricCoupling, y++, 2, 1, 1);
 	grid->addWidget(btnImportAtoms, y, 0, 1, 1);
 	grid->addWidget(btnImportCouplings, y, 1, 1, 1);
 	grid->addWidget(btnHelp, y, 2, 1, 1);
@@ -240,9 +249,11 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 		if(m_sett->contains("tableimport/idx_coupling_DMIz"))
 			m_spinCouplingDMIZ->setValue(m_sett->value("tableimport/idx_coupling_DMIz").toInt());
 		if(m_sett->contains("tableimport/coupling_indices_1based"))
-			m_checkIndices1Based->setChecked(m_sett->value("tableimport/coupling_indices_1based").toBool());
+			m_checkIndices1Based->setChecked(m_sett->value("tableimport/indices_1based").toBool());
 		if(m_sett->contains("tableimport/unite_incomplete_tokens"))
 			m_checkUniteIncompleteTokens->setChecked(m_sett->value("tableimport/unite_incomplete_tokens").toBool());
+		if(m_sett->contains("tableimport/unite_incomplete_tokens"))
+			m_checkIgnoreSymmetricCoupling->setChecked(m_sett->value("tableimport/ignore_symmetric_couplings").toBool());
 	}
 
 	// connections
@@ -343,6 +354,7 @@ void TableImportDlg::ImportCouplings()
 	const int idx_dmiz = m_spinCouplingDMIZ->value();
 	const bool one_based = m_checkIndices1Based->isChecked();
 	const bool unite_incomplete = m_checkUniteIncompleteTokens->isChecked();
+	const bool ignore_symm = m_checkIgnoreSymmetricCoupling->isChecked();
 
 	std::vector<TableImportCoupling> couplings;
 	couplings.reserve(lines.size());
@@ -386,10 +398,44 @@ void TableImportDlg::ImportCouplings()
 		if(idx_dmiz >= 0 && idx_dmiz < int(cols.size()))
 			coupling.dmiz = tl2::str_to_var<t_real>(cols[idx_dmiz]);
 
+		if(ignore_symm && HasSymmetricCoupling(couplings, coupling))
+			continue;
+
 		couplings.emplace_back(std::move(coupling));
 	}
 
 	emit SetCouplingsSignal(couplings);
+}
+
+
+
+/**
+ * does an equivalent coupling already exist in the couplings vector?
+ */
+bool TableImportDlg::HasSymmetricCoupling(
+	const std::vector<TableImportCoupling>& couplings, const TableImportCoupling& coupling)
+{
+	// are the needed properties available?
+	if(!coupling.atomidx1 || !coupling.atomidx2 ||
+		!coupling.dx || !coupling.dy || !coupling.dz)
+		return false;
+
+	for(const TableImportCoupling& c : couplings)
+	{
+		// are the needed properties available?
+		if(!c.atomidx1 || !c.atomidx2 || !c.dx || !c.dy || !c.dz)
+			continue;
+
+		if(*c.atomidx1 == *coupling.atomidx2 && *c.atomidx2 == *coupling.atomidx1
+			&& tl2::equals<t_real>(*c.dx, -*coupling.dx, g_eps)
+			&& tl2::equals<t_real>(*c.dy, -*coupling.dy, g_eps)
+			&& tl2::equals<t_real>(*c.dz, -*coupling.dz, g_eps))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 
@@ -436,6 +482,7 @@ void TableImportDlg::closeEvent(QCloseEvent *)
 	m_sett->setValue("tableimport/idx_coupling_DMIy", m_spinCouplingDMIY->value());
 	m_sett->setValue("tableimport/idx_coupling_DMIz", m_spinCouplingDMIZ->value());
 
-	m_sett->setValue("tableimport/coupling_indices_1based", m_checkIndices1Based->isChecked());
+	m_sett->setValue("tableimport/indices_1based", m_checkIndices1Based->isChecked());
 	m_sett->setValue("tableimport/unite_incomplete_tokens", m_checkUniteIncompleteTokens->isChecked());
+	m_sett->setValue("tableimport/ignore_symmetric_couplings", m_checkIgnoreSymmetricCoupling->isChecked());
 }

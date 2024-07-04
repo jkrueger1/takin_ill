@@ -508,10 +508,10 @@ protected:
 	void DisableInput();
 
 	// get the site corresponding to the given table index
-	const t_magdyn::MagneticSite* GetSiteFromTableIndex(int idx);
+	const t_magdyn::MagneticSite* GetSiteFromTableIndex(int idx) const;
 
 	// get the coupling corresponding to the given table index
-	const t_magdyn::ExchangeTerm* GetTermFromTableIndex(int idx);
+	const t_magdyn::ExchangeTerm* GetTermFromTableIndex(int idx) const;
 
 
 public:

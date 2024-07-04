@@ -434,7 +434,7 @@ void MagDynDlg::SyncToKernel()
 /**
  * get the site corresponding to the given table index
  */
-const t_magdyn::MagneticSite* MagDynDlg::GetSiteFromTableIndex(int tab_idx)
+const t_magdyn::MagneticSite* MagDynDlg::GetSiteFromTableIndex(int tab_idx) const
 {
 	// use currently selected site if tab_idx < 0
 	if(tab_idx < 0)
@@ -456,7 +456,7 @@ const t_magdyn::MagneticSite* MagDynDlg::GetSiteFromTableIndex(int tab_idx)
 /**
  * get the coupling corresponding to the given table index
  */
-const t_magdyn::ExchangeTerm* MagDynDlg::GetTermFromTableIndex(int tab_idx)
+const t_magdyn::ExchangeTerm* MagDynDlg::GetTermFromTableIndex(int tab_idx) const
 {
 	// use currently selected term if tab_idx < 0
 	if(tab_idx < 0)
