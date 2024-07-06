@@ -302,18 +302,26 @@ class Stopwatch
 		t_dur m_dur{};
 		t_dur_sys m_dur_sys{};
 
-		T m_dDur = T{};
+		T m_dDur{};
 
 	public:
 		Stopwatch() = default;
 		~Stopwatch() = default;
 
+
+		/**
+		 * start the timer
+		 */
 		void start()
 		{
 			m_timeStart = std::chrono::system_clock::now();
 			m_timeStart_st = std::chrono::steady_clock::now();
 		}
 
+
+		/**
+		 * stop the timer
+		 */
 		void stop()
 		{
 			m_timeStop_st = std::chrono::steady_clock::now();
@@ -324,11 +332,19 @@ class Stopwatch
 			m_dDur = T(t_dur::period::num)/T(t_dur::period::den) * T(m_dur.count());
 		}
 
+
+		/**
+		 * get the amount of time that passed
+		 */
 		T GetDur() const
 		{
 			return m_dDur;
 		}
 
+
+		/**
+		 * convert a time point to a string representation
+		 */
 		static std::string to_str(const t_tp_sys& t)
 		{
 			using boost::date_time::c_time;
@@ -342,9 +358,28 @@ class Stopwatch
 			return std::string(cTime);
 		}
 
-		std::string GetStartTimeStr() const { return to_str(m_timeStart); }
-		std::string GetStopTimeStr() const { return to_str(m_timeStart+m_dur_sys); }
 
+		/**
+		 * get the start time as string
+		 */
+		std::string GetStartTimeStr() const
+		{
+			return to_str(m_timeStart);
+		}
+
+
+		/**
+		 * get the stop time as string
+		 */
+		std::string GetStopTimeStr() const
+		{
+			return to_str(m_timeStart + m_dur_sys);
+		}
+
+
+		/**
+		 * get the estimated stop time
+		 */
 		t_tp_sys GetEstStopTime(T dProg) const
 		{
 			t_tp_st timeStop_st = std::chrono::steady_clock::now();
@@ -356,6 +391,10 @@ class Stopwatch
 			return tpEnd;
 		}
 
+
+		/**
+		 * get the estimated stop time as string
+		 */
 		std::string GetEstStopTimeStr(T dProg) const
 		{
 			return to_str(GetEstStopTime(dProg));

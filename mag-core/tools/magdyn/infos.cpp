@@ -68,11 +68,29 @@ InfoDlg::InfoDlg(QWidget* pParent, QSettings *sett)
 	labelDate->setAlignment(Qt::AlignHCenter);
 
 	auto labelPaper = new QLabel(
-		"This program implements the formalism from <br>"
+		"This program implements the formalism from "
 		"<a href=\"https://doi.org/10.1088/0953-8984/27/16/166002\">this paper</a> "
 		"(which is also available <a href=\"https://doi.org/10.48550/arXiv.1402.6069\">here</a>).",
 		infopanel);
+	labelPaper->setWordWrap(true);
 	labelPaper->setOpenExternalLinks(true);
+
+	auto labelLicense = new QLabel(
+		"<p>This program is free software: you can redistribute it and/or modify "
+		"it under the terms of the <u>GNU General Public License</u> as published by "
+		"the Free Software Foundation, <u>version 3</u> of the License.</p>"
+
+		"<p>This program is distributed in the hope that it will be useful, "
+		"but WITHOUT ANY WARRANTY; without even the implied warranty of "
+		"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. "
+		"See the GNU General Public License for more details.</p>"
+
+		"<p>You should have received a copy of the GNU General Public License "
+		"along with this program. If not, see "
+		"<a href=\"http://www.gnu.org/licenses/\">&lt;http://www.gnu.org/licenses/&gt;</a>.</p>",
+		infopanel);
+		labelLicense->setWordWrap(true);
+		labelLicense->setOpenExternalLinks(true);
 
 	// renderer infos
 	for(int i = 0; i < 4; ++i)
@@ -96,6 +114,8 @@ InfoDlg::InfoDlg(QWidget* pParent, QSettings *sett)
 	sep3->setFrameStyle(QFrame::HLine);
 	auto sep4 = new QFrame(infopanel);
 	sep4->setFrameStyle(QFrame::HLine);
+	auto sep5 = new QFrame(infopanel);
+	sep5->setFrameStyle(QFrame::HLine);
 
 	grid->addItem(new QSpacerItem(16, 16,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
@@ -130,7 +150,8 @@ InfoDlg::InfoDlg(QWidget* pParent, QSettings *sett)
 	grid->addWidget(sep3, y++,0, 1,1);
 	grid->addWidget(labelPaper, y++,0, 1,1);
 	grid->addWidget(sep4, y++,0, 1,1);
-
+	grid->addWidget(labelLicense, y++,0, 1,1);
+	grid->addWidget(sep5, y++,0, 1,1);
 
 	for(int i = 0; i < 4; ++i)
 		grid->addWidget(m_labelGlInfos[i], y++,0, 1,1);
@@ -156,7 +177,7 @@ InfoDlg::InfoDlg(QWidget* pParent, QSettings *sett)
 		if(m_sett->contains("notes/geo"))
 			restoreGeometry(m_sett->value("infos/geo").toByteArray());
 		else
-			resize(500, 500);
+			resize(800, 800);
         }
 }
 

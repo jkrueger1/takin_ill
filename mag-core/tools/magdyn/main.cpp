@@ -29,6 +29,7 @@
 #include "magdyn.h"
 #include "tlibs2/libs/qt/gl.h"
 #include "tlibs2/libs/qt/helper.h"
+#include "tlibs2/libs/algos.h"
 
 #include <QtWidgets/QApplication>
 
@@ -198,6 +199,7 @@ int main(int argc, char** argv)
 
 		bool show_help = false;
 		bool use_cli = false;
+		bool show_timing = false;
 		std::string model_file, results_file;
 
 		args::options_description arg_descr("Takin/Magdyn arguments");
@@ -206,6 +208,7 @@ int main(int argc, char** argv)
 			("cli,c", args::bool_switch(&use_cli), "use command-line interface")
 			("input,i", args::value(&model_file), "input magnetic model file (.magdyn)")
 			("output,o", args::value(&results_file), "output results file (in cli mode)")
+			("timing,t", args::bool_switch(&show_timing), "show time needed for calculation")
 			("hi", args::value<t_real>(), "initial h coordinate")
 			("ki", args::value<t_real>(), "initial k coordinate")
 			("li", args::value<t_real>(), "initial l coordinate")
@@ -228,7 +231,22 @@ int main(int argc, char** argv)
 
 		if(show_help)
 		{
-			std::cout << arg_descr << std::endl;
+			std::cout << "This is Takin/Magdyn by Tobias Weber <tweber@ill.fr>.\n\n"
+				<< arg_descr
+				<< R"BLOCK(
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, version 3 of the License.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+)BLOCK";
+			std::cout << std::endl;
 			return 0;
 		}
 
@@ -261,9 +279,32 @@ int main(int argc, char** argv)
 
 
 		// either start the cli or the gui program
+		std::unique_ptr<tl2::Stopwatch<t_real>> stopwatch;
+
+		if(show_timing)
+		{
+			stopwatch = std::make_unique<tl2::Stopwatch<t_real>>();
+			stopwatch->start();
+		}
+
+		int ret = 0;
 		if(use_cli)
-			return cli_main(model_file, results_file, Qi, Qf);
-		return gui_main(argc, argv, model_file, Qi, Qf);
+			ret = cli_main(model_file, results_file, Qi, Qf);
+		else
+			ret = gui_main(argc, argv, model_file, Qi, Qf);
+
+		if(show_timing)
+		{
+			stopwatch->stop();
+			std::cout << "\n================================================================================\n"
+				<< "Magdyn start time: " << stopwatch->GetStartTimeStr() << ".\n"
+				<< "Magdyn stop time:  " << stopwatch->GetStopTimeStr() << ".\n"
+				<< "Elapsed time:      " << stopwatch->GetDur() << " s.\n"
+				<< "================================================================================"
+				<< std::endl;
+		}
+
+		return ret;
 	}
 	catch(const std::exception& ex)
 	{
