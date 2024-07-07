@@ -64,6 +64,9 @@ using t_mat_gl = tl2::t_mat_gl;
 // ----------------------------------------------------------------------------
 // global settings variables
 // ----------------------------------------------------------------------------
+// number of threads for calculation
+extern unsigned int g_num_threads;
+
 // maximum number of recent files
 extern unsigned int g_maxnum_recents;
 
@@ -104,8 +107,15 @@ void get_settings_from_takin_core();
 // ----------------------------------------------------------------------------
 #include "settings.h"
 
-constexpr std::array<SettingsVariable, 10> g_settingsvariables
+constexpr std::array<SettingsVariable, 11> g_settingsvariables
 {{
+	// threads
+	{
+		.description = "Number of threads for calculation.",
+		.key = "num_threads",
+		.value = &g_num_threads,
+	},
+
 	// epsilons and precisions
 	{
 		.description = "Calculation epsilon.",

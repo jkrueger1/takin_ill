@@ -145,9 +145,7 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 	const t_vec_real Qstep = tl2::create<t_vec_real>({inc_h, inc_k, inc_l});
 
 	// tread pool
-	unsigned int num_threads = std::max<unsigned int>(
-		1, std::thread::hardware_concurrency()/2);
-	asio::thread_pool pool{num_threads};
+	asio::thread_pool pool{g_num_threads};
 
 
 	using t_taskret = std::deque<

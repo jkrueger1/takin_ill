@@ -262,9 +262,7 @@ void MagDynDlg::CalcDispersion()
 		m_hamiltonian_comp[2]->isChecked());
 
 	// tread pool
-	unsigned int num_threads = std::max<unsigned int>(
-		1, std::thread::hardware_concurrency()/2);
-	asio::thread_pool pool{num_threads};
+	asio::thread_pool pool{g_num_threads};
 
 	// mutex to protect m_qs_data, m_Es_data, and m_ws_data
 	std::mutex mtx;
@@ -288,7 +286,7 @@ void MagDynDlg::CalcDispersion()
 	m_progress->setValue(0);
 	m_status->setText("Starting calculation.");
 
-	for(t_size i=0; i<num_pts; ++i)
+	for(t_size i = 0; i < num_pts; ++i)
 	{
 		auto task = [this, &mtx, i, num_pts, E0,
 			use_projector, use_weights, ignore_annihilation,
@@ -352,7 +350,7 @@ void MagDynDlg::CalcDispersion()
 
 	m_status->setText("Performing calculation.");
 
-	for(std::size_t task_idx=0; task_idx<tasks.size(); ++task_idx)
+	for(std::size_t task_idx = 0; task_idx < tasks.size(); ++task_idx)
 	{
 		t_taskptr task = tasks[task_idx];
 

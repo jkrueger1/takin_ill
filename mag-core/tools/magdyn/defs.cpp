@@ -28,6 +28,8 @@
 
 #include <QtCore/QSettings>
 
+#include <thread>
+
 #include "defs.h"
 
 
@@ -35,6 +37,10 @@
 // ----------------------------------------------------------------------------
 // global settings variables
 // ----------------------------------------------------------------------------
+// number of threads for calculation
+unsigned int g_num_threads = std::max<unsigned int>(
+	1, std::thread::hardware_concurrency()/2);;
+
 // maximum number of recent files
 unsigned int g_maxnum_recents = 16;
 
@@ -79,6 +85,11 @@ void get_settings_from_takin_core()
 {
 	QSettings sett_core("takin", "core");
 
+	if(sett_core.contains("main/max_threads"))
+	{
+		g_num_threads = sett_core.value("main/max_threads").toUInt();
+	}
+
 	if(sett_core.contains("main/font_gen"))
 	{
 		g_font = sett_core.value("main/font_gen").toString();
@@ -98,6 +109,5 @@ void get_settings_from_takin_core()
 	if(sett_core.contains("main/gui_style_value"))
 	{
 		g_theme = sett_core.value("main/gui_style_value").toString();
-		//std::cout << g_theme.toStdString() << std::endl;
 	}
 }

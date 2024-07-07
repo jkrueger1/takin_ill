@@ -52,6 +52,7 @@
 #include <iomanip>
 #include <cstdint>
 
+#include <boost/asio.hpp>
 #include <boost/container_hash/hash.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -2207,10 +2208,13 @@ public:
 	void SaveDispersion(const std::string& filename,
 		t_real h_start, t_real k_start, t_real l_start,
 		t_real h_end, t_real k_end, t_real l_end,
-		t_size num_qs = 128) const
+		t_size num_qs = 128, t_size num_threads = 4) const
 	{
 		std::ofstream ofstr{filename};
-		SaveDispersion(ofstr, h_start, k_start, l_start, h_end, k_end, l_end, num_qs);
+		SaveDispersion(ofstr,
+			h_start, k_start, l_start,
+			h_end, k_end, l_end, num_qs,
+			num_threads);
 	}
 
 
@@ -2221,7 +2225,7 @@ public:
 	void SaveDispersion(std::ostream& ostr,
 		t_real h_start, t_real k_start, t_real l_start,
 		t_real h_end, t_real k_end, t_real l_end,
-		t_size num_qs = 128) const
+		t_size num_qs = 128, t_size num_threads = 4) const
 	{
 		ostr.precision(m_prec);
 
@@ -2236,21 +2240,62 @@ public:
 			<< std::setw(m_prec*2) << std::left << "w_nsf"
 			<< std::endl;
 
+		using t_EandS = std::vector<EnergyAndWeight>;
+
+		struct t_result
+		{
+			t_real h, k, l;
+			t_EandS E_and_S;
+		};
+
+		// thread pool and tasks
+		using t_pool = boost::asio::thread_pool;
+		using t_task = std::packaged_task<t_result()>;
+		using t_taskptr = std::shared_ptr<t_task>;
+
+		t_pool pool{num_threads};
+		std::vector<t_taskptr> tasks;
+		tasks.reserve(num_qs);
+
+		// calculate dispersion
 		for(t_size i = 0; i < num_qs; ++i)
 		{
-			// get Q
-			const t_real h = std::lerp(h_start, h_end, t_real(i)/t_real(num_qs-1));
-			const t_real k = std::lerp(k_start, k_end, t_real(i)/t_real(num_qs-1));
-			const t_real l = std::lerp(l_start, l_end, t_real(i)/t_real(num_qs-1));
-
-			// get E and S(Q, E)
-			const auto energies_and_correlations = CalcEnergies(h, k, l, false);
-			for(const auto& E_and_S : energies_and_correlations)
+			auto task = [this, i, num_qs,
+				h_start, k_start, l_start,
+				h_end, k_end, l_end]() -> t_result
 			{
-				ostr
-					<< std::setw(m_prec*2) << std::left << h
-					<< std::setw(m_prec*2) << std::left << k
-					<< std::setw(m_prec*2) << std::left << l
+				// get Q
+				const t_real h = std::lerp(h_start, h_end, t_real(i)/t_real(num_qs-1));
+				const t_real k = std::lerp(k_start, k_end, t_real(i)/t_real(num_qs-1));
+				const t_real l = std::lerp(l_start, l_end, t_real(i)/t_real(num_qs-1));
+
+				// get E and S(Q, E) for this Q
+				t_EandS E_and_S = CalcEnergies(h, k, l, false);
+
+				t_result result
+				{
+					.h = h, .k = k, .l = l,
+					.E_and_S = E_and_S
+				};
+
+				return result;
+			};
+
+			t_taskptr taskptr = std::make_shared<t_task>(task);
+			tasks.push_back(taskptr);
+			boost::asio::post(pool, [taskptr]() { (*taskptr)(); });
+		}
+
+		// print results
+		for(auto& task : tasks)
+		{
+			const t_result& result = task->get_future().get();
+
+			for(const auto& E_and_S : result.E_and_S)
+			{
+				ostr	<< std::setw(m_prec*2) << std::left << result.h
+					<< std::setw(m_prec*2) << std::left << result.k
+					<< std::setw(m_prec*2) << std::left << result.l
 					<< std::setw(m_prec*2) << E_and_S.E
 					<< std::setw(m_prec*2) << E_and_S.weight
 					<< std::setw(m_prec*2) << E_and_S.weight_channel[0]

@@ -181,8 +181,12 @@ static int cli_main(const std::string& model_file, const std::string& results_fi
 	// calculate the dispersion
 	std::cout << "\nCalculating dispersion from Q_i = (" << h_start << ", " << k_start << ", " << l_start << ")"
 		<< " to Q_f = (" << h_end << ", " << k_end << ", " << l_end << ")"
-		<< " in " << num_pts << " steps..." << std::endl;
-	magdyn.SaveDispersion(*postr,  h_start, k_start, l_start,  h_end, k_end, l_end,  num_pts);
+		<< " in " << num_pts << " steps and " << g_num_threads << " threads..."
+		<< std::endl;
+	magdyn.SaveDispersion(*postr,
+		h_start, k_start, l_start,
+		h_end, k_end, l_end,
+		num_pts, g_num_threads);
 	if(results_file != "")
 		std::cout << "Wrote results to \"" << results_file << "\"." << std::endl;
 
@@ -208,7 +212,8 @@ int main(int argc, char** argv)
 			("cli,c", args::bool_switch(&use_cli), "use command-line interface")
 			("input,i", args::value(&model_file), "input magnetic model file (.magdyn)")
 			("output,o", args::value(&results_file), "output results file (in cli mode)")
-			("timing,t", args::bool_switch(&show_timing), "show time needed for calculation")
+			("timing", args::bool_switch(&show_timing), "show time needed for calculation")
+			("threads,t", args::value(&g_num_threads), "number of threads for calculation")
 			("hi", args::value<t_real>(), "initial h coordinate")
 			("ki", args::value<t_real>(), "initial k coordinate")
 			("li", args::value<t_real>(), "initial l coordinate")
