@@ -38,6 +38,7 @@ namespace pt = boost::property_tree;
 #include <cstdlib>
 
 #include "tlibs2/libs/str.h"
+#include "tlibs2/libs/file.h"
 #include "tlibs2/libs/units.h"
 
 
@@ -83,9 +84,13 @@ void MagDynDlg::ExportToSunny()
  * export the magnetic structure to the sunny tool
  *   (https://github.com/SunnySuite/Sunny.jl)
  */
-bool MagDynDlg::ExportToSunny(const QString& filename)
+bool MagDynDlg::ExportToSunny(const QString& _filename)
 {
-	std::ofstream ofstr(filename.toStdString());
+	std::string filename = _filename.toStdString();
+	std::string dispname_abs = tl2::get_file_noext(filename) + ".dat";
+	std::string dispname_rel = tl2::get_file_nodir(dispname_abs);
+
+	std::ofstream ofstr(filename);
 	if(!ofstr)
 	{
 		QMessageBox::critical(this, "Magnetic Dynamics",
@@ -110,10 +115,21 @@ bool MagDynDlg::ExportToSunny(const QString& filename)
 
 
 	// --------------------------------------------------------------------
+	t_real h1 = (t_real)m_Q_start[0]->value();
+	t_real k1 = (t_real)m_Q_start[1]->value();
+	t_real l1 = (t_real)m_Q_start[2]->value();
+	t_real h2 = (t_real)m_Q_end[0]->value();
+	t_real k2 = (t_real)m_Q_end[1]->value();
+	t_real l2 = (t_real)m_Q_end[2]->value();
+
 	ofstr << "# variables\n";
 
-	// internal variables
-	ofstr << "g_e = " << tl2::g_e<t_real> << "\n";
+	// internal constants and variables
+	ofstr << "g_e     = " << tl2::g_e<t_real> << "\n";
+	ofstr << "Qstart  = [ " << h1 << ", " << k1 << ", " << l1 << " ]\n";
+	ofstr << "Qend    = [ " << h2 << ", " << k2 << ", " << l2 << " ]\n";
+	ofstr << "Q_pts   = " << m_num_points->value() << "\n";
+	ofstr << "datfile = \"" << dispname_rel << "\"\n";
 
 	// user variables
 	for(const auto &var : m_dyn.GetVariables())
@@ -128,7 +144,7 @@ bool MagDynDlg::ExportToSunny(const QString& filename)
 
 	// --------------------------------------------------------------------
 	ofstr << "\n# magnetic sites and xtal lattice\n";
-	ofstr << "@printf(stderr, \"Setting up magnetic sites...\\n\")\n";
+	ofstr << "@printf(\"Setting up magnetic sites...\\n\")\n";
 
 	const auto& xtal = m_dyn.GetCrystalLattice();
 	ofstr << "magsites = Crystal(\n"
@@ -198,13 +214,13 @@ bool MagDynDlg::ExportToSunny(const QString& filename)
 		}
 	}
 
-	ofstr << "\n@printf(stderr, \"%s\", magsites)\n";
+	ofstr << "\n@printf(\"%s\", magsites)\n";
 	// --------------------------------------------------------------------
 
 
 	// --------------------------------------------------------------------
 	ofstr << "\n# magnetic couplings\n";
-	ofstr << "@printf(stderr, \"Setting up magnetic couplings...\\n\")\n";
+	ofstr << "@printf(\"Setting up magnetic couplings...\\n\")\n";
 
 	for(const auto& term : m_dyn.GetExchangeTerms())
 	{
@@ -286,27 +302,17 @@ bool MagDynDlg::ExportToSunny(const QString& filename)
 			<< "S0 = [ " << s0[0] << ", " << s0[1] << ", " << s0[2] << " ])\n";
 	}
 
-	ofstr << "\n@printf(stderr, \"%s\\n\", magsys)\n";
+	ofstr << "\n@printf(\"%s\\n\", magsys)\n";
 	// --------------------------------------------------------------------
 
 
 	// --------------------------------------------------------------------
 	ofstr << "\n# spin-wave calculation\n";
-	ofstr << "@printf(stderr, \"Calculating S(Q, E)...\\n\")\n";
+	ofstr << "@printf(\"Calculating S(Q, E)...\\n\")\n";
 
 	ofstr << "calc = SpinWaveTheory(magsys; apply_g = true)\n";
 
-	t_real h1 = (t_real)m_Q_start[0]->value();
-	t_real k1 = (t_real)m_Q_start[1]->value();
-	t_real l1 = (t_real)m_Q_start[2]->value();
-	t_real h2 = (t_real)m_Q_end[0]->value();
-	t_real k2 = (t_real)m_Q_end[1]->value();
-	t_real l2 = (t_real)m_Q_end[2]->value();
-
-	ofstr << "momenta = collect(range([ "
-		<< h1 << ", " << k1 << ", " << l1 << " ], [ "
-		<< h2 << ", " << k2 << ", " << l2 << " ], "
-		<< m_num_points->value() << "))\n";
+	ofstr << "momenta = collect(range(Qstart, Qend, Q_pts))\n";
 	std::string proj = m_use_projector->isChecked() ? ":perp" : ":trace";
 	ofstr << "energies, correlations = intensities_bands(calc, momenta,\n"
 		<< "\tintensity_formula(calc, " << proj
@@ -315,19 +321,22 @@ bool MagDynDlg::ExportToSunny(const QString& filename)
 
 
 	// --------------------------------------------------------------------
-	ofstr << R"BLOCK(
-# output the dispersion and spin-spin correlation
-@printf(stderr, "Outputting data, save to \"disp.dat\" and plot with: \n\t%s\n",
-	"gnuplot -p -e \"plot \\\"disp.dat\\\" u 1:4:(\\\$5/4) w p pt 7 ps var\"")
+	ofstr << "\n# output the dispersion and spin-spin correlation\n";
+	ofstr << "@printf(\"Outputting data to \\\"%s\\\", plot with:\\n"
+		<< "\\tgnuplot -p -e \\\"plot \\\\\\\"%s\\\\\\\" u 1:4:(\\\\\\$5/4) w p pt 7 ps var\\\"\\n\", "
+		<< "datfile, datfile)\n";
 
-@printf(stdout, "# %8s %10s %10s %10s %10s\n",
-	"h (rlu)", "k (rlu)", "l (rlu)", "E (meV)", "S(Q, E)")
-for q_idx in 1:length(momenta)
-	for e_idx in 1:length(energies[q_idx, :])
-		@printf(stdout, "%10.4f %10.4f %10.4f %10.4f %10.4f\n",
-			momenta[q_idx][1], momenta[q_idx][2], momenta[q_idx][3],
-			energies[q_idx, e_idx],
-			correlations[q_idx, e_idx])
+	ofstr << "open(datfile, \"w\") do ostr\n";
+	ofstr <<
+		R"BLOCK(	@printf(ostr, "# %8s %10s %10s %10s %10s\n",
+		"h (rlu)", "k (rlu)", "l (rlu)", "E (meV)", "S(Q, E)")
+	for q_idx in 1:length(momenta)
+		for e_idx in 1:length(energies[q_idx, :])
+			@printf(ostr, "%10.4f %10.4f %10.4f %10.4f %10.4f\n",
+				momenta[q_idx][1], momenta[q_idx][2], momenta[q_idx][3],
+				energies[q_idx, e_idx],
+				correlations[q_idx, e_idx])
+		end
 	end
 end
 )BLOCK";

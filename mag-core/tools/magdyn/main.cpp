@@ -47,7 +47,7 @@ namespace pt = boost::property_tree;
  * starts the gui program
  */
 static int gui_main(int argc, char** argv, const std::string& model_file,
-	const t_vec_real& Qi, const t_vec_real& Qf)
+	const t_vec_real& Qi, const t_vec_real& Qf, t_size num_Q_pts)
 {
 	tl2::set_gl_format(1, _GL_MAJ_VER, _GL_MIN_VER, 8);
 
@@ -70,6 +70,8 @@ static int gui_main(int argc, char** argv, const std::string& model_file,
 	// override the dispersion branch to plot
 	if(Qi.size() == 3 && Qf.size() == 3)
 		magdyn->SetCoordinates(Qi, Qf, false);
+	if(num_Q_pts > 0)
+		magdyn->SetNumQPoints(num_Q_pts);
 
 	magdyn->CalcDispersion();
 	magdyn->CalcHamiltonian();
@@ -83,7 +85,7 @@ static int gui_main(int argc, char** argv, const std::string& model_file,
  * starts the cli program
  */
 static int cli_main(const std::string& model_file, const std::string& results_file,
-	const t_vec_real& Qi, const t_vec_real& Qf)
+	const t_vec_real& Qi, const t_vec_real& Qf, t_size num_Q_pts)
 {
 	using namespace tl2_ops;
 
@@ -137,6 +139,7 @@ static int cli_main(const std::string& model_file, const std::string& results_fi
 	// get output stream for results
 	std::ostream* postr = &std::cout;
 	std::unique_ptr<std::ofstream> ofstr;
+
 	if(results_file != "")
 	{
 		ofstr = std::make_unique<std::ofstream>(results_file);
@@ -160,7 +163,9 @@ static int cli_main(const std::string& model_file, const std::string& results_fi
 	t_real h_end = magdyn_node.get<t_real>("config.h_end", 1.);
 	t_real k_end = magdyn_node.get<t_real>("config.k_end", 0.);
 	t_real l_end = magdyn_node.get<t_real>("config.l_end", 0.);
-	t_size num_pts = magdyn_node.get<t_size>("config.num_Q_points", 128);
+
+	if(num_Q_pts == 0)
+		num_Q_pts = magdyn_node.get<t_size>("config.num_Q_points", 128);
 
 	// get the override options
 	if(Qi.size() == 3)
@@ -181,12 +186,14 @@ static int cli_main(const std::string& model_file, const std::string& results_fi
 	// calculate the dispersion
 	std::cout << "\nCalculating dispersion from Q_i = (" << h_start << ", " << k_start << ", " << l_start << ")"
 		<< " to Q_f = (" << h_end << ", " << k_end << ", " << l_end << ")"
-		<< " in " << num_pts << " steps and " << g_num_threads << " threads..."
+		<< " in " << num_Q_pts << " steps and " << g_num_threads << " threads..."
 		<< std::endl;
+
 	magdyn.SaveDispersion(*postr,
 		h_start, k_start, l_start,
 		h_end, k_end, l_end,
-		num_pts, g_num_threads);
+		num_Q_pts, g_num_threads);
+
 	if(results_file != "")
 		std::cout << "Wrote results to \"" << results_file << "\"." << std::endl;
 
@@ -204,6 +211,8 @@ int main(int argc, char** argv)
 		bool show_help = false;
 		bool use_cli = false;
 		bool show_timing = false;
+
+		t_size num_Q_pts = 0;
 		std::string model_file, results_file;
 
 		args::options_description arg_descr("Takin/Magdyn arguments");
@@ -214,6 +223,7 @@ int main(int argc, char** argv)
 			("output,o", args::value(&results_file), "output results file (in cli mode)")
 			("timing", args::bool_switch(&show_timing), "show time needed for calculation")
 			("threads,t", args::value(&g_num_threads), "number of threads for calculation")
+			("points,p", args::value(&num_Q_pts), "number of Q points")
 			("hi", args::value<t_real>(), "initial h coordinate")
 			("ki", args::value<t_real>(), "initial k coordinate")
 			("li", args::value<t_real>(), "initial l coordinate")
@@ -294,9 +304,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 		int ret = 0;
 		if(use_cli)
-			ret = cli_main(model_file, results_file, Qi, Qf);
+			ret = cli_main(model_file, results_file, Qi, Qf, num_Q_pts);
 		else
-			ret = gui_main(argc, argv, model_file, Qi, Qf);
+			ret = gui_main(argc, argv, model_file, Qi, Qf, num_Q_pts);
 
 		if(show_timing)
 		{

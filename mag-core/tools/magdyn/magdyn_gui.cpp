@@ -1441,7 +1441,7 @@ void MagDynDlg::CreateDispersionPanel()
 	m_Q_end[1] = new QDoubleSpinBox(m_disppanel);
 	m_Q_end[2] = new QDoubleSpinBox(m_disppanel);
 
-	// number of points in plot
+	// number of Q points in the plot
 	m_num_points = new QSpinBox(m_disppanel);
 	m_num_points->setMinimum(1);
 	m_num_points->setMaximum(9999);

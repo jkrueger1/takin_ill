@@ -653,6 +653,16 @@ void MagDynDlg::CalcHamiltonian()
 
 
 /**
+ * set the number of Q points on the dispersion to calculate
+ */
+void MagDynDlg::SetNumQPoints(t_size num_Q_pts)
+{
+	m_num_points->setValue((int)num_Q_pts);
+}
+
+
+
+/**
  * set the current dispersion path and the hamiltonian to the given one
  */
 void MagDynDlg::SetCoordinates(const t_vec_real& Qi, const t_vec_real& Qf, bool calc_dynamics)
