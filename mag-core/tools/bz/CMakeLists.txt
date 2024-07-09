@@ -42,7 +42,6 @@ set(CMAKE_VERBOSE_MAKEFILE TRUE)
 option(USE_QT "use Qt" TRUE)
 option(MAKE_LIB "create a library" FALSE)
 option(USE_BOOST_PROGOPTS "use Boost.program_options" TRUE)
-option(USE_SCRIPTING "use scripting" FALSE)
 
 
 # system specific settings
@@ -159,44 +158,6 @@ if(MAKE_LIB)
 		${Boost_LIBRARIES}
 		${Qhull_LIBRARIES}
 	)
-endif()
-
-
-if(USE_SCRIPTING)
-	set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
-
-	find_package(Python3 COMPONENTS Interpreter Development)
-	find_package(SWIG COMPONENTS python)
-	#find_package(SWIG COMPONENTS javascript)
-
-	if(SWIG_FOUND AND SWIG_python_FOUND)
-		message("Scripting using python version ${Python3_VERSION} enabled; packages: ${Python3_SITEARCH}.")
-
-		cmake_policy(SET CMP0078 NEW)
-		cmake_policy(SET CMP0086 NEW)
-
-		set(UseSWIG_TARGET_NAME_PREFERENCE STANDARD)
-		include(${SWIG_USE_FILE})
-
-		set_source_files_properties(bzlib.i PROPERTIES CPLUSPLUS TRUE)
-		set_source_files_properties(bzlib.i PROPERTIES SWIG_FLAGS "-I ${PROJECT_SOURCE_DIR}")
-		#set_source_files_properties(bzlib.i PROPERTIES SWIG_FLAGS -node)
-		set_source_files_properties(
-			${PROJECT_BINARY_DIR}/CMakeFiles/bz_py.dir/bzlibPYTHON_wrap.cxx
-			#${PROJECT_BINARY_DIR}/CMakeFiles/bz_py.dir/bzlibJAVASCRIPT_wrap.cxx
-			PROPERTIES SKIP_AUTOMOC TRUE SKIP_AUTOUIC TRUE)
-
-		swig_add_library(bz_py LANGUAGE python SOURCES bzlib.i)
-		#swig_add_library(bz_py LANGUAGE javascript SOURCES bzlib.i)
-
-		target_link_libraries(bz_py
-			Python3::Python
-			${Boost_LIBRARIES}
-			${Qhull_LIBRARIES}
-		)
-	endif()
-else()
-	message("Scripting disabled.")
 endif()
 
 

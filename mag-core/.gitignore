@@ -48,6 +48,7 @@ tools/magdyn/build/**
 tools/scanbrowser/build/**
 tools/setup/build/**
 tools_py/magdyn/build/**
+tools_py/bz/build/**
 tools_py/instr/build/**
 *.pyc
 .DS_Store

@@ -27,7 +27,7 @@
 
 %module bzcalc
 %{
-	#include "bz_lib.h"
+	#include "../../tools/bz/bz_lib.h"
 
 	using t_matD = tl2::mat<double, std::vector>;
 	using t_vecD = tl2::vec<double, std::vector>;
@@ -42,6 +42,6 @@
 //%template(Vectvec) std::vector<t_vecD>;
 
 
-%include "bz_lib.h"
+%include "../../tools/bz/bz_lib.h"
 
 %template(BZCalcD) BZCalc<t_matD, t_vecD, double>;
