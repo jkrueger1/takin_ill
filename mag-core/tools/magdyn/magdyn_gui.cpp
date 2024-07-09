@@ -2013,7 +2013,8 @@ void MagDynDlg::CreateMenuBar()
 	// structure menu
 	auto menuStruct = new QMenu("Structure", m_menu);
 	auto acStructImport = new QAction("Import From Table...", menuStruct);
-	auto acStructExportSun = new QAction("Export To Sunny...");
+	auto acStructExportSun = new QAction("Export To Sunny Code...");
+	auto acStructExportSW = new QAction("Export To SpinW Code...");
 	auto acStructNotes = new QAction("Notes...", menuStruct);
 	auto acStructView = new QAction("View...", menuStruct);
 
@@ -2193,6 +2194,7 @@ void MagDynDlg::CreateMenuBar()
 
 	menuStruct->addAction(acStructImport);
 	menuStruct->addAction(acStructExportSun);
+	menuStruct->addAction(acStructExportSW);
 	menuStruct->addSeparator();
 	menuStruct->addAction(acStructNotes);
 	menuStruct->addSeparator();
@@ -2287,6 +2289,8 @@ void MagDynDlg::CreateMenuBar()
 	connect(acStructImport, &QAction::triggered, this, &MagDynDlg::ShowTableImporter);
 	connect(acStructExportSun, &QAction::triggered,
 		this, static_cast<void (MagDynDlg::*)()>(&MagDynDlg::ExportToSunny));
+	connect(acStructExportSW, &QAction::triggered,
+		this, static_cast<void (MagDynDlg::*)()>(&MagDynDlg::ExportToSpinW));
 	connect(m_use_dmi, &QAction::toggled, calc_all);
 	if(m_allow_general_J)
 		connect(m_use_genJ, &QAction::toggled, calc_all);

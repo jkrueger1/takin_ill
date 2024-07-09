@@ -101,7 +101,8 @@ get_cif_atoms(gemmi::cif::Block& block)
 		atoms.clear();
 		atomnames.clear();
 
-		auto tabAtoms = block.find("_atom_site", {loopName, "_fract_x", "_fract_y", "_fract_z"});
+		auto tabAtoms = block.find("_atom_site",
+			{ loopName, "_fract_x", "_fract_y", "_fract_z" });
 
 		for(std::size_t row = 0; row < tabAtoms.length(); ++row)
 		{
@@ -144,8 +145,6 @@ std::vector<t_mat> get_cif_ops(gemmi::cif::Block& block)
 	for(const char* loopName : loopNames)
 	{
 		ops.clear();
-
-		//std::cerr << "Trying symop loop name " << loopName << std::endl;
 	 	auto colOps = block.find_values(loopName);
 
 		for(std::size_t row = 0; row < std::size_t(colOps.length()); ++row)
@@ -457,5 +456,67 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
 	return std::make_pair(true, symops.size());
 }
 
+
+
+/**
+ * get an "x, y, z" form description of a symop
+ */
+template<class t_mat, class t_real = typename t_mat::value_type>
+std::string symop_to_xyz(const t_mat& symop, int prec = -1, t_real eps = 1e-6)
+requires tl2::is_mat<t_mat>
+{
+	using t_size = decltype(symop.size1());
+
+	static const std::string varnames[] = { "x", "y", "z" };
+	std::string symop_xyz;
+
+	for(t_size col = 0; col < symop.size2() - 1; ++col)
+	{
+		std::ostringstream ostr;
+		if(prec >= 0)
+			ostr.precision(prec);
+
+		for(t_size row = 0; row < symop.size1() - 1; ++row)
+		{
+			// rotation part
+			t_real rval = symop(row, col);
+			if(!tl2::equals_0(rval, eps))
+			{
+				if(rval < t_real(0))
+					ostr << "-";
+				else
+					ostr << "+";
+
+				if(!tl2::equals(std::abs(rval), t_real(1), eps))
+					ostr << std::abs(rval);
+
+				ostr << varnames[row];
+			}
+		}
+
+		// translation part
+		t_real tval = symop(col, symop.size2() - 1);
+		if(!tl2::equals_0(tval, eps))
+		{
+			if(tval < t_real(0))
+				ostr << "-";
+			else
+				ostr << "+";
+
+			if(!tl2::equals(std::abs(tval), t_real(1), eps))
+				ostr << std::abs(tval);
+		}
+
+		if(ostr.str().length() == 0)
+			ostr << "0";
+
+		if(col < symop.size2() - 2)
+			ostr << ", ";
+
+		symop_xyz += ostr.str();
+	}
+
+	return symop_xyz;
+}
 
 #endif

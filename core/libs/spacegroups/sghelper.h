@@ -43,7 +43,7 @@ namespace xtl {
 namespace ublas = tl::ublas;
 
 
-template<class T=double>
+template<class T = double>
 std::string print_matrix(const ublas::matrix<T>& mat)
 {
 	std::ostringstream ostr;
@@ -64,7 +64,7 @@ std::string print_matrix(const ublas::matrix<T>& mat)
 }
 
 
-template<class T=double>
+template<class T = double>
 std::string print_vector(const ublas::vector<T>& vec)
 {
 	std::ostringstream ostr;
@@ -115,7 +115,7 @@ bool is_vec_in_container(const t_cont<t_vec>& cont, const t_vec& vec)
 
 
 
-template<class T=double>
+template<class T = double>
 ublas::vector<T> _get_desc_vec(const std::string& strTok)
 {
 	if(strTok == "")
@@ -128,8 +128,8 @@ ublas::vector<T> _get_desc_vec(const std::string& strTok)
 		return tl::make_vec<ublas::vector<T>>({0,0,1,0});
 	else
 	{
-		bool bOk;
-		T dTrans;
+		bool bOk = false;
+		T dTrans = T(0);
 		std::tie(bOk, dTrans) = tl::eval_expr<std::string, T>(strTok);
 		if(!bOk)
 			tl::log_err("Unknown expression: \"", strTok, "\".");
@@ -144,7 +144,7 @@ ublas::vector<T> _get_desc_vec(const std::string& strTok)
 /**
  * converts trafo from "xyz" form to matrix form
  */
-template<class T=double>
+template<class T = double>
 ublas::matrix<T> get_desc_trafo(const std::string& strTrafo)
 {
 	std::vector<std::string> vecComps;
@@ -206,7 +206,7 @@ ublas::matrix<T> get_desc_trafo(const std::string& strTrafo)
 /**
  * converts matrices into "xyz" form
  */
-template<class T=double>
+template<class T = double>
 std::string get_trafo_desc(const ublas::matrix<T>& mat)
 {
 	ublas::vector<T> vecTrans = tl::make_vec({mat(0,3), mat(1,3), mat(2,3)});
@@ -223,12 +223,12 @@ std::string get_trafo_desc(const ublas::matrix<T>& mat)
 
 	std::ostringstream ostr;
 	ostr << "(";
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
-		bool bHasElem = 0;
+		bool bHasElem = false;
 		if(!tl::float_equal<T>(vecXR[i], 0.))
 		{
-			double dVal = vecXR[i];
+			T dVal = vecXR[i];
 
 			if(tl::float_equal<T>(dVal, 1.))
 				ostr << "x";
@@ -236,15 +236,18 @@ std::string get_trafo_desc(const ublas::matrix<T>& mat)
 				ostr << "-x";
 			else
 				ostr << dVal << "x";
-			bHasElem = 1;
+			bHasElem = true;
 		}
 		if(!tl::float_equal<T>(vecYR[i], 0.))
 		{
-			double dVal = vecYR[i];
+			T dVal = vecYR[i];
 
 			if(bHasElem)
 			{
-				if(dVal >= 0.) ostr << " + "; else ostr << " - ";
+				if(dVal >= 0.)
+					ostr << " + ";
+				else
+					ostr << " - ";
 
 				if(tl::float_equal<T>(std::fabs(dVal), 1.))
 					ostr << "y";
@@ -260,15 +263,18 @@ std::string get_trafo_desc(const ublas::matrix<T>& mat)
 				else
 					ostr << dVal << "y";
 			}
-			bHasElem = 1;
+			bHasElem = true;
 		}
 		if(!tl::float_equal<T>(vecZR[i], 0.))
 		{
-			double dVal = vecZR[i];
+			T dVal = vecZR[i];
 
 			if(bHasElem)
 			{
-				if(dVal >= 0.) ostr << " + "; else ostr << " - ";
+				if(dVal >= 0.)
+					ostr << " + ";
+				else
+					ostr << " - ";
 
 				if(tl::float_equal<T>(std::fabs(dVal), 1.))
 					ostr << "z";
@@ -284,23 +290,26 @@ std::string get_trafo_desc(const ublas::matrix<T>& mat)
 				else
 					ostr << dVal << "z";
 			}
-			bHasElem = 1;
+			bHasElem = true;
 		}
 
 		if(!tl::float_equal<T>(vecTrans[i], 0.))
 		{
-			double dVal = vecTrans[i];
+			T dVal = vecTrans[i];
 
 			if(bHasElem)
 			{
-				if(dVal >= 0.) ostr << " + "; else ostr << " - ";
+				if(dVal >= 0.)
+					ostr << " + ";
+				else
+					ostr << " - ";
 				ostr << std::fabs(dVal);
 			}
 			else
 				ostr << dVal;
 		}
 
-		if(i<2)
+		if(i < 2)
 			ostr << ", ";
 	}
 	ostr << ")";
@@ -319,7 +328,7 @@ void convert_hm_symbol(t_str& strHM)
 
 	for(t_str& str : vecSyms)
 	{
-		bool bLastWasDigit = 0;
+		bool bLastWasDigit = false;
 		for(std::size_t iC = 0; iC<str.length(); ++iC)
 		{
 			typename t_str::value_type c = str[iC];
@@ -328,7 +337,7 @@ void convert_hm_symbol(t_str& strHM)
 			if(bCurIsDigit && bLastWasDigit)
 			{
 				str.insert(iC, "_");
-				bLastWasDigit = 0;
+				bLastWasDigit = false;
 			}
 			else
 			{
@@ -339,7 +348,7 @@ void convert_hm_symbol(t_str& strHM)
 
 	strHM = "";
 	for(const t_str& str : vecSyms)
-		strHM += str /*+ " "*/;
+		strHM += str;
 }
 
 
@@ -357,7 +366,7 @@ t_str get_pointgroup(const t_str& str)
 		[](typename t_str::value_type c)->bool { return std::isupper(c); });
 
 	// remove screw axes
-	while(1)
+	while(true)
 	{
 		std::size_t iPosScrew = strRet.find('_');
 		if(iPosScrew == t_str::npos)
@@ -381,7 +390,8 @@ t_str get_pointgroup(const t_str& str)
 template<class t_int=int>
 bool is_centering_reflection_allowed(const std::string& strSG, t_int h, t_int k, t_int l)
 {
-	if(strSG.length() == 0) return true;
+	if(strSG.length() == 0)
+		return true;
 
 	const char cCentr = strSG[0];
 	switch(cCentr)
@@ -425,7 +435,7 @@ std::pair<bool, std::size_t> is_reflection_allowed(int h, int k, int l, const t_
 	const constexpr t_real dEps = t_real(1e-6);
 	t_vec vecHKL = tl::make_vec({t_real(h), t_real(k), t_real(l)});
 
-	for(std::size_t iMat=0; iMat<vecTrafos.size(); ++iMat)
+	for(std::size_t iMat = 0; iMat < vecTrafos.size(); ++iMat)
 	{
 		const t_mat& mat = vecTrafos[iMat];
 		// rotation part of the symmetry trafo

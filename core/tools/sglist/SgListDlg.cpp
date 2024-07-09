@@ -118,9 +118,9 @@ void SgListDlg::SetupSpacegroups()
 		unsigned int iSgNr = psg->GetNr();
 
 		// crystal system headers
-		for(unsigned int iCrystSys=0; iCrystSys<7; ++iCrystSys)
+		for(unsigned int iCrystSys = 0; iCrystSys < 7; ++iCrystSys)
 		{
-			if(iSgNr==piStartNr[iCrystSys] && !bAlreadySeen[iCrystSys])
+			if(iSgNr == piStartNr[iCrystSys] && !bAlreadySeen[iCrystSys])
 			{
 				listSGs->addItem(create_header_item(pcHeader[iCrystSys]));
 				bAlreadySeen[iCrystSys] = 1;
@@ -133,8 +133,10 @@ void SgListDlg::SetupSpacegroups()
 
 		QListWidgetItem* pItem = new QListWidgetItem(ostrSg.str().c_str());
 		pItem->setData(Qt::UserRole, iSG);
-		pItem->setBackground(itemColsBackground[iSgNr % (sizeof(itemColsBackground)/sizeof(itemColsBackground[0]))]);
-		pItem->setForeground(itemColsForeground[iSgNr % (sizeof(itemColsForeground)/sizeof(itemColsForeground[0]))]);
+		pItem->setBackground(
+			itemColsBackground[iSgNr % (sizeof(itemColsBackground)/sizeof(itemColsBackground[0]))]);
+		pItem->setForeground(
+			itemColsForeground[iSgNr % (sizeof(itemColsForeground)/sizeof(itemColsForeground[0]))]);
 		listSGs->addItem(pItem);
 	}
 }
@@ -218,9 +220,15 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 		for(unsigned int iSymOp=0; iSymOp<vecPrim.size(); ++iSymOp)
 		{
 			if(bShowMatrices)
-				listSymOps->addItem(xtl::print_matrix(vecTrafos[vecPrim[iSymOp]]).c_str());
+			{
+				listSymOps->addItem(
+					xtl::print_matrix(vecTrafos[vecPrim[iSymOp]]).c_str());
+			}
 			else
-				listSymOps->addItem(xtl::get_trafo_desc(vecTrafos[vecPrim[iSymOp]]).c_str());
+			{
+				listSymOps->addItem(
+					xtl::get_trafo_desc(vecTrafos[vecPrim[iSymOp]]).c_str());
+			}
 		}
 	}
 
@@ -283,7 +291,8 @@ void SgListDlg::SGSelected(QListWidgetItem *pItem, QListWidgetItem*)
 void SgListDlg::RecalcBragg()
 {
 	const QListWidgetItem* pItem = listSGs->currentItem();
-	if(!pItem) return;
+	if(!pItem)
+		return;
 
 	const int h = spinH->value();
 	const int k = spinK->value();

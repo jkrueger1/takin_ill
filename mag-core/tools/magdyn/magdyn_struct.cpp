@@ -155,7 +155,7 @@ void MagDynDlg::GenerateSitesFromSG()
 	try
 	{
 		// symops of current space group
-		auto sgidx = m_comboSG->itemData(m_comboSG->currentIndex()).toInt();
+		int sgidx = m_comboSG->itemData(m_comboSG->currentIndex()).toInt();
 		if(sgidx < 0 || t_size(sgidx) >= m_SGops.size())
 		{
 			QMessageBox::critical(this, "Magnetic Dynamics",
