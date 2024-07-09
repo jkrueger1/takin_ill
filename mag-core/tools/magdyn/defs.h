@@ -29,7 +29,9 @@
 #ifndef __MAGDYN_DEFS__
 #define __MAGDYN_DEFS__
 
-#include <QtCore/QString>
+#ifndef DONT_USE_QT
+	#include <QtCore/QString>
+#endif
 
 #include <string>
 #include <array>
@@ -37,6 +39,7 @@
 #include <optional>
 
 #include "tlibs2/libs/maths.h"
+#include "tlibs2/libs/magdyn.h"
 #include "tlibs2/libs/qt/gl.h"
 
 #include "libs/defs.h"
@@ -57,6 +60,9 @@ using t_vec2_gl = tl2::t_vec2_gl;
 using t_vec3_gl = tl2::t_vec3_gl;
 using t_vec_gl = tl2::t_vec_gl;
 using t_mat_gl = tl2::t_mat_gl;
+
+// magnon calculation core
+using t_magdyn = tl2_mag::MagDyn<t_mat, t_vec, t_mat_real, t_vec_real, t_cplx, t_real, t_size>;
 // ----------------------------------------------------------------------------
 
 
@@ -86,8 +92,10 @@ extern t_real g_cholesky_delta;
 // optional features
 extern int g_allow_ortho_spin, g_allow_general_J;
 
+#ifndef DONT_USE_QT
 // gui theme and font
 extern QString g_theme, g_font;
+#endif
 
 // use native menubar and dialogs?
 extern int g_use_native_menubar, g_use_native_dialogs;
@@ -95,9 +103,10 @@ extern int g_use_native_menubar, g_use_native_dialogs;
 // plot colour
 extern std::string g_colPlot;
 
-
+#ifndef DONT_USE_QT
 // transfer the setting from the takin core program
 void get_settings_from_takin_core();
+#endif
 // ----------------------------------------------------------------------------
 
 

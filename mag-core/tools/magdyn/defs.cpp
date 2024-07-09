@@ -26,7 +26,9 @@
  * ----------------------------------------------------------------------------
  */
 
-#include <QtCore/QSettings>
+#ifndef DONT_USE_QT
+	#include <QtCore/QSettings>
+#endif
 
 #include <thread>
 
@@ -60,11 +62,13 @@ t_real g_cholesky_delta = 0.0025;
 int g_allow_ortho_spin = 0;
 int g_allow_general_J = 1;
 
+#ifndef DONT_USE_QT
 // gui theme
 QString g_theme = "Fusion";
 
 // gui font
 QString g_font = "";
+#endif
 
 // use native menu bar?
 int g_use_native_menubar = 0;
@@ -78,6 +82,7 @@ std::string g_colPlot = "#ff0000";
 
 
 
+#ifndef DONT_USE_QT
 /**
  * transfer the setting from the takin core program
  */
@@ -111,3 +116,4 @@ void get_settings_from_takin_core()
 		g_theme = sett_core.value("main/gui_style_value").toString();
 	}
 }
+#endif

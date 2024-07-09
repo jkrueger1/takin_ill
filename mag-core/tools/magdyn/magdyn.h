@@ -70,13 +70,6 @@
 #include "notes.h"
 #include "infos.h"
 
-using namespace tl2_mag;
-
-
-
-// magnon calculation core
-using t_magdyn = MagDyn<t_mat, t_vec, t_mat_real, t_vec_real, t_cplx, t_real, t_size>;
-
 
 
 /**

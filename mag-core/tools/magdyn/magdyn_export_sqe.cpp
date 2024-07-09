@@ -133,7 +133,7 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 	const t_size num_pts_k = m_exportNumPoints[1]->value();
 	const t_size num_pts_l = m_exportNumPoints[2]->value();
 
-	MagDyn dyn = m_dyn;
+	t_magdyn dyn = m_dyn;
 	dyn.SetUniteDegenerateEnergies(m_unite_degeneracies->isChecked());
 	bool use_weights = m_use_weights->isChecked();
 	bool use_projector = m_use_projector->isChecked();

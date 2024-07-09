@@ -1,5 +1,5 @@
 /**
- * magnetic dynamics
+ * magnetic dynamics -- entry point
  * @author Tobias Weber <tweber@ill.fr>
  * @date 2022 - 2024
  * @license GPLv3, see 'LICENSE' file
@@ -26,59 +26,35 @@
  * ----------------------------------------------------------------------------
  */
 
-#include "magdyn.h"
-#include "tlibs2/libs/qt/gl.h"
-#include "tlibs2/libs/qt/helper.h"
-#include "tlibs2/libs/algos.h"
+#ifndef DONT_USE_QT
+	#include "magdyn.h"
+	#include "tlibs2/libs/qt/helper.h"
+#endif
 
-#include <QtWidgets/QApplication>
+#include "tlibs2/libs/algos.h"
+#include "defs.h"
 
 #include <iostream>
 #include <memory>
 
 #include <boost/program_options.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 namespace args = boost::program_options;
 namespace pt = boost::property_tree;
 
 
-
-/**
- * starts the gui program
- */
+#ifdef DONT_USE_QT
 static int gui_main(int argc, char** argv, const std::string& model_file,
 	const t_vec_real& Qi, const t_vec_real& Qf, t_size num_Q_pts)
 {
-	tl2::set_gl_format(1, _GL_MAJ_VER, _GL_MIN_VER, 8);
-
-	// application
-	QApplication::addLibraryPath(QString(".") + QDir::separator() + "qtplugins");
-	auto app = std::make_unique<QApplication>(argc, argv);
-
-	// main window
-	auto magdyn = std::make_unique<MagDynDlg>(nullptr);
-	magdyn->show();
-
-	// if a configuration file is given, load it
-	if(model_file != "")
-	{
-		QString qfile = model_file.c_str();
-		if(magdyn->Load(qfile, false))
-			magdyn->SetCurrentFileAndDir(qfile);
-	}
-
-	// override the dispersion branch to plot
-	if(Qi.size() == 3 && Qf.size() == 3)
-		magdyn->SetCoordinates(Qi, Qf, false);
-	if(num_Q_pts > 0)
-		magdyn->SetNumQPoints(num_Q_pts);
-
-	magdyn->CalcDispersion();
-	magdyn->CalcHamiltonian();
-
-	return app->exec();
+	std::cerr << "Error: The GUI is not available in this version." << std::endl;
+	return -1;
 }
-
+#else
+extern int gui_main(int argc, char** argv, const std::string& model_file,
+	const t_vec_real& Qi, const t_vec_real& Qf, t_size num_Q_pts);
+#endif
 
 
 /**
@@ -202,15 +178,32 @@ static int cli_main(const std::string& model_file, const std::string& results_fi
 
 
 
+static inline void set_locales()
+{
+#ifndef DONT_USE_QT
+	tl2::set_locales();
+#else
+	std::ios_base::sync_with_stdio(false);
+	::setlocale(LC_ALL, "C");
+	std::locale::global(std::locale("C"));
+#endif
+}
+
+
+
 int main(int argc, char** argv)
 {
 	try
 	{
-		tl2::set_locales();
+		set_locales();
 
 		bool show_help = false;
 		bool use_cli = false;
 		bool show_timing = false;
+
+#ifdef DONT_USE_QT
+		use_cli = true;
+#endif
 
 		t_size num_Q_pts = 0;
 		std::string model_file, results_file;
@@ -218,7 +211,9 @@ int main(int argc, char** argv)
 		args::options_description arg_descr("Takin/Magdyn arguments");
 		arg_descr.add_options()
 			("help,h", args::bool_switch(&show_help), "show help")
+#ifndef DONT_USE_QT
 			("cli,c", args::bool_switch(&use_cli), "use command-line interface")
+#endif
 			("input,i", args::value(&model_file), "input magnetic model file (.magdyn)")
 			("output,o", args::value(&results_file), "output results file (in cli mode)")
 			("timing", args::bool_switch(&show_timing), "show time needed for calculation")
