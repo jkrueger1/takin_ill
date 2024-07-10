@@ -853,6 +853,7 @@ public:
 		CalcMagneticSites();
 
 		MagneticSites newsites;
+		newsites.reserve(GetMagneticSitesCount() * symops.size());
 
 		for(const MagneticSite& site : GetMagneticSites())
 		{
@@ -889,6 +890,8 @@ public:
 		CalcExchangeTerms();
 
 		ExchangeTerms newterms;
+		newterms.reserve(GetExchangeTermsCount() * symops.size());
+
 		tl2::ExprParser<t_cplx> parser = GetExprParser();
 
 		// create unit cell site vectors
@@ -1064,7 +1067,7 @@ public:
 			// super cell vector
 			const t_vec_real sc_vec = tl2::create<t_vec_real>({ sc_h, sc_k, sc_l });
 
-			for(t_size idx1 = 0; idx1 < GetMagneticSitesCount()-1; ++idx1)
+			for(t_size idx1 = 0; idx1 < GetMagneticSitesCount() - 1; ++idx1)
 			for(t_size idx2 = idx1 + 1; idx2 < GetMagneticSitesCount(); ++idx2)
 			{
 				PossibleCoupling coupling;
@@ -2117,6 +2120,7 @@ public:
 			}
 
 			// unite energies and weights
+			EandWs.reserve(EandWs.size() + EandWs_p.size() + EandWs_m.size());
 			for(EnergyAndWeight& EandW : EandWs_p)
 				EandWs.emplace_back(std::move(EandW));
 			for(EnergyAndWeight& EandW : EandWs_m)
@@ -2383,6 +2387,8 @@ public:
 		// variables
 		if(auto vars = node.get_child_optional("variables"); vars)
 		{
+			m_variables.reserve(vars->size());
+
 			for(const auto &var : *vars)
 			{
 				auto name = var.second.get_optional<std::string>("name");
@@ -2400,6 +2406,7 @@ public:
 		// magnetic sites
 		if(auto sites = node.get_child_optional("atom_sites"); sites)
 		{
+			m_sites.reserve(sites->size());
 			std::unordered_set<std::string> seen_names;
 			t_size unique_name_counter = 1;
 
@@ -2464,6 +2471,7 @@ public:
 		// exchange terms / couplings
 		if(auto terms = node.get_child_optional("exchange_terms"); terms)
 		{
+			m_exchange_terms.reserve(terms->size());
 			std::unordered_set<std::string> seen_names;
 			t_size unique_name_counter = 1;
 
@@ -2874,8 +2882,7 @@ private:
 	// constants
 	static constexpr const t_cplx s_imag { t_real(0), t_real(1) };
 	static constexpr const t_real s_twopi { t_real(2)*tl2::pi<t_real> };
-	static constexpr const std::array<std::string_view, 3> g_comp_names
-		{ { "x", "y", "z" } };
+	static constexpr const std::array<std::string_view, 3> g_comp_names{{ "x", "y", "z" }};
 };
 
 }
