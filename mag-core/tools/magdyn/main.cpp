@@ -88,6 +88,9 @@ static int cli_main(const std::string& model_file, const std::string& results_fi
 	// print some infos about the model
 	std::cout << "Model infos:" << std::endl;
 
+	std::cout << "\t" << magdyn.GetMagneticSitesCount() << " magnetic site(s) and "
+		<< magdyn.GetExchangeTermsCount() << " coupling(s) defined." << std::endl;
+
 	if(magdyn.IsIncommensurate())
 	{
 		std::cout << "\tSystem is incommensurate with ordering vector: "
@@ -111,6 +114,8 @@ static int cli_main(const std::string& model_file, const std::string& results_fi
 		std::cout << "\tAligning spins to field." << std::endl;
 	else
 		std::cout << "\tNot aligning spins to field." << std::endl;
+
+	std::cout << "\tGround state energy: " << magdyn.CalcGroundStateEnergy() << " meV." << std::endl;
 
 	// get output stream for results
 	std::ostream* postr = &std::cout;
