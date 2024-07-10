@@ -398,7 +398,7 @@ bool MagDynDlg::ExportToSpinW(const QString& _filename)
 		<< "% Date: " << tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()) << "\n"
 		<< "%\n\n";
 
-	ofstr << "tic;\n";
+	ofstr << "tic();\n";
 	ofstr << "sw_obj = spinw();\n\n";
 
 
@@ -590,10 +590,10 @@ bool MagDynDlg::ExportToSpinW(const QString& _filename)
 	std::string Scomp = m_use_projector->isChecked() ? "\'Sperp\'" : "\'Sxx+Syy+Szz\'";
 	ofstr << "calc = sw_neutron(sw_obj.spinwave({ Qstart, Qend, Qpts }, \"hermit\", false));\n";
 	ofstr << "bins = sw_egrid(calc, \"component\", " << Scomp << ");\n";
-	ofstr << "toc;\n";
+	ofstr << "toc();\n";
 
 	ofstr << "\n% plotting\n";
-	ofstr << "figure;\n";
+	ofstr << "figure();\n";
 	ofstr << "sw_plotspec(bins, \"mode\", 3, \"dE\", 0.1);\n";
 	// --------------------------------------------------------------------
 
