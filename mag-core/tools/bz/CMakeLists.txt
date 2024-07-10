@@ -96,7 +96,7 @@ if(USE_QT)
 	add_executable(takin_bz
 		bz.cpp bz_file.cpp bz_calc.cpp
 		bz_plot.cpp bz_main.cpp
-		bz_ops.cpp bz.h ops.h
+		bz_ops.cpp bz.h
 		bz_conf.cpp bz_conf.h
 		globals.cpp globals.h
 		bz_formulas.cpp
@@ -104,7 +104,9 @@ if(USE_QT)
 		bz_lib.h
 		../../tlibs2/libs/qt/recent.cpp ../../tlibs2/libs/qt/recent.h
 		../../tlibs2/libs/qt/gl.cpp ../../tlibs2/libs/qt/gl.h
-		../../tlibs2/libs/qt/glplot.cpp ../../tlibs2/libs/qt/glplot.h)
+		../../tlibs2/libs/qt/glplot.cpp ../../tlibs2/libs/qt/glplot.h
+		../../libs/symops.h
+	)
 
 	target_link_libraries(takin_bz
 		${Boost_LIBRARIES}
@@ -119,7 +121,8 @@ else()
 		bz_main.cpp bz_lib.h
 		bz_conf.cpp bz_conf.h
 		globals.cpp globals.h
-		ops.h
+
+		../../libs/symops.h
 	)
 
 	target_link_libraries(takin_bz
@@ -149,7 +152,8 @@ if(MAKE_LIB)
 		bz_lib.cpp bz_lib.h
 		bz_conf.cpp bz_conf.h
 		globals.cpp globals.h
-		ops.h
+
+		../../libs/symops.h
 	)
 
 	target_compile_definitions(takinbz PUBLIC -DDONT_USE_QT)

@@ -37,10 +37,10 @@ namespace pt = boost::property_tree;
 #include <vector>
 #include <cstdlib>
 
-#include "libs/loadcif.h"
 #include "tlibs2/libs/str.h"
 #include "tlibs2/libs/file.h"
 #include "tlibs2/libs/units.h"
+#include "libs/symops.h"
 
 
 // precision

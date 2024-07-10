@@ -39,8 +39,6 @@
 #include <gemmi/version.hpp>
 
 #include "tlibs2/libs/maths.h"
-using namespace tl2_ops;
-
 
 
 template<class t_str = std::string>
@@ -414,109 +412,5 @@ find_matching_sgs(
 }
 
 
-
-/**
- * checks for allowed Bragg reflections
- *
- * algorithm based on Clipper's HKL_class
- *   constructor in clipper/core/coords.cpp by K. Cowtan, 2013
- * @see http://www.ysbl.york.ac.uk/~cowtan/clipper/
- *
- * symmetry operation S on position r: R*r + t
- * F = sum<S>( exp(2*pi*i * (R*r + t)*G) )
- *   = sum<S>( exp(2*pi*i * ((R*r)*G + t*G)) )
- *   = sum<S>( exp(2*pi*i * (r*(G*R) + t*G)) )
- *   = sum<S>( exp(2*pi*i * (r*(G*R)))  *  exp(2*pi*i * (G*t)) )
- */
-template<class t_mat, class t_vec, class t_real = typename t_vec::value_type,
-	template<class...> class t_cont = std::vector>
-std::pair<bool, std::size_t>
-is_reflection_allowed(const t_vec& Q, const t_cont<t_mat>& symops, t_real eps)
-requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
-{
-	for(std::size_t opidx = 0; opidx < symops.size(); ++opidx)
-	{
-		const t_mat& mat = symops[opidx];
-		t_mat rot = tl2::submat<t_mat>(mat, 0,0, 3,3); // rotation part of the symop
-		rot = tl2::trans(rot);                         // recip -> transpose
-
-		// does Q not transform into itself?
-		if(!tl2::equals<t_vec>(Q, rot*Q, eps))
-			continue;
-
-		t_vec trans = tl2::create<t_vec>({ mat(0,3), mat(1,3), mat(2,3) });
-
-		// does Q translate to multiples of the lattice vector?
-		if(tl2::is_integer<t_real>(tl2::inner<t_vec>(trans, Q), eps))
-			continue;
-
-		return std::make_pair(false, opidx);
-	}
-
-	return std::make_pair(true, symops.size());
-}
-
-
-
-/**
- * get an "x, y, z" form description of a symop
- */
-template<class t_mat, class t_real = typename t_mat::value_type>
-std::string symop_to_xyz(const t_mat& symop, int prec = -1, t_real eps = 1e-6)
-requires tl2::is_mat<t_mat>
-{
-	using t_size = decltype(symop.size1());
-
-	static const std::string varnames[] = { "x", "y", "z" };
-	std::string symop_xyz;
-
-	for(t_size col = 0; col < symop.size2() - 1; ++col)
-	{
-		std::ostringstream ostr;
-		if(prec >= 0)
-			ostr.precision(prec);
-
-		for(t_size row = 0; row < symop.size1() - 1; ++row)
-		{
-			// rotation part
-			t_real rval = symop(row, col);
-			if(!tl2::equals_0(rval, eps))
-			{
-				if(rval < t_real(0))
-					ostr << "-";
-				else
-					ostr << "+";
-
-				if(!tl2::equals(std::abs(rval), t_real(1), eps))
-					ostr << std::abs(rval);
-
-				ostr << varnames[row];
-			}
-		}
-
-		// translation part
-		t_real tval = symop(col, symop.size2() - 1);
-		if(!tl2::equals_0(tval, eps))
-		{
-			if(tval < t_real(0))
-				ostr << "-";
-			else
-				ostr << "+";
-
-			if(!tl2::equals(std::abs(tval), t_real(1), eps))
-				ostr << std::abs(tval);
-		}
-
-		if(ostr.str().length() == 0)
-			ostr << "0";
-
-		if(col < symop.size2() - 2)
-			ostr << ", ";
-
-		symop_xyz += ostr.str();
-	}
-
-	return symop_xyz;
-}
 
 #endif

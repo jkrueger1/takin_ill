@@ -33,6 +33,7 @@
 #include <optional>
 
 #include "tlibs2/libs/maths.h"
+#include "libs/symops.h"
 #include "libs/loadcif.h"
 
 #if __has_include("pathslib/libs/voronoi.h")
@@ -397,6 +398,7 @@ public:
 	 */
 	std::string Print(int prec = 6) const
 	{
+		using namespace tl2_ops;
 		t_mat BorthoT = tl2::trans(GetCrystalB(true));
 
 		std::ostringstream ostr;

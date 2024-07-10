@@ -26,7 +26,7 @@
  */
 
 #include "bz_conf.h"
-#include "ops.h"
+#include "libs/symops.h"
 
 #include <iostream>
 #include <fstream>
