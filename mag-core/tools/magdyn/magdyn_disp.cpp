@@ -285,6 +285,8 @@ void MagDynDlg::CalcDispersion()
 	m_progress->setMaximum(num_pts);
 	m_progress->setValue(0);
 	m_status->setText("Starting calculation.");
+	tl2::Stopwatch<t_real> stopwatch;
+	stopwatch.start();
 
 	for(t_size i = 0; i < num_pts; ++i)
 	{
@@ -366,11 +368,17 @@ void MagDynDlg::CalcDispersion()
 	}
 
 	pool.join();
+	stopwatch.stop();
 
+	std::ostringstream ostrMsg;
+	ostrMsg.precision(g_prec_gui);
+	ostrMsg << "Calculation";
 	if(m_stopRequested)
-		m_status->setText("Calculation stopped.");
+		ostrMsg << " stopped ";
 	else
-		m_status->setText("Calculation finished.");
+		ostrMsg << " finished ";
+	ostrMsg << "after " << stopwatch.GetDur() << " s.";
+	m_status->setText(ostrMsg.str().c_str());
 
 	auto sort_data = [](QVector<qreal>& qvec, QVector<qreal>& Evec, QVector<qreal>& wvec)
 	{

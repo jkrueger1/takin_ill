@@ -41,6 +41,7 @@ namespace asio = boost::asio;
 #include <cstdlib>
 
 #include "tlibs2/libs/str.h"
+#include "tlibs2/libs/algos.h"
 
 #ifdef USE_HDF5
 	#include "tlibs2/libs/h5file.h"
@@ -211,6 +212,8 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 	m_progress->setValue(0);
 	m_status->setText("Starting calculation.");
 	DisableInput();
+	tl2::Stopwatch<t_real> stopwatch;
+	stopwatch.start();
 
 	std::size_t task_idx = 0;
 	// iterate first two Q dimensions
@@ -418,10 +421,17 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 	}
 #endif
 
+	stopwatch.stop();
+
+	std::ostringstream ostrMsg;
+	ostrMsg.precision(g_prec_gui);
+	ostrMsg << "Calculation";
 	if(m_stopRequested)
-		m_status->setText("Calculation stopped.");
+		ostrMsg << " stopped ";
 	else
-		m_status->setText("Calculation finished.");
+		ostrMsg << " finished ";
+	ostrMsg << "after " << stopwatch.GetDur() << " s.";
+	m_status->setText(ostrMsg.str().c_str());
 
 	return true;
 }
