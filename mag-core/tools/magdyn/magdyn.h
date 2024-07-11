@@ -73,6 +73,17 @@
 
 
 /**
+ * user data for table items
+ */
+enum : int
+{
+	DATA_ROLE_NAME = Qt::UserRole + 0,
+	//DATA_ROLE_IDX  = Qt::UserRole + 1,  // TODO: index used in kernel
+};
+
+
+
+/**
  * export file types
  */
 enum : int
@@ -91,6 +102,7 @@ enum : int
 {
 	COL_SITE_NAME = 0,                                 // label
 	COL_SITE_POS_X, COL_SITE_POS_Y, COL_SITE_POS_Z,    // site position
+	COL_SITE_SYM_IDX,                                  // symmetry index
 	COL_SITE_SPIN_X, COL_SITE_SPIN_Y, COL_SITE_SPIN_Z, // spin direction
 	COL_SITE_SPIN_MAG,                                 // spin magnitude
 	COL_SITE_RGB,                                      // colour
@@ -109,6 +121,7 @@ enum : int
 	COL_XCH_NAME = 0,                                // label
 	COL_XCH_ATOM1_IDX, COL_XCH_ATOM2_IDX,            // site names or indices
 	COL_XCH_DIST_X, COL_XCH_DIST_Y, COL_XCH_DIST_Z,  // unit cell distance
+	COL_XCH_SYM_IDX,                                 // symmetry index
 	COL_XCH_INTERACTION,                             // isotropic exchange interaction
 	COL_XCH_DMI_X, COL_XCH_DMI_Y, COL_XCH_DMI_Z,     // antisymmetric DMI
 	COL_XCH_RGB,                                     // colour
@@ -388,7 +401,7 @@ protected:
 
 	// add a site to the table
 	void AddSiteTabItem(int row = -1,
-		const std::string& name = "",
+		const std::string& name = "", t_size sym_idx = 0,
 		const std::string& x = "0", const std::string& y = "0", const std::string& z = "0",
 		const std::string& sx = "0",
 		const std::string& sy = "0",
@@ -401,7 +414,7 @@ protected:
 
 	// add a coupling to the table
 	void AddTermTabItem(int row = -1,
-		const std::string& name = "",
+		const std::string& name = "", t_size sym_idx = 0,
 		const std::string& atom_1 = "", const std::string& atom_2 = "",
 		const std::string& dist_x = "0", const std::string& dist_y = "0", const std::string& dist_z = "0",
 		const std::string& J = "0",
@@ -460,11 +473,14 @@ protected:
 	void GenerateSitesFromSG();
 	void GenerateCouplingsFromSG();
 	void GeneratePossibleCouplings();
+	const std::vector<t_mat_real>& GetSymOpsForCurrentSG(bool show_err = true) const;
 
 	// transfer sites from the kernel
 	void SyncSitesFromKernel(boost::optional<const boost::property_tree::ptree&> extra_infos = boost::none);
 	void SyncTermsFromKernel(boost::optional<const boost::property_tree::ptree&> extra_infos = boost::none);
+	void SyncSymmetryIndicesFromKernel();
 	void SyncToKernel();         // transfer all data to the kernel
+	void CalcSymmetryIndices();  // assign symmetry groups to sites and couplings
 	void CalcAll();              // syncs sites and terms and calculates all dynamics
 
 	void PlotDispersion();

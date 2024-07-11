@@ -84,7 +84,7 @@ static void set_unique_tab_item_name(
  * add an atom site
  */
 void MagDynDlg::AddSiteTabItem(
-	int row, const std::string& name,
+	int row, const std::string& name, t_size sym_idx,
 	const std::string& x, const std::string& y, const std::string& z,
 	const std::string& sx, const std::string& sy, const std::string& sz,
 	const std::string& S,
@@ -133,6 +133,8 @@ void MagDynDlg::AddSiteTabItem(
 			new tl2::NumericTableWidgetItem<t_real>(y));
 		m_sitestab->setItem(row, COL_SITE_POS_Z,
 			new tl2::NumericTableWidgetItem<t_real>(z));
+		m_sitestab->setItem(row, COL_SITE_SYM_IDX,
+			new tl2::NumericTableWidgetItem<t_size>(sym_idx));
 		m_sitestab->setItem(row, COL_SITE_SPIN_X,
 			new tl2::NumericTableWidgetItem<t_real>(sx));
 		m_sitestab->setItem(row, COL_SITE_SPIN_Y,
@@ -175,7 +177,7 @@ void MagDynDlg::SyncSiteComboBoxes()
 		return;
 
 	// iterate couplings and update their site selection combo boxes
-	for(int row=0; row<m_termstab->rowCount(); ++row)
+	for(int row = 0; row < m_termstab->rowCount(); ++row)
 	{
 		SitesComboBox *site_1 = reinterpret_cast<SitesComboBox*>(
 			m_termstab->cellWidget(row, COL_XCH_ATOM1_IDX));
@@ -226,7 +228,7 @@ void MagDynDlg::SyncSiteComboBox(SitesComboBox* combo, const std::string& select
 			selected_idx = row;
 
 		// check if the selection corresponds to the site's previous name
-		std::string old_name = name->data(Qt::UserRole).toString().toStdString();
+		std::string old_name = name->data(DATA_ROLE_NAME).toString().toStdString();
 		if(old_name != "" && old_name == selected_site)
 			selected_idx_alt = row;
 	}
@@ -297,7 +299,7 @@ SitesComboBox* MagDynDlg::CreateSitesComboBox(const std::string& selected_site)
  * add an exchange term
  */
 void MagDynDlg::AddTermTabItem(
-	int row, const std::string& name,
+	int row, const std::string& name, t_size sym_idx,
 	const std::string& atom_1, const std::string& atom_2,
 	const std::string& dist_x, const std::string& dist_y, const std::string& dist_z,
 	const std::string& J,
@@ -368,6 +370,8 @@ void MagDynDlg::AddTermTabItem(
 			new tl2::NumericTableWidgetItem<t_real>(dist_y));
 		m_termstab->setItem(row, COL_XCH_DIST_Z,
 			new tl2::NumericTableWidgetItem<t_real>(dist_z));
+		m_termstab->setItem(row, COL_XCH_SYM_IDX,
+			new tl2::NumericTableWidgetItem<t_size>(sym_idx));
 		m_termstab->setItem(row, COL_XCH_INTERACTION,
 			new tl2::NumericTableWidgetItem<t_real>(J));
 		m_termstab->setItem(row, COL_XCH_DMI_X,
@@ -820,7 +824,7 @@ void MagDynDlg::SitesTableItemChanged(QTableWidgetItem *item)
 			// get the previous name of the site
 			std::string old_name = m_dyn.GetMagneticSite(row).name;
 			// and set it as temporary, alternate site name
-			item->setData(Qt::UserRole, QString(old_name.c_str()));
+			item->setData(DATA_ROLE_NAME, QString(old_name.c_str()));
 
 			set_unique_tab_item_name(m_sitestab, item, COL_SITE_NAME, "site");
 		}
@@ -829,7 +833,7 @@ void MagDynDlg::SitesTableItemChanged(QTableWidgetItem *item)
 	SyncSiteComboBoxes();
 
 	// clear alternate name
-	item->setData(Qt::UserRole, QVariant());
+	item->setData(DATA_ROLE_NAME, QVariant());
 
 	if(m_autocalc->isChecked())
 		CalcAll();

@@ -200,6 +200,7 @@ struct t_MagneticSite
 	// ------------------------------------------------------------------------
 	// input properties
 	std::string name{};          // identifier
+	t_size sym_idx{};            // groups positions belonging to the same symmetry group (0: none)
 
 	t_strarr3 pos{};             // magnetic site position
 
@@ -243,6 +244,7 @@ struct t_ExchangeTerm
 	// ------------------------------------------------------------------------
 	// input properties (parsable expressions)
 	std::string name{};          // identifier
+	t_size sym_idx{};            // groups couplings belonging to the same symmetry group (0: none)
 
 	std::string site1{};         // name of first magnetic site
 	std::string site2{};         // name of second magnetic site
@@ -1267,6 +1269,75 @@ public:
 		}
 
 		return false;
+	}
+
+
+
+	/**
+	 * assign symmetry group indices to sites and couplings
+	 */
+	void CalcSymmetryIndices(const std::vector<t_mat_real>& symops)
+	{
+		// iterate sites
+		t_size site_sym_idx_ctr = 0;
+		std::vector<const MagneticSite*> seen_sites;
+
+		for(MagneticSite& site : GetMagneticSites())
+		{
+			const MagneticSite* equivalent_site = nullptr;
+			for(const MagneticSite* seen_site : seen_sites)
+			{
+				// found symmetry-equivalent site
+				if(IsSymmetryEquivalent(site, *seen_site, symops))
+				{
+					equivalent_site = seen_site;
+					break;
+				}
+			}
+
+			if(equivalent_site)
+			{
+				// assign symmetry index from equivalent site
+				site.sym_idx = equivalent_site->sym_idx;
+			}
+			else
+			{
+				// assign new symmetry index
+				site.sym_idx = ++site_sym_idx_ctr;
+				seen_sites.push_back(&site);
+			}
+		}
+
+
+		// iterate couplings
+		std::vector<const ExchangeTerm*> seen_terms;
+		t_size term_sym_idx_ctr = 0;
+
+		for(ExchangeTerm& term : GetExchangeTerms())
+		{
+			const ExchangeTerm* equivalent_term = nullptr;
+			for(const ExchangeTerm* seen_term : seen_terms)
+			{
+				// found symmetry-equivalent coupling
+				if(IsSymmetryEquivalent(term, *seen_term, symops))
+				{
+					equivalent_term = seen_term;
+					break;
+				}
+			}
+
+			if(equivalent_term)
+			{
+				// assign symmetry index from equivalent coupling
+				term.sym_idx = equivalent_term->sym_idx;
+			}
+			else
+			{
+				// assign new symmetry index
+				term.sym_idx = ++term_sym_idx_ctr;
+				seen_terms.push_back(&term);
+			}
+		}
 	}
 	// --------------------------------------------------------------------
 
@@ -2541,6 +2612,8 @@ public:
 					site.second.get<t_real>("position_z", 0.),
 				});
 
+				magnetic_site.sym_idx = site.second.get<t_size>("symmetry_index", 0);
+
 				magnetic_site.pos[0] = site.second.get<std::string>("position_x", "0");
 				magnetic_site.pos[1] = site.second.get<std::string>("position_y", "0");
 				magnetic_site.pos[2] = site.second.get<std::string>("position_z", "0");
@@ -2651,6 +2724,8 @@ public:
 				exchange_term.dist[0] = term.second.get<std::string>("distance_x", "0");
 				exchange_term.dist[1] = term.second.get<std::string>("distance_y", "0");
 				exchange_term.dist[2] = term.second.get<std::string>("distance_z", "0");
+
+				exchange_term.sym_idx = term.second.get<t_size>("symmetry_index", 0);
 
 				exchange_term.J = term.second.get<std::string>("interaction", "0");
 
@@ -2808,6 +2883,8 @@ public:
 			itemNode.put<std::string>("position_y", site.pos[1]);
 			itemNode.put<std::string>("position_z", site.pos[2]);
 
+			itemNode.put<t_size>("symmetry_index", site.sym_idx);
+
 			itemNode.put<std::string>("spin_x", site.spin_dir[0]);
 			itemNode.put<std::string>("spin_y", site.spin_dir[1]);
 			itemNode.put<std::string>("spin_z", site.spin_dir[2]);
@@ -2844,6 +2921,8 @@ public:
 			itemNode.put<std::string>("distance_x", term.dist[0]);
 			itemNode.put<std::string>("distance_y", term.dist[1]);
 			itemNode.put<std::string>("distance_z", term.dist[2]);
+
+			itemNode.put<t_size>("symmetry_index", term.sym_idx);
 
 			itemNode.put<std::string>("interaction", term.J);
 

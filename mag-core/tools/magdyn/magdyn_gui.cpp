@@ -182,6 +182,8 @@ void MagDynDlg::CreateSitesPanel()
 		new QTableWidgetItem{"y"});
 	m_sitestab->setHorizontalHeaderItem(COL_SITE_POS_Z,
 		new QTableWidgetItem{"z"});
+	m_sitestab->setHorizontalHeaderItem(COL_SITE_SYM_IDX,
+		new QTableWidgetItem{"Sym. Idx."});
 	m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_X,
 		new QTableWidgetItem{"Spin x"});
 	m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_Y,
@@ -211,6 +213,7 @@ void MagDynDlg::CreateSitesPanel()
 	m_sitestab->setColumnWidth(COL_SITE_POS_X, 80);
 	m_sitestab->setColumnWidth(COL_SITE_POS_Y, 80);
 	m_sitestab->setColumnWidth(COL_SITE_POS_Z, 80);
+	m_sitestab->setColumnWidth(COL_SITE_SYM_IDX, 80);
 	m_sitestab->setColumnWidth(COL_SITE_SPIN_X, 80);
 	m_sitestab->setColumnWidth(COL_SITE_SPIN_Y, 80);
 	m_sitestab->setColumnWidth(COL_SITE_SPIN_Z, 80);
@@ -442,6 +445,8 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	m_termstab->setHorizontalHeaderItem(
 		COL_XCH_DIST_Z, new QTableWidgetItem{"Cell Δz"});
 	m_termstab->setHorizontalHeaderItem(
+		COL_XCH_SYM_IDX, new QTableWidgetItem{"Sym. Idx."});
+	m_termstab->setHorizontalHeaderItem(
 		COL_XCH_INTERACTION, new QTableWidgetItem{"Exch. J"});
 	m_termstab->setHorizontalHeaderItem(
 		COL_XCH_DMI_X, new QTableWidgetItem{"DMI x"});
@@ -484,6 +489,7 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	m_termstab->setColumnWidth(COL_XCH_DIST_X, 80);
 	m_termstab->setColumnWidth(COL_XCH_DIST_Y, 80);
 	m_termstab->setColumnWidth(COL_XCH_DIST_Z, 80);
+	m_termstab->setColumnWidth(COL_XCH_SYM_IDX, 80);
 	m_termstab->setColumnWidth(COL_XCH_INTERACTION, 80);
 	m_termstab->setColumnWidth(COL_XCH_DMI_X, 80);
 	m_termstab->setColumnWidth(COL_XCH_DMI_Y, 80);
@@ -2012,6 +2018,7 @@ void MagDynDlg::CreateMenuBar()
 
 	// structure menu
 	auto menuStruct = new QMenu("Structure", m_menu);
+	auto acStructSymIdx = new QAction("Assign Symmetry Indices", menuStruct);
 	auto acStructImport = new QAction("Import From Table...", menuStruct);
 	auto acStructExportSun = new QAction("Export To Sunny Code...");
 	auto acStructExportSW = new QAction("Export To SpinW Code...");
@@ -2093,6 +2100,7 @@ void MagDynDlg::CreateMenuBar()
 	m_autocalc->setCheckable(true);
 	m_autocalc->setChecked(false);
 	QAction *acCalc = new QAction("Start Calculation", menuCalc);
+	acCalc->setIcon(QIcon::fromTheme("media-playback-start"));
 	acCalc->setToolTip("Calculate all results.");
 	m_use_dmi = new QAction("Use DMI", menuCalc);
 	m_use_dmi->setToolTip("Enables the Dzyaloshinskij-Moriya interaction.");
@@ -2106,6 +2114,7 @@ void MagDynDlg::CreateMenuBar()
 		m_use_genJ->setCheckable(true);
 		m_use_genJ->setChecked(true);
 	}
+
 	m_use_field = new QAction("Use External Field", menuCalc);
 	m_use_field->setToolTip("Enables an external field.");
 	m_use_field->setCheckable(true);
@@ -2192,13 +2201,14 @@ void MagDynDlg::CreateMenuBar()
 	menuFile->addSeparator();
 	menuFile->addAction(acExit);
 
+	menuStruct->addAction(acStructSymIdx);
+	menuStruct->addSeparator();
+	menuStruct->addAction(acStructNotes);
+	menuStruct->addAction(acStructView);
+	menuStruct->addSeparator();
 	menuStruct->addAction(acStructImport);
 	menuStruct->addAction(acStructExportSun);
 	menuStruct->addAction(acStructExportSW);
-	menuStruct->addSeparator();
-	menuStruct->addAction(acStructNotes);
-	menuStruct->addSeparator();
-	menuStruct->addAction(acStructView);
 
 	m_menuDisp->addAction(m_plot_channels);
 	m_menuDisp->addMenu(m_menuChannels);
@@ -2285,6 +2295,7 @@ void MagDynDlg::CreateMenuBar()
 		m_notes_dlg->activateWindow();
 	});
 
+	connect(acStructSymIdx, &QAction::triggered, this, &MagDynDlg::CalcSymmetryIndices);
 	connect(acStructView, &QAction::triggered, this, &MagDynDlg::ShowStructurePlot);
 	connect(acStructImport, &QAction::triggered, this, &MagDynDlg::ShowTableImporter);
 	connect(acStructExportSun, &QAction::triggered,

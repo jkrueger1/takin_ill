@@ -81,7 +81,7 @@ void MagDynDlg::SyncSitesFromKernel(boost::optional<const pt::ptree&> extra_info
 			spin_ortho_z = "auto";
 
 		AddSiteTabItem(-1,
-			site.name,
+			site.name, site.sym_idx,
 			site.pos[0], site.pos[1], site.pos[2],
 			site.spin_dir[0], site.spin_dir[1], site.spin_dir[2], site.spin_mag,
 			spin_ortho_x, spin_ortho_y, spin_ortho_z,
@@ -129,7 +129,8 @@ void MagDynDlg::SyncTermsFromKernel(boost::optional<const pt::ptree&> extra_info
 		}
 
 		AddTermTabItem(-1,
-			term.name, term.site1, term.site2,
+			term.name, term.sym_idx,
+			term.site1, term.site2,
 			term.dist[0], term.dist[1], term.dist[2],
 			term.J,
 			term.dmi[0], term.dmi[1], term.dmi[2],
@@ -137,6 +138,63 @@ void MagDynDlg::SyncTermsFromKernel(boost::optional<const pt::ptree&> extra_info
 			term.Jgen[1][0], term.Jgen[1][1], term.Jgen[1][2],
 			term.Jgen[2][0], term.Jgen[2][1], term.Jgen[2][2],
 			rgb);
+	}
+}
+
+
+
+/**
+ * the the site and term symmetry indices from the kernel
+ * and add them to the respective tables
+ */
+void MagDynDlg::SyncSymmetryIndicesFromKernel()
+{
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_ignoreCalc = false;
+	} BOOST_SCOPE_EXIT_END
+
+	// prevent syncing before the new indices are transferred
+	m_ignoreCalc = true;
+
+	// sync site symmetry indices
+	for(const t_site& site : m_dyn.GetMagneticSites())
+	{
+		// find site table entry with this name, TODO: use a more unique id!
+		for(int row = 0; row < m_sitestab->rowCount(); ++row)
+		{
+			auto *name = m_sitestab->item(row, COL_SITE_NAME);
+			auto *sym_idx = static_cast<tl2::NumericTableWidgetItem<t_size>*>(
+				m_sitestab->item(row, COL_SITE_SYM_IDX));
+
+			if(!name || !sym_idx)
+				continue;
+
+			if(name->text().toStdString() != site.name)
+				continue;
+
+			sym_idx->SetValue(site.sym_idx);
+		}
+	}
+
+	// sync term symmetry indices
+	for(const t_term& term : m_dyn.GetExchangeTerms())
+	{
+		// find term table entry with this name, TODO: use a more unique id!
+		for(int row = 0; row < m_termstab->rowCount(); ++row)
+		{
+			auto *name = m_termstab->item(row, COL_XCH_NAME);
+			auto *sym_idx = static_cast<tl2::NumericTableWidgetItem<t_size>*>(
+				m_termstab->item(row, COL_XCH_SYM_IDX));
+
+			if(!name || !sym_idx)
+				continue;
+
+			if(name->text().toStdString() != term.name)
+				continue;
+
+			sym_idx->SetValue(term.sym_idx);
+		}
 	}
 }
 
@@ -257,6 +315,8 @@ void MagDynDlg::SyncToKernel()
 			m_sitestab->item(row, COL_SITE_POS_Y));
 		auto *pos_z = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
 			m_sitestab->item(row, COL_SITE_POS_Z));
+		auto *sym_idx = static_cast<tl2::NumericTableWidgetItem<t_size>*>(
+			m_sitestab->item(row, COL_SITE_SYM_IDX));
 		auto *spin_x = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
 			m_sitestab->item(row, COL_SITE_SPIN_X));
 		auto *spin_y = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
@@ -279,7 +339,7 @@ void MagDynDlg::SyncToKernel()
 				m_sitestab->item(row, COL_SITE_SPIN_ORTHO_Z));
 		}
 
-		if(!name || !pos_x || !pos_y || !pos_z ||
+		if(!name || !pos_x || !pos_y || !pos_z || !sym_idx ||
 			!spin_x || !spin_y || !spin_z || !spin_mag)
 		{
 			std::cerr << "Invalid entry in sites table row "
@@ -297,6 +357,8 @@ void MagDynDlg::SyncToKernel()
 		site.pos[0] = pos_x->text().toStdString();
 		site.pos[1] = pos_y->text().toStdString();
 		site.pos[2] = pos_z->text().toStdString();
+
+		site.sym_idx = sym_idx->GetValue();
 
 		site.spin_mag = spin_mag->text().toStdString();
 		site.spin_dir[0] = spin_x->text().toStdString();
@@ -332,6 +394,8 @@ void MagDynDlg::SyncToKernel()
 			m_termstab->item(row, COL_XCH_DIST_Y));
 		auto *dist_z = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
 			m_termstab->item(row, COL_XCH_DIST_Z));
+		auto *sym_idx = static_cast<tl2::NumericTableWidgetItem<t_size>*>(
+			m_termstab->item(row, COL_XCH_SYM_IDX));
 		auto *interaction = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
 			m_termstab->item(row, COL_XCH_INTERACTION));
 		auto *dmi_x = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
@@ -376,7 +440,7 @@ void MagDynDlg::SyncToKernel()
 				m_termstab->item(row, COL_XCH_GEN_ZZ));
 		}
 
-		if(!name || !site_1 || !site_2 ||
+		if(!name || !site_1 || !site_2 || !sym_idx ||
 			!dist_x || !dist_y || !dist_z ||
 			!interaction || !dmi_x || !dmi_y || !dmi_z)
 		{
@@ -394,6 +458,8 @@ void MagDynDlg::SyncToKernel()
 		term.dist[0] = dist_x->text().toStdString();
 		term.dist[1] = dist_y->text().toStdString();
 		term.dist[2] = dist_z->text().toStdString();
+
+		term.sym_idx = sym_idx->GetValue();
 
 		term.J = interaction->text().toStdString();
 

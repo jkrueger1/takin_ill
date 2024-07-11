@@ -512,7 +512,8 @@ bool MagDynDlg::ImportStructure(const QString& filename)
 				std::string ReMz = nucl.second.get<std::string>("ReMz", "1");
 				std::string rgb = nucl.second.get<std::string>("col", "auto");
 
-				AddSiteTabItem(-1, name, x, y, z,
+				AddSiteTabItem(-1, name, 0,
+					x, y, z,
 				   ReMx, ReMy, ReMz, M_mag,
 				   "auto", "auto", "auto",
 				   rgb);

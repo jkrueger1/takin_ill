@@ -154,17 +154,10 @@ void MagDynDlg::GenerateSitesFromSG()
 {
 	try
 	{
-		// symops of current space group
-		int sgidx = m_comboSG->itemData(m_comboSG->currentIndex()).toInt();
-		if(sgidx < 0 || t_size(sgidx) >= m_SGops.size())
-		{
-			QMessageBox::critical(this, "Magnetic Dynamics",
-				"Invalid space group selected.");
-			return;
-		}
+		const auto& symops = GetSymOpsForCurrentSG();
 
 		SyncToKernel();
-		m_dyn.SymmetriseMagneticSites(m_SGops[sgidx]);
+		m_dyn.SymmetriseMagneticSites(symops);
 		SyncSitesFromKernel();
 
 		if(m_autocalc->isChecked())
@@ -185,17 +178,10 @@ void MagDynDlg::GenerateCouplingsFromSG()
 {
 	try
 	{
-		// symops of current space group
-		auto sgidx = m_comboSG->itemData(m_comboSG->currentIndex()).toInt();
-		if(sgidx < 0 || t_size(sgidx) >= m_SGops.size())
-		{
-			QMessageBox::critical(this, "Magnetic Dynamics",
-				"Invalid space group selected.");
-			return;
-		}
+		const auto& symops = GetSymOpsForCurrentSG();
 
 		SyncToKernel();
-		m_dyn.SymmetriseExchangeTerms(m_SGops[sgidx]);
+		m_dyn.SymmetriseExchangeTerms(symops);
 		SyncTermsFromKernel();
 
 		if(m_autocalc->isChecked())
@@ -231,6 +217,33 @@ void MagDynDlg::GeneratePossibleCouplings()
 	{
 		QMessageBox::critical(this, "Magnetic Dynamics", ex.what());
 	}
+}
+
+
+
+/**
+ * get the symmetry operators for the currently selected space group
+ */
+const std::vector<t_mat_real>& MagDynDlg::GetSymOpsForCurrentSG(bool show_err) const
+{
+	// current space group index
+	int sgidx = m_comboSG->itemData(m_comboSG->currentIndex()).toInt();
+
+	if(sgidx < 0 || t_size(sgidx) >= m_SGops.size())
+	{
+		if(show_err)
+		{
+			QMessageBox::critical(const_cast<MagDynDlg*>(this),
+				"Magnetic Dynamics",
+				"Invalid space group selected.");
+		}
+
+		// return empty symop list
+		static const std::vector<t_mat_real> nullvec{};
+		return nullvec;
+	}
+
+	return m_SGops[sgidx];
 }
 
 
@@ -279,6 +292,8 @@ void MagDynDlg::ImportAtoms(const std::vector<TableImportAtom>& atompos_vec)
 		std::string spin_mag = "1";
 
 		std::string name = "";
+		t_size sym_idx = 0;  // TODO
+
 		if(atompos.name) name = *atompos.name;
 		if(atompos.x) pos_x = tl2::var_to_str(*atompos.x);
 		if(atompos.y) pos_y = tl2::var_to_str(*atompos.y);
@@ -288,7 +303,7 @@ void MagDynDlg::ImportAtoms(const std::vector<TableImportAtom>& atompos_vec)
 		if(atompos.Sz) spin_z = tl2::var_to_str(*atompos.Sz);
 		if(atompos.Smag) spin_mag = tl2::var_to_str(*atompos.Smag);
 
-		AddSiteTabItem(-1, name,
+		AddSiteTabItem(-1, name, sym_idx,
 			pos_x, pos_y, pos_z,
 			spin_x, spin_y, spin_z, spin_mag);
 	}
@@ -314,6 +329,8 @@ void MagDynDlg::ImportCouplings(const std::vector<TableImportCoupling>& coupling
 	for(const TableImportCoupling& coupling : couplings)
 	{
 		t_size atom_1 = 0, atom_2 = 0;
+		t_size sym_idx = 0;  // TODO
+
 		std::string dist_x = "0", dist_y = "0", dist_z = "0";
 		std::string J = "0";
 		std::string dmi_x = "0", dmi_y = "0", dmi_z = "0";
@@ -345,7 +362,19 @@ void MagDynDlg::ImportCouplings(const std::vector<TableImportCoupling>& coupling
 				atom_2_name = name->text().toStdString();
 		}
 
-		AddTermTabItem(-1, name, atom_1_name, atom_2_name,
+		AddTermTabItem(-1, name, sym_idx, atom_1_name, atom_2_name,
 			dist_x, dist_y, dist_z, J, dmi_x, dmi_y, dmi_z);
 	}
+}
+
+
+
+/**
+ * assign symmetry groups to sites and couplings
+ */
+void MagDynDlg::CalcSymmetryIndices()
+{
+	const auto& symops = GetSymOpsForCurrentSG();
+	m_dyn.CalcSymmetryIndices(symops);
+	SyncSymmetryIndicesFromKernel();
 }

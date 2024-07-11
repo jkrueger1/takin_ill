@@ -35,6 +35,7 @@ namespace pt = boost::property_tree;
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <unordered_set>
 #include <cstdlib>
 
 #include "tlibs2/libs/str.h"
@@ -178,8 +179,8 @@ bool MagDynDlg::ExportToSunny(const QString& _filename)
 	ofstr << "# spin magnitudes and magnetic system\n";
 	ofstr << "magsys = System(magsites, ( 1, 1, 1 ),\n\t[\n";
 
-	std::size_t site_idx = 1;
-	for(const t_site &site : m_dyn.GetMagneticSites())
+	t_size site_idx = 1;
+	for(const t_site& site : m_dyn.GetMagneticSites())
 	{
 		ofstr << "\t\tSpinInfo("
 			<< /*"atom = " <<*/ site_idx << ", "
@@ -205,7 +206,7 @@ bool MagDynDlg::ExportToSunny(const QString& _filename)
 	{
 		// set individual spins
 		site_idx = 1;
-		for(const t_site &site : m_dyn.GetMagneticSites())
+		for(const t_site& site : m_dyn.GetMagneticSites())
 		{
 			ofstr << "set_dipole!(magsys, [ "
 				<< get_str_var(site.spin_dir[0]) << ", "
@@ -227,8 +228,8 @@ bool MagDynDlg::ExportToSunny(const QString& _filename)
 
 	for(const t_term& term : m_dyn.GetExchangeTerms())
 	{
-		std::size_t idx1 = m_dyn.GetMagneticSiteIndex(term.site1) + 1;
-		std::size_t idx2 = m_dyn.GetMagneticSiteIndex(term.site2) + 1;
+		t_size idx1 = m_dyn.GetMagneticSiteIndex(term.site1) + 1;
+		t_size idx2 = m_dyn.GetMagneticSiteIndex(term.site2) + 1;
 
 		ofstr	<< "set_exchange!(magsys," << " # " << term.name
 			<< "\n\t[\n"
@@ -374,6 +375,8 @@ void MagDynDlg::ExportToSpinW()
  */
 bool MagDynDlg::ExportToSpinW(const QString& _filename)
 {
+	// make sure the symmetry indices are up-to-date
+	CalcSymmetryIndices();
 	std::string filename = _filename.toStdString();
 
 	std::ofstream ofstr(filename);
@@ -432,18 +435,10 @@ bool MagDynDlg::ExportToSpinW(const QString& _filename)
 	// --------------------------------------------------------------------
 	ofstr << "\n% xtal lattice\n";
 
-	// symops of current space group
-	int sgidx = m_comboSG->itemData(m_comboSG->currentIndex()).toInt();
-	if(sgidx < 0 || t_size(sgidx) >= m_SGops.size())
-	{
-		QMessageBox::critical(this, "Magnetic Dynamics",
-			"Invalid space group selected.");
-		return false;
-	}
-	const auto& symops = m_SGops[sgidx];
+	const auto& symops = GetSymOpsForCurrentSG();
 
 	ofstr << "symops = \'";
-	for(std::size_t opidx = 0; opidx < symops.size(); ++opidx)
+	for(t_size opidx = 0; opidx < symops.size(); ++opidx)
 	{
 		std::string symops_xyz =
 			symop_to_xyz<t_mat_real, t_real>(symops[opidx], g_prec, g_eps);
@@ -467,23 +462,13 @@ bool MagDynDlg::ExportToSpinW(const QString& _filename)
 
 	ofstr << "\n% magnetic sites\n";
 
-	std::vector<const t_site*> emitted_sites;
-	for(const t_site &site : m_dyn.GetMagneticSites())
+	std::unordered_set<t_size> seen_site_sym_indices;
+	for(const t_site& site : m_dyn.GetMagneticSites())
 	{
-		bool is_sym_equ = false;
-		for(const t_site* emitted_site : emitted_sites)
-		{
-			// skip symmetry-equivalent sites
-			if(m_dyn.IsSymmetryEquivalent(site, *emitted_site, symops))
-			{
-				is_sym_equ = true;
-				break;
-			}
-		}
-
-		if(is_sym_equ)
+		// only emit one position of a symmetry group
+		if(seen_site_sym_indices.find(site.sym_idx) != seen_site_sym_indices.end())
 			continue;
-		emitted_sites.push_back(&site);
+		seen_site_sym_indices.insert(site.sym_idx);
 
 		ofstr << "sw_obj.addatom(\"r\", "
 			//<< "\"label\", \"" << site.name << "\", ";
@@ -508,7 +493,7 @@ bool MagDynDlg::ExportToSpinW(const QString& _filename)
 	ofstr << "spins = [ ";
 	for(int i = 0; i < 3; ++i)
 	{
-		for(const t_site &site : m_dyn.GetMagneticSites())
+		for(const t_site& site : m_dyn.GetMagneticSites())
 		{
 			if(field.align_spins)
 				ofstr << field.dir[i] << " ";
@@ -533,23 +518,13 @@ bool MagDynDlg::ExportToSpinW(const QString& _filename)
 	ofstr << "\n% magnetic couplings\n";
 	ofstr << "sw_obj.gencoupling();\n";
 
-	std::vector<const t_term*> emitted_terms;
+	std::unordered_set<t_size> seen_term_sym_indices;
 	for(const t_term& term : m_dyn.GetExchangeTerms())
 	{
-		bool is_sym_equ = false;
-		for(const t_term* emitted_term : emitted_terms)
-		{
-			// skip symmetry-equivalent couplings
-			if(m_dyn.IsSymmetryEquivalent(term, *emitted_term, symops))
-			{
-				is_sym_equ = true;
-				break;
-			}
-		}
-
-		if(is_sym_equ)
+		// only emit one coupling of a symmetry group
+		if(seen_term_sym_indices.find(term.sym_idx) != seen_term_sym_indices.end())
 			continue;
-		emitted_terms.push_back(&term);
+		seen_term_sym_indices.insert(term.sym_idx);
 
 		ofstr << "% " << term.name << "\n";
 
@@ -560,7 +535,8 @@ bool MagDynDlg::ExportToSpinW(const QString& _filename)
 			<< get_str_var(term.J)
 			<< ");\n";
 
-		ofstr << "sw_obj.addcoupling(\"mat\", " << J << ", \"bond\", 1);\n"; // TODO
+		ofstr << "sw_obj.addcoupling(\"mat\", " << J << ", \"bond\", "
+			<< term.sym_idx << ");\n";
 
 		if(!tl2::equals_0(term.dmi_calc))
 		{
@@ -573,7 +549,8 @@ bool MagDynDlg::ExportToSpinW(const QString& _filename)
 				<< get_str_var(term.dmi[2])
 				<< " ]);\n";
 
-			ofstr << "sw_obj.addcoupling(\"mat\", " << DMI << ", \"bond\", 1);\n"; // TODO
+			ofstr << "sw_obj.addcoupling(\"mat\", " << DMI << ", \"bond\", "
+				<< term.sym_idx << ");\n";
 		}
 
 		if(!tl2::equals_0(term.Jgen_calc))
@@ -593,7 +570,8 @@ bool MagDynDlg::ExportToSpinW(const QString& _filename)
 				<< get_str_var(term.Jgen[2][2]) << " "
 				<< " ]);\n";
 
-			ofstr << "sw_obj.addcoupling(\"mat\", " << GEN << ", \"bond\", 1);\n"; // TODO
+			ofstr << "sw_obj.addcoupling(\"mat\", " << GEN << ", \"bond\", "
+				<< term.sym_idx << ");\n";
 		}
 	}
 	// --------------------------------------------------------------------
