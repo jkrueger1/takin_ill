@@ -54,7 +54,7 @@ void MagDynDlg::SyncSitesFromKernel(boost::optional<const pt::ptree&> extra_info
 
 	for(t_size site_index = 0; site_index < m_dyn.GetMagneticSitesCount(); ++site_index)
 	{
-		const auto &site = m_dyn.GetMagneticSite(site_index);
+		const t_site &site = m_dyn.GetMagneticSite(site_index);
 
 		// default colour
 		std::string rgb = "auto";
@@ -113,7 +113,7 @@ void MagDynDlg::SyncTermsFromKernel(boost::optional<const pt::ptree&> extra_info
 
 	for(t_size term_index = 0; term_index < m_dyn.GetExchangeTermsCount(); ++term_index)
 	{
-		const auto& term = m_dyn.GetExchangeTerm(term_index);
+		const t_term& term = m_dyn.GetExchangeTerm(term_index);
 
 		// default colour
 		std::string rgb = "#00bf00";

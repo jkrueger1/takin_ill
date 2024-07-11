@@ -63,6 +63,8 @@ using t_mat_gl = tl2::t_mat_gl;
 
 // magnon calculation core
 using t_magdyn = tl2_mag::MagDyn<t_mat, t_vec, t_mat_real, t_vec_real, t_cplx, t_real, t_size>;
+using t_site = typename t_magdyn::MagneticSite;
+using t_term = typename t_magdyn::ExchangeTerm;;
 // ----------------------------------------------------------------------------
 
 

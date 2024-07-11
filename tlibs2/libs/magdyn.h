@@ -146,6 +146,34 @@ t_mat get_polarisation(int channel = 0, bool in_chiral_basis = true)
 
 	return tl2::zero<t_mat>(3);
 }
+
+
+
+/**
+ * create a 3-vector from a homogeneous 4-vector
+ */
+template<class t_vec>
+#ifndef SWIG  // TODO: remove this as soon as swig understands concepts
+requires tl2::is_vec<t_vec>
+#endif
+t_vec to_3vec(const t_vec& vec)
+{
+	return tl2::create<t_vec>({ vec[0], vec[1], vec[2] });
+}
+
+
+
+/**
+ * create a (homogeneous) 4-vector from a 3-vector
+ */
+template<class t_vec, class t_val = typename t_vec::value_type>
+#ifndef SWIG  // TODO: remove this as soon as swig understands concepts
+requires tl2::is_vec<t_vec>
+#endif
+t_vec to_4vec(const t_vec& vec, t_val w = 0.)
+{
+	return tl2::create<t_vec>({ vec[0], vec[1], vec[2], w });
+}
 // ----------------------------------------------------------------------------
 
 
@@ -434,12 +462,7 @@ public:
 	t_real GetTemperature() const { return m_temperature; }
 	t_real GetBoseCutoffEnergy() const { return m_bose_cutoff; }
 
-
-
-	const std::string& GetMagneticFormFactor() const
-	{
-		return m_magffact_formula;
-	}
+	const std::string& GetMagneticFormFactor() const { return m_magffact_formula; }
 
 
 
@@ -556,6 +579,57 @@ public:
 		}
 
 		return GetExchangeTermsCount();  // return invalid index
+	}
+
+
+
+	std::vector<t_vec_real> GetMagneticSitePositions(bool homogeneous = false) const
+	{
+		std::vector<t_vec_real> sites;
+		sites.reserve(GetMagneticSitesCount());
+
+		for(const MagneticSite& site : GetMagneticSites())
+		{
+			if(homogeneous)
+				sites.push_back(to_4vec<t_vec_real>(site.pos_calc, 1.));
+			else
+				sites.push_back(to_3vec<t_vec_real>(site.pos_calc));
+		}
+
+		return sites;
+	}
+
+
+
+	t_vec_real GetCrystalLattice() const
+	{
+		return tl2::create<t_vec_real>(
+		{
+			m_xtallattice[0], m_xtallattice[1], m_xtallattice[2],
+			m_xtalangles[0], m_xtalangles[1], m_xtalangles[2],
+		});
+	}
+
+
+
+	/**
+	 * get the needed supercell ranges from the exchange terms
+	 */
+	std::tuple<t_vec_real, t_vec_real> GetSupercellMinMax() const
+	{
+		t_vec_real min = tl2::zero<t_vec_real>(3);
+		t_vec_real max = tl2::zero<t_vec_real>(3);
+
+		for(const ExchangeTerm& term : GetExchangeTerms())
+		{
+			for(std::uint8_t i = 0; i < 3; ++i)
+			{
+				min[i] = std::min(min[i], term.dist_calc[i]);
+				max[i] = std::max(max[i], term.dist_calc[i]);
+			}
+		}
+
+		return std::make_tuple(min, max);
 	}
 	// --------------------------------------------------------------------
 
@@ -735,17 +809,6 @@ public:
 				<< std::endl;
 		}
 	}
-
-
-
-	t_vec_real GetCrystalLattice() const
-	{
-		return tl2::create<t_vec_real>(
-		{
-			m_xtallattice[0], m_xtallattice[1], m_xtallattice[2],
-			m_xtalangles[0], m_xtalangles[1], m_xtalangles[2],
-		});
-	}
 	// --------------------------------------------------------------------
 
 
@@ -766,28 +829,6 @@ public:
 		return parser;
 	}
 	// --------------------------------------------------------------------
-
-
-
-	/**
-	 * get the needed supercell ranges from the exchange terms
-	 */
-	std::tuple<t_vec_real, t_vec_real> GetSupercellMinMax() const
-	{
-		t_vec_real min = tl2::zero<t_vec_real>(3);
-		t_vec_real max = tl2::zero<t_vec_real>(3);
-
-		for(const ExchangeTerm& term : GetExchangeTerms())
-		{
-			for(std::uint8_t i = 0; i < 3; ++i)
-			{
-				min[i] = std::min(min[i], term.dist_calc[i]);
-				max[i] = std::max(max[i], term.dist_calc[i]);
-			}
-		}
-
-		return std::make_tuple(min, max);
-	}
 
 
 
@@ -896,11 +937,7 @@ public:
 		tl2::ExprParser<t_cplx> parser = GetExprParser();
 
 		// create unit cell site vectors
-		std::vector<t_vec_real> sites_uc;
-		sites_uc.reserve(GetMagneticSitesCount());
-		for(const MagneticSite& site : GetMagneticSites())
-			sites_uc.push_back(tl2::create<t_vec_real>({
-				site.pos_calc[0], site.pos_calc[1], site.pos_calc[2], 1. }));
+		std::vector<t_vec_real> sites_uc = GetMagneticSitePositions(true);
 
 		for(const ExchangeTerm& term : GetExchangeTerms())
 		{
@@ -909,8 +946,7 @@ public:
 				continue;
 
 			// super cell distance vector
-			t_vec_real dist_sc = tl2::create<t_vec_real>({
-				term.dist_calc[0], term.dist_calc[1], term.dist_calc[2], 0. });
+			t_vec_real dist_sc = to_4vec<t_vec_real>(term.dist_calc, 0.);
 
 			// generate new (possibly supercell) sites with symop
 			auto sites1_sc = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
@@ -982,7 +1018,7 @@ public:
 			const auto newJgens = tl2::apply_ops_hom<t_mat_real, t_real>(Jgen, symops);
 
 			// iterate and insert generated couplings
-			for(t_size op_idx = 0; op_idx < sites1_sc.size(); ++op_idx)
+			for(t_size op_idx = 0; op_idx < std::min(sites1_sc.size(), sites2_sc.size()); ++op_idx)
 			{
 				// get position of the site in the supercell
 				const auto [sc1_ok, site1_sc_idx, sc1] = tl2::get_supercell(
@@ -1002,7 +1038,7 @@ public:
 				newterm.site2_calc = site2_sc_idx;
 				newterm.site1 = GetMagneticSite(newterm.site1_calc).name;
 				newterm.site2 = GetMagneticSite(newterm.site2_calc).name;
-				newterm.dist_calc = sc2 - sc1;
+				newterm.dist_calc = to_3vec<t_vec_real>(sc2 - sc1);
 				newterm.dist[0] = tl2::var_to_str(newterm.dist_calc[0]);
 				newterm.dist[1] = tl2::var_to_str(newterm.dist_calc[1]);
 				newterm.dist[2] = tl2::var_to_str(newterm.dist_calc[2]);
@@ -1135,6 +1171,9 @@ public:
 
 
 
+	/**
+	 * remove literal duplicate sites (not symmetry-equivalent ones)
+	 */
 	void RemoveDuplicateMagneticSites()
 	{
 		for(auto iter1 = m_sites.begin(); iter1 != m_sites.end(); ++iter1)
@@ -1149,6 +1188,9 @@ public:
 
 
 
+	/**
+	 * remove literal duplicate couplings (not symmetry-equivalent ones)
+	 */
 	void RemoveDuplicateExchangeTerms()
 	{
 		for(auto iter1 = m_exchange_terms.begin(); iter1 != m_exchange_terms.end(); ++iter1)
@@ -1162,6 +1204,69 @@ public:
 			else
 				std::advance(iter2, 1);
 		}
+	}
+
+
+
+	/**
+	 * are two sites equivalent with respect to the given symmetry operators
+	 */
+	bool IsSymmetryEquivalent(const MagneticSite& site1, const MagneticSite& site2,
+		const std::vector<t_mat_real>& symops) const
+	{
+		// get symmetry-equivalent positions
+		const auto positions = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
+			site1.pos_calc, symops, m_eps);
+
+		for(const auto& pos : positions)
+		{
+			// symmetry-equivalent site found?
+			if(tl2::equals<t_vec_real>(site2.pos_calc, pos, m_eps))
+				return true;
+		}
+
+		return false;
+	}
+
+
+
+	/**
+	 * are two couplings equivalent with respect to the given symmetry operators
+	 */
+	bool IsSymmetryEquivalent(const ExchangeTerm& term1, const ExchangeTerm& term2,
+		const std::vector<t_mat_real>& symops) const
+	{
+		// create unit cell site vectors
+		std::vector<t_vec_real> sites_uc = GetMagneticSitePositions(true);
+
+		// super cell distance vector
+		t_vec_real dist_sc = to_4vec<t_vec_real>(term1.dist_calc, 0.);
+
+		// generate new (possibly supercell) sites with symop
+		auto sites1_sc = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
+			sites_uc[term1.site1_calc], symops, m_eps,
+			false /*keep in uc*/, true /*ignore occupied*/,
+			true /*return homogeneous*/);
+		auto sites2_sc = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
+			sites_uc[term1.site2_calc] + dist_sc, symops, m_eps,
+			false /*keep in uc*/, true /*ignore occupied*/,
+			true /*return homogeneous*/);
+
+		for(t_size idx = 0; idx < std::min(sites1_sc.size(), sites2_sc.size()); ++idx)
+		{
+			// get position of the site in the supercell
+			const auto [sc1_ok, site1_sc_idx, sc1] = tl2::get_supercell(sites1_sc[idx], sites_uc, 3, m_eps);
+			const auto [sc2_ok, site2_sc_idx, sc2] = tl2::get_supercell(sites2_sc[idx], sites_uc, 3, m_eps);
+			if(!sc1_ok || !sc2_ok)
+				continue;
+
+			// symmetry-equivalent coupling found?
+			if(tl2::equals<t_vec_real>(to_3vec<t_vec_real>(sc2 - sc1), term2.dist_calc, m_eps)
+				&& site1_sc_idx == term2.site1_calc && site2_sc_idx == term2.site2_calc)
+				return true;
+		}
+
+		return false;
 	}
 	// --------------------------------------------------------------------
 

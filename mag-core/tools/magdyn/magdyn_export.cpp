@@ -160,7 +160,7 @@ bool MagDynDlg::ExportToSunny(const QString& _filename)
 		<< xtal[5] / tl2::pi<t_real> * t_real(180) << "),\n\t[\n";
 
 	ofstr << "\t\t# site list\n";
-	for(const auto &site : m_dyn.GetMagneticSites())
+	for(const t_site &site : m_dyn.GetMagneticSites())
 	{
 		ofstr << "\t\t[ "
 			<< get_str_var(site.pos[0]) << ", "
@@ -179,7 +179,7 @@ bool MagDynDlg::ExportToSunny(const QString& _filename)
 	ofstr << "magsys = System(magsites, ( 1, 1, 1 ),\n\t[\n";
 
 	std::size_t site_idx = 1;
-	for(const auto &site : m_dyn.GetMagneticSites())
+	for(const t_site &site : m_dyn.GetMagneticSites())
 	{
 		ofstr << "\t\tSpinInfo("
 			<< /*"atom = " <<*/ site_idx << ", "
@@ -205,7 +205,7 @@ bool MagDynDlg::ExportToSunny(const QString& _filename)
 	{
 		// set individual spins
 		site_idx = 1;
-		for(const auto &site : m_dyn.GetMagneticSites())
+		for(const t_site &site : m_dyn.GetMagneticSites())
 		{
 			ofstr << "set_dipole!(magsys, [ "
 				<< get_str_var(site.spin_dir[0]) << ", "
@@ -225,7 +225,7 @@ bool MagDynDlg::ExportToSunny(const QString& _filename)
 	ofstr << "\n# magnetic couplings\n";
 	ofstr << "@printf(\"Setting up magnetic couplings...\\n\")\n";
 
-	for(const auto& term : m_dyn.GetExchangeTerms())
+	for(const t_term& term : m_dyn.GetExchangeTerms())
 	{
 		std::size_t idx1 = m_dyn.GetMagneticSiteIndex(term.site1) + 1;
 		std::size_t idx2 = m_dyn.GetMagneticSiteIndex(term.site2) + 1;
@@ -466,8 +466,25 @@ bool MagDynDlg::ExportToSpinW(const QString& _filename)
 		<< "\"sym\", symops);\n";
 
 	ofstr << "\n% magnetic sites\n";
-	for(const auto &site : m_dyn.GetMagneticSites())
+
+	std::vector<const t_site*> emitted_sites;
+	for(const t_site &site : m_dyn.GetMagneticSites())
 	{
+		bool is_sym_equ = false;
+		for(const t_site* emitted_site : emitted_sites)
+		{
+			// skip symmetry-equivalent sites
+			if(m_dyn.IsSymmetryEquivalent(site, *emitted_site, symops))
+			{
+				is_sym_equ = true;
+				break;
+			}
+		}
+
+		if(is_sym_equ)
+			continue;
+		emitted_sites.push_back(&site);
+
 		ofstr << "sw_obj.addatom(\"r\", "
 			//<< "\"label\", \"" << site.name << "\", ";
 			<< "[ "
@@ -491,7 +508,7 @@ bool MagDynDlg::ExportToSpinW(const QString& _filename)
 	ofstr << "spins = [ ";
 	for(int i = 0; i < 3; ++i)
 	{
-		for(const auto &site : m_dyn.GetMagneticSites())
+		for(const t_site &site : m_dyn.GetMagneticSites())
 		{
 			if(field.align_spins)
 				ofstr << field.dir[i] << " ";
@@ -514,11 +531,26 @@ bool MagDynDlg::ExportToSpinW(const QString& _filename)
 
 	// --------------------------------------------------------------------
 	ofstr << "\n% magnetic couplings\n";
-
 	ofstr << "sw_obj.gencoupling();\n";
 
-	for(const auto& term : m_dyn.GetExchangeTerms())
+	std::vector<const t_term*> emitted_terms;
+	for(const t_term& term : m_dyn.GetExchangeTerms())
 	{
+		bool is_sym_equ = false;
+		for(const t_term* emitted_term : emitted_terms)
+		{
+			// skip symmetry-equivalent couplings
+			if(m_dyn.IsSymmetryEquivalent(term, *emitted_term, symops))
+			{
+				is_sym_equ = true;
+				break;
+			}
+		}
+
+		if(is_sym_equ)
+			continue;
+		emitted_terms.push_back(&term);
+
 		ofstr << "% " << term.name << "\n";
 
 		std::string J = "\'J_" + term.name + "\'";
