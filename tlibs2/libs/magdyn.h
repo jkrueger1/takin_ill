@@ -857,6 +857,7 @@ public:
 
 		for(const MagneticSite& site : GetMagneticSites())
 		{
+			// get symmetry-equivalent positions
 			const auto positions = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
 				site.pos_calc, symops, m_eps);
 
@@ -914,10 +915,12 @@ public:
 			// generate new (possibly supercell) sites with symop
 			auto sites1_sc = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
 				sites_uc[term.site1_calc], symops, m_eps,
-				false /*keep in uc*/, true /*ignore occupied*/, true);
+				false /*keep in uc*/, true /*ignore occupied*/,
+				true /*return homogeneous*/);
 			auto sites2_sc = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
 				sites_uc[term.site2_calc] + dist_sc, symops, m_eps,
-				false /*keep in uc*/, true /*ignore occupied*/, true);
+				false /*keep in uc*/, true /*ignore occupied*/,
+				true /*return homogeneous*/);
 
 			// generate new dmi vectors
 			t_vec_real dmi = tl2::zero<t_vec_real>(4);
@@ -941,7 +944,9 @@ public:
 			}
 
 			const auto newdmis = tl2::apply_ops_hom<t_vec_real, t_mat_real, t_real>(
-				dmi, symops, m_eps, false, true, false, true);
+				dmi, symops, m_eps,
+				false /*keep in uc*/, true /*ignore occupied*/,
+				false /*return homogeneous*/, true /*pseudovector*/);
 
 			// generate new general J matrices
 			t_real Jgen_arr[3][3]{};
@@ -1133,14 +1138,12 @@ public:
 	void RemoveDuplicateMagneticSites()
 	{
 		for(auto iter1 = m_sites.begin(); iter1 != m_sites.end(); ++iter1)
+		for(auto iter2 = std::next(iter1, 1); iter2 != m_sites.end();)
 		{
-			for(auto iter2 = std::next(iter1, 1); iter2 != m_sites.end();)
-			{
-				if(tl2::equals<t_vec_real>(iter1->pos_calc, iter2->pos_calc, m_eps))
-					iter2 = m_sites.erase(iter2);
-				else
-					std::advance(iter2, 1);
-			}
+			if(tl2::equals<t_vec_real>(iter1->pos_calc, iter2->pos_calc, m_eps))
+				iter2 = m_sites.erase(iter2);
+			else
+				std::advance(iter2, 1);
 		}
 	}
 
@@ -1149,17 +1152,15 @@ public:
 	void RemoveDuplicateExchangeTerms()
 	{
 		for(auto iter1 = m_exchange_terms.begin(); iter1 != m_exchange_terms.end(); ++iter1)
+		for(auto iter2 = std::next(iter1, 1); iter2 != m_exchange_terms.end();)
 		{
-			for(auto iter2 = std::next(iter1, 1); iter2 != m_exchange_terms.end();)
-			{
-				bool same_uc = (iter1->site1 == iter2->site1 && iter1->site2 == iter2->site2);
-				bool same_sc = tl2::equals<t_vec_real>(iter1->dist_calc, iter2->dist_calc, m_eps);
+			bool same_uc = (iter1->site1 == iter2->site1 && iter1->site2 == iter2->site2);
+			bool same_sc = tl2::equals<t_vec_real>(iter1->dist_calc, iter2->dist_calc, m_eps);
 
-				if(same_uc && same_sc)
-					iter2 = m_exchange_terms.erase(iter2);
-				else
-					std::advance(iter2, 1);
-			}
+			if(same_uc && same_sc)
+				iter2 = m_exchange_terms.erase(iter2);
+			else
+				std::advance(iter2, 1);
 		}
 	}
 	// --------------------------------------------------------------------
@@ -2233,8 +2234,7 @@ public:
 	{
 		ostr.precision(m_prec);
 
-		ostr
-			<< std::setw(m_prec*2) << std::left << "# h"
+		ostr	<< std::setw(m_prec*2) << std::left << "# h"
 			<< std::setw(m_prec*2) << std::left << "k"
 			<< std::setw(m_prec*2) << std::left << "l"
 			<< std::setw(m_prec*2) << std::left << "E"

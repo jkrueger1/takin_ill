@@ -269,7 +269,7 @@ bool MagDynDlg::ExportToSunny(const QString& _filename)
 	if(!tl2::equals_0<t_real>(field.mag, g_eps))
 	{
 		ofstr << "\n# external field\n";
-		ofstr << "set_external_field!(magsys, [ "
+		ofstr << "set_external_field!(magsys, -[ "
 			<< field.dir[0] << ", "
 			<< field.dir[1] << ", "
 			<< field.dir[2] << " ] * " << field.mag

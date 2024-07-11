@@ -57,6 +57,7 @@ extern int gui_main(int argc, char** argv, const std::string& model_file,
 #endif
 
 
+
 /**
  * starts the cli program
  */
@@ -76,11 +77,13 @@ static int cli_main(const std::string& model_file, const std::string& results_fi
 	t_magdyn magdyn;
 	if(magdyn.Load(model_file))
 	{
-		std::cout << "Loaded magnetic model from file \"" << model_file << "\"." << std::endl;
+		std::cout << "Loaded magnetic model from file \"" <<
+			model_file << "\"." << std::endl;
 	}
 	else
 	{
-		std::cerr << "Error: Failed loading magnetic model \"" << model_file << "\"." << std::endl;
+		std::cerr << "Error: Failed loading magnetic model \"" <<
+			model_file << "\"." << std::endl;
 		return -1;
 	}
 
@@ -115,7 +118,8 @@ static int cli_main(const std::string& model_file, const std::string& results_fi
 	else
 		std::cout << "\tNot aligning spins to field." << std::endl;
 
-	std::cout << "\tGround state energy: " << magdyn.CalcGroundStateEnergy() << " meV." << std::endl;
+	std::cout << "\tGround state energy: " << magdyn.CalcGroundStateEnergy()
+		<< " meV." << std::endl;
 
 	// get output stream for results
 	std::ostream* postr = &std::cout;
@@ -128,7 +132,8 @@ static int cli_main(const std::string& model_file, const std::string& results_fi
 	}
 	else
 	{
-		std::cerr << "Warning: No output file given, using standard output." << std::endl;
+		std::cerr << "Warning: No output file given, using standard output."
+			<< std::endl;
 	}
 
 
@@ -165,8 +170,9 @@ static int cli_main(const std::string& model_file, const std::string& results_fi
 
 
 	// calculate the dispersion
-	std::cout << "\nCalculating dispersion from Q_i = (" << h_start << ", " << k_start << ", " << l_start << ")"
-		<< " to Q_f = (" << h_end << ", " << k_end << ", " << l_end << ")"
+	std::cout << "\nCalculating dispersion from"
+		<< " Q_i = (" << h_start << ", " << k_start << ", " << l_start << ") to"
+		<< " Q_f = (" << h_end << ", " << k_end << ", " << l_end << ")"
 		<< " in " << num_Q_pts << " steps and " << g_num_threads << " threads..."
 		<< std::endl;
 
