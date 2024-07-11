@@ -202,12 +202,15 @@ void MagDynDlg::GeneratePossibleCouplings()
 {
 	try
 	{
+		const auto& symops = GetSymOpsForCurrentSG();
+
 		t_real dist_max = m_maxdist->value();
 		t_size sc_max = m_maxSC->value();
 		t_size couplings_max = m_maxcouplings->value();
 
 		SyncToKernel();
 		m_dyn.GeneratePossibleExchangeTerms(dist_max, sc_max, couplings_max);
+		m_dyn.CalcSymmetryIndices(symops);
 		SyncTermsFromKernel();
 
 		if(m_autocalc->isChecked())
