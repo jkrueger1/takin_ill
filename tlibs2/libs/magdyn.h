@@ -1204,10 +1204,15 @@ public:
 		for(auto iter1 = m_exchange_terms.begin(); iter1 != m_exchange_terms.end(); std::advance(iter1, 1))
 		for(auto iter2 = std::next(iter1, 1); iter2 != m_exchange_terms.end();)
 		{
+			// identical coupling
 			bool same_uc = (iter1->site1 == iter2->site1 && iter1->site2 == iter2->site2);
 			bool same_sc = tl2::equals<t_vec_real>(iter1->dist_calc, iter2->dist_calc, m_eps);
 
-			if(same_uc && same_sc)
+			// flipped coupling
+			bool inv_uc = (iter1->site1 == iter2->site2 && iter1->site2 == iter2->site1);
+			bool inv_sc = tl2::equals<t_vec_real>(iter1->dist_calc, -iter2->dist_calc, m_eps);
+
+			if((same_uc && same_sc) || (inv_uc && inv_sc))
 				iter2 = m_exchange_terms.erase(iter2);
 			else
 				std::advance(iter2, 1);

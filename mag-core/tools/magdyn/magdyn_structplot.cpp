@@ -140,7 +140,6 @@ void MagDynDlg::StructPlotPickerIntersection(
 	{
 		m_structplot_cur_atom = iter_atoms->second.site->name;
 		m_structplot_status->setText(("Site " + *m_structplot_cur_atom).c_str());
-
 		return;
 	}
 
@@ -148,14 +147,14 @@ void MagDynDlg::StructPlotPickerIntersection(
 	if(auto iter_terms = m_structplot_terms.find(objIdx);
 		iter_terms != m_structplot_terms.end())
 	{
+		m_structplot_cur_term = iter_terms->second.term->name;
+
 		std::ostringstream ostr;
 		ostr.precision(g_prec_gui);
 		ostr << "Coupling " << *m_structplot_cur_term
 			<< " (length: " << iter_terms->second.term->length_calc << " \xe2\x84\xab)";
 
-		m_structplot_cur_term = iter_terms->second.term->name;
 		m_structplot_status->setText(ostr.str().c_str());
-
 		return;
 	}
 }
