@@ -102,54 +102,6 @@ void rotate_spin_incommensurate(t_vec& spin_vec,
 
 
 /**
- * polarisation matrix
- * @see https://doi.org/10.1088/1361-6463/aa7573
- */
-template<class t_mat, class t_cplx = typename t_mat::value_type>
-#ifndef SWIG  // TODO: remove this as soon as swig understands concepts
-requires tl2::is_mat<t_mat>
-#endif
-t_mat get_polarisation(int channel = 0, bool in_chiral_basis = true)
-{
-	if(in_chiral_basis)
-	{
-		t_mat pol = tl2::zero<t_mat>(3);
-
-		// just pick the selected component on the diagonal
-		if(channel >=0 && channel < 3)
-			pol(channel, channel) = t_cplx(1);
-
-		return pol;
-	}
-	else
-	{
-		constexpr const t_cplx halfi = t_cplx(0, 0.5);
-		constexpr const t_cplx half = t_cplx(0.5, 0);
-
-		// TODO: check coordinate system
-		switch(channel)
-		{
-			case 0: return tl2::create<t_mat>({
-				{   half, +halfi,  0 },
-				{ -halfi,   half,  0 },
-				{      0,      0,  0 } });
-			case 1: return tl2::create<t_mat>({
-				{   half, -halfi,  0 },
-				{ +halfi,   half,  0 },
-				{      0,      0,  0 } });
-			case 2: return tl2::create<t_mat>({
-				{      0,      0,  0 },
-				{      0,      0,  0 },
-				{      0,      0,  1 } });
-		}
-	}
-
-	return tl2::zero<t_mat>(3);
-}
-
-
-
-/**
  * create a 3-vector from a homogeneous 4-vector
  */
 template<class t_vec>
@@ -399,6 +351,12 @@ public:
 		m_xtallattice[0] = m_xtallattice[1] = m_xtallattice[2] = 0.;
 		m_xtalangles[0] = m_xtalangles[1] = m_xtalangles[2] = t_real(0.5) * tl2::pi<t_real>;
 		m_xtalA = m_xtalB = tl2::unit<t_mat_real>(3);
+		m_xtalUB = m_xtalUBinv = tl2::unit<t_mat_real>(3);
+
+		// clear scattering plane
+		m_scatteringplane[0] = tl2::create<t_vec_real>({ 1., 0., 0. });
+		m_scatteringplane[1] = tl2::create<t_vec_real>({ 0., 1., 0. });
+		m_scatteringplane[2] = tl2::create<t_vec_real>({ 0., 0., 1. });
 	}
 
 
@@ -614,6 +572,13 @@ public:
 
 
 
+	const t_vec_real* GetScatteringPlane() const
+	{
+		return m_scatteringplane;
+	}
+
+
+
 	/**
 	 * get the needed supercell ranges from the exchange terms
 	 */
@@ -785,6 +750,9 @@ public:
 
 
 
+	/**
+	 * calculate the B matrix from the crystal lattice
+	 */
 	void SetCrystalLattice(t_real a, t_real b, t_real c,
 		t_real alpha, t_real beta, t_real gamma)
 	{
@@ -808,6 +776,38 @@ public:
 
 			std::cerr << "Magdyn error: "
 				<< "Could not calculate crystal matrices."
+				<< std::endl;
+		}
+	}
+
+
+
+	/**
+	 * calculate the UB matrix from the scattering plane and the crystal lattice
+	 * note: SetCrystalLattice() has to be called before this function
+	 */
+	void SetScatteringPlane(t_real ah, t_real ak, t_real al,
+		t_real bh, t_real bk, t_real bl)
+	{
+		try
+		{
+			m_scatteringplane[0] = tl2::create<t_vec_real>({ ah, ak, al });
+			m_scatteringplane[1] = tl2::create<t_vec_real>({ bh, bk, bl });
+			m_scatteringplane[2] = tl2::cross(m_xtalB, m_scatteringplane[0], m_scatteringplane[1]);
+
+			m_xtalUB = tl2::UB_matrix(m_xtalB, m_scatteringplane[0], m_scatteringplane[1], m_scatteringplane[2]);
+			bool inv_ok = false;
+			std::tie(m_xtalUBinv, inv_ok) = tl2::inv(m_xtalUB);
+
+			if(!inv_ok)
+				std::cerr << "Magdyn error: UB matrix is not invertible." << std::endl;
+		}
+		catch(const std::exception& ex)
+		{
+			m_xtalUB = m_xtalUBinv = tl2::unit<t_mat_real>(3);
+
+			std::cerr << "Magdyn error: "
+				<< "Could not calculate scattering plane matrices."
 				<< std::endl;
 		}
 	}
@@ -1886,6 +1886,7 @@ public:
 		t_mat _H, const t_vec_real& Qvec,
 		bool only_energies = false) const
 	{
+		using namespace tl2_ops;
 		const t_size N = GetMagneticSitesCount();
 		if(N == 0 || _H.size1() == 0 || _H.size2() == 0)
 			return {};
@@ -1913,7 +1914,6 @@ public:
 			{
 				if(chol_try >= m_tries_chol - 1)
 				{
-					using namespace tl2_ops;
 					std::cerr << "Magdyn warning: "
 						<< "Cholesky decomposition failed at Q = "
 						<< Qvec << "." << std::endl;
@@ -1929,7 +1929,6 @@ public:
 
 		if(chol_try > 0)
 		{
-			using namespace tl2_ops;
 			std::cerr << "Magdyn warning: "
 				<< "Needed " << chol_try
 				<< " correction(s) for Cholesky decomposition at Q = "
@@ -1938,7 +1937,6 @@ public:
 
 		if(C_mat.size1() == 0 || C_mat.size2() == 0)
 		{
-			using namespace tl2_ops;
 			std::cerr << "Magdyn error: "
 				<< "Invalid Cholesky decomposition at Q = "
 				<< Qvec << "." << std::endl;
@@ -1951,7 +1949,6 @@ public:
 		const bool is_herm = tl2::is_symm_or_herm<t_mat, t_real>(H_mat, m_eps);
 		if(!is_herm)
 		{
-			using namespace tl2_ops;
 			std::cerr << "Magdyn warning: "
 				<< "Hamiltonian is not hermitian at Q = "
 				<< Qvec << "." << std::endl;
@@ -1964,7 +1961,6 @@ public:
 				H_mat, only_energies, is_herm, true);
 		if(!evecs_ok)
 		{
-			using namespace tl2_ops;
 			std::cerr << "Magdyn warning: "
 				<< "Eigensystem calculation failed at Q = "
 				<< Qvec << "." << std::endl;
@@ -2018,10 +2014,10 @@ public:
 		const t_mat evec_mat_herm = tl2::herm(evec_mat);
 
 		// equation (32) from (Toth 2015)
-		const t_mat L_mat = evec_mat_herm * H_mat * evec_mat;    // energies
-		t_mat E_sqrt = g_sign * L_mat;                           // abs. energies
+		const t_mat L_mat = evec_mat_herm * H_mat * evec_mat;  // energies
+		t_mat E_sqrt = g_sign * L_mat;                         // abs. energies
 		for(t_size i = 0; i < E_sqrt.size1(); ++i)
-			E_sqrt(i, i) = std::sqrt(E_sqrt/*L_mat*/(i, i)); // sqrt. of abs. energies
+			E_sqrt(i, i) = std::sqrt(E_sqrt(i, i));            // sqrt. of abs. energies
 
 		// re-create energies, to be consistent with the weights
 		energies_and_correlations.clear();
@@ -2154,9 +2150,10 @@ public:
 	 * applies projectors, form and weight factors to get neutron intensities
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	void CalcIntensities(const t_vec_real& Qvec, std::vector<EnergyAndWeight>&
+	void CalcIntensities(const t_vec_real& Q_rlu, std::vector<EnergyAndWeight>&
 		energies_and_correlations) const
 	{
+		using namespace tl2_ops;
 		tl2::ExprParser<t_cplx> magffact = m_magffact;
 
 		for(EnergyAndWeight& E_and_S : energies_and_correlations)
@@ -2169,7 +2166,7 @@ public:
 			if(m_magffact_formula != "")
 			{
 				// get |Q| in units of A^(-1)
-				t_vec_real Q_invA = m_xtalB * Qvec;
+				t_vec_real Q_invA = m_xtalB * Q_rlu;
 				t_real Q_abs = tl2::norm<t_vec_real>(Q_invA);
 
 				// evaluate form factor expression
@@ -2180,22 +2177,36 @@ public:
 
 			// apply orthogonal projector for magnetic neutron scattering,
 			// see (Shirane 2002), p. 37, equation (2.64)
-			t_mat proj_neutron = tl2::ortho_projector<t_mat, t_vec>(Qvec, false);
+			t_mat proj_neutron = tl2::ortho_projector<t_mat, t_vec>(Q_rlu, false);
 			E_and_S.S_perp = proj_neutron * E_and_S.S * proj_neutron;
 
 			// weights
 			E_and_S.weight      = std::abs(tl2::trace<t_mat>(E_and_S.S_perp).real());
 			E_and_S.weight_full = std::abs(tl2::trace<t_mat>(E_and_S.S).real());
 
+			// TODO: polarisation via blume-maleev equation
+			/*static const t_vec_real h_rlu = tl2::create<t_vec_real>({ 1., 0., 0. });
+			static const t_vec_real l_rlu = tl2::create<t_vec_real>({ 0., 0., 1. });
+			t_vec_real h_lab = m_xtalUB * h_rlu;
+			t_vec_real l_lab = m_xtalUB * l_rlu;
+			t_vec_real Q_lab = m_xtalUB * Q_rlu;
+			t_mat_real rotQ = tl2::rotation<t_mat_real>(h_lab, Q_lab, &l_lab, m_eps, true);
+			t_mat_real rotQ_hkl = m_xtalUBinv * rotQ * m_xtalUB;
+			auto [rotQ_hkl_inv, rotQ_hkl_inv_ok] = tl2::inv(rotQ_hkl);
+			if(!rotQ_hkl_inv_ok)
+				std::cerr << "Magdyn error: Cannot invert Q rotation matrix." << std::endl;
+
+			t_mat rotQ_hkl_cplx = tl2::convert<t_mat, t_mat_real>(rotQ_hkl);
+			t_mat rotQ_hkl_inv_cplx = tl2::convert<t_mat, t_mat_real>(rotQ_hkl_inv);
+
+			t_mat S_perp_pol = rotQ_hkl_cplx * E_and_S.S_perp * rotQ_hkl_inv_cplx;
+			t_mat S_pol = rotQ_hkl_cplx * E_and_S.S * rotQ_hkl_inv_cplx;*/
+
 			// polarisation channels
 			for(std::uint8_t i = 0; i < 3; ++i)
 			{
-				const t_mat pol   = get_polarisation<t_mat>(i, false);
-				const t_mat Sperp = pol * E_and_S.S_perp;
-				const t_mat S     = pol * E_and_S.S;
-
-				E_and_S.weight_channel[i] = std::abs(tl2::trace<t_mat>(Sperp).real());
-				E_and_S.weight_channel_full[i] = std::abs(tl2::trace<t_mat>(S).real());
+				E_and_S.weight_channel[i]      = std::abs(E_and_S.S_perp(i, i).real());
+				E_and_S.weight_channel_full[i] = std::abs(E_and_S.S(i, i).real());
 			}
 		}
 	}
@@ -2426,9 +2437,9 @@ public:
 			<< std::setw(m_prec*2) << std::left << "l"
 			<< std::setw(m_prec*2) << std::left << "E"
 			<< std::setw(m_prec*2) << std::left << "w"
-			<< std::setw(m_prec*2) << std::left << "w_sf1"
-			<< std::setw(m_prec*2) << std::left << "w_sf2"
-			<< std::setw(m_prec*2) << std::left << "w_nsf"
+			<< std::setw(m_prec*2) << std::left << "w_xx"
+			<< std::setw(m_prec*2) << std::left << "w_yy"
+			<< std::setw(m_prec*2) << std::left << "w_zz"
 			<< std::endl;
 
 		using t_EandS = std::vector<EnergyAndWeight>;
@@ -2815,13 +2826,22 @@ public:
 		}
 
 		// crystal lattice
-		t_real a = node.get<t_real>("xtal.a", 0.);
-		t_real b = node.get<t_real>("xtal.b", 0.);
-		t_real c = node.get<t_real>("xtal.c", 0.);
+		t_real a = node.get<t_real>("xtal.a", 5.);
+		t_real b = node.get<t_real>("xtal.b", 5.);
+		t_real c = node.get<t_real>("xtal.c", 5.);
 		t_real alpha = node.get<t_real>("xtal.alpha", 90.) / 180. * tl2::pi<t_real>;
 		t_real beta = node.get<t_real>("xtal.beta", 90.) / 180. * tl2::pi<t_real>;
 		t_real gamma = node.get<t_real>("xtal.gamma", 90.) / 180. * tl2::pi<t_real>;
 		SetCrystalLattice(a, b, c, alpha, beta, gamma);
+
+		// scattering plane
+		t_real ah = node.get<t_real>("xtal.plane_ah", 1.);
+		t_real ak = node.get<t_real>("xtal.plane_ak", 0.);
+		t_real al = node.get<t_real>("xtal.plane_al", 0.);
+		t_real bh = node.get<t_real>("xtal.plane_bh", 0.);
+		t_real bk = node.get<t_real>("xtal.plane_bk", 1.);
+		t_real bl = node.get<t_real>("xtal.plane_bl", 0.);
+		SetScatteringPlane(ah, ak, al, bh, bk, bl);
 
 		CalcExternalField();
 		CalcMagneticSites();
@@ -2962,6 +2982,20 @@ public:
 		node.put<t_real>("xtal.beta", m_xtalangles[1] / tl2::pi<t_real> * 180.);
 		node.put<t_real>("xtal.gamma", m_xtalangles[2] / tl2::pi<t_real> * 180.);
 
+		// scattering plane
+		// x vector
+		node.put<t_real>("xtal.plane_ah", m_scatteringplane[0][0]);
+		node.put<t_real>("xtal.plane_ak", m_scatteringplane[0][1]);
+		node.put<t_real>("xtal.plane_al", m_scatteringplane[0][2]);
+		// y vector
+		node.put<t_real>("xtal.plane_bh", m_scatteringplane[1][0]);
+		node.put<t_real>("xtal.plane_bk", m_scatteringplane[1][1]);
+		node.put<t_real>("xtal.plane_bl", m_scatteringplane[1][2]);
+		// up vector (saving is optional)
+		node.put<t_real>("xtal.plane_ch", m_scatteringplane[2][0]);
+		node.put<t_real>("xtal.plane_ck", m_scatteringplane[2][1]);
+		node.put<t_real>("xtal.plane_cl", m_scatteringplane[2][2]);
+
 		return true;
 	}
 	// --------------------------------------------------------------------
@@ -3049,14 +3083,25 @@ private:
 	tl2::ExprParser<t_cplx> m_magffact{};
 
 	// crystal lattice
-	t_real m_xtallattice[3]{ 0., 0., 0. };
-	t_real m_xtalangles[3]{
+	t_real m_xtallattice[3]{ 5., 5., 5. };
+	t_real m_xtalangles[3]
+	{
 		t_real(0.5) * tl2::pi<t_real>,
 		t_real(0.5) * tl2::pi<t_real>,
 		t_real(0.5) * tl2::pi<t_real>
 	};
 	t_mat_real m_xtalA{ tl2::unit<t_mat_real>(3) };
 	t_mat_real m_xtalB{ tl2::unit<t_mat_real>(3) };
+	t_mat_real m_xtalUB{ tl2::unit<t_mat_real>(3) };
+	t_mat_real m_xtalUBinv{ tl2::unit<t_mat_real>(3) };
+
+	//scattering plane
+	t_vec_real m_scatteringplane[3]
+	{
+		tl2::create<t_vec_real>({ 1., 0., 0. }),  // in-plane, x
+		tl2::create<t_vec_real>({ 0., 1., 0. }),  // in-plane, y
+		tl2::create<t_vec_real>({ 0., 0., 1. }),  // out-of-plane, z
+	};
 
 	// settings
 	bool m_is_incommensurate{ false };

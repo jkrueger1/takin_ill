@@ -1620,6 +1620,7 @@ requires is_scalar<t_real>
 	return val;
 }
 
+
 /**
  * are two angles equal within an epsilon range?
  */
@@ -3688,10 +3689,28 @@ requires is_mat<t_mat>
 	T _tr = T(0);
 
 	std::size_t N = std::min(mat.size1(), mat.size2());
-	for(std::size_t i=0; i<N; ++i)
-		_tr += mat(i,i);
+	for(std::size_t i = 0; i < N; ++i)
+		_tr += mat(i, i);
 
 	return _tr;
+}
+
+
+/**
+ * sum of all matrix elements
+ */
+template<class t_mat>
+typename t_mat::value_type sum(const t_mat& mat)
+requires is_mat<t_mat>
+{
+	using T = typename t_mat::value_type;
+	T s = T(0);
+
+	for(std::size_t i = 0; i < mat.size1(); ++i)
+		for(std::size_t j = 0; j < mat.size2(); ++j)
+			s += mat(i, j);
+
+	return s;
 }
 
 
@@ -4746,13 +4765,69 @@ requires is_vec<t_vec> && is_mat<t_mat>
 
 
 /**
+ * signed angle between two vectors
+ * @see (Zhelezov 2017) O. I. Zhelezov, American Journal of Computational and Applied Mathematics 7(2), pp. 51-57 (2017), doi: 10.5923/j.ajcam.20170702.04
+ */
+template<typename t_vec>
+typename t_vec::value_type angle(const t_vec& vec0, const t_vec& vec1,
+	const t_vec* pvec_norm = nullptr, t_vec* rotaxis = nullptr,
+	bool force_3dim = true)
+requires is_vec<t_vec>
+{
+	using namespace tl2_ops;
+	using t_real = typename t_vec::value_type;
+
+	assert(vec0.size() == vec1.size());
+
+	// 2-dim case
+	if(vec0.size() == 2)
+	{
+		// signed angles wrt basis
+		t_real angle0 = std::atan2(vec0[1], vec0[0]);
+		t_real angle1 = std::atan2(vec1[1], vec1[0]);
+
+		return angle1 - angle0;
+	}
+
+	// 3-dim and 4-dim homogeneous case
+	else if(vec0.size() == 3 || (vec0.size() == 4 && force_3dim))
+	{
+		// cross product gives sine and rotation axis
+		t_vec axis = cross<t_vec>({ vec0, vec1 });
+		t_real s = tl2::norm(axis);
+		if(rotaxis)
+			*rotaxis = axis / s;
+
+		// dot product gives cosine
+		t_real c = inner(vec0, vec1);
+		t_real angle = std::atan2(s, c);
+
+		// get signed angle
+		if(pvec_norm)
+		{
+			// see if the cross product points along the direction
+			// of the given normal
+			if(inner(axis, *pvec_norm) < t_real{0})
+				angle = -angle;
+		}
+
+		return angle;
+	}
+
+	// only implemented for two- or three-dimensional vectors
+	assert(false);
+	return t_real(0);
+}
+
+
+/**
  * matrix to rotate vector vec1 into vec2
  * (the vectors do not need to be normalised)
  * @see (Zhelezov 2017) O. I. Zhelezov, American Journal of Computational and Applied Mathematics 7(2), pp. 51-57 (2017), doi: 10.5923/j.ajcam.20170702.04
  */
 template<class t_mat, class t_vec, class t_real = typename t_vec::value_type>
 t_mat rotation(const t_vec& vec1, const t_vec& vec2,
-	const t_vec *perp_vec = nullptr, t_real eps = 1e-6, bool force_3dim = true)
+	const t_vec *ortho_vec = nullptr, t_real eps = 1e-6, bool force_3dim = true)
 requires is_vec<t_vec> && is_mat<t_mat>
 {
 	assert(vec1.size() == vec2.size());
@@ -4760,25 +4835,21 @@ requires is_vec<t_vec> && is_mat<t_mat>
 	using t_size = decltype(vec1.size());
 	const t_size dim = vec1.size();
 
+	// get rotation axis and angle
+	t_vec axis{};
+	t_real angle{};
+	if(dim == 2 || dim == 3 || (dim == 4 && force_3dim))
+		angle = tl2::angle<t_vec>(vec1, vec2, nullptr, &axis, force_3dim);
+
 	// 2-dim case
 	if(dim == 2)
 	{
-		t_real angle = std::atan2(vec2[1], vec2[0])
-			     - std::atan2(vec1[1], vec1[0]);
-
 		return rotation_2d<t_mat>(angle);
 	}
 
 	// 3-dim and 4-dim homogeneous case
 	else if(dim == 3 || (dim == 4 && force_3dim))
 	{
-		// get rotation axis from cross product
-		t_vec axis = tl2::cross<t_vec>({ vec1, vec2 });
-		t_real lenaxis = tl2::norm<t_vec>(axis);
-
-		// rotation angle
-		t_real angle = std::atan2(lenaxis, tl2::inner<t_vec>(vec1, vec2));
-
 		// collinear vectors?
 		if(equals<t_real>(angle, 0, eps))
 			return tl2::unit<t_mat>(vec1.size());
@@ -4786,21 +4857,19 @@ requires is_vec<t_vec> && is_mat<t_mat>
 		// antiparallel vectors?
 		if(equals<t_real>(std::abs(angle), pi<t_real>, eps))
 		{
-			if(perp_vec)
+			if(ortho_vec)
 			{
-				axis = *perp_vec;
-				lenaxis = tl2::norm<t_vec>(axis);
+				axis = *ortho_vec;
+				axis /= tl2::norm<t_vec>(axis);
 			}
 			else
 			{
 				axis = tl2::perp<t_vec>(vec1, eps);
-				lenaxis = t_real(1);
 			}
 
 			angle = pi<t_real>;
 		}
 
-		axis /= lenaxis;
 		return tl2::rotation<t_mat, t_vec>(axis, angle, true);
 	}
 
@@ -6889,6 +6958,7 @@ requires is_mat<t_mat>
 
 /**
  * reciprocal crystallographic B matrix, B = 2pi * A^(-T)
+ * Q [1/A] = B * Q [rlu]
  * @see https://en.wikipedia.org/wiki/Fractional_coordinates
  */
 template<class t_mat, class t_real = typename t_mat::value_type>
@@ -6911,7 +6981,7 @@ requires is_mat<t_mat>
 
 
 /**
- * UB orientation matrix
+ * UB orientation matrix, Q_exp [1/A] = U*B * Q [rlu]
  * @see https://dx.doi.org/10.1107/S0021889805004875
  */
 template<class t_mat, class t_vec>
@@ -7289,7 +7359,6 @@ requires tl2::is_mat<t_mat>
 		else
 		{
 			static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-			//throw std::domain_error("Invalid element type.");
 		}
 	}
 	else
@@ -7309,7 +7378,6 @@ requires tl2::is_mat<t_mat>
 		else
 		{
 			static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-			//throw std::domain_error("Invalid element type.");
 		}
 	}
 
@@ -7408,7 +7476,6 @@ requires tl2::is_mat<t_mat>
 		else
 		{
 			static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-			//throw std::domain_error("Invalid element type.");
 		}
 	}
 	else
@@ -7428,7 +7495,6 @@ requires tl2::is_mat<t_mat>
 		else
 		{
 			static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-			//throw std::domain_error("Invalid element type.");
 		}
 	}
 
@@ -7487,7 +7553,6 @@ requires tl2::is_mat<t_mat>
 		else
 		{
 			static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-			//throw std::domain_error("Invalid element type.");
 		}
 	}
 	else
@@ -7507,7 +7572,6 @@ requires tl2::is_mat<t_mat>
 		else
 		{
 			static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-			//throw std::domain_error("Invalid element type.");
 		}
 	}
 
@@ -7586,7 +7650,6 @@ requires tl2::is_mat<t_mat>
 		else
 		{
 			static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-			//throw std::domain_error("Invalid element type.");
 		}
 	}
 	else
@@ -7612,7 +7675,6 @@ requires tl2::is_mat<t_mat>
 		else
 		{
 			static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-			//throw std::domain_error("Invalid element type.");
 		}
 	}
 
@@ -7670,7 +7732,6 @@ requires tl2::is_mat<t_mat>
 		else
 		{
 			static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-			//throw std::domain_error("Invalid element type.");
 		}
 	}
 	else
@@ -7688,7 +7749,6 @@ requires tl2::is_mat<t_mat>
 		else
 		{
 			static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-			//throw std::domain_error("Invalid element type.");
 		}
 	}
 
@@ -7752,7 +7812,6 @@ requires tl2::is_mat<t_mat>
 		else
 		{
 			static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-			//throw std::domain_error("Invalid element type.");
 		}
 	}
 	else
@@ -7770,7 +7829,6 @@ requires tl2::is_mat<t_mat>
 		else
 		{
 			static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-			//throw std::domain_error("Invalid element type.");
 		}
 	}
 
@@ -7871,7 +7929,6 @@ eigenvec(const t_mat_cplx& mat,
 			else
 			{
 				static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-				//throw std::domain_error("Invalid element type.");
 			}
 		}
 
@@ -7898,7 +7955,6 @@ eigenvec(const t_mat_cplx& mat,
 				else
 				{
 					static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-					//throw std::domain_error("Invalid element type.");
 				}
 			}
 
@@ -7927,7 +7983,6 @@ eigenvec(const t_mat_cplx& mat,
 			else
 			{
 				static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-				//throw std::domain_error("Invalid element type.");
 			}
 
 			// resize to actual number of eigenvalues and -vectors
@@ -7961,7 +8016,6 @@ eigenvec(const t_mat_cplx& mat,
 		else
 		{
 			static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-			//throw std::domain_error("Invalid real type.");
 		}
 	}
 
@@ -8059,7 +8113,6 @@ eigenvec(const t_mat& mat, bool only_evals=false, bool is_symmetric=false, bool 
 			else
 			{
 				static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-				//throw std::domain_error("Invalid element type.");
 			}
 		}
 
@@ -8086,7 +8139,6 @@ eigenvec(const t_mat& mat, bool only_evals=false, bool is_symmetric=false, bool 
 				else
 				{
 					static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-					//throw std::domain_error("Invalid element type.");
 				}
 			}
 
@@ -8113,7 +8165,6 @@ eigenvec(const t_mat& mat, bool only_evals=false, bool is_symmetric=false, bool 
 			else
 			{
 				static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-				//throw std::domain_error("Invalid element type.");
 			}
 
 			// resize to actual number of eigenvalues and -vectors
@@ -8149,7 +8200,6 @@ eigenvec(const t_mat& mat, bool only_evals=false, bool is_symmetric=false, bool 
 		else
 		{
 			static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-			//throw std::domain_error("Invalid element type.");
 		}
 	}
 
@@ -8264,7 +8314,6 @@ requires tl2::is_mat<t_mat>
 		else
 		{
 			static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-			//throw std::domain_error("Invalid element type.");
 		}
 	}
 	else
@@ -8286,7 +8335,6 @@ requires tl2::is_mat<t_mat>
 		else
 		{
 			static_assert(tl2::bool_value<0, t_real>, "Invalid element type");
-			//throw std::domain_error("Invalid element type.");
 		}
 	}
 
@@ -8679,54 +8727,6 @@ requires is_vec<t_vec> && is_dyn_mat<t_mat>
 
 
 /**
- * signed angle between two vectors
- */
-template<typename t_vec>
-typename t_vec::value_type angle(const t_vec& vec0,
-	const t_vec& vec1, const t_vec* pvec_norm = nullptr)
-requires is_vec<t_vec>
-{
-	using namespace tl2_ops;
-	using t_real = typename t_vec::value_type;
-
-	if(vec0.size() != vec1.size())
-		throw std::runtime_error("angle: vector sizes do not match.");
-
-	if(vec0.size() == 2)
-	{
-		// signed angles wrt basis
-		t_real angle0 = std::atan2(vec0[1], vec0[0]);
-		t_real angle1 = std::atan2(vec1[1], vec1[0]);
-
-		return angle1 - angle0;
-	}
-	if(vec0.size() == 3)
-	{
-		// cross product gives sine
-		t_vec veccross = cross<t_vec>({vec0, vec1});
-		t_real dS = tl2::norm(veccross);
-
-		// dot product gives cosine
-		t_real dC = inner(vec0, vec1);
-		t_real dAngle = std::atan2(dS, dC);
-
-		// get signed angle
-		if(pvec_norm)
-		{
-			// see if the cross product points along the direction
-			// of the given normal
-			if(inner(veccross, *pvec_norm) < t_real{0})
-				dAngle = -dAngle;
-		}
-
-		return dAngle;
-	}
-
-	throw std::runtime_error("angle: only implemented for size == 2 and size == 3.");
-}
-
-
-/**
  * get the normal vector to a polygon
  */
 template<class t_vec, template<class...> class t_cont = std::vector>
@@ -8760,7 +8760,6 @@ requires is_vec<t_vec>
 
 	return vecNormBest;
 }
-
 
 
 /**
@@ -9017,13 +9016,13 @@ requires is_quat<t_quat> && is_mat<t_mat>
 	}
 	else
 	{
-		for(std::size_t iComp=0; iComp<3; ++iComp)	// find largest vector component
+		for(std::size_t iComp = 0; iComp < 3; ++iComp)	// find largest vector component
 		{
 			const std::size_t iM = iComp;		// major comp.
 			const std::size_t im1 = (iComp+1)%3;	// minor comp. 1
 			const std::size_t im2 = (iComp+2)%3;	// minor comp. 2
 
-			if(rot(iM,iM)>=rot(im1,im1) && rot(iM,iM)>=rot(im2,im2))
+			if(rot(iM,iM) >= rot(im1,im1) && rot(iM,iM) >= rot(im2,im2))
 			{
 				v[iM] = T(0.5) * std::sqrt(T(1) + rot(iM,iM) - rot(im1,im1) - rot(im2,im2));
 				v[im1] = (rot(im1, iM) + rot(iM, im1)) / (v[iM]*T(4));
@@ -9033,8 +9032,8 @@ requires is_quat<t_quat> && is_mat<t_mat>
 				break;
 			}
 
-			if(iComp>=2)
-				throw std::runtime_error("rot3_to_quat: invalid condition.");
+			if(iComp >= 2)
+				assert(false);  // should not get here
 		}
 	}
 

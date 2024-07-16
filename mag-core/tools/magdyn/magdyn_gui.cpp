@@ -816,7 +816,7 @@ void MagDynDlg::CreateSamplePanel()
 	m_samplepanel = new QWidget(this);
 
 	// crystal lattice and angles
-	const char* latticestr[] = { "a = ", "b = ", "c = " };
+	static const char* latticestr[] = { "a = ", "b = ", "c = " };
 	for(int i = 0; i < 3; ++i)
 	{
 		m_xtallattice[i] = new QDoubleSpinBox(m_samplepanel);
@@ -850,6 +850,24 @@ void MagDynDlg::CreateSamplePanel()
 	m_comboSG = new QComboBox(m_samplepanel);
 	m_comboSG->setFocusPolicy(Qt::StrongFocus);
 
+	// scattering plane
+	static const char* recipstr[] = { "h = ", "k = ", "l = " };
+	for(int i = 0; i < 6; ++i)
+	{
+		m_scatteringplane[i] = new QDoubleSpinBox(m_samplepanel);
+		m_scatteringplane[i]->setDecimals(3);
+		m_scatteringplane[i]->setMinimum(-99.999);
+		m_scatteringplane[i]->setMaximum(99.999);
+		m_scatteringplane[i]->setSingleStep(1.);
+		m_scatteringplane[i]->setValue(0);
+		m_scatteringplane[i]->setPrefix(recipstr[i % 3]);
+		//m_scatteringplane[i]->setSuffix(" rlu");
+		m_scatteringplane[i]->setSizePolicy(QSizePolicy{
+			QSizePolicy::Expanding, QSizePolicy::Fixed});
+	}
+	m_scatteringplane[0]->setValue(1);
+	m_scatteringplane[4]->setValue(1);
+
 	// form factor
 	m_ffact = new QPlainTextEdit(m_samplepanel);
 
@@ -859,6 +877,8 @@ void MagDynDlg::CreateSamplePanel()
 	grid->setContentsMargins(6, 6, 6, 6);
 
 	int y = 0;
+
+	// crystal
 	grid->addWidget(new QLabel("Crystal Definition"), y++,0,1,4);
 	grid->addWidget(new QLabel("Lattice (\xe2\x84\xab):"), y,0,1,1);
 	grid->addWidget(m_xtallattice[0], y,1,1,1);
@@ -871,6 +891,7 @@ void MagDynDlg::CreateSamplePanel()
 	grid->addWidget(new QLabel("Space Group:"), y,0,1,1);
 	grid->addWidget(m_comboSG, y++,1,1,3);
 
+	// separator
 	auto sep1 = new QFrame(m_sampleenviropanel);
 	sep1->setFrameStyle(QFrame::HLine);
 
@@ -882,6 +903,30 @@ void MagDynDlg::CreateSamplePanel()
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
 
+	// scattering plane
+	grid->addWidget(new QLabel("Scattering plane"), y++,0,1,4);
+	grid->addWidget(new QLabel("Vector 1 (rlu):"), y,0,1,1);
+	grid->addWidget(m_scatteringplane[0], y,1,1,1);
+	grid->addWidget(m_scatteringplane[1], y,2,1,1);
+	grid->addWidget(m_scatteringplane[2], y++,3,1,1);
+	grid->addWidget(new QLabel("Vector 2 (rlu):"), y,0,1,1);
+	grid->addWidget(m_scatteringplane[3], y,1,1,1);
+	grid->addWidget(m_scatteringplane[4], y,2,1,1);
+	grid->addWidget(m_scatteringplane[5], y++,3,1,1);
+
+	// separator
+	auto sep2 = new QFrame(m_sampleenviropanel);
+	sep2->setFrameStyle(QFrame::HLine);
+
+	grid->addItem(new QSpacerItem(8, 8,
+		QSizePolicy::Minimum, QSizePolicy::Fixed),
+		y++,0, 1,1);
+	grid->addWidget(sep2, y++,0, 1,4);
+	grid->addItem(new QSpacerItem(8, 8,
+		QSizePolicy::Minimum, QSizePolicy::Fixed),
+		y++,0, 1,1);
+
+	// form factor formula
 	grid->addWidget(new QLabel("Magnetic Form Factor"), y++,0,1,4);
 	grid->addWidget(new QLabel("Enter Formula, f_M(Q) = "), y++,0,1,1);
 	grid->addWidget(m_ffact, y++,0,1,4);
@@ -915,12 +960,19 @@ void MagDynDlg::CreateSamplePanel()
 
 	connect(m_ffact, &QPlainTextEdit::textChanged, calc_all);
 
-	for(int i = 0; i < 3; ++i)
+	for(int i = 0; i < 2*3; ++i)
 	{
-		connect(m_xtallattice[i],
-			static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
-			calc_all);
-		connect(m_xtalangles[i],
+		if(i < 3)
+		{
+			connect(m_xtallattice[i],
+				static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+				calc_all);
+			connect(m_xtalangles[i],
+				static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+				calc_all);
+		}
+
+		connect(m_scatteringplane[i],
 			static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
 			calc_all);
 	}
@@ -2037,9 +2089,9 @@ void MagDynDlg::CreateMenuBar()
 
 	// channels sub-menu
 	m_menuChannels = new QMenu("Selected Channels", m_menuDisp);
-	m_plot_channel[0] = new QAction("Spin-Flip Channel 1", m_menuChannels);
-	m_plot_channel[1] = new QAction("Spin-Flip Channel 2", m_menuChannels);
-	m_plot_channel[2] = new QAction("Non-Spin-Flip Channel", m_menuChannels);
+	m_plot_channel[0] = new QAction("Channel xx", m_menuChannels);
+	m_plot_channel[1] = new QAction("Channel yy", m_menuChannels);
+	m_plot_channel[2] = new QAction("Channel zz", m_menuChannels);
 	for(int i = 0; i < 3; ++i)
 	{
 		m_plot_channel[i]->setCheckable(true);

@@ -289,6 +289,7 @@ protected:
 	QComboBox *m_comboSGSites{};
 	QDoubleSpinBox *m_xtallattice[3]{nullptr, nullptr, nullptr};
 	QDoubleSpinBox *m_xtalangles[3]{nullptr, nullptr, nullptr};
+	QDoubleSpinBox *m_scatteringplane[2*3]{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 
 	// terms, ordering vector, and rotation axis
 	QTableWidget *m_termstab{};

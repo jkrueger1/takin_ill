@@ -220,7 +220,7 @@ void MagDynDlg::SyncToKernel()
 	m_termstab->blockSignals(true);
 	m_varstab->blockSignals(true);
 
-	// get variables
+	// transfer variables
 	for(int row = 0; row < m_varstab->rowCount(); ++row)
 	{
 		auto *name = m_varstab->item(row, COL_VARS_NAME);
@@ -243,16 +243,19 @@ void MagDynDlg::SyncToKernel()
 		m_dyn.AddVariable(std::move(var));
 	}
 
-	// get crystal lattice
+	// transfer crystal lattice
 	m_dyn.SetCrystalLattice(
-		m_xtallattice[0]->value(),
-		m_xtallattice[1]->value(),
-		m_xtallattice[2]->value(),
+		m_xtallattice[0]->value(), m_xtallattice[1]->value(), m_xtallattice[2]->value(),
 		m_xtalangles[0]->value() / 180 * tl2::pi<t_real>,
 		m_xtalangles[1]->value() / 180 * tl2::pi<t_real>,
 		m_xtalangles[2]->value() / 180 * tl2::pi<t_real>);
 
-	// get ordering vector and rotation axis
+	// scattering plane
+	m_dyn.SetScatteringPlane(
+		m_scatteringplane[0]->value(), m_scatteringplane[1]->value(), m_scatteringplane[2]->value(),
+		m_scatteringplane[3]->value(), m_scatteringplane[4]->value(), m_scatteringplane[5]->value());
+
+	// transfer ordering vector and rotation axis
 	{
 		t_vec_real ordering = tl2::create<t_vec_real>(
 		{
@@ -272,7 +275,7 @@ void MagDynDlg::SyncToKernel()
 		m_dyn.SetRotationAxis(rotaxis);
 	}
 
-	// get external field
+	// transfer external field
 	if(m_use_field->isChecked())
 	{
 		t_magdyn::ExternalField field;
@@ -291,21 +294,21 @@ void MagDynDlg::SyncToKernel()
 
 	m_dyn.CalcExternalField();
 
-	// get temperature
+	// transfer temperature
 	if(m_use_temperature->isChecked())
 	{
 		t_real temp = m_temperature->value();
 		m_dyn.SetTemperature(temp);
 	}
 
-	// get form factor
+	// transfer form factor
 	if(m_use_formfact->isChecked())
 	{
 		std::string ffact = m_ffact->toPlainText().toStdString();
 		m_dyn.SetMagneticFormFactor(ffact);
 	}
 
-	// get magnetic sites
+	// transfer magnetic sites
 	for(int row = 0; row < m_sitestab->rowCount(); ++row)
 	{
 		auto *name = m_sitestab->item(row, COL_SITE_NAME);
@@ -384,7 +387,7 @@ void MagDynDlg::SyncToKernel()
 
 	m_dyn.CalcMagneticSites();
 
-	// get exchange terms
+	// transfer exchange terms
 	for(int row = 0; row < m_termstab->rowCount(); ++row)
 	{
 		auto *name = m_termstab->item(row, COL_XCH_NAME);

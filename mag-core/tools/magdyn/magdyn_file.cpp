@@ -377,6 +377,15 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 		m_xtalangles[1]->setValue(xtal[4] / tl2::pi<t_real> * 180.);
 		m_xtalangles[2]->setValue(xtal[5] / tl2::pi<t_real> * 180.);
 
+		// scattering plane
+		const auto* plane = m_dyn.GetScatteringPlane();
+		m_scatteringplane[0]->setValue(plane[0][0]);
+		m_scatteringplane[1]->setValue(plane[0][1]);
+		m_scatteringplane[2]->setValue(plane[0][2]);
+		m_scatteringplane[3]->setValue(plane[1][0]);
+		m_scatteringplane[4]->setValue(plane[1][1]);
+		m_scatteringplane[5]->setValue(plane[1][2]);
+
 		// sync magnetic sites and additional entries
 		SyncSitesFromKernel(magdyn.get_child_optional("atom_sites"));
 
