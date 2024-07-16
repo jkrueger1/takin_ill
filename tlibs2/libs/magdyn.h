@@ -242,7 +242,7 @@ struct t_ExternalField
 /**
  * eigenenergies and spin-spin correlation matrix
  */
-template<class t_mat, class t_real>
+template<class t_mat, class t_real, class t_cplx = typename t_mat::value_type>
 #ifndef SWIG  // TODO: remove this as soon as swig understands concepts
 requires tl2::is_mat<t_mat>
 #endif
@@ -252,13 +252,13 @@ struct t_EnergyAndWeight
 
 	// full dynamical structure factor
 	t_mat S{};
+	t_cplx S_sum{};
 	t_real weight_full{};
-	t_real weight_channel_full[3] { 0., 0., 0. };
 
 	// projected dynamical structure factor for neutron scattering
 	t_mat S_perp{};
+	t_cplx S_perp_sum{};
 	t_real weight{};
-	t_real weight_channel[3] { 0., 0., 0. };
 };
 
 
@@ -303,7 +303,7 @@ public:
 	using ExchangeTerms = std::vector<ExchangeTerm>;
 
 	using ExternalField = t_ExternalField<t_vec_real, t_real>;
-	using EnergyAndWeight = t_EnergyAndWeight<t_mat, t_real>;
+	using EnergyAndWeight = t_EnergyAndWeight<t_mat, t_real, t_cplx>;
 	using Variable = t_Variable<t_cplx>;
 
 	using t_indices = std::pair<t_size, t_size>;
@@ -612,6 +612,7 @@ public:
 	void SetBoseCutoffEnergy(t_real E) { m_bose_cutoff = E; }
 	void SetUniteDegenerateEnergies(bool b) { m_unite_degenerate_energies = b; }
 	void SetForceIncommensurate(bool b) { m_force_incommensurate = b; }
+	void SetPerformChecks(bool b) { m_perform_checks = b; }
 
 	void SetPhaseSign(t_real sign) { m_phase_sign = sign; }
 	void SetCholeskyMaxTries(t_size max_tries) { m_tries_chol = max_tries; }
@@ -842,6 +843,9 @@ public:
 	 */
 	bool CheckMagneticSite(t_size idx, bool print_error = true) const
 	{
+		if(!m_perform_checks)
+			return true;
+
 		if(idx >= m_sites.size())
 		{
 			if(print_error)
@@ -865,6 +869,9 @@ public:
 	 */
 	bool CheckExchangeTerm(t_size idx, bool print_error = true) const
 	{
+		if(!m_perform_checks)
+			return true;
+
 		if(idx >= m_exchange_terms.size())
 		{
 			if(print_error)
@@ -879,6 +886,40 @@ public:
 		}
 
 		return true;
+	}
+
+
+
+	/**
+	 * check if imaginary weights remain
+	 */
+	bool CheckImagWeights(const t_vec_real& Q_rlu,
+		const std::vector<EnergyAndWeight>& Es_and_S) const
+	{
+		if(!m_perform_checks)
+			return true;
+
+		using namespace tl2_ops;
+		bool ok = true;
+
+		for(const EnergyAndWeight& EandS : Es_and_S)
+		{
+			// imaginary parts should be gone after UniteEnergies()
+			if(std::abs(EandS.S_perp_sum.imag()) > m_eps ||
+				std::abs(EandS.S_sum.imag()) > m_eps)
+			{
+				ok = false;
+
+				std::cerr << "Magdyn warning: "
+					<< "Remaining imaginary S(Q, E) component at Q = "
+					<< Q_rlu << " and E = " << EandS.E
+					<< ": imag(S) = " << EandS.S_sum.imag()
+					<< ", imag(S_perp) = " << EandS.S_perp_sum.imag()
+					<< "." << std::endl;
+			}
+		}
+
+		return ok;
 	}
 	// --------------------------------------------------------------------
 
@@ -1927,7 +1968,7 @@ public:
 			}
 		}
 
-		if(chol_try > 0)
+		if(m_perform_checks && chol_try > 0)
 		{
 			std::cerr << "Magdyn warning: "
 				<< "Needed " << chol_try
@@ -1947,7 +1988,7 @@ public:
 		const t_mat H_mat = C_mat * g_sign * tl2::herm<t_mat>(C_mat);
 
 		const bool is_herm = tl2::is_symm_or_herm<t_mat, t_real>(H_mat, m_eps);
-		if(!is_herm)
+		if(m_perform_checks && !is_herm)
 		{
 			std::cerr << "Magdyn warning: "
 				<< "Hamiltonian is not hermitian at Q = "
@@ -2181,8 +2222,10 @@ public:
 			E_and_S.S_perp = proj_neutron * E_and_S.S * proj_neutron;
 
 			// weights
-			E_and_S.weight      = std::abs(tl2::trace<t_mat>(E_and_S.S_perp).real());
-			E_and_S.weight_full = std::abs(tl2::trace<t_mat>(E_and_S.S).real());
+			E_and_S.S_sum       = tl2::trace<t_mat>(E_and_S.S);
+			E_and_S.S_perp_sum  = tl2::trace<t_mat>(E_and_S.S_perp);
+			E_and_S.weight_full = std::abs(E_and_S.S_sum.real());
+			E_and_S.weight      = std::abs(E_and_S.S_perp_sum.real());
 
 			// TODO: polarisation via blume-maleev equation
 			/*static const t_vec_real h_rlu = tl2::create<t_vec_real>({ 1., 0., 0. });
@@ -2201,13 +2244,6 @@ public:
 
 			t_mat S_perp_pol = rotQ_hkl_cplx * E_and_S.S_perp * rotQ_hkl_inv_cplx;
 			t_mat S_pol = rotQ_hkl_cplx * E_and_S.S * rotQ_hkl_inv_cplx;*/
-
-			// polarisation channels
-			for(std::uint8_t i = 0; i < 3; ++i)
-			{
-				E_and_S.weight_channel[i]      = std::abs(E_and_S.S_perp(i, i).real());
-				E_and_S.weight_channel_full[i] = std::abs(E_and_S.S(i, i).real());
-			}
 		}
 	}
 
@@ -2243,17 +2279,12 @@ public:
 			else
 			{
 				// energy already seen: add correlation matrices and weights
-				iter->S      += curState.S;
-				iter->S_perp += curState.S_perp;
-
+				iter->S           += curState.S;
+				iter->S_perp      += curState.S_perp;
+				iter->S_sum       += curState.S_sum;
+				iter->S_perp_sum  += curState.S_perp_sum;
 				iter->weight      += curState.weight;
 				iter->weight_full += curState.weight_full;
-
-				for(std::uint8_t i = 0; i < 3; ++i)
-				{
-					iter->weight_channel[i]      += curState.weight_channel[i];
-					iter->weight_channel_full[i] += curState.weight_channel_full[i];
-				}
 			}
 		}
 
@@ -2267,14 +2298,15 @@ public:
 	 * (also calculates incommensurate contributions and applies weight factors)
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	std::vector<EnergyAndWeight> CalcEnergies(const t_vec_real& Qvec,
+	std::vector<EnergyAndWeight> CalcEnergies(const t_vec_real& Q_rlu,
 		bool only_energies = false) const
 	{
 		std::vector<EnergyAndWeight> EandWs;
+
 		if(m_calc_H)
 		{
-			const t_mat H = CalcHamiltonian(Qvec);
-			EandWs = CalcEnergiesFromHamiltonian(H, Qvec, only_energies);
+			const t_mat H = CalcHamiltonian(Q_rlu);
+			EandWs = CalcEnergiesFromHamiltonian(H, Q_rlu, only_energies);
 		}
 
 		if(IsIncommensurate())
@@ -2295,16 +2327,16 @@ public:
 
 			if(m_calc_Hp)
 			{
-				const t_mat H_p = CalcHamiltonian(Qvec + m_ordering);
+				const t_mat H_p = CalcHamiltonian(Q_rlu + m_ordering);
 				EandWs_p = CalcEnergiesFromHamiltonian(
-					H_p, Qvec + m_ordering, only_energies);
+					H_p, Q_rlu + m_ordering, only_energies);
 			}
 
 			if(m_calc_Hm)
 			{
-				const t_mat H_m = CalcHamiltonian(Qvec - m_ordering);
+				const t_mat H_m = CalcHamiltonian(Q_rlu - m_ordering);
 				EandWs_m = CalcEnergiesFromHamiltonian(
-					H_m, Qvec - m_ordering, only_energies);
+					H_m, Q_rlu - m_ordering, only_energies);
 			}
 
 			if(!only_energies)
@@ -2327,10 +2359,13 @@ public:
 		}
 
 		if(!only_energies)
-			CalcIntensities(Qvec, EandWs);
+			CalcIntensities(Q_rlu, EandWs);
 
 		if(m_unite_degenerate_energies)
 			EandWs = UniteEnergies(EandWs);
+
+		if(!only_energies)
+			CheckImagWeights(Q_rlu, EandWs);
 
 		return EandWs;
 	}
@@ -2437,9 +2472,9 @@ public:
 			<< std::setw(m_prec*2) << std::left << "l"
 			<< std::setw(m_prec*2) << std::left << "E"
 			<< std::setw(m_prec*2) << std::left << "w"
-			<< std::setw(m_prec*2) << std::left << "w_xx"
-			<< std::setw(m_prec*2) << std::left << "w_yy"
-			<< std::setw(m_prec*2) << std::left << "w_zz"
+			<< std::setw(m_prec*2) << std::left << "S_xx"
+			<< std::setw(m_prec*2) << std::left << "S_yy"
+			<< std::setw(m_prec*2) << std::left << "S_zz"
 			<< std::endl;
 
 		using t_EandS = std::vector<EnergyAndWeight>;
@@ -2500,9 +2535,9 @@ public:
 					<< std::setw(m_prec*2) << std::left << result.l
 					<< std::setw(m_prec*2) << E_and_S.E
 					<< std::setw(m_prec*2) << E_and_S.weight
-					<< std::setw(m_prec*2) << E_and_S.weight_channel[0]
-					<< std::setw(m_prec*2) << E_and_S.weight_channel[1]
-					<< std::setw(m_prec*2) << E_and_S.weight_channel[2]
+					<< std::setw(m_prec*2) << E_and_S.S_perp(0, 0).real()
+					<< std::setw(m_prec*2) << E_and_S.S_perp(1, 1).real()
+					<< std::setw(m_prec*2) << E_and_S.S_perp(2, 2).real()
 					<< std::endl;
 			}
 		}
@@ -3028,7 +3063,7 @@ protected:
 		const auto [spin_re, spin_im] =
 			tl2::split_cplx<t_vec, t_vec_real>(spin_dir);
 
-		if(!tl2::equals_0<t_vec_real>(spin_im, m_eps))
+		if(m_perform_checks && !tl2::equals_0<t_vec_real>(spin_im, m_eps))
 		{
 			std::cerr << "Magdyn warning: "
 				<< "Spin vector should be purely real."
@@ -3107,6 +3142,7 @@ private:
 	bool m_is_incommensurate{ false };
 	bool m_force_incommensurate{ false };
 	bool m_unite_degenerate_energies{ true };
+	bool m_perform_checks{ true };
 
 	// settings for cholesky decomposition
 	t_size m_tries_chol{ 50 };

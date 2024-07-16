@@ -118,11 +118,11 @@
 
 %template(EnergyAndWeight) tl2_mag::t_EnergyAndWeight<
 	tl2::mat<std::complex<double>>,
-	double>;
+	double, std::complex<double>>;
 %template(VecEnergyAndWeight) std::vector<
 	tl2_mag::t_EnergyAndWeight<
 		tl2::mat<std::complex<double>>,
-		double>
+		double, std::complex<double>>
 	>;
 
 %template(Variable) tl2_mag::t_Variable<

@@ -326,11 +326,14 @@ void MagDynDlg::CalcDispersion()
 					m_ws_data.push_back(weight);
 					//std::cout << Q[m_Q_idx] << " " << E << " " << weight << std::endl;
 
-					for(int channel=0; channel<3; ++channel)
+					for(int channel = 0; channel < 3; ++channel)
 					{
 						t_real weight_channel = use_projector
-							? E_and_S.weight_channel[channel]
-							: E_and_S.weight_channel_full[channel];
+							? E_and_S.S_perp(channel, channel).real()
+							: E_and_S.S(channel, channel).real();
+
+						weight_channel = std::abs(weight_channel);
+
 						if(!tl2::equals_0<t_real>(weight_channel, g_eps))
 						{
 							m_Es_data_channel[channel].push_back(E);
