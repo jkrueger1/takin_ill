@@ -173,7 +173,9 @@ bool MagDynDlg::ExportToSunny(const QString& _filename)
 	// save as the P1 space group, as we have already performed the symmetry operations
 	// (you can also manually set the crystal's space group and delete all
 	//  symmetry-equivalent positions and couplings in the generated file)
-	ofstr << "\t], 1)\n\n";
+	ofstr << "\t], 1)\n";
+
+	ofstr << "num_sites = length(magsites.positions)\n\n";
 
 
 	ofstr << "# spin magnitudes and magnetic system\n";
@@ -326,8 +328,8 @@ bool MagDynDlg::ExportToSunny(const QString& _filename)
 
 	// --------------------------------------------------------------------
 	ofstr << "\n# output the dispersion and spin-spin correlation\n";
-	ofstr << "@printf(\"Outputting data to \\\"%s\\\", plot with:\\n"
-		<< "\\tgnuplot -p -e \\\"plot \\\\\\\"%s\\\\\\\" u 1:4:(\\\\\\$5/4) w p pt 7 ps var\\\"\\n\", "
+	ofstr << "@printf(\"Outputting data to \\\"%s\\\", plot with (adapting x index):\\n"
+		<< "\\tgnuplot -p -e \\\"plot \\\\\\\"%s\\\\\\\" u 1:4:(\\\\\\$5) w p pt 7 ps var\\\"\\n\", "
 		<< "datfile, datfile)\n";
 
 	ofstr << "open(datfile, \"w\") do ostr\n";
@@ -339,7 +341,7 @@ bool MagDynDlg::ExportToSunny(const QString& _filename)
 			@printf(ostr, "%10.4f %10.4f %10.4f %10.4f %10.4f\n",
 				momenta[q_idx][1], momenta[q_idx][2], momenta[q_idx][3],
 				energies[q_idx, e_idx],
-				correlations[q_idx, e_idx])
+				correlations[q_idx, e_idx] / num_sites)
 		end
 	end
 end
