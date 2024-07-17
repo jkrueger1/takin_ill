@@ -32,7 +32,6 @@
 #
 
 import numpy as np
-import helpers
 
 
 
@@ -148,6 +147,25 @@ def focal_len(lenBefore, lenAfter):
 def foc_curv(lenBefore, lenAfter, tt, vert):
     f = focal_len(lenBefore, lenAfter)
     s = np.abs(np.sin(0.5*tt))
+
+    if vert:
+        curv = 2. * f*s
+    else:
+        curv = 2. * f/s
+
+    return curv
+
+
+#
+# optimal mono/ana curvature, using wavenumber k and crystal d
+# see e.g.
+#    - (Shirane 2002) p. 66
+#    - or nicos/nicos-core.git/tree/nicos/devices/tas/mono.py in nicos
+#    - or Monochromator_curved.comp in McStas
+#
+def foc_curv_2(f, k, d, vert):
+    #f = focal_len(lenBefore, lenAfter)
+    s = np.abs(np.pi / (d * k))
 
     if vert:
         curv = 2. * f*s

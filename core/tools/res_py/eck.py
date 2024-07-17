@@ -163,16 +163,27 @@ def calc(param):
     Q_kf = helpers.get_angle_Q_kf(ki, kf, Q) * param["sample_sense"]
 
     if param["verbose"]:
-        print("2theta = %g, thetam = %g, thetaa = %g, Q_ki = %g, Q_kf = %g\n" %
+        print("2theta = %g deg, thetam = %g deg, thetaa = %g deg, Q_ki = %g deg, Q_kf = %g deg.\n" %
             (twotheta*helpers.rad2deg, thetam*helpers.rad2deg, thetaa*helpers.rad2deg,
             Q_ki*helpers.rad2deg, Q_kf*helpers.rad2deg))
 
     # --------------------------------------------------------------------
     # mono/ana focus
+    # use fixed values
     mono_curv_h = param["mono_curv_h"]
     mono_curv_v = param["mono_curv_v"]
     ana_curv_h = param["ana_curv_h"]
     ana_curv_v = param["ana_curv_v"]
+
+    # use a user-defined curvature formula, if given
+    if param["mono_curv_h_formula"]:
+        mono_curv_h = param["mono_curv_h_formula"](param) * helpers.cm2A
+    if param["mono_curv_v_formula"]:
+        mono_curv_v = param["mono_curv_v_formula"](param) * helpers.cm2A
+    if param["ana_curv_h_formula"]:
+        ana_curv_h = param["ana_curv_h_formula"](param) * helpers.cm2A
+    if param["ana_curv_v_formula"]:
+        ana_curv_v = param["ana_curv_v_formula"](param) * helpers.cm2A
 
     if param["mono_is_optimally_curved_h"]:
         mono_curv_h = helpers.foc_curv(param["dist_src_mono"], \

@@ -31,18 +31,19 @@
 # requires numpy version >= 1.10
 import numpy as np
 import helpers
+import params_in20
 
 np.set_printoptions(floatmode = "fixed",  precision = 4)
 
 
 # -----------------------------------------------------------------------------
 #
-# resolution parameters
+# default resolution parameters
 # NOTE: not all parameters are used by all calculation backends
 #
 params = {
     # options
-    "verbose" : False,
+    "verbose" : True,
 
     # resolution method, "eck", "pop", or "cn"
     "reso_method" : "pop",
@@ -108,6 +109,8 @@ params = {
     "ana_is_curved_h"  : False,
     "mono_is_optimally_curved_h" : False,
     "ana_is_optimally_curved_h"  : False,
+    "mono_curv_h_formula" : None,
+    "ana_curv_h_formula" : None,
 
     # vertical focusing
     "mono_curv_v" : 0.,
@@ -116,21 +119,23 @@ params = {
     "ana_is_curved_v"  : False,
     "mono_is_optimally_curved_v" : False,
     "ana_is_optimally_curved_v"  : False,
+    "mono_curv_v_formula" : None,
+    "ana_curv_v_formula" : None,
 
     # guide before monochromator
     "use_guide"   : True,
-    "guide_div_h" : 15. *helpers.min2rad,
-    "guide_div_v" : 15. *helpers.min2rad,
+    "guide_div_h" : 15. * helpers.min2rad,
+    "guide_div_v" : 15. * helpers.min2rad,
 
     # horizontal mosaics
-    "mono_mosaic"   : 45. *helpers.min2rad,
-    "sample_mosaic" : 30. *helpers.min2rad,
-    "ana_mosaic"    : 45. *helpers.min2rad,
+    "mono_mosaic"   : 45. * helpers.min2rad,
+    "sample_mosaic" : 30. * helpers.min2rad,
+    "ana_mosaic"    : 45. * helpers.min2rad,
 
     # vertical mosaics
-    "mono_mosaic_v"   : 45. *helpers.min2rad,
-    "sample_mosaic_v" : 30. *helpers.min2rad,
-    "ana_mosaic_v"    : 45. *helpers.min2rad,
+    "mono_mosaic_v"   : 45. * helpers.min2rad,
+    "sample_mosaic_v" : 30. * helpers.min2rad,
+    "ana_mosaic_v"    : 45. * helpers.min2rad,
 
     # calculate R0 factor (not needed if only the ellipses are to be plotted)
     "calc_R0" : True,
@@ -158,27 +163,29 @@ import argparse
 argparser = argparse.ArgumentParser(
     description = "Calculates the resolution ellipsoid of a TAS instrument.")
 
+argparser.add_argument("-i", "--instr", default = None, type = str,
+    help = "set the parameters to a pre-defined instrument (in20fc)")
 argparser.add_argument("--silent", action = "store_true",
     help = "disable output")
 argparser.add_argument("-p", "--plot", action = "store_true",
     help = "plot results")
-argparser.add_argument("-m", "--reso_method", default = params["reso_method"], type = str,
+argparser.add_argument("-m", "--reso_method", default = None, type = str,
     help = "resolution method to use (cn/pop/eck)")
 argparser.add_argument("--kf_vert", action = "store_true",
     help = "scatter vertically in the kf axis (only for Eckold-Sobolev method)")
-argparser.add_argument("--ki", default = params["ki"], type = float,
+argparser.add_argument("--ki", default = None, type = float,
     help = "incoming wavenumber")
-argparser.add_argument("--kf", default = params["kf"], type = float,
+argparser.add_argument("--kf", default = None, type = float,
     help = "outgoing wavenumber")
 argparser.add_argument("-E", default = None, type = float,
     help = "energy transfer")
-argparser.add_argument("-Q", default = params["Q"], type = float,
+argparser.add_argument("-Q", default = None, type = float,
     help = "momentum transfer")
-argparser.add_argument("--mono_sense", default = params["mono_sense"], type = float,
+argparser.add_argument("--mono_sense", default = None, type = float,
     help = "monochromator scattering sense")
-argparser.add_argument("--sample_sense", default = params["sample_sense"], type = float,
+argparser.add_argument("--sample_sense", default = None, type = float,
     help = "sample scattering sense")
-argparser.add_argument("--ana_sense", default = params["ana_sense"], type = float,
+argparser.add_argument("--ana_sense", default = None, type = float,
     help = "analyser scattering sense")
 argparser.add_argument("--mono_curv_v", default = None, type = float,
     help = "monochromator vertical curvature")
@@ -199,17 +206,34 @@ argparser.add_argument("--ana_curv_h_opt", action = "store_true",
 
 parsedargs = argparser.parse_args()
 
+if parsedargs.instr != None:
+    if parsedargs.instr == "in20fc":
+        print("Loaded IN20/Flatcone default parameters.\n")
+        params = params_in20.params_fc
+
 # get parsed command-line arguments
 show_plots = parsedargs.plot
 params["verbose"] = not parsedargs.silent
-params["reso_method"] = parsedargs.reso_method
+
+if parsedargs.reso_method != None:
+    params["reso_method"] = parsedargs.reso_method
+
 params["kf_vert"] = parsedargs.kf_vert
-params["ki"] = parsedargs.ki
-params["kf"] = parsedargs.kf
-params["Q"] = parsedargs.Q
-params["mono_sense"] = parsedargs.mono_sense
-params["sample_sense"] = parsedargs.sample_sense
-params["ana_sense"] = parsedargs.ana_sense
+
+if parsedargs.ki != None:
+    params["ki"] = parsedargs.ki
+if parsedargs.kf != None:
+    params["kf"] = parsedargs.kf
+
+if parsedargs.Q != None:
+    params["Q"] = parsedargs.Q
+
+if parsedargs.mono_sense != None:
+    params["mono_sense"] = parsedargs.mono_sense
+if parsedargs.sample_sense != None:
+    params["sample_sense"] = parsedargs.sample_sense
+if parsedargs.ana_sense != None:
+    params["ana_sense"] = parsedargs.ana_sense
 
 # ensure that the senses are either +1 or -1
 if params["mono_sense"] > 0.:
@@ -278,16 +302,16 @@ import eck
 
 if params["reso_method"] == "eck":
     if params["verbose"]:
-        print("Calculating using Eckold-Sobolev method. Scattering %s in kf." %
+        print("\nCalculating using Eckold-Sobolev method. Scattering %s in kf." %
               ("vertically" if params["kf_vert"] else "horizontally"))
     res = eck.calc(params)
 elif params["reso_method"] == "pop":
     if params["verbose"]:
-        print("Calculating using Popovici method.")
+        print("\nCalculating using Popovici method.")
     res = pop.calc(params, False)
 elif params["reso_method"] == "cn":
     if params["verbose"]:
-        print("Calculating using Cooper-Nathans method.")
+        print("\nsCalculating using Cooper-Nathans method.")
     res = pop.calc(params, True)
 else:
     raise "ResPy: Invalid resolution calculation method selected."
