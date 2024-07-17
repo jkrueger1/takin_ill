@@ -68,7 +68,6 @@
 
 // enables debug output
 //#define __TLIBS2_MAGDYN_DEBUG_OUTPUT__
-//#define __TLIBS2_MAGDYN_DEBUG_PY_OUTPUT__
 
 
 
@@ -302,9 +301,13 @@ public:
 	using ExchangeTerm = t_ExchangeTerm<t_mat, t_vec, t_vec_real, t_size, t_cplx, t_real>;
 	using ExchangeTerms = std::vector<ExchangeTerm>;
 
-	using ExternalField = t_ExternalField<t_vec_real, t_real>;
-	using EnergyAndWeight = t_EnergyAndWeight<t_mat, t_real, t_cplx>;
 	using Variable = t_Variable<t_cplx>;
+	using Variables = std::vector<Variable>;
+
+	using ExternalField = t_ExternalField<t_vec_real, t_real>;
+
+	using EnergyAndWeight = t_EnergyAndWeight<t_mat, t_real, t_cplx>;
+	using EnergiesAndWeights = std::vector<EnergyAndWeight>;
 
 	using t_indices = std::pair<t_size, t_size>;
 	using t_Jmap = std::unordered_map<t_indices, t_mat, boost::hash<t_indices>>;
@@ -407,7 +410,7 @@ public:
 	// --------------------------------------------------------------------
 	// getter
 	// --------------------------------------------------------------------
-	const std::vector<Variable>& GetVariables() const { return m_variables; }
+	const Variables& GetVariables() const { return m_variables; }
 	const MagneticSites& GetMagneticSites() const { return m_sites; }
 	MagneticSites& GetMagneticSites() { return m_sites; }
 	t_size GetMagneticSitesCount() const { return m_sites.size(); }
@@ -893,8 +896,7 @@ public:
 	/**
 	 * check if imaginary weights remain
 	 */
-	bool CheckImagWeights(const t_vec_real& Q_rlu,
-		const std::vector<EnergyAndWeight>& Es_and_S) const
+	bool CheckImagWeights(const t_vec_real& Q_rlu, const EnergiesAndWeights& Es_and_S) const
 	{
 		if(!m_perform_checks)
 			return true;
@@ -1923,7 +1925,7 @@ public:
 	 * get the energies from a hamiltonian
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	std::vector<EnergyAndWeight> CalcEnergiesFromHamiltonian(
+	EnergiesAndWeights CalcEnergiesFromHamiltonian(
 		t_mat _H, const t_vec_real& Qvec,
 		bool only_energies = false) const
 	{
@@ -2008,7 +2010,7 @@ public:
 		}
 
 
-		std::vector<EnergyAndWeight> energies_and_correlations{};
+		EnergiesAndWeights energies_and_correlations{};
 		energies_and_correlations.reserve(evals.size());
 
 		// register energies
@@ -2034,7 +2036,7 @@ public:
 	 * get the dynamical structure factor from a hamiltonian
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	void CalcCorrelationsFromHamiltonian(std::vector<EnergyAndWeight>& energies_and_correlations,
+	void CalcCorrelationsFromHamiltonian(EnergiesAndWeights& energies_and_correlations,
 		const t_mat& H_mat, const t_mat& C_mat, const t_mat& g_sign,
 		const t_vec_real& Qvec, const std::vector<t_vec>& evecs) const
 	{
@@ -2058,7 +2060,7 @@ public:
 		const t_mat L_mat = evec_mat_herm * H_mat * evec_mat;  // energies
 		t_mat E_sqrt = g_sign * L_mat;                         // abs. energies
 		for(t_size i = 0; i < E_sqrt.size1(); ++i)
-			E_sqrt(i, i) = std::sqrt(E_sqrt(i, i));            // sqrt. of abs. energies
+			E_sqrt(i, i) = std::sqrt(E_sqrt(i, i));        // sqrt. of abs. energies
 
 		// re-create energies, to be consistent with the weights
 		energies_and_correlations.clear();
@@ -2098,14 +2100,6 @@ public:
 		std::cout << std::endl;
 #endif
 
-#ifdef __TLIBS2_MAGDYN_DEBUG_PY_OUTPUT__
-		std::cout << "# --------------------------------------------------------------------------------\n";
-		std::cout << "Y = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
-		std::cout << "V = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
-		std::cout << "Z = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
-		std::cout << "W = np.zeros(3*3*4*4, dtype=complex).reshape((4,4,3,3))" << std::endl;
-#endif
-
 		// building the spin correlation functions of equation (47) from (Toth 2015)
 		for(std::uint8_t x_idx = 0; x_idx < 3; ++x_idx)
 		for(std::uint8_t y_idx = 0; y_idx < 3; ++y_idx)
@@ -2139,22 +2133,6 @@ public:
 				V(i, j) = phase * S_mag * u_conj_i[x_idx] * u_conj_j[y_idx];
 				Z(i, j) = phase * S_mag * u_i[x_idx]      * u_j[y_idx];
 				W(i, j) = phase * S_mag * u_conj_i[x_idx] * u_j[y_idx];
-
-#ifdef __TLIBS2_MAGDYN_DEBUG_PY_OUTPUT__
-				std::cout << "Y[" << i << ", " << j << ", "
-					<< x_idx << ", " << y_idx << "] = "
-					<< Y(i, j).real() << " + " << Y(i, j).imag() << "j\n"
-					<< "V[" << i << ", " << j << ", "
-					<< x_idx << ", " << y_idx << "] = "
-					<< V(i, j).real() << " + " << V(i, j).imag() << "j\n"
-					<< "Z[" << i << ", " << j << ", "
-					<< x_idx << ", " << y_idx << "] = "
-					<< Z(i, j).real() << " + " << Z(i, j).imag() << "j\n"
-					<< "W[" << i << ", " << j << ", "
-					<< x_idx << ", " << y_idx << "] = "
-					<< W(i, j).real() << " + " << W(i, j).imag() << "j"
-					<< std::endl;
-#endif
 			} // end of iteration over sites
 
 			// equation (47) from (Toth 2015)
@@ -2178,11 +2156,6 @@ public:
 					M_trafo(i, i) / t_real(2*N);
 			}
 		} // end of coordinate iteration
-
-#ifdef __TLIBS2_MAGDYN_DEBUG_PY_OUTPUT__
-			std::cout << "# --------------------------------------------------------------------------------\n"
-				<< std::endl;
-#endif
 	}
 
 
@@ -2191,7 +2164,7 @@ public:
 	 * applies projectors, form and weight factors to get neutron intensities
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	void CalcIntensities(const t_vec_real& Q_rlu, std::vector<EnergyAndWeight>&
+	void CalcIntensities(const t_vec_real& Q_rlu, EnergiesAndWeights&
 		energies_and_correlations) const
 	{
 		using namespace tl2_ops;
@@ -2252,10 +2225,10 @@ public:
 	/**
 	 * unite degenerate energies and their corresponding eigenstates
 	 */
-	std::vector<EnergyAndWeight> UniteEnergies(const std::vector<EnergyAndWeight>&
+	EnergiesAndWeights UniteEnergies(const EnergiesAndWeights&
 		energies_and_correlations) const
 	{
-		std::vector<EnergyAndWeight> new_energies_and_correlations{};
+		EnergiesAndWeights new_energies_and_correlations{};
 		new_energies_and_correlations.reserve(energies_and_correlations.size());
 
 		for(const auto& curState : energies_and_correlations)
@@ -2298,10 +2271,10 @@ public:
 	 * (also calculates incommensurate contributions and applies weight factors)
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	std::vector<EnergyAndWeight> CalcEnergies(const t_vec_real& Q_rlu,
+	EnergiesAndWeights CalcEnergies(const t_vec_real& Q_rlu,
 		bool only_energies = false) const
 	{
-		std::vector<EnergyAndWeight> EandWs;
+		EnergiesAndWeights EandWs;
 
 		if(m_calc_H)
 		{
@@ -2323,7 +2296,7 @@ public:
 
 			const t_mat rot_incomm_conj = tl2::conj(rot_incomm);
 
-			std::vector<EnergyAndWeight> EandWs_p, EandWs_m;
+			EnergiesAndWeights EandWs_p, EandWs_m;
 
 			if(m_calc_Hp)
 			{
@@ -2372,7 +2345,7 @@ public:
 
 
 
-	std::vector<EnergyAndWeight> CalcEnergies(t_real h, t_real k, t_real l,
+	EnergiesAndWeights CalcEnergies(t_real h, t_real k, t_real l,
 		bool only_energies = false) const
 	{
 		// momentum transfer
@@ -2477,12 +2450,10 @@ public:
 			<< std::setw(m_prec*2) << std::left << "S_zz"
 			<< std::endl;
 
-		using t_EandS = std::vector<EnergyAndWeight>;
-
 		struct t_result
 		{
 			t_real h, k, l;
-			t_EandS E_and_S;
+			EnergiesAndWeights E_and_S;
 		};
 
 		// thread pool and tasks
@@ -2507,7 +2478,7 @@ public:
 				const t_real l = std::lerp(l_start, l_end, t_real(i)/t_real(num_qs-1));
 
 				// get E and S(Q, E) for this Q
-				t_EandS E_and_S = CalcEnergies(h, k, l, false);
+				EnergiesAndWeights E_and_S = CalcEnergies(h, k, l, false);
 
 				t_result result
 				{
@@ -3088,7 +3059,7 @@ private:
 	ExchangeTerms m_exchange_terms{};
 
 	// open variables in expressions
-	std::vector<Variable> m_variables{};
+	Variables m_variables{};
 
 	// external field
 	ExternalField m_field{};
