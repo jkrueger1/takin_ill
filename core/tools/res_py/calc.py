@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 #
 # calculates the instrumental resolution
 #
@@ -34,7 +35,7 @@ import helpers
 np.set_printoptions(floatmode = "fixed",  precision = 4)
 
 
-
+# -----------------------------------------------------------------------------
 #
 # resolution parameters
 # NOTE: not all parameters are used by all calculation backends
@@ -49,87 +50,87 @@ params = {
     # scattering triangle
     "ki" : 1.4,
     "kf" : 1.4,
-    "E" : helpers.get_E(1.4, 1.4),
-    "Q" : 1.777,
+    "E"  : helpers.get_E(1.4, 1.4),
+    "Q"  : 1.777,
 
     # d spacings
     "mono_xtal_d" : 3.355,
-    "ana_xtal_d" : 3.355,
+    "ana_xtal_d"  : 3.355,
 
      # scattering senses
-    "mono_sense" : -1.,
-    "sample_sense" : 1.,
-    "ana_sense" : -1.,
+    "mono_sense"   : -1.,
+    "sample_sense" :  1.,
+    "ana_sense"    : -1.,
     "mirror_Qperp" : False,
 
     # distances
-    "dist_src_mono" : 10. * helpers.cm2A,
+    "dist_src_mono"    :  10. * helpers.cm2A,
     "dist_mono_sample" : 200. * helpers.cm2A,
-    "dist_sample_ana" : 115. * helpers.cm2A,
-    "dist_ana_det" : 85. * helpers.cm2A,
+    "dist_sample_ana"  : 115. * helpers.cm2A,
+    "dist_ana_det"     :  85. * helpers.cm2A,
 
     # shapes
-    "src_shape" : "rectangular",     # "rectangular" or "circular"
+    "src_shape"    : "rectangular",  # "rectangular" or "circular"
     "sample_shape" : "cylindrical",  # "cuboid" or "cylindrical"
-    "det_shape" : "rectangular",     # "rectangular" or "circular"
+    "det_shape"    : "rectangular",  # "rectangular" or "circular"
 
     # component sizes
-    "src_w" : 6. * helpers.cm2A,
-    "src_h" : 12. * helpers.cm2A,
-    "mono_d" : 0.15 * helpers.cm2A,
-    "mono_w" : 12. * helpers.cm2A,
-    "mono_h" : 8. * helpers.cm2A,
-    "sample_d" : 1. * helpers.cm2A,
-    "sample_w" : 1. * helpers.cm2A,
-    "sample_h" : 1. * helpers.cm2A,
-    "ana_d" : 0.3 * helpers.cm2A,
-    "ana_w" : 12. * helpers.cm2A,
-    "ana_h" : 8. * helpers.cm2A,
-    "det_w" : 1.5 * helpers.cm2A,
-    "det_h" : 5. * helpers.cm2A,
+    "src_w"    : 6.   * helpers.cm2A,
+    "src_h"    : 12.  * helpers.cm2A,
+    "mono_d"   : 0.15 * helpers.cm2A,
+    "mono_w"   : 12.  * helpers.cm2A,
+    "mono_h"   : 8.   * helpers.cm2A,
+    "sample_d" : 1.   * helpers.cm2A,
+    "sample_w" : 1.   * helpers.cm2A,
+    "sample_h" : 1.   * helpers.cm2A,
+    "ana_d"    : 0.3  * helpers.cm2A,
+    "ana_w"    : 12.  * helpers.cm2A,
+    "ana_h"    : 8.   * helpers.cm2A,
+    "det_w"    : 1.5  * helpers.cm2A,
+    "det_h"    : 5.   * helpers.cm2A,
 
     # horizontal collimation
-    "coll_h_pre_mono" : 30. * helpers.min2rad,
-    "coll_h_pre_sample" : 30. * helpers.min2rad,
+    "coll_h_pre_mono"    : 30. * helpers.min2rad,
+    "coll_h_pre_sample"  : 30. * helpers.min2rad,
     "coll_h_post_sample" : 30. * helpers.min2rad,
-    "coll_h_post_ana" : 30. * helpers.min2rad,
+    "coll_h_post_ana"    : 30. * helpers.min2rad,
 
     # vertical collimation
-    "coll_v_pre_mono" : 30. * helpers.min2rad,
-    "coll_v_pre_sample" : 30. * helpers.min2rad,
+    "coll_v_pre_mono"    : 30. * helpers.min2rad,
+    "coll_v_pre_sample"  : 30. * helpers.min2rad,
     "coll_v_post_sample" : 30. * helpers.min2rad,
-    "coll_v_post_ana" : 30. * helpers.min2rad,
+    "coll_v_post_ana"    : 30. * helpers.min2rad,
 
     # horizontal focusing
-    "mono_curvh" : 0.,
-    "ana_curvh" : 0.,
+    "mono_curv_h" : 0.,
+    "ana_curv_h"  : 0.,
     "mono_is_curved_h" : False,
-    "ana_is_curved_h" : False,
+    "ana_is_curved_h"  : False,
     "mono_is_optimally_curved_h" : False,
-    "ana_is_optimally_curved_h" : False,
+    "ana_is_optimally_curved_h"  : False,
 
     # vertical focusing
-    "mono_curvv" : 0.,
-    "ana_curvv" : 0.,
+    "mono_curv_v" : 0.,
+    "ana_curv_v"  : 0.,
     "mono_is_curved_v" : False,
-    "ana_is_curved_v" : False,
+    "ana_is_curved_v"  : False,
     "mono_is_optimally_curved_v" : False,
-    "ana_is_optimally_curved_v" : False,
+    "ana_is_optimally_curved_v"  : False,
 
     # guide before monochromator
-    "use_guide" : True,
+    "use_guide"   : True,
     "guide_div_h" : 15. *helpers.min2rad,
     "guide_div_v" : 15. *helpers.min2rad,
 
     # horizontal mosaics
-    "mono_mosaic" : 45. *helpers.min2rad,
+    "mono_mosaic"   : 45. *helpers.min2rad,
     "sample_mosaic" : 30. *helpers.min2rad,
-    "ana_mosaic" : 45. *helpers.min2rad,
+    "ana_mosaic"    : 45. *helpers.min2rad,
 
     # vertical mosaics
-    "mono_mosaic_v" : 45. *helpers.min2rad,
+    "mono_mosaic_v"   : 45. *helpers.min2rad,
     "sample_mosaic_v" : 30. *helpers.min2rad,
-    "ana_mosaic_v" : 45. *helpers.min2rad,
+    "ana_mosaic_v"    : 45. *helpers.min2rad,
 
     # calculate R0 factor (not needed if only the ellipses are to be plotted)
     "calc_R0" : True,
@@ -147,24 +148,58 @@ params = {
     # vertical scattering in kf, keep "False" for normal TAS
     "kf_vert" : False,
 }
+# -----------------------------------------------------------------------------
 
 
-
+# -----------------------------------------------------------------------------
 # get command-line arguments
+# -----------------------------------------------------------------------------
 import argparse
-argparser = argparse.ArgumentParser(description = "Calculates the resolution ellipsoid of a TAS instrument.")
+argparser = argparse.ArgumentParser(
+    description = "Calculates the resolution ellipsoid of a TAS instrument.")
 
-argparser.add_argument("--silent", action="store_true", help="disable output")
-argparser.add_argument("-p", "--plot", action="store_true", help="plot results")
-argparser.add_argument("-m", "--reso_method", default=params["reso_method"], type=str, help="resolution method to use (cn/pop/eck)")
-argparser.add_argument("--kf_vert", action="store_true", help="scatter vertically in the kf axis (only for Eckold-Sobolev method)")
-argparser.add_argument("--ki", default=params["ki"], type=float, help="incoming wavenumber")
-argparser.add_argument("--kf", default=params["kf"], type=float, help="outgoing wavenumber")
-argparser.add_argument("--E", default=None, type=float, help="energy transfer")
-argparser.add_argument("--Q", default=params["Q"], type=float, help="momentum transfer")
+argparser.add_argument("--silent", action = "store_true",
+    help = "disable output")
+argparser.add_argument("-p", "--plot", action = "store_true",
+    help = "plot results")
+argparser.add_argument("-m", "--reso_method", default = params["reso_method"], type = str,
+    help = "resolution method to use (cn/pop/eck)")
+argparser.add_argument("--kf_vert", action = "store_true",
+    help = "scatter vertically in the kf axis (only for Eckold-Sobolev method)")
+argparser.add_argument("--ki", default = params["ki"], type = float,
+    help = "incoming wavenumber")
+argparser.add_argument("--kf", default = params["kf"], type = float,
+    help = "outgoing wavenumber")
+argparser.add_argument("-E", default = None, type = float,
+    help = "energy transfer")
+argparser.add_argument("-Q", default = params["Q"], type = float,
+    help = "momentum transfer")
+argparser.add_argument("--mono_sense", default = params["mono_sense"], type = float,
+    help = "monochromator scattering sense")
+argparser.add_argument("--sample_sense", default = params["sample_sense"], type = float,
+    help = "sample scattering sense")
+argparser.add_argument("--ana_sense", default = params["ana_sense"], type = float,
+    help = "analyser scattering sense")
+argparser.add_argument("--mono_curv_v", default = None, type = float,
+    help = "monochromator vertical curvature")
+argparser.add_argument("--mono_curv_h", default = None, type = float,
+    help = "monochromator horizontal curvature")
+argparser.add_argument("--ana_curv_v", default = None, type = float,
+    help = "analyser vertical curvature")
+argparser.add_argument("--ana_curv_h", default = None, type = float,
+    help = "analyser horizontal curvature")
+argparser.add_argument("--mono_curv_v_opt", action = "store_true",
+    help = "set optimal monochromator vertical curvature")
+argparser.add_argument("--mono_curv_h_opt", action = "store_true",
+    help = "set optimal monochromator horizontal curvature")
+argparser.add_argument("--ana_curv_v_opt", action = "store_true",
+    help = "set optimal analyser vertical curvature")
+argparser.add_argument("--ana_curv_h_opt", action = "store_true",
+    help = "set optimal analyser horizontal curvature")
 
 parsedargs = argparser.parse_args()
 
+# get parsed command-line arguments
 show_plots = parsedargs.plot
 params["verbose"] = not parsedargs.silent
 params["reso_method"] = parsedargs.reso_method
@@ -172,7 +207,25 @@ params["kf_vert"] = parsedargs.kf_vert
 params["ki"] = parsedargs.ki
 params["kf"] = parsedargs.kf
 params["Q"] = parsedargs.Q
+params["mono_sense"] = parsedargs.mono_sense
+params["sample_sense"] = parsedargs.sample_sense
+params["ana_sense"] = parsedargs.ana_sense
 
+# ensure that the senses are either +1 or -1
+if params["mono_sense"] > 0.:
+    params["mono_sense"] = 1.
+else:
+    params["mono_sense"] = -1.
+if params["sample_sense"] > 0.:
+    params["sample_sense"] = 1.
+else:
+    params["sample_sense"] = -1.
+if params["ana_sense"] > 0.:
+    params["ana_sense"] = 1.
+else:
+    params["ana_sense"] = -1.
+
+# set instrument position
 if parsedargs.E != None:
     # calculate ki from E and kf
     params["E"] = parsedargs.E
@@ -181,13 +234,44 @@ else:
     # calculate E from ki and kf
     params["E"] = helpers.get_E(params["ki"], params["kf"])
 
+# set fixed curvatures
+if parsedargs.mono_curv_v != None:
+    params["mono_curv_v"] = parsedargs.mono_curv_v
+    params["mono_is_curved_v"] = True
+if parsedargs.mono_curv_h != None:
+    params["mono_curv_h"] = parsedargs.mono_curv_h
+    params["mono_is_curved_h"] = True
+if parsedargs.ana_curv_v != None:
+    params["ana_curv_v"] = parsedargs.ana_curv_v
+    params["ana_is_curved_v"] = True
+if parsedargs.ana_curv_h != None:
+    params["ana_curv_h"] = parsedargs.ana_curv_h
+    params["ana_is_curved_h"] = True
+
+# set optimal curvatures
+if parsedargs.mono_curv_v_opt:
+    params["mono_is_optimally_curved_v"] = True
+    params["mono_is_curved_v"] = True
+if parsedargs.mono_curv_h_opt:
+    params["mono_is_optimally_curved_h"] = True
+    params["mono_is_curved_h"] = True
+if parsedargs.ana_curv_v_opt:
+    params["ana_is_optimally_curved_v"] = True
+    params["ana_is_curved_v"] = True
+if parsedargs.ana_curv_h_opt:
+    params["ana_is_optimally_curved_h"] = True
+    params["ana_is_curved_h"] = True
+
 
 if params["verbose"]:
     print("ki = %g / A, kf = %g / A, E = %g meV, Q = %g / A." %
         (params["ki"], params["kf"], params["E"], params["Q"]))
+# -----------------------------------------------------------------------------
 
 
+# -----------------------------------------------------------------------------
 # calculate resolution ellipsoid using the given backend
+# -----------------------------------------------------------------------------
 import reso
 import pop
 import eck
@@ -218,12 +302,16 @@ if params["verbose"]:
     print("Resolution matrix:\n%s" % res["reso"])
     print("Resolution vector: %s" % res["reso_v"])
     print("Resolution scalar: %g" % res["reso_s"])
+# -----------------------------------------------------------------------------
 
 
+# -----------------------------------------------------------------------------
 # describe and plot ellipses
+# -----------------------------------------------------------------------------
 ellipses = reso.calc_ellipses(res["reso"], params["verbose"])
 
 
 # plot ellipses
 if show_plots:
     reso.plot_ellipses(ellipses, params["verbose"])
+# -----------------------------------------------------------------------------

@@ -109,16 +109,16 @@ params = {
     "coll_v_post_ana" : 30. * helpers.min2rad,
 
     # horizontal focusing
-    "mono_curvh" : 0.,
-    "ana_curvh" : 0.,
+    "mono_curv_h" : 0.,
+    "ana_curv_h" : 0.,
     "mono_is_curved_h" : False,
     "ana_is_curved_h" : False,
     "mono_is_optimally_curved_h" : False,
     "ana_is_optimally_curved_h" : False,
 
     # vertical focusing
-    "mono_curvv" : 0.,
-    "ana_curvv" : 0.,
+    "mono_curv_v" : 0.,
+    "ana_curv_v" : 0.,
     "mono_is_curved_v" : True,
     "ana_is_curved_v" : False,
     "mono_is_optimally_curved_v" : True,

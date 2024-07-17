@@ -236,43 +236,43 @@ def calc(param, pointlike = False):
 
     # --------------------------------------------------------------------
     # mono/ana focus
-    mono_curvh = param["mono_curvh"]
-    mono_curvv = param["mono_curvv"]
-    ana_curvh = param["ana_curvh"]
-    ana_curvv = param["ana_curvv"]
+    mono_curv_h = param["mono_curv_h"]
+    mono_curv_v = param["mono_curv_v"]
+    ana_curv_h = param["ana_curv_h"]
+    ana_curv_v = param["ana_curv_v"]
 
     if param["mono_is_optimally_curved_h"]:
-        mono_curvh = helpers.foc_curv(param["dist_src_mono"], \
+        mono_curv_h = helpers.foc_curv(param["dist_src_mono"], \
             param["dist_mono_sample"], np.abs(2.*thetam), False)
     if param["mono_is_optimally_curved_v"]:
-        mono_curvv = helpers.foc_curv(param["dist_src_mono"], \
+        mono_curv_v = helpers.foc_curv(param["dist_src_mono"], \
             param["dist_mono_sample"], np.abs(2.*thetam), True)
     if param["ana_is_optimally_curved_h"]:
-        ana_curvh = helpers.foc_curv(param["dist_sample_ana"], \
+        ana_curv_h = helpers.foc_curv(param["dist_sample_ana"], \
             param["dist_ana_det"], np.abs(2.*thetaa), False)
     if param["ana_is_optimally_curved_v"]:
-        ana_curvv = helpers.foc_curv(param["dist_sample_ana"], \
+        ana_curv_v = helpers.foc_curv(param["dist_sample_ana"], \
             param["dist_ana_det"], np.abs(2.*thetaa), True)
 
     if param["verbose"]:
         print("Mono curvature radius: vertical: %g cm, horizontal: %g cm." %
-               (mono_curvv/helpers.cm2A, mono_curvh/helpers.cm2A))
+               (mono_curv_v/helpers.cm2A, mono_curv_h/helpers.cm2A))
         print("Ana curvature radius: vertical: %g cm, horizontal: %g cm.\n" %
-               (ana_curvv/helpers.cm2A, ana_curvh/helpers.cm2A))
+               (ana_curv_v/helpers.cm2A, ana_curv_h/helpers.cm2A))
 
-    inv_mono_curvh = 0.
-    inv_mono_curvv = 0.
-    inv_ana_curvh = 0.
-    inv_ana_curvv = 0.
+    inv_mono_curv_h = 0.
+    inv_mono_curv_v = 0.
+    inv_ana_curv_h = 0.
+    inv_ana_curv_v = 0.
 
     if param["mono_is_curved_h"]:
-        inv_mono_curvh = 1./mono_curvh * param["mono_sense"]
+        inv_mono_curv_h = 1./mono_curv_h * param["mono_sense"]
     if param["mono_is_curved_v"]:
-        inv_mono_curvv = 1./mono_curvv * param["mono_sense"]
+        inv_mono_curv_v = 1./mono_curv_v * param["mono_sense"]
     if param["ana_is_curved_h"]:
-        inv_ana_curvh = 1./ana_curvh * param["ana_sense"]
+        inv_ana_curv_h = 1./ana_curv_h * param["ana_sense"]
     if param["ana_is_curved_v"]:
-        inv_ana_curvv = 1./ana_curvv * param["ana_sense"]
+        inv_ana_curv_v = 1./ana_curv_v * param["ana_sense"]
     # --------------------------------------------------------------------
 
 
@@ -372,9 +372,9 @@ def calc(param, pointlike = False):
     if pointlike:
         # ki and kf trafo matrices
         [Cm, Am, Bm] = get_mono_trafos(param["dist_src_mono"], param["dist_mono_sample"], \
-            thetam, thetas, inv_mono_curvh, inv_mono_curvv, ki, Q_ki, 1., pointlike)
+            thetam, thetas, inv_mono_curv_h, inv_mono_curv_v, ki, Q_ki, 1., pointlike)
         [Ca, Aa, Ba] = get_mono_trafos(param["dist_ana_det"], param["dist_sample_ana"], \
-            thetaa, thetas, inv_ana_curvh, inv_ana_curvv, kf, Q_kf, -1., pointlike)
+            thetaa, thetas, inv_ana_curv_h, inv_ana_curv_v, kf, Q_kf, -1., pointlike)
 
         [C, BA] = combine_mono_ana_trafos(Cm, None, Am, Bm, Ca, None, Aa, Ba, pointlike)
 
@@ -384,9 +384,9 @@ def calc(param, pointlike = False):
     else:
         # ki and kf trafo matrices
         [Dm, Tm, Am, Bm] = get_mono_trafos(param["dist_src_mono"], param["dist_mono_sample"], \
-            thetam, thetas, inv_mono_curvh, inv_mono_curvv, ki, Q_ki, 1., pointlike)
+            thetam, thetas, inv_mono_curv_h, inv_mono_curv_v, ki, Q_ki, 1., pointlike)
         [Da, Ta, Aa, Ba] = get_mono_trafos(param["dist_ana_det"], param["dist_sample_ana"], \
-            thetaa, thetas, inv_ana_curvh, inv_ana_curvv, kf, Q_kf, -1., pointlike)
+            thetaa, thetas, inv_ana_curv_h, inv_ana_curv_v, kf, Q_kf, -1., pointlike)
 
         [D, T, BA] = combine_mono_ana_trafos(Dm, Tm, Am, Bm, Da, Ta, Aa, Ba, pointlike)
 
