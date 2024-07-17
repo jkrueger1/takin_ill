@@ -1,8 +1,8 @@
 #
-# tests the resolution calculation
+# calculates the instrumental resolution
 #
 # @author Tobias Weber <tweber@ill.fr>
-# @date feb-2015, oct-2019
+# @date feb-2015, oct-2019, jul-2024
 # @license GPLv2
 #
 # ----------------------------------------------------------------------------
@@ -30,20 +30,9 @@
 # requires numpy version >= 1.10
 import numpy as np
 import helpers
-import reso
-import pop
-import eck
 
 np.set_printoptions(floatmode = "fixed",  precision = 4)
 
-
-# settings
-ki = 1.4  # 2.5
-kf = 1.4
-Q = 1.777
-
-reso_method = "pop"    # "eck", "pop", or "cn"
-verbose = True
 
 
 #
@@ -52,13 +41,16 @@ verbose = True
 #
 params = {
     # options
-    "verbose" : verbose,
+    "verbose" : False,
+
+    # resolution method, "eck", "pop", or "cn"
+    "reso_method" : "pop",
 
     # scattering triangle
-    "ki" : ki,
-    "kf" : kf,
-    "E" : helpers.get_E(ki, kf),
-    "Q" : Q,
+    "ki" : 1.4,
+    "kf" : 1.4,
+    "E" : helpers.get_E(1.4, 1.4),
+    "Q" : 1.777,
 
     # d spacings
     "mono_xtal_d" : 3.355,
@@ -119,9 +111,9 @@ params = {
     # vertical focusing
     "mono_curvv" : 0.,
     "ana_curvv" : 0.,
-    "mono_is_curved_v" : True,
+    "mono_is_curved_v" : False,
     "ana_is_curved_v" : False,
-    "mono_is_optimally_curved_v" : True,
+    "mono_is_optimally_curved_v" : False,
     "ana_is_optimally_curved_v" : False,
 
     # guide before monochromator
@@ -142,8 +134,7 @@ params = {
     # calculate R0 factor (not needed if only the ellipses are to be plotted)
     "calc_R0" : True,
 
-    # crystal reflectivities
-    # TODO, so far always 1
+    # crystal reflectivities; TODO, so far always 1
     "dmono_refl" : 1.,
     "dana_effic" : 1.,
 
@@ -158,22 +149,71 @@ params = {
 }
 
 
+
+# get command-line arguments
+import argparse
+argparser = argparse.ArgumentParser(description = "Calculates the resolution ellipsoid of a TAS instrument.")
+
+argparser.add_argument("--silent", action="store_true", help="disable output")
+argparser.add_argument("-p", "--plot", action="store_true", help="plot results")
+argparser.add_argument("-m", "--reso_method", default=params["reso_method"], type=str, help="resolution method to use (cn/pop/eck)")
+argparser.add_argument("--kf_vert", action="store_true", help="scatter vertically in the kf axis (only for Eckold-Sobolev method)")
+argparser.add_argument("--ki", default=params["ki"], type=float, help="incoming wavenumber")
+argparser.add_argument("--kf", default=params["kf"], type=float, help="outgoing wavenumber")
+argparser.add_argument("--E", default=None, type=float, help="energy transfer")
+argparser.add_argument("--Q", default=params["Q"], type=float, help="momentum transfer")
+
+parsedargs = argparser.parse_args()
+
+show_plots = parsedargs.plot
+params["verbose"] = not parsedargs.silent
+params["reso_method"] = parsedargs.reso_method
+params["kf_vert"] = parsedargs.kf_vert
+params["ki"] = parsedargs.ki
+params["kf"] = parsedargs.kf
+params["Q"] = parsedargs.Q
+
+if parsedargs.E != None:
+    # calculate ki from E and kf
+    params["E"] = parsedargs.E
+    params["ki"] = helpers.get_ki(params["E"], params["kf"])
+else:
+    # calculate E from ki and kf
+    params["E"] = helpers.get_E(params["ki"], params["kf"])
+
+
+if params["verbose"]:
+    print("ki = %g / A, kf = %g / A, E = %g meV, Q = %g / A." %
+        (params["ki"], params["kf"], params["E"], params["Q"]))
+
+
 # calculate resolution ellipsoid using the given backend
-if reso_method == "eck":
+import reso
+import pop
+import eck
+
+if params["reso_method"] == "eck":
+    if params["verbose"]:
+        print("Calculating using Eckold-Sobolev method. Scattering %s in kf." %
+              ("vertically" if params["kf_vert"] else "horizontally"))
     res = eck.calc(params)
-elif reso_method == "pop":
+elif params["reso_method"] == "pop":
+    if params["verbose"]:
+        print("Calculating using Popovici method.")
     res = pop.calc(params, False)
-elif reso_method == "cn":
+elif params["reso_method"] == "cn":
+    if params["verbose"]:
+        print("Calculating using Cooper-Nathans method.")
     res = pop.calc(params, True)
 else:
     raise "ResPy: Invalid resolution calculation method selected."
-
 
 if not res["ok"]:
     print("RESOLUTION CALCULATION FAILED!")
     exit(-1)
 
-if verbose:
+
+if params["verbose"]:
     print("R0 = %g, Vol = %g" % (res["r0"], res["res_vol"]))
     print("Resolution matrix:\n%s" % res["reso"])
     print("Resolution vector: %s" % res["reso_v"])
@@ -181,5 +221,9 @@ if verbose:
 
 
 # describe and plot ellipses
-ellipses = reso.calc_ellipses(res["reso"], verbose)
-reso.plot_ellipses(ellipses, verbose)
+ellipses = reso.calc_ellipses(res["reso"], params["verbose"])
+
+
+# plot ellipses
+if show_plots:
+    reso.plot_ellipses(ellipses, params["verbose"])

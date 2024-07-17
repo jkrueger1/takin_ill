@@ -11,7 +11,7 @@
 #
 # ----------------------------------------------------------------------------
 # Takin (inelastic neutron scattering software package)
-# Copyright (C) 2017-2022  Tobias WEBER (Institut Laue-Langevin (ILL),
+# Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
 #                          Grenoble, France).
 # Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
 #                          (TUM), Garching, Germany).
@@ -62,6 +62,10 @@ def k2lam(k):
 
 def get_E(ki, kf):
     return ksq2E * (ki**2. - kf**2.)
+
+
+def get_ki(E, kf):
+    return np.sqrt(E/ksq2E + kf*kf)
 
 
 def get_scattering_angle(ki, kf, Q):

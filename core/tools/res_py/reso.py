@@ -12,7 +12,7 @@
 #
 # ----------------------------------------------------------------------------
 # Takin (inelastic neutron scattering software package)
-# Copyright (C) 2017-2022  Tobias WEBER (Institut Laue-Langevin (ILL),
+# Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
 #                          Grenoble, France).
 # Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
 #                          (TUM), Garching, Germany).
@@ -258,9 +258,9 @@ def plot_ellipses(ellis, verbose=True, plot_results=True, file="", dpi=600, elli
     labelQup = "Qup (1/A)"
 
     if use_tex:
-        labelQpara = "$Q_{\parallel}$ (\AA$^{-1}$)"
-        labelQperp = "$Q_{\perp}$ (\AA$^{-1}$)"
-        labelQup = "$Q_{up}$ (\AA$^{-1}$)"
+        labelQpara = "$Q_{\\parallel}$ (\\AA$^{-1}$)"
+        labelQperp = "$Q_{\\perp}$ (\\AA$^{-1}$)"
+        labelQup = "$Q_{up}$ (\\AA$^{-1}$)"
 
 
     # Qpara, E axis
