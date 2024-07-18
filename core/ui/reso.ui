@@ -1113,7 +1113,8 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          
+	<item row="3" column="0">
            <widget class="QLabel" name="label_54">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -1122,12 +1123,12 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Dist. to Mono:</string>
+             <string>H-Dist. to Mono:</string>
             </property>
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QDoubleSpinBox" name="spinDistSrcMono">
+           <widget class="QDoubleSpinBox" name="spinDistHSrcMono">
             <property name="suffix">
              <string> cm</string>
             </property>
@@ -1145,6 +1146,40 @@
             </property>
            </widget>
           </item>
+
+	<item row="4" column="0">
+           <widget class="QLabel" name="label_54b">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>V-Dist. to Mono:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QDoubleSpinBox" name="spinDistVSrcMono">
+            <property name="suffix">
+             <string> cm</string>
+            </property>
+            <property name="decimals">
+             <number>2</number>
+            </property>
+            <property name="maximum">
+             <double>9999.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>2.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+
          </layout>
         </widget>
        </item>
@@ -3739,7 +3774,8 @@
   <tabstop>radioSrcCirc</tabstop>
   <tabstop>spinSrcW</tabstop>
   <tabstop>spinSrcH</tabstop>
-  <tabstop>spinDistSrcMono</tabstop>
+  <tabstop>spinDistHSrcMono</tabstop>
+  <tabstop>spinDistVSrcMono</tabstop>
   <tabstop>groupGuide</tabstop>
   <tabstop>spinGuideDivH</tabstop>
   <tabstop>spinGuideDivV</tabstop>

@@ -208,7 +208,7 @@ void ResoDlg::ReadLastConfig()
 		return;
 
 	bool bOldDontCalc = m_bDontCalc;
-	m_bDontCalc = 1;
+	m_bDontCalc = true;
 
 	for(std::size_t iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
 	{
@@ -365,7 +365,6 @@ void ResoDlg::Save(std::map<std::string, std::string>& mapConf, const std::strin
 	mapConf[strXmlRoot + "meta/timestamp"] = tl::var_to_str<t_real_reso>(tl::epoch<t_real_reso>());
 	mapConf[strXmlRoot + "meta/version"] = TAKIN_VER;
 	mapConf[strXmlRoot + "meta/info"] = "Created with Takin/Reso.";
-	//mapConf[strXmlRoot + "meta/url"] = "https://code.ill.fr/scientific-software/takin";
 	mapConf[strXmlRoot + "meta/url"] = "https://github.com/ILLGrenoble/takin";
 	mapConf[strXmlRoot + "meta/doi"] = "https://dx.doi.org/10.5281/zenodo.4117437";
 	mapConf[strXmlRoot + "meta/module"] = "takin/res";
@@ -382,7 +381,16 @@ void ResoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 	}
 
 	bool bOldDontCalc = m_bDontCalc;
-	m_bDontCalc = 1;
+	m_bDontCalc = true;
+
+	// load src-mono distance value from older version as default before overriding with the new ones
+	boost::optional<t_real_reso> odSpinVal = xml.QueryOpt<t_real_reso>(
+		strXmlRoot + std::string("reso/pop_dist_src_mono"));
+	if(odSpinVal)
+	{
+		spinDistVSrcMono->setValue(*odSpinVal);
+		spinDistHSrcMono->setValue(*odSpinVal);
+	}
 
 	for(std::size_t iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
 	{
@@ -488,7 +496,7 @@ void ResoDlg::RefreshSimCmd()
 	ostrCmd << "EN=" << t_real_reso(m_tasparams.E / meV) << " ";
 	//ostrCmt << "FX=" << (m_tasparams.bki_fix ? "1" : "2") << " ";
 
-	ostrCmd << "L1=" << t_real_reso(m_tasparams.dist_src_mono / meters) << " ";
+	ostrCmd << "L1=" << t_real_reso(m_tasparams.dist_hsrc_mono / meters) << " ";
 	ostrCmd << "L2=" << t_real_reso(m_tasparams.dist_mono_sample / meters) << " ";
 	ostrCmd << "L3=" << t_real_reso(m_tasparams.dist_sample_ana / meters) << " ";
 	ostrCmd << "L4=" << t_real_reso(m_tasparams.dist_ana_det / meters) << " ";

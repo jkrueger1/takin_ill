@@ -65,7 +65,8 @@ params = {
     "mirror_Qperp" : False,
 
     # distances
-    "dist_src_mono"    :  10. * helpers.cm2A,
+    "dist_vsrc_mono"   :  10. * helpers.cm2A,
+    "dist_hsrc_mono"   :  10. * helpers.cm2A,
     "dist_mono_sample" : 200. * helpers.cm2A,
     "dist_sample_ana"  : 115. * helpers.cm2A,
     "dist_ana_det"     :  85. * helpers.cm2A,

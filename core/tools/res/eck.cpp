@@ -107,7 +107,8 @@ t_real mitch_R0(bool norm_to_ki_vol,
 static std::tuple<t_mat, t_vec, t_real, t_real, t_real>
 get_mono_vals(const length& src_w, const length& src_h,
 	const length& mono_w, const length& mono_h,
-	const length& dist_src_mono, const length& dist_mono_sample,
+	const length& dist_vsrc_mono, const length& dist_hsrc_mono,
+	const length& dist_mono_sample,
 	const wavenumber& ki, const angle& thetam,
 	const angle& coll_h_pre_mono, const angle& coll_h_pre_sample,
 	const angle& coll_v_pre_mono, const angle& coll_v_pre_sample,
@@ -129,13 +130,13 @@ get_mono_vals(const length& src_w, const length& src_h,
 		A(0, 0) = t_real(0.5)*sig2fwhm*sig2fwhm / (ki*angs*ki*angs) * t_th_m*t_th_m *
 		(
 /*a*/			+ units::pow<2>(t_real(2)/coll_h_pre_mono) *rads*rads
-/*b*/			+ units::pow<2>(t_real(2)*dist_src_mono/src_w)
+/*b*/			+ units::pow<2>(t_real(2)*dist_hsrc_mono/src_w)
 /*c*/			+ A_t0*A_t0 * rads*rads
 		);
 		A(0, 1) = A(1, 0) = t_real(0.5)*sig2fwhm*sig2fwhm / (ki*angs*ki*angs) * t_th_m *
 		(
 /*w*/			+ t_real(2)*tl::my_units_pow2(t_real(1)/coll_h_pre_mono) *rads*rads
-/*x*/			+ t_real(2)*dist_src_mono*(dist_src_mono-dist_mono_sample)/(src_w*src_w)
+/*x*/			+ t_real(2)*dist_hsrc_mono*(dist_hsrc_mono-dist_mono_sample)/(src_w*src_w)
 /*y*/			+ A_t0*A_t0 * rads*rads
 /*z*/			- A_t0*A_t1 * rads*rads
 		);
@@ -143,7 +144,7 @@ get_mono_vals(const length& src_w, const length& src_h,
 		(
 /*1*/			+ units::pow<2>(t_real(1)/coll_h_pre_mono) *rads*rads
 /*2*/			+ units::pow<2>(t_real(1)/coll_h_pre_sample) *rads*rads
-/*3*/			+ units::pow<2>((dist_src_mono-dist_mono_sample)/src_w)
+/*3*/			+ units::pow<2>((dist_hsrc_mono-dist_mono_sample)/src_w)
 /*4*/			+ units::pow<2>(dist_mono_sample/(mono_w*s_th_m))
 
 /*5*/			+ A_t0*A_t0 * rads*rads
@@ -175,14 +176,14 @@ get_mono_vals(const length& src_w, const length& src_h,
 		Av(0, 1) = Av(1, 0) = t_real(0.5)*sig2fwhm*sig2fwhm / (ki*angs*ki*angs) *
 		(
 /*w*/	//		- units::pow<2>(1./coll_v_pre_mono) *rads*rads		// missing in paper?
-/*~x*/			+ dist_src_mono*dist_mono_sample/(src_h*src_h)
+/*~x*/			+ dist_vsrc_mono*dist_mono_sample/(src_h*src_h)
 /*y*/			- Av_t0*Av_t0 * rads*rads
 /*z*/			+ Av_t0*Av_t1 * rads*rads
 		);
 		Av(1, 1) = t_real(0.5)*sig2fwhm*sig2fwhm / (ki*angs*ki*angs) *
 		(
 /*a*/			+ units::pow<2>(t_real(1)/coll_v_pre_mono) *rads*rads
-/*b*/			+ units::pow<2>(dist_src_mono/src_h)
+/*b*/			+ units::pow<2>(dist_vsrc_mono/src_h)
 /*c*/			+ Av_t0*Av_t0 *rads*rads
 		);
 	}
@@ -194,7 +195,7 @@ get_mono_vals(const length& src_w, const length& src_h,
 
 		B(0) = sig2fwhm*sig2fwhm * pos_y / (ki*angs) * t_th_m *
 		(
-/*i*/			+ t_real(2)*dist_src_mono / (src_w*src_w)
+/*i*/			+ t_real(2)*dist_hsrc_mono / (src_w*src_w)
 /*j*/			+ B_t0 *rads*rads
 		);
 		B(1) = sig2fwhm*sig2fwhm * pos_y / (ki*angs) *
@@ -202,7 +203,7 @@ get_mono_vals(const length& src_w, const length& src_h,
 /*r*/			- dist_mono_sample / (units::pow<2>(mono_w*s_th_m))
 /*s*/			+ B_t0 * rads*rads
 /*t*/			- B_t0 * rads*rads * inv_mono_curvh*dist_mono_sample / s_th_m
-/*u*/			+ (dist_src_mono-dist_mono_sample) / (src_w*src_w)
+/*u*/			+ (dist_hsrc_mono-dist_mono_sample) / (src_w*src_w)
 		);
 	}
 
@@ -220,7 +221,7 @@ get_mono_vals(const length& src_w, const length& src_h,
 		);
 		Bv(1) = sig2fwhm*sig2fwhm * pos_z / (ki*angs) * t_real(-1.) *
 		(
-/*i*/			+ dist_src_mono / (src_h*src_h)         // typo in paper?
+/*i*/			+ dist_vsrc_mono / (src_h*src_h)         // typo in paper?
 /*j*/			+ t_real(0.5)*Bv_t0/s_th_m * rads*rads
 		);
 	}
@@ -278,9 +279,9 @@ ResoResults calc_eck(const EckParams& eck)
 	length ana_curvh = eck.ana_curvh, ana_curvv = eck.ana_curvv;
 
 	if(eck.bMonoIsOptimallyCurvedH)
-		mono_curvh = tl::foc_curv(eck.dist_src_mono, eck.dist_mono_sample, units::abs(t_real(2)*thetam), false);
+		mono_curvh = tl::foc_curv(eck.dist_hsrc_mono, eck.dist_mono_sample, units::abs(t_real(2)*thetam), false);
 	if(eck.bMonoIsOptimallyCurvedV)
-		mono_curvv = tl::foc_curv(eck.dist_src_mono, eck.dist_mono_sample, units::abs(t_real(2)*thetam), true);
+		mono_curvv = tl::foc_curv(eck.dist_vsrc_mono, eck.dist_mono_sample, units::abs(t_real(2)*thetam), true);
 	if(eck.bAnaIsOptimallyCurvedH)
 		ana_curvh = tl::foc_curv(eck.dist_sample_ana, eck.dist_ana_det, units::abs(t_real(2)*thetaa), false);
 	if(eck.bAnaIsOptimallyCurvedV)
@@ -355,7 +356,8 @@ ResoResults calc_eck(const EckParams& eck)
 		= std::async(lpol, get_mono_vals,
 			eck.src_w, eck.src_h,
 			eck.mono_w, eck.mono_h,
-			eck.dist_src_mono, eck.dist_mono_sample,
+			eck.dist_vsrc_mono,  eck.dist_hsrc_mono,
+			eck.dist_mono_sample,
 			eck.ki, thetam,
 			coll_h_pre_mono, eck.coll_h_pre_sample,
 			coll_v_pre_mono, eck.coll_v_pre_sample,
@@ -387,7 +389,8 @@ ResoResults calc_eck(const EckParams& eck)
 		= std::async(lpol, get_mono_vals,
 			eck.det_w, eck.det_h,
 			eck.ana_w, eck.ana_h,
-			eck.dist_ana_det, eck.dist_sample_ana,
+			eck.dist_ana_det, eck.dist_ana_det,
+			eck.dist_sample_ana,
 			eck.kf, -thetaa,
 			eck.coll_h_post_ana, eck.coll_h_post_sample,
 			eck.coll_v_post_ana, eck.coll_v_post_sample,

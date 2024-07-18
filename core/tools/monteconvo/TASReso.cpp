@@ -310,7 +310,9 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 	m_reso.dist_mono_sample = xml.Query<t_real>((strXmlRoot + "reso/pop_dist_mono_sample").c_str(), 0.)*cm;
 	m_reso.dist_sample_ana = xml.Query<t_real>((strXmlRoot + "reso/pop_dist_sample_ana").c_str(), 0.)*cm;
 	m_reso.dist_ana_det = xml.Query<t_real>((strXmlRoot + "reso/pop_dist_ana_det").c_str(), 0.)*cm;
-	m_reso.dist_src_mono = xml.Query<t_real>((strXmlRoot + "reso/pop_dist_src_mono").c_str(), 0.)*cm;
+	m_reso.dist_vsrc_mono = m_reso.dist_hsrc_mono = xml.Query<t_real>((strXmlRoot + "reso/pop_dist_src_mono").c_str(), 0.)*cm;
+	m_reso.dist_vsrc_mono = xml.Query<t_real>((strXmlRoot + "reso/pop_dist_vsrc_mono").c_str(), m_reso.dist_vsrc_mono/cm)*cm;
+	m_reso.dist_hsrc_mono = xml.Query<t_real>((strXmlRoot + "reso/pop_dist_hsrc_mono").c_str(), m_reso.dist_hsrc_mono/cm)*cm;
 
 	m_reso.monitor_w = xml.Query<t_real>((strXmlRoot + "reso/pop_monitor_w").c_str(), 0.)*cm;
 	m_reso.monitor_h = xml.Query<t_real>((strXmlRoot + "reso/pop_monitor_h").c_str(), 0.)*cm;

@@ -71,7 +71,8 @@ params = {
     "mirror_Qperp" : False,
 
     # distances
-    "dist_src_mono" : 10. * helpers.cm2A,
+    "dist_vsrc_mono" : 10. * helpers.cm2A,
+    "dist_hsrc_mono" : 10. * helpers.cm2A,
     "dist_mono_sample" : 200. * helpers.cm2A,
     "dist_sample_ana" : 115. * helpers.cm2A,
     "dist_ana_det" : 85. * helpers.cm2A,
@@ -115,6 +116,9 @@ params = {
     "ana_is_curved_h" : False,
     "mono_is_optimally_curved_h" : False,
     "ana_is_optimally_curved_h" : False,
+    "mono_curv_h_formula" : None,
+    "ana_curv_h_formula" : None,
+
 
     # vertical focusing
     "mono_curv_v" : 0.,
@@ -123,6 +127,8 @@ params = {
     "ana_is_curved_v" : False,
     "mono_is_optimally_curved_v" : True,
     "ana_is_optimally_curved_v" : False,
+    "mono_curv_v_formula" : None,
+    "ana_curv_v_formula" : None,
 
     # guide before monochromator
     "use_guide" : True,

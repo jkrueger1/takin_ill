@@ -283,11 +283,11 @@ ResoResults calc_pop(const PopParams& pop)
 	length ana_curvh = pop.ana_curvh, ana_curvv = pop.ana_curvv;
 
 	if(pop.bMonoIsOptimallyCurvedH)
-		mono_curvh = tl::foc_curv(pop.dist_src_mono, pop.dist_mono_sample, units::abs(t_real(2)*thetam), false);
+		mono_curvh = tl::foc_curv(pop.dist_hsrc_mono, pop.dist_mono_sample, units::abs(t_real(2)*thetam), false);
 	if(pop.bAnaIsOptimallyCurvedH)
 		ana_curvh = tl::foc_curv(pop.dist_sample_ana, pop.dist_ana_det, units::abs(t_real(2)*thetaa), false);
 	if(pop.bMonoIsOptimallyCurvedV)
-		mono_curvv = tl::foc_curv(pop.dist_src_mono, pop.dist_mono_sample, units::abs(t_real(2)*thetam), true);
+		mono_curvv = tl::foc_curv(pop.dist_vsrc_mono, pop.dist_mono_sample, units::abs(t_real(2)*thetam), true);
 	if(pop.bAnaIsOptimallyCurvedV)
 		ana_curvv = tl::foc_curv(pop.dist_sample_ana, pop.dist_ana_det, units::abs(t_real(2)*thetaa), true);
 
@@ -316,7 +316,8 @@ ResoResults calc_pop(const PopParams& pop)
 	// trafo matrices
 	// --------------------------------------------------------------------
 	// T matrix to transform the mosaic cov. matrix, [pop75], Appendix 2
-	auto get_mosaic_trafo = [](t_real dist_src_mono, t_real dist_mono_sample,
+	auto get_mosaic_trafo = [](t_real dist_vsrc_mono, t_real dist_hsrc_mono,
+		t_real dist_mono_sample,
 		t_real s_th_m, t_real c_th_m, t_real s_th_s, t_real c_th_s,
 		t_real inv_curvh, t_real inv_curvv)
 		-> std::array<t_real, 8>
@@ -324,18 +325,18 @@ ResoResults calc_pop(const PopParams& pop)
 		std::array<t_real, 8> arr;
 
 		// horizontal
-		arr[POP_SRC_Y] = t_real(-0.5) / dist_src_mono;
+		arr[POP_SRC_Y] = t_real(-0.5) / dist_hsrc_mono;
 		arr[POP_MONO_X] = c_th_m * (t_real(0.5) / dist_mono_sample
-			- t_real(0.5) / dist_src_mono),
-		arr[POP_MONO_Y] = s_th_m * (t_real(0.5) / dist_src_mono
+			- t_real(0.5) / dist_hsrc_mono),
+		arr[POP_MONO_Y] = s_th_m * (t_real(0.5) / dist_hsrc_mono
 			+ t_real(0.5) / dist_mono_sample)
 			- inv_curvh;
 		arr[POP_SAMPLE_X] = t_real(0.5) * s_th_s / dist_mono_sample;
 		arr[POP_SAMPLE_Y] = t_real(0.5) * c_th_s / dist_mono_sample;
 
 		// vertical
-		arr[POP_SRC_Z] = t_real(-0.5) / (dist_src_mono * s_th_m);
-		arr[POP_MONO_Z] = ( + t_real(0.5) / dist_src_mono
+		arr[POP_SRC_Z] = t_real(-0.5) / (dist_vsrc_mono * s_th_m);
+		arr[POP_MONO_Z] = ( + t_real(0.5) / dist_vsrc_mono
 			+ t_real(0.5) / dist_mono_sample ) / s_th_m
 			- inv_curvv;
 		arr[POP_SAMPLE_Z] = t_real(-0.5) / (dist_mono_sample * s_th_m);
@@ -346,7 +347,8 @@ ResoResults calc_pop(const PopParams& pop)
 	t_mat T_mosaic_trafo = ublas::zero_matrix<t_real>(POP_NUM_COORDS, POP_NUM_POS);
 
 	auto mono_mosaic_trafo = get_mosaic_trafo(
-		pop.dist_src_mono/cm, pop.dist_mono_sample/cm,
+		pop.dist_vsrc_mono/cm, pop.dist_hsrc_mono/cm,
+		pop.dist_mono_sample/cm,
 		s_th_m, c_th_m, s_th_s, c_th_s,
 		inv_mono_curvh*cm, inv_mono_curvv*cm);
 	T_mosaic_trafo(POP_MONO_H, POP_SRC_Y) = mono_mosaic_trafo[POP_SRC_Y]; // sign forgotten in paper
@@ -359,7 +361,8 @@ ResoResults calc_pop(const PopParams& pop)
 	T_mosaic_trafo(POP_MONO_V, POP_SAMPLE_Z) = sign_z*mono_mosaic_trafo[POP_SAMPLE_Z];
 
 	auto ana_mosaic_trafo = get_mosaic_trafo(
-		pop.dist_ana_det/cm, pop.dist_sample_ana/cm,
+		pop.dist_ana_det/cm, pop.dist_ana_det/cm,
+		pop.dist_sample_ana/cm,
 		s_th_a, -c_th_a, s_th_s, -c_th_s,
 		inv_ana_curvh*cm, inv_ana_curvv*cm);
 	T_mosaic_trafo(POP_ANA_H, POP_DET_Y) = -ana_mosaic_trafo[get_ki_pos(POP_DET_Y)];
@@ -372,16 +375,17 @@ ResoResults calc_pop(const PopParams& pop)
 	T_mosaic_trafo(POP_ANA_V, POP_SAMPLE_Z) = sign_z*ana_mosaic_trafo[get_ki_pos(POP_SAMPLE_Z)];
 
 	// D matrix to transform spatial to divergence variables, [pop75], Appendix 2
-	auto get_geo_trafo = [](t_real dist_src_mono, t_real dist_mono_sample,
+	auto get_geo_trafo = [](t_real dist_vsrc_mono, t_real dist_hsrc_mono,
+		t_real dist_mono_sample,
 		t_real s_th_m, t_real c_th_m, t_real s_th_s, t_real c_th_s)
 		-> std::array<t_real, 11>
 	{
 		std::array<t_real, 11> arr;
 
 		// POP_PREMONO_H
-		arr[0] = t_real(-1) / dist_src_mono;    // POP_SRC_Y
-		arr[1] = -c_th_m / dist_src_mono;       // POP_MONO_X
-		arr[2] = s_th_m / dist_src_mono;        // POP_MONO_Y
+		arr[0] = t_real(-1) / dist_hsrc_mono;   // POP_SRC_Y
+		arr[1] = -c_th_m / dist_hsrc_mono;      // POP_MONO_X
+		arr[2] = s_th_m / dist_hsrc_mono;       // POP_MONO_Y
 
 		// POP_PRESAMPLE_H
 		arr[3] = c_th_m / dist_mono_sample;     // POP_MONO_X
@@ -390,8 +394,8 @@ ResoResults calc_pop(const PopParams& pop)
 		arr[6] = c_th_s / dist_mono_sample;     // POP_SAMPLE_Y
 
 		// POP_PREMONO_V
-		arr[7] = t_real(-1) / dist_src_mono;    // POP_SRC_Z
-		arr[8] = t_real(1) / dist_src_mono;     // POP_MONO_Z
+		arr[7] = t_real(-1) / dist_vsrc_mono;   // POP_SRC_Z
+		arr[8] = t_real(1) / dist_vsrc_mono;    // POP_MONO_Z
 
 		// POP_PRESAMPLE_V
 		arr[9] = t_real(-1) / dist_mono_sample; // POP_MONO_Z
@@ -403,7 +407,8 @@ ResoResults calc_pop(const PopParams& pop)
 	t_mat D_geo_div_trafo = ublas::zero_matrix<t_real>(POP_NUM_COMPS, POP_NUM_POS);
 
 	auto mono_geo_trafo = get_geo_trafo(
-		pop.dist_src_mono/cm, pop.dist_mono_sample/cm,
+		pop.dist_vsrc_mono/cm, pop.dist_hsrc_mono/cm,
+		pop.dist_mono_sample/cm,
 		s_th_m, c_th_m, s_th_s, c_th_s);
 	D_geo_div_trafo(POP_PREMONO_H, POP_SRC_Y) = mono_geo_trafo[0];
 	D_geo_div_trafo(POP_PREMONO_H, POP_MONO_X) = mono_geo_trafo[1];
@@ -418,7 +423,8 @@ ResoResults calc_pop(const PopParams& pop)
 	D_geo_div_trafo(POP_PRESAMPLE_V, POP_SAMPLE_Z) = sign_z*mono_geo_trafo[10];
 
 	auto ana_geo_trafo = get_geo_trafo(
-		pop.dist_ana_det/cm, pop.dist_sample_ana/cm,
+		pop.dist_ana_det/cm, pop.dist_ana_det/cm,
+		pop.dist_sample_ana/cm,
 		s_th_a, -c_th_a, s_th_s, -c_th_s);
 	D_geo_div_trafo(POP_POSTANA_H, POP_DET_Y) = -ana_geo_trafo[0];
 	D_geo_div_trafo(POP_POSTANA_H, POP_ANA_X) = ana_geo_trafo[1];
@@ -574,7 +580,8 @@ ResoResults calc_pop(const PopParams& pop)
 	//T_mono_mosaic_trafo.resize(POP_MONO_V+1, POP_MONO_Z+1, true);
 	t_mat T_mono_mosaic_trafo = ublas::zero_matrix<t_real>(POP_MONO_V+1, POP_MONO_Z+1);
 	auto mon_mosaic_trafo = get_mosaic_trafo(
-		pop.dist_src_mono/cm, pop.dist_mono_sample/cm,
+		pop.dist_vsrc_mono/cm, pop.dist_hsrc_mono/cm,
+		pop.dist_mono_sample/cm,
 		s_th_m, c_th_m, s_th_s, c_th_s,
 		inv_mono_curvh*cm, inv_mono_curvv*cm);
 	T_mono_mosaic_trafo(POP_MONO_H, POP_SRC_Y) = mon_mosaic_trafo[POP_SRC_Y]; // sign forgotten in paper
@@ -587,7 +594,8 @@ ResoResults calc_pop(const PopParams& pop)
 	//D_mono_geo_div_trafo.resize(POP_PRESAMPLE_V+1, POP_MONO_Z+1, true);
 	t_mat D_mono_geo_div_trafo = ublas::zero_matrix<t_real>(POP_PRESAMPLE_V+1, POP_MONO_Z+1);
 	auto mon_geo_trafo = get_geo_trafo(
-		pop.dist_src_mono/cm, dist_mono_monitor/cm,
+		pop.dist_vsrc_mono/cm, pop.dist_hsrc_mono/cm,
+		dist_mono_monitor/cm,
 		s_th_m, c_th_m, s_th_s, c_th_s);
 	D_mono_geo_div_trafo(POP_PREMONO_H, POP_SRC_Y) = mon_geo_trafo[0];
 	D_mono_geo_div_trafo(POP_PREMONO_H, POP_MONO_X) = mon_geo_trafo[1];

@@ -47,8 +47,8 @@ struct PopParams : public CNParams
 	tl::t_length_si<t_real_reso> mono_thick;
 	tl::t_length_si<t_real_reso> mono_curvh;
 	tl::t_length_si<t_real_reso> mono_curvv;
-	bool bMonoIsCurvedH=0, bMonoIsCurvedV=0;
-	bool bMonoIsOptimallyCurvedH=0, bMonoIsOptimallyCurvedV=0;
+	bool bMonoIsCurvedH = false, bMonoIsCurvedV = false;
+	bool bMonoIsOptimallyCurvedH = false, bMonoIsOptimallyCurvedV = false;
 	unsigned int mono_numtiles_v, mono_numtiles_h;
 
 	tl::t_length_si<t_real_reso> ana_w;
@@ -56,31 +56,32 @@ struct PopParams : public CNParams
 	tl::t_length_si<t_real_reso> ana_thick;
 	tl::t_length_si<t_real_reso> ana_curvh;
 	tl::t_length_si<t_real_reso> ana_curvv;
-	bool bAnaIsCurvedH=0, bAnaIsCurvedV=0;
-	bool bAnaIsOptimallyCurvedH=0, bAnaIsOptimallyCurvedV=0;
+	bool bAnaIsCurvedH = false, bAnaIsCurvedV = false;
+	bool bAnaIsOptimallyCurvedH = false, bAnaIsOptimallyCurvedV = false;
 	unsigned int ana_numtiles_v, ana_numtiles_h;
 
-	bool bSampleCub=1;
+	bool bSampleCub = true;
 	tl::t_length_si<t_real_reso> sample_w_q;
 	tl::t_length_si<t_real_reso> sample_w_perpq;
 	tl::t_length_si<t_real_reso> sample_h;
 
-	bool bSrcRect=1;
+	bool bSrcRect = true;
 	tl::t_length_si<t_real_reso> src_w;
 	tl::t_length_si<t_real_reso> src_h;
 
-	bool bDetRect=1;
+	bool bDetRect = true;
 	tl::t_length_si<t_real_reso> det_w;
 	tl::t_length_si<t_real_reso> det_h;
 
-	bool bGuide=0;
+	bool bGuide = false;
 	tl::t_angle_si<t_real_reso> guide_div_h;
 	tl::t_angle_si<t_real_reso> guide_div_v;
 
 	tl::t_length_si<t_real_reso> dist_mono_sample;
 	tl::t_length_si<t_real_reso> dist_sample_ana;
 	tl::t_length_si<t_real_reso> dist_ana_det;
-	tl::t_length_si<t_real_reso> dist_src_mono;
+	tl::t_length_si<t_real_reso> dist_vsrc_mono; // vertical virtual source
+	tl::t_length_si<t_real_reso> dist_hsrc_mono; // horizontal virtual source
 
 	tl::t_length_si<t_real_reso> monitor_w;
 	tl::t_length_si<t_real_reso> monitor_h;

@@ -41,7 +41,8 @@ import helpers
 # mono (and ana) resolution calculation
 #
 def get_mono_vals(src_w, src_h, mono_w, mono_h,
-    dist_src_mono, dist_mono_sample,
+    dist_vsrc_mono, dist_hsrc_mono,
+    dist_mono_sample,
     ki, thetam,
     coll_h_pre_mono, coll_h_pre_sample,
     coll_v_pre_mono, coll_v_pre_sample,
@@ -58,16 +59,16 @@ def get_mono_vals(src_w, src_h, mono_w, mono_h,
 
     # typo in paper?
     A[0,0] = 0.5*helpers.sig2fwhm**2. / ki**2. * np.tan(thetam)**2. * \
-        ( (2./coll_h_pre_mono)**2. + (2*dist_src_mono/src_w)**2. + A_t0**2. )
+        ( (2./coll_h_pre_mono)**2. + (2*dist_hsrc_mono/src_w)**2. + A_t0**2. )
 
     A[0,1] = A[1,0] = 0.5*helpers.sig2fwhm**2. / ki**2. * np.tan(thetam) * \
         ( + 2.*(1./coll_h_pre_mono)**2. + \
-            2.*dist_src_mono*(dist_src_mono-dist_mono_sample)/src_w**2. + \
+            2.*dist_hsrc_mono*(dist_hsrc_mono-dist_mono_sample)/src_w**2. + \
             A_t0**2. - A_t0*A_t1 )
 
     A[1,1] = 0.5*helpers.sig2fwhm**2. / ki**2. * \
         ( 1./coll_h_pre_mono**2. + 1./coll_h_pre_sample**2. \
-            + ((dist_src_mono-dist_mono_sample)/src_w)**2. \
+            + ((dist_hsrc_mono-dist_mono_sample)/src_w)**2. \
             + (dist_mono_sample/(mono_w*np.abs(np.sin(thetam))))**2. \
             + (A_t0 - A_t1)**2. )
 
@@ -86,10 +87,10 @@ def get_mono_vals(src_w, src_h, mono_w, mono_h,
         (Av_t0 - Av_t1)**2. )     # typo/missing in paper?
 
     Av[0,1] = Av[1,0] = 0.5*helpers.sig2fwhm**2. / ki**2. * \
-        ( dist_src_mono*dist_mono_sample/src_h**2. - Av_t0**2. + Av_t0*Av_t1 )
+        ( dist_vsrc_mono*dist_mono_sample/src_h**2. - Av_t0**2. + Av_t0*Av_t1 )
 
     Av[1,1] = 0.5*helpers.sig2fwhm**2. / ki**2. * \
-        ( (1./coll_v_pre_mono)**2. + (dist_src_mono/src_h)**2. + Av_t0**2. )
+        ( (1./coll_v_pre_mono)**2. + (dist_vsrc_mono/src_h)**2. + Av_t0**2. )
 
 
     # B vector: equ. 27 in [eck14]
@@ -97,12 +98,12 @@ def get_mono_vals(src_w, src_h, mono_w, mono_h,
     B_t0 = inv_mono_curv_h / (mono_mosaic**2. * np.abs(np.sin(thetam)))
 
     B[0] = helpers.sig2fwhm**2. * pos_y / ki * np.tan(thetam) * \
-        ( 2.*dist_src_mono / src_w**2. + B_t0 )
+        ( 2.*dist_hsrc_mono / src_w**2. + B_t0 )
 
     B[1] = helpers.sig2fwhm**2. * pos_y / ki * \
         ( - dist_mono_sample / (mono_w*np.abs(np.sin(thetam)))**2. + \
         B_t0 - B_t0 * A_tx + \
-        (dist_src_mono-dist_mono_sample) / src_w**2. )
+        (dist_hsrc_mono-dist_mono_sample) / src_w**2. )
 
 
     # Bv vector: equ. 39 in [eck14]
@@ -119,7 +120,7 @@ def get_mono_vals(src_w, src_h, mono_w, mono_h,
 
     # typo in paper?
     Bv[1] = (-1.) * helpers.sig2fwhm**2. * pos_z / ki * \
-        ( dist_src_mono / (src_h*src_h) + 0.5*Bv_t0/np.abs(np.sin(thetam)) )
+        ( dist_vsrc_mono / (src_h*src_h) + 0.5*Bv_t0/np.abs(np.sin(thetam)) )
 
 
     # C scalar: equ. 28 in [eck14]
@@ -176,20 +177,20 @@ def calc(param):
     ana_curv_v = param["ana_curv_v"]
 
     # use a user-defined curvature formula, if given
-    if param["mono_curv_h_formula"]:
+    if param["mono_curv_h_formula"] != None:
         mono_curv_h = param["mono_curv_h_formula"](param) * helpers.cm2A
-    if param["mono_curv_v_formula"]:
+    if param["mono_curv_v_formula"] != None:
         mono_curv_v = param["mono_curv_v_formula"](param) * helpers.cm2A
-    if param["ana_curv_h_formula"]:
+    if param["ana_curv_h_formula"] != None:
         ana_curv_h = param["ana_curv_h_formula"](param) * helpers.cm2A
-    if param["ana_curv_v_formula"]:
+    if param["ana_curv_v_formula"] != None:
         ana_curv_v = param["ana_curv_v_formula"](param) * helpers.cm2A
 
     if param["mono_is_optimally_curved_h"]:
-        mono_curv_h = helpers.foc_curv(param["dist_src_mono"], \
+        mono_curv_h = helpers.foc_curv(param["dist_hsrc_mono"], \
             param["dist_mono_sample"], np.abs(2.*thetam), False)
     if param["mono_is_optimally_curved_v"]:
-        mono_curv_v = helpers.foc_curv(param["dist_src_mono"], \
+        mono_curv_v = helpers.foc_curv(param["dist_vsrc_mono"], \
             param["dist_mono_sample"], np.abs(2.*thetam), True)
     if param["ana_is_optimally_curved_h"]:
         ana_curv_h = helpers.foc_curv(param["dist_sample_ana"], \
@@ -260,7 +261,8 @@ def calc(param):
     [A, B, C, D, dReflM] = get_mono_vals(
         param["src_w"], param["src_h"],
         param["mono_w"], param["mono_h"],
-        param["dist_src_mono"], param["dist_mono_sample"],
+        param["dist_vsrc_mono"], param["dist_hsrc_mono"],
+        param["dist_mono_sample"],
         ki, thetam,
         coll_h_pre_mono, param["coll_h_pre_sample"],
         coll_v_pre_mono, param["coll_v_pre_sample"],
@@ -285,7 +287,8 @@ def calc(param):
     [E, F, G, H, dReflA] = get_mono_vals(
         param["det_w"], param["det_h"],
         param["ana_w"], param["ana_h"],
-        param["dist_ana_det"], param["dist_sample_ana"],
+        param["dist_ana_det"], param["dist_ana_det"],
+        param["dist_sample_ana"],
         kf, -thetaa,
         param["coll_h_post_ana"], param["coll_h_post_sample"],
         param["coll_v_post_ana"], param["coll_v_post_sample"],

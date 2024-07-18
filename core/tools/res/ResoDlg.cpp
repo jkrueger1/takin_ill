@@ -101,7 +101,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		spinSrcW, spinSrcH,
 		spinGuideDivH, spinGuideDivV,
 		spinDetW, spinDetH,
-		spinDistMonoSample, spinDistSampleAna, spinDistAnaDet, spinDistSrcMono,
+		spinDistMonoSample, spinDistSampleAna, spinDistAnaDet,
+		spinDistVSrcMono, spinDistHSrcMono,
 
 		spinMonitorW, spinMonitorH, spinDistMonoMonitor,
 
@@ -132,7 +133,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		"reso/pop_src_w", "reso/pop_src_h",
 		"reso/pop_guide_divh", "reso/pop_guide_divv",
 		"reso/pop_det_w", "reso/pop_det_h",
-		"reso/pop_dist_mono_sample", "reso/pop_dist_sample_ana", "reso/pop_dist_ana_det", "reso/pop_dist_src_mono",
+		"reso/pop_dist_mono_sample", "reso/pop_dist_sample_ana", "reso/pop_dist_ana_det",
+		"reso/pop_dist_vsrc_mono", "reso/pop_dist_hsrc_mono",
 
 		"reso/pop_monitor_w", "reso/pop_monitor_h", "reso/pop_dist_mono_monitor",
 
@@ -473,7 +475,8 @@ void ResoDlg::Calc()
 		cn.dist_mono_sample = t_real_reso(spinDistMonoSample->value()) * cm;
 		cn.dist_sample_ana = t_real_reso(spinDistSampleAna->value()) * cm;
 		cn.dist_ana_det = t_real_reso(spinDistAnaDet->value()) * cm;
-		cn.dist_src_mono = t_real_reso(spinDistSrcMono->value()) * cm;
+		cn.dist_vsrc_mono = t_real_reso(spinDistVSrcMono->value()) * cm;
+		cn.dist_hsrc_mono = t_real_reso(spinDistHSrcMono->value()) * cm;
 
 		cn.monitor_w = t_real_reso(spinMonitorW->value()) * cm;
 		cn.monitor_h = t_real_reso(spinMonitorH->value()) * cm;

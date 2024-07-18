@@ -65,7 +65,8 @@ NUM_KI_COMPS   = 3
 #
 # get matrices for ki axis
 #
-def get_mono_trafos(dist_src_mono, dist_mono_sample,
+def get_mono_trafos(dist_vsrc_mono, dist_hsrc_mono,
+    dist_mono_sample,
     thetam, thetas, inv_curvh, inv_curvv,
     ki, Q_ki, sense = 1., pointlike = False):
 
@@ -91,12 +92,12 @@ def get_mono_trafos(dist_src_mono, dist_mono_sample,
         # D matrix, [pop75], Appendix 2
         D = np.zeros([NUM_MONO_COMPS, NUM_MONO_POS])
 
-        D[IDX_SRC_H, IDX_SRC_Y] = -sense / dist_src_mono
-        D[IDX_SRC_H, IDX_MONO_X] = -c_th_m / dist_src_mono
-        D[IDX_SRC_H, IDX_MONO_Y] = s_th_m / dist_src_mono
+        D[IDX_SRC_H, IDX_SRC_Y] = -sense / dist_hsrc_mono
+        D[IDX_SRC_H, IDX_MONO_X] = -c_th_m / dist_hsrc_mono
+        D[IDX_SRC_H, IDX_MONO_Y] = s_th_m / dist_hsrc_mono
 
-        D[IDX_SRC_V, IDX_SRC_Z] = -sign_z*sense / dist_src_mono
-        D[IDX_SRC_V, IDX_MONO_Z] = sign_z*sense / dist_src_mono
+        D[IDX_SRC_V, IDX_SRC_Z] = -sign_z*sense / dist_vsrc_mono
+        D[IDX_SRC_V, IDX_MONO_Z] = sign_z*sense / dist_vsrc_mono
 
         D[IDX_MONO_H, IDX_MONO_X] = c_th_m / dist_mono_sample
         D[IDX_MONO_H, IDX_MONO_Y] = s_th_m / dist_mono_sample
@@ -243,20 +244,20 @@ def calc(param, pointlike = False):
     ana_curv_v = param["ana_curv_v"]
 
     # use a user-defined curvature formula, if given
-    if param["mono_curv_h_formula"]:
+    if param["mono_curv_h_formula"] != None:
         mono_curv_h = param["mono_curv_h_formula"](param) * helpers.cm2A
-    if param["mono_curv_v_formula"]:
+    if param["mono_curv_v_formula"] != None:
         mono_curv_v = param["mono_curv_v_formula"](param) * helpers.cm2A
-    if param["ana_curv_h_formula"]:
+    if param["ana_curv_h_formula"] != None:
         ana_curv_h = param["ana_curv_h_formula"](param) * helpers.cm2A
-    if param["ana_curv_v_formula"]:
+    if param["ana_curv_v_formula"] != None:
         ana_curv_v = param["ana_curv_v_formula"](param) * helpers.cm2A
 
     if param["mono_is_optimally_curved_h"]:
-        mono_curv_h = helpers.foc_curv(param["dist_src_mono"], \
+        mono_curv_h = helpers.foc_curv(param["dist_hsrc_mono"], \
             param["dist_mono_sample"], np.abs(2.*thetam), False)
     if param["mono_is_optimally_curved_v"]:
-        mono_curv_v = helpers.foc_curv(param["dist_src_mono"], \
+        mono_curv_v = helpers.foc_curv(param["dist_vsrc_mono"], \
             param["dist_mono_sample"], np.abs(2.*thetam), True)
     if param["ana_is_optimally_curved_h"]:
         ana_curv_h = helpers.foc_curv(param["dist_sample_ana"], \
@@ -382,9 +383,11 @@ def calc(param, pointlike = False):
     # -------------------------------------------------------------------------
     if pointlike:
         # ki and kf trafo matrices
-        [Cm, Am, Bm] = get_mono_trafos(param["dist_src_mono"], param["dist_mono_sample"], \
+        [Cm, Am, Bm] = get_mono_trafos(param["dist_vsrc_mono"], param["dist_hsrc_mono"], \
+            param["dist_mono_sample"], \
             thetam, thetas, inv_mono_curv_h, inv_mono_curv_v, ki, Q_ki, 1., pointlike)
-        [Ca, Aa, Ba] = get_mono_trafos(param["dist_ana_det"], param["dist_sample_ana"], \
+        [Ca, Aa, Ba] = get_mono_trafos(param["dist_ana_det"], param["dist_ana_det"], \
+            param["dist_sample_ana"], \
             thetaa, thetas, inv_ana_curv_h, inv_ana_curv_v, kf, Q_kf, -1., pointlike)
 
         [C, BA] = combine_mono_ana_trafos(Cm, None, Am, Bm, Ca, None, Aa, Ba, pointlike)
@@ -394,9 +397,11 @@ def calc(param, pointlike = False):
 
     else:
         # ki and kf trafo matrices
-        [Dm, Tm, Am, Bm] = get_mono_trafos(param["dist_src_mono"], param["dist_mono_sample"], \
+        [Dm, Tm, Am, Bm] = get_mono_trafos(param["dist_vsrc_mono"], param["dist_hsrc_mono"], \
+            param["dist_mono_sample"], \
             thetam, thetas, inv_mono_curv_h, inv_mono_curv_v, ki, Q_ki, 1., pointlike)
-        [Da, Ta, Aa, Ba] = get_mono_trafos(param["dist_ana_det"], param["dist_sample_ana"], \
+        [Da, Ta, Aa, Ba] = get_mono_trafos(param["dist_ana_det"], param["dist_ana_det"], \
+            param["dist_sample_ana"], \
             thetaa, thetas, inv_ana_curv_h, inv_ana_curv_v, kf, Q_kf, -1., pointlike)
 
         [D, T, BA] = combine_mono_ana_trafos(Dm, Tm, Am, Bm, Da, Ta, Aa, Ba, pointlike)
