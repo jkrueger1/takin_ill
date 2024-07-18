@@ -35,7 +35,7 @@ import helpers
 # mono vertical curvature
 #
 def mono_curv_v_formula(params):
-    foclen = helpers.focal_len(params["dist_src_mono"] / helpers.cm2A,
+    foclen = helpers.focal_len(params["dist_vsrc_mono"] / helpers.cm2A,
         params["dist_mono_sample"] / helpers.cm2A)
 
     curv_cm = helpers.foc_curv_2(foclen,
@@ -52,9 +52,8 @@ def mono_curv_v_formula(params):
 # mono horizontal curvature
 #
 def mono_curv_h_formula(params):
-    #foclen = helpers.focal_len(params["dist_sample_ana"] / helpers.cm2A,
-    #    params["dist_ana_det"] / helpers.cm2A)
-    foclen = 113.5
+    foclen = helpers.focal_len(params["dist_hsrc_mono"] / helpers.cm2A,
+        params["dist_mono_sample"] / helpers.cm2A)
 
     curv_cm = helpers.foc_curv_2(foclen,
         params["ki"], params["mono_xtal_d"], False)
@@ -90,6 +89,8 @@ params = {
 
     # distances
     "dist_src_mono"    : 702.5 * helpers.cm2A,
+    "dist_vsrc_mono"   : 702.5 * helpers.cm2A, # distances used
+    "dist_hsrc_mono"   : 227.5 * helpers.cm2A, # for focusing
     "dist_mono_sample" : 227.5 * helpers.cm2A,
     "dist_sample_ana"  : 105.7 * helpers.cm2A,
     "dist_ana_det"     : 23.5  * helpers.cm2A,
@@ -207,6 +208,8 @@ params_fc = {
 
     # distances
     "dist_src_mono"    : 702.5 * helpers.cm2A,
+    "dist_vsrc_mono"   : 702.5 * helpers.cm2A, # distances used
+    "dist_hsrc_mono"   : 227.5 * helpers.cm2A, # for focusing
     "dist_mono_sample" : 227.5 * helpers.cm2A,
     "dist_sample_ana"  : 76.3  * helpers.cm2A,
     "dist_ana_det"     : 23.5  * helpers.cm2A,
