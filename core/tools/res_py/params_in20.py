@@ -1,5 +1,5 @@
 #
-# in20 parameters
+# in20 parameters (without and with flatcone)
 #
 # @author Tobias Weber <tweber@ill.fr>
 # @date jul-2024
@@ -34,7 +34,7 @@ import helpers
 #
 # mono vertical curvature
 #
-def in20fc_mono_curv_v_formula(params):
+def mono_curv_v_formula(params):
     foclen = helpers.focal_len(params["dist_src_mono"] / helpers.cm2A,
         params["dist_mono_sample"] / helpers.cm2A)
 
@@ -51,7 +51,7 @@ def in20fc_mono_curv_v_formula(params):
 #
 # mono horizontal curvature
 #
-def in20fc_mono_curv_h_formula(params):
+def mono_curv_h_formula(params):
     #foclen = helpers.focal_len(params["dist_sample_ana"] / helpers.cm2A,
     #    params["dist_ana_det"] / helpers.cm2A)
     foclen = 113.5
@@ -60,6 +60,123 @@ def in20fc_mono_curv_h_formula(params):
         params["ki"], params["mono_xtal_d"], False)
 
     return curv_cm
+
+
+#
+# pre-defined parameters for IN20
+#
+params = {
+    # options
+    "verbose" : True,
+
+    # resolution method, "eck", "pop", or "cn"
+    "reso_method" : "eck",
+
+    # scattering triangle
+    "ki" : 2.981,
+    "kf" : 2.981,
+    "E"  : helpers.get_E(2.981, 2.981),
+    "Q"  : 2.,
+
+    # d spacings
+    "mono_xtal_d" : 3.355,   # PG
+    "ana_xtal_d"  : 3.355,   # PG
+
+     # scattering senses
+    "mono_sense"   : -1.,
+    "sample_sense" :  1.,
+    "ana_sense"    : -1.,
+    "mirror_Qperp" : False,
+
+    # distances
+    "dist_src_mono"    : 702.5 * helpers.cm2A,
+    "dist_mono_sample" : 227.5 * helpers.cm2A,
+    "dist_sample_ana"  : 105.7 * helpers.cm2A,
+    "dist_ana_det"     : 23.5  * helpers.cm2A,
+
+    # shapes
+    "src_shape"    : "circular",     # "rectangular" or "circular"
+    "sample_shape" : "cylindrical",  # "cuboid" or "cylindrical"
+    "det_shape"    : "circular",     # "rectangular" or "circular"
+
+    # component sizes
+    "src_w"    : 17.  * helpers.cm2A,
+    "src_h"    : 17.  * helpers.cm2A,
+    "mono_d"   : 0.2  * helpers.cm2A,
+    "mono_w"   : 22.5 * helpers.cm2A,
+    "mono_h"   : 20.  * helpers.cm2A,
+    "sample_d" : 1.   * helpers.cm2A,
+    "sample_w" : 1.   * helpers.cm2A,
+    "sample_h" : 1.   * helpers.cm2A,
+    "ana_d"    : 0.2  * helpers.cm2A,
+    "ana_w"    : 23.  * helpers.cm2A,
+    "ana_h"    : 9.6  * helpers.cm2A,
+    "det_w"    : 2.5  * helpers.cm2A,
+    "det_h"    : 2.5  * helpers.cm2A,
+
+    # horizontal collimation
+    "coll_h_pre_mono"    : 9999. * helpers.min2rad,
+    "coll_h_pre_sample"  : 9999. * helpers.min2rad,
+    "coll_h_post_sample" : 9999. * helpers.min2rad,
+    "coll_h_post_ana"    : 9999. * helpers.min2rad,
+
+    # vertical collimation
+    "coll_v_pre_mono"    : 9999. * helpers.min2rad,
+    "coll_v_pre_sample"  : 9999. * helpers.min2rad,
+    "coll_v_post_sample" : 9999. * helpers.min2rad,
+    "coll_v_post_ana"    : 9999. * helpers.min2rad,
+
+    # horizontal focusing
+    "mono_curv_h" : 0.,
+    "ana_curv_h"  : 0.,
+    "mono_is_curved_h" : True,
+    "ana_is_curved_h"  : False,
+    "mono_is_optimally_curved_h" : False,
+    "ana_is_optimally_curved_h"  : False,
+    "mono_curv_h_formula" : mono_curv_h_formula,
+    "ana_curv_h_formula" : None,
+
+    # vertical focusing
+    "mono_curv_v" : 0.,
+    "ana_curv_v"  : 0.,
+    "mono_is_curved_v" : True,
+    "ana_is_curved_v"  : False,
+    "mono_is_optimally_curved_v" : False,
+    "ana_is_optimally_curved_v"  : False,
+    "mono_curv_v_formula" : mono_curv_v_formula,
+    "ana_curv_v_formula" : None,
+
+    # guide before monochromator
+    "use_guide"   : True,
+    "guide_div_h" : 15. * helpers.min2rad,
+    "guide_div_v" : 15. * helpers.min2rad,
+
+    # horizontal mosaics
+    "mono_mosaic"   : 33. * helpers.min2rad,
+    "sample_mosaic" : 30. * helpers.min2rad,
+    "ana_mosaic"    : 33. * helpers.min2rad,
+
+    # vertical mosaics
+    "mono_mosaic_v"   : 33. * helpers.min2rad,
+    "sample_mosaic_v" : 30. * helpers.min2rad,
+    "ana_mosaic_v"    :  1. * helpers.min2rad,
+
+    # calculate R0 factor (not needed if only the ellipses are to be plotted)
+    "calc_R0" : True,
+
+    # crystal reflectivities; TODO, so far always 1
+    "dmono_refl" : 1.,
+    "dana_effic" : 1.,
+
+    # off-center scattering
+    # WARNING: while this is calculated, it is not yet considered in the ellipse plots
+    "pos_x" : 0. * helpers.cm2A,
+    "pos_y" : 0. * helpers.cm2A,
+    "pos_z" : 0. * helpers.cm2A,
+
+    # vertical scattering in kf, keep "False" for normal TAS
+    "kf_vert" : False,
+}
 
 
 #
@@ -133,7 +250,7 @@ params_fc = {
     "ana_is_curved_h"  : False,
     "mono_is_optimally_curved_h" : False,
     "ana_is_optimally_curved_h"  : False,
-    "mono_curv_h_formula" : in20fc_mono_curv_h_formula,
+    "mono_curv_h_formula" : mono_curv_h_formula,
     "ana_curv_h_formula" : None,
 
     # vertical focusing
@@ -143,7 +260,7 @@ params_fc = {
     "ana_is_curved_v"  : False,
     "mono_is_optimally_curved_v" : False,
     "ana_is_optimally_curved_v"  : False,
-    "mono_curv_v_formula" : in20fc_mono_curv_v_formula,
+    "mono_curv_v_formula" : mono_curv_v_formula,
     "ana_curv_v_formula" : None,
 
     # guide before monochromator

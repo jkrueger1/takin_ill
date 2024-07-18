@@ -164,7 +164,7 @@ argparser = argparse.ArgumentParser(
     description = "Calculates the resolution ellipsoid of a TAS instrument.")
 
 argparser.add_argument("-i", "--instr", default = None, type = str,
-    help = "set the parameters to a pre-defined instrument (in20fc)")
+    help = "set the parameters to a pre-defined instrument (in20/in20fc)")
 argparser.add_argument("--silent", action = "store_true",
     help = "disable output")
 argparser.add_argument("-p", "--plot", action = "store_true",
@@ -207,7 +207,10 @@ argparser.add_argument("--ana_curv_h_opt", action = "store_true",
 parsedargs = argparser.parse_args()
 
 if parsedargs.instr != None:
-    if parsedargs.instr == "in20fc":
+    if parsedargs.instr == "in20":
+        print("Loaded IN20 default parameters.\n")
+        params = params_in20.params
+    elif parsedargs.instr == "in20fc":
         print("Loaded IN20/Flatcone default parameters.\n")
         params = params_in20.params_fc
 
