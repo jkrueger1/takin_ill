@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # calculate covariance from neutron events
 # @author Tobias Weber <tweber@ill.fr>

@@ -178,9 +178,9 @@ argparser.add_argument("--ki", default = None, type = float,
     help = "incoming wavenumber")
 argparser.add_argument("--kf", default = None, type = float,
     help = "outgoing wavenumber")
-argparser.add_argument("-E", default = None, type = float,
+argparser.add_argument("-E", "--E", default = None, type = float,
     help = "energy transfer")
-argparser.add_argument("-Q", default = None, type = float,
+argparser.add_argument("-Q", "--Q", default = None, type = float,
     help = "momentum transfer")
 argparser.add_argument("--mono_sense", default = None, type = float,
     help = "monochromator scattering sense")

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # calculates TAS angles from rlu
 # @author Tobias Weber <tweber@ill.fr>
@@ -17,6 +17,11 @@ except ImportError:
 
 use_scipy = False
 
+
+
+# -----------------------------------------------------------------------------
+# library functions
+# -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
 # rotate a vector around an axis using Rodrigues' formula
@@ -267,8 +272,6 @@ def driving_time(deltas, rads_per_times):
 	return np.max(times)
 
 # -----------------------------------------------------------------------------
-
-
 
 
 
@@ -1082,10 +1085,99 @@ class TasGUI:
 
 
 
+
 # -----------------------------------------------------------------------------
-#
 # main
-#
+# -----------------------------------------------------------------------------
+def run_tas():
+	run_gui = False
+	argv = None
+
+	# parse command line
+	try:
+		import argparse as arg
+
+		args = arg.ArgumentParser(description="Calculates TAS angles.")
+		args.add_argument("--cli", action="store_true",
+			help = "run the command-line interface")
+		args.add_argument("--ax", default=1., type=float, nargs="?",
+			help = "x component of first orientation vector in rlu")
+		args.add_argument("--ay", default=0., type=float, nargs="?",
+			help = "y component of first orientation vector in rlu")
+		args.add_argument("--az", default=0., type=float, nargs="?",
+			help = "z component of first orientation vector in rlu")
+		args.add_argument("--bx", default=0., type=float, nargs="?",
+			help = "x component of second orientation vector in rlu")
+		args.add_argument("--by", default=1., type=float, nargs="?",
+			help = "y component of second orientation vector in rlu")
+		args.add_argument("--bz", default=0., type=float, nargs="?",
+			help = "z component of second orientation vector in rlu")
+		args.add_argument("--a", "-a", default=5., type=float, nargs="?",
+			help = "lattice constant a in A")
+		args.add_argument("--b", "-b", default=5., type=float, nargs="?",
+			help = "lattice constant b in A")
+		args.add_argument("--c", "-c", default=5., type=float, nargs="?",
+			help = "lattice constant c in A")
+		args.add_argument("--alpha", default=90., type=float, nargs="?",
+			help = "lattice angle alpha in deg")
+		args.add_argument("--beta", default=90., type=float, nargs="?",
+			help = "lattice angle beta in deg")
+		args.add_argument("--gamma", default=90., type=float, nargs="?",
+			help = "lattice angle gamma in deg")
+		args.add_argument("--Qh", default=1., type=float, nargs="?",
+			help = "Q_h momentum transfer component in rlu")
+		args.add_argument("--Qk", default=0., type=float, nargs="?",
+			help = "Q_k momentum transfer component in rlu")
+		args.add_argument("--Ql", default=0., type=float, nargs="?",
+			help = "Q_l momentum transfer component in rlu")
+		args.add_argument("--E", "-E", default=0., type=float, nargs="?",
+			help = "energy transfer in meV")
+		args.add_argument("--kf", default=1.4, type=float, nargs="?",
+			help = "final wavevector in 1/A")
+		args.add_argument("--dm", default=3.355, type=float, nargs="?",
+			help = "monochromator d spacing in A")
+		args.add_argument("--da", default=3.355, type=float, nargs="?",
+			help = "analyser d spacing in A")
+
+
+		argv = args.parse_args()
+		run_gui = not argv.cli
+	except ImportError:
+		run_gui = True
+
+	if run_gui:
+		# run gui
+		gui = TasGUI()
+	elif argv != None:
+		# run cli
+		lattice = np.array([ argv.a, argv.b, argv.c ])
+		angles = np.array([ argv.alpha, argv.beta, argv.gamma ]) / 180.*np.pi
+		B = get_B(lattice, angles)
+
+		Q_rlu = np.array([ argv.Qh, argv.Qk, argv.Ql ])
+		Q_lab = np.dot(B, Q_rlu)
+
+		print("Crystal B matrix:\n%s\n" % B)
+		print("Q = %g / A" % la.norm(Q_lab))
+
+		orient1_rlu = np.array([ argv.ax, argv.ay, argv.az ])
+		orient2_rlu = np.array([ argv.bx, argv.by, argv.bz ])
+		orient3_rlu = cross(orient1_rlu, orient2_rlu, B)
+
+		E = argv.E
+		kf = argv.kf
+		ki = get_ki(kf, E)
+		print("ki = %g / A, kf = %g / A, E = %g meV" % (ki, kf, E))
+		print()
+
+		[a1, a2] = get_a1a2(ki, argv.dm)
+		[a5, a6] = get_a1a2(kf, argv.da)
+		[a3, a4, dist_Q_plane] = get_a3a4(ki, kf, Q_rlu, orient1_rlu, orient3_rlu, B)
+		print("Monochromator theta = %g deg, 2theta = %g deg" %(a1 / np.pi * 180., a2 / np.pi * 180.))
+		print("Sample        theta = %g deg, 2theta = %g deg" %(a3 / np.pi * 180., a4 / np.pi * 180.))
+		print("Analyser      theta = %g deg, 2theta = %g deg" %(a5 / np.pi * 180., a6 / np.pi * 180.))
+
+
 if __name__ == "__main__":
-	gui = TasGUI()
+	run_tas()
 # -----------------------------------------------------------------------------
