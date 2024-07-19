@@ -138,7 +138,7 @@ def descr_ellipse(quadric):
     if len(quadric) == 2:
         angles = np.array([ np.arctan2(evecs[1][0], evecs[0][0]) ])
 
-    return [fwhms, angles/np.pi*180., evecs]
+    return [fwhms, angles/np.pi*180., evecs, evals]
 
 
 #
@@ -146,9 +146,12 @@ def descr_ellipse(quadric):
 #
 def calc_ellipses(Qres_Q, verbose=True):
     # 4d ellipsoid
-    [fwhms, angles, rot] = descr_ellipse(Qres_Q)
+    [fwhms, angles, rot, evals] = descr_ellipse(Qres_Q)
 
     if verbose:
+        print()
+        print("Eigenvalues: %s" % evals)
+        print("Eigensystem:\n%s" % rot)
         print()
         print("Coherent-elastic fwhms: %s" % (calc_coh_fwhms(Qres_Q)))
         print("Incoherent-elastic fwhms: %s" % (calc_incoh_fwhms(Qres_Q)))
@@ -160,25 +163,25 @@ def calc_ellipses(Qres_Q, verbose=True):
         print()
     Qres_QxE = np.delete(np.delete(Qres_Q, 2, axis=0), 2, axis=1)
     Qres_QxE = np.delete(np.delete(Qres_QxE, 1, axis=0), 1, axis=1)
-    [fwhms_QxE, angles_QxE, rot_QxE] = descr_ellipse(Qres_QxE)
+    [fwhms_QxE, angles_QxE, rot_QxE, evals_QxE] = descr_ellipse(Qres_QxE)
     if verbose:
         print("2d Qx,E slice fwhms and slope angle: %s, %.4f" % (fwhms_QxE, angles_QxE[0]))
 
     Qres_QyE = np.delete(np.delete(Qres_Q, 2, axis=0), 2, axis=1)
     Qres_QyE = np.delete(np.delete(Qres_QyE, 0, axis=0), 0, axis=1)
-    [fwhms_QyE, angles_QyE, rot_QyE] = descr_ellipse(Qres_QyE)
+    [fwhms_QyE, angles_QyE, rot_QyE, evals_QyE] = descr_ellipse(Qres_QyE)
     if verbose:
         print("2d Qy,E slice fwhms and slope angle: %s, %.4f" % (fwhms_QyE, angles_QyE[0]))
 
     Qres_QzE = np.delete(np.delete(Qres_Q, 1, axis=0), 1, axis=1)
     Qres_QzE = np.delete(np.delete(Qres_QzE, 0, axis=0), 0, axis=1)
-    [fwhms_QzE, angles_QzE, rot_QzE] = descr_ellipse(Qres_QzE)
+    [fwhms_QzE, angles_QzE, rot_QzE, evals_QzE] = descr_ellipse(Qres_QzE)
     if verbose:
         print("2d Qz,E slice fwhms and slope angle: %s, %.4f" % (fwhms_QzE, angles_QzE[0]))
 
     Qres_QxQy = np.delete(np.delete(Qres_Q, 3, axis=0), 3, axis=1)
     Qres_QxQy = np.delete(np.delete(Qres_QxQy, 2, axis=0), 2, axis=1)
-    [fwhms_QxQy, angles_QxQy, rot_QxQy] = descr_ellipse(Qres_QxQy)
+    [fwhms_QxQy, angles_QxQy, rot_QxQy, evals_QxQy] = descr_ellipse(Qres_QxQy)
     if verbose:
         print("2d Qx,Qy slice fwhms and slope angle: %s, %.4f" % (fwhms_QxQy, angles_QxQy[0]))
 
@@ -188,25 +191,25 @@ def calc_ellipses(Qres_Q, verbose=True):
         print()
     Qres_QxE_proj = np.delete(np.delete(Qres_Q, 2, axis=0), 2, axis=1)
     Qres_QxE_proj = quadric_proj(Qres_QxE_proj, 1)
-    [fwhms_QxE_proj, angles_QxE_proj, rot_QxE_proj] = descr_ellipse(Qres_QxE_proj)
+    [fwhms_QxE_proj, angles_QxE_proj, rot_QxE_proj, evals_QxE_proj] = descr_ellipse(Qres_QxE_proj)
     if verbose:
         print("2d Qx,E projection fwhms and slope angle: %s, %.4f" % (fwhms_QxE_proj, angles_QxE_proj[0]))
 
     Qres_QyE_proj = np.delete(np.delete(Qres_Q, 2, axis=0), 2, axis=1)
     Qres_QyE_proj = quadric_proj(Qres_QyE_proj, 0)
-    [fwhms_QyE_proj, angles_QyE_proj, rot_QyE_proj] = descr_ellipse(Qres_QyE_proj)
+    [fwhms_QyE_proj, angles_QyE_proj, rot_QyE_proj, evals_QyE_proj] = descr_ellipse(Qres_QyE_proj)
     if verbose:
         print("2d Qy,E projection fwhms and slope angle: %s, %.4f" % (fwhms_QyE_proj, angles_QyE_proj[0]))
 
     Qres_QzE_proj = np.delete(np.delete(Qres_Q, 1, axis=0), 1, axis=1)
     Qres_QzE_proj = quadric_proj(Qres_QzE_proj, 0)
-    [fwhms_QzE_proj, angles_QzE_proj, rot_QzE_proj] = descr_ellipse(Qres_QzE_proj)
+    [fwhms_QzE_proj, angles_QzE_proj, rot_QzE_proj, evals_QzE_proj] = descr_ellipse(Qres_QzE_proj)
     if verbose:
         print("2d Qz,E projection fwhms and slope angle: %s, %.4f" % (fwhms_QzE_proj, angles_QzE_proj[0]))
 
     Qres_QxQy_proj = quadric_proj(Qres_Q, 3)
     Qres_QxQy_proj = np.delete(np.delete(Qres_QxQy_proj, 2, axis=0), 2, axis=1)
-    [fwhms_QxQy_proj, angles_QxQy_proj, rot_QxQy_proj] = descr_ellipse(Qres_QxQy_proj)
+    [fwhms_QxQy_proj, angles_QxQy_proj, rot_QxQy_proj, evals_QxQy_proj] = descr_ellipse(Qres_QxQy_proj)
     if verbose:
         print("2d Qx,Qy projection fwhms and slope angle: %s, %.4f" % (fwhms_QxQy_proj, angles_QxQy_proj[0]))
 
