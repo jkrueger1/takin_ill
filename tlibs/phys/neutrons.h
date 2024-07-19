@@ -994,6 +994,25 @@ t_length<Sys, Y> foc_curv(const t_length<Sys, Y>& lenBefore, const t_length<Sys,
 }
 
 
+/**
+ * optimal mono/ana curvature,
+ * @see e.g. (Shirane 2002) p. 66
+ * @see e.g. McStas: https://github.com/McStasMcXtrace/McCode/blob/master/mcstas-comps/optics/Monochromator_curved.comp
+ * @see e.g. Nicos: https://forge.frm2.tum.de/cgit/cgit.cgi/frm2/nicos/nicos.git/tree/nicos/devices/tas/mono.py
+ * @see e.g. [eck14], equs. 59-61
+ */
+template<class Sys, class Y=double>
+t_length<Sys, Y> foc_curv(const t_length<Sys, Y>& lenBefore, const t_length<Sys, Y>& lenAfter,
+	const t_wavenumber<Sys,Y>& k, const t_length<Sys,Y>& d, bool bVert)
+{
+	const t_length<Sys, Y> f = focal_len<Sys, Y>(lenBefore, lenAfter);
+	const Y s = Y(units::abs(get_pi<Y>() / d / k));
+
+	const t_length<Sys, Y> curv = bVert ? Y(2)*f*s : Y(2)*f/s;
+	return curv;
+}
+
+
 // --------------------------------------------------------------------------------
 
 

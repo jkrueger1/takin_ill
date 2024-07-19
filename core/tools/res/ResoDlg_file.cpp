@@ -289,6 +289,15 @@ void ResoDlg::ReadLastConfig()
 
 void ResoDlg::Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
 {
+	{
+		// save horizontal src-mono distance as default value for older version
+		std::ostringstream ostrVal;
+		ostrVal.precision(g_iPrec);
+		ostrVal << std::scientific << spinDistHSrcMono->value();
+
+		mapConf[strXmlRoot + std::string("reso/pop_dist_src_mono")] = ostrVal.str();
+	}
+
 	for(std::size_t iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
 	{
 		std::ostringstream ostrVal;

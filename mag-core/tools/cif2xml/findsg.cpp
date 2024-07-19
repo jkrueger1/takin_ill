@@ -45,18 +45,13 @@ constexpr t_real g_eps = 1e-6;
  */
 int main(int argc, char** argv)
 {
+	using namespace tl2_ops;
 	std::cout << "Input atomic positions, 'e' or ENTER to end." << std::endl;
 
 	std::vector<t_vec> vecFinal;
-	/*{{ // test data
-		tl2::create<t_vec>({ 0.1,  0.1,  0.1}),
-		tl2::create<t_vec>({ 0.4, -0.1, -0.4}),
-		tl2::create<t_vec>({-0.1, -0.4,  0.4}),
-		tl2::create<t_vec>({-0.4,  0.4, -0.1}),
-	}}*/;
-
 	std::size_t atomnr = 1;
-	while(1)
+
+	while(true)
 	{
 		std::string strpos;
 		std::cout << "Position " << atomnr++ << ": ";

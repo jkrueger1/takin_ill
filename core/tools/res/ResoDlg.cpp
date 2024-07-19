@@ -334,7 +334,7 @@ void ResoDlg::Calc()
 
 		ResoResults &res = m_res;
 
-		// CN
+		// CN parameters
 		cn.mono_d = t_real_reso(spinMonod->value()) * angs;
 		cn.ana_d = t_real_reso(spinAnad->value()) * angs;
 		cn.mono_mosaic = t_real_reso(tl::m2r(spinMonoMosaic->value())) * rads;
@@ -412,7 +412,7 @@ void ResoDlg::Calc()
 		//cn.E = tl::get_energy_transfer(cn.ki, cn.kf);*/
 
 
-		// Pop
+		// Pop parameters
 		cn.mono_w = t_real_reso(spinMonoW->value()) * cm;
 		cn.mono_h = t_real_reso(spinMonoH->value()) * cm;
 		cn.mono_thick = t_real_reso(spinMonoThick->value()) * cm;
@@ -496,7 +496,7 @@ void ResoDlg::Calc()
 		cn.ana_numtiles_v = 1;
 
 
-		// TOF
+		// TOF parameters
 		tof.len_pulse_mono = t_real_reso(spinDistTofPulseMono->value()) * cm;
 		tof.len_mono_sample = t_real_reso(spinDistTofMonoSample->value()) * cm;
 		tof.len_sample_det = t_real_reso(spinDistTofSampleDet->value()) * cm;
@@ -521,13 +521,33 @@ void ResoDlg::Calc()
 		tof.det_shape = radioTofDetSph->isChecked() ? TofDetShape::SPH : TofDetShape::CYL;
 
 
-		// simple
+		// parameters for simple resolution model
 		simple.sig_ki = t_real_reso(spinSigKi->value()) / angs;
 		simple.sig_kf = t_real_reso(spinSigKf->value()) / angs;
 		simple.sig_ki_perp = t_real_reso(spinSigKi_perp->value()) / angs;
 		simple.sig_kf_perp = t_real_reso(spinSigKf_perp->value()) / angs;
 		simple.sig_ki_z = t_real_reso(spinSigKi_z->value()) / angs;
 		simple.sig_kf_z = t_real_reso(spinSigKf_z->value()) / angs;
+
+
+		// pre-calculate optimal curvature parameters to show in the gui
+		tl::t_length_si<t_real_reso> mono_curvh =
+			tl::foc_curv(cn.dist_hsrc_mono, cn.dist_mono_sample, cn.ki, cn.mono_d, false);
+		tl::t_length_si<t_real_reso> mono_curvv =
+			tl::foc_curv(cn.dist_vsrc_mono, cn.dist_mono_sample, cn.ki, cn.mono_d, true);
+		tl::t_length_si<t_real_reso> ana_curvh =
+			tl::foc_curv(cn.dist_sample_ana, cn.dist_ana_det, cn.kf, cn.ana_d, false);
+		tl::t_length_si<t_real_reso> ana_curvv =
+			tl::foc_curv(cn.dist_sample_ana, cn.dist_ana_det, cn.kf, cn.ana_d, true);
+
+		std::stringstream ostrCurv;
+		ostrCurv.precision(g_iPrecGfx);
+		ostrCurv << "Opt. curvatures: "
+			<< "Mono.-H.: " << t_real_reso(mono_curvh / cm) << " cm, "
+			<< "Mono.-V.: " << t_real_reso(mono_curvv / cm) << " cm, "
+			<< "Ana.-H.: " << t_real_reso(ana_curvh / cm) << " cm, "
+			<< "Ana.-V.: " << t_real_reso(ana_curvv / cm) << " cm.";
+		labelTASGeoInfo->setText(ostrCurv.str().c_str());
 
 
 		// calculation
