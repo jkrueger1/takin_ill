@@ -96,8 +96,11 @@ BZDlg::BZDlg(QWidget* pParent) : QDialog{pParent},
 			new QTableWidgetItem{"Symmetry Operation"});
 		m_symops->setHorizontalHeaderItem(COL_PROP,
 			new QTableWidgetItem{"Properties"});
+		m_symops->setHorizontalHeaderItem(COL_DET,
+			new QTableWidgetItem{"Det."});
 		m_symops->setColumnWidth(COL_OP, 275);
 		m_symops->setColumnWidth(COL_PROP, 100);
+		m_symops->setColumnWidth(COL_DET, 75);
 
 		QToolButton *btnAdd = new QToolButton(symopspanel);
 		QToolButton *btnDel = new QToolButton(symopspanel);

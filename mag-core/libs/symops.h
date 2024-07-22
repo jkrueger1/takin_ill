@@ -131,10 +131,15 @@ t_mat str_to_op(const std::string& str)
 /**
  * get the properties of a symmetry operation
  */
-template<class t_mat, class t_real = typename t_mat::value_type>
+template<class t_mat, class t_vec, class t_real = typename t_mat::value_type>
 std::string get_op_properties(const t_mat& op, t_real eps = 1e-6)
 {
 	using namespace tl2_ops;
+
+	const t_mat rot = tl2::submat<t_mat>(op, 3, 3);
+	const t_vec trans = tl2::subvec<t_vec>(tl2::col<t_mat, t_vec>(op, 3), 3);
+	const t_mat sym = tl2::unit<t_mat>(3) - rot;
+
 	std::string prop;
 
 	if(tl2::is_unit<t_mat>(op, eps))
@@ -151,11 +156,21 @@ std::string get_op_properties(const t_mat& op, t_real eps = 1e-6)
 		prop += "centring";
 	}
 
-	if(tl2::det<t_mat>(tl2::submat<t_mat>(op, 3, 3)) < 0.)
+	if(tl2::det<t_mat>(rot) < 0.)
 	{
 		if(prop.size())
 			prop += ", ";
 		prop += "reflecting";
+	}
+
+	// check if the translation cannot be removed by a trafo
+	// @see https://sunwoo-kim.github.io/en/projects/nonsymmorphic/, p. 6
+	if(!tl2::equals_0<t_vec>(trans, eps) &&
+		tl2::equals_0<t_real>(tl2::det<t_mat>(sym), eps))
+	{
+		if(prop.size())
+			prop += ", ";
+		prop += "non-symmorphic";
 	}
 
 	return prop;

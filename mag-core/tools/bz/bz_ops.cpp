@@ -40,6 +40,8 @@
 #include "tlibs2/libs/phys.h"
 #include "tlibs2/libs/algos.h"
 #include "tlibs2/libs/qt/helper.h"
+#include "tlibs2/libs/qt/numerictablewidgetitem.h"
+
 
 using namespace tl2_ops;
 
@@ -79,11 +81,16 @@ void BZDlg::AddSymOpTabItem(int row, const t_mat& op)
 	}
 	else
 	{
-		std::string prop = get_op_properties<t_mat>(op, g_eps);
+		std::string prop = get_op_properties<t_mat, t_vec>(op, g_eps);
+		t_real det = tl2::det(op);
+		//t_real det_rot = tl2::det(tl2::submat(op, 3, 3));
+
 		m_symops->setItem(row, COL_OP,
 			new QTableWidgetItem(op_to_str<t_mat>(op, g_prec, g_eps).c_str()));
 		m_symops->setItem(row, COL_PROP,
 			new QTableWidgetItem(prop.c_str()));
+		m_symops->setItem(row, COL_DET,
+			new tl2::NumericTableWidgetItem<t_real>(det));
 	}
 
 	m_symops->scrollToItem(m_symops->item(row, 0));
@@ -229,11 +236,20 @@ void BZDlg::SymOpTableItemChanged(QTableWidgetItem *item)
 	if(item->column() == COL_OP)
 	{
 		t_mat op = str_to_op<t_mat>(item->text().toStdString());
-		std::string prop = get_op_properties<t_mat>(op, g_eps);
+		std::string prop = get_op_properties<t_mat, t_vec>(op, g_eps);
+		t_real det = tl2::det(op);
+		//t_real det_rot = tl2::det(tl2::submat(op, 3, 3));
+
 		if(QTableWidgetItem *itemProp = m_symops->item(item->row(), COL_PROP); itemProp)
 			itemProp->setText(prop.c_str());
 		else
 			m_symops->setItem(item->row(), COL_PROP, new QTableWidgetItem(prop.c_str()));
+
+		if(tl2::NumericTableWidgetItem<t_real> *itemDet =
+			static_cast<tl2::NumericTableWidgetItem<t_real>*>(m_symops->item(item->row(), COL_DET)); itemDet)
+			itemDet->SetValue(det);
+		else
+			m_symops->setItem(item->row(), COL_DET, new tl2::NumericTableWidgetItem<t_real>(det));
 	}
 
 	if(!m_symOpIgnoreChanges)

@@ -3621,6 +3621,30 @@ requires is_basic_mat<t_mat> && is_dyn_mat<t_mat>
 
 
 /**
+ * subvector removing a row from a vector
+ */
+template<class t_vec>
+t_vec subvec(const t_vec& vec, decltype(vec.size()) iRemRow)
+requires is_basic_vec<t_vec> && is_dyn_mat<t_vec>
+{
+	using size_t = decltype(vec.size());
+	t_vec vecRet = create<t_vec>(vec.size() - 1);
+
+	size_t iResRow = 0;
+	for(size_t iRow = 0; iRow < vec.size(); ++iRow)
+	{
+		if(iRow == iRemRow)
+			continue;
+
+		vecRet[iResRow] = vec[iRow];
+		++iResRow;
+	}
+
+	return vecRet;
+}
+
+
+/**
  * determinant from a square matrix stored in a vector container
  * @see (Merziger 2006), p. 185
  */
@@ -3644,10 +3668,10 @@ requires is_basic_vec<t_vec>
 
 	// get row with maximum number of zeros
 	std::size_t iMaxNumZeros = 0;
-	for(std::size_t iCurRow=0; iCurRow<iN; ++iCurRow)
+	for(std::size_t iCurRow = 0; iCurRow < iN; ++iCurRow)
 	{
 		std::size_t iNumZeros = 0;
-		for(std::size_t iCurCol=0; iCurCol<iN; ++iCurCol)
+		for(std::size_t iCurCol = 0; iCurCol < iN; ++iCurCol)
 		{
 			if(equals<T>(mat[iCurRow*iN + iCurCol], T(0)))
 				++iNumZeros;
@@ -3660,7 +3684,7 @@ requires is_basic_vec<t_vec>
 		}
 	}
 
-	for(std::size_t iCol=0; iCol<iN; ++iCol)
+	for(std::size_t iCol = 0; iCol < iN; ++iCol)
 	{
 		const T elem = mat[iRow*iN + iCol];
 		if(equals<T>(elem, 0))

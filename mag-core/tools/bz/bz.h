@@ -62,6 +62,7 @@ enum : int
 {
 	COL_OP = 0,
 	COL_PROP,
+	COL_DET,
 
 	NUM_SYMOP_COLS
 };
