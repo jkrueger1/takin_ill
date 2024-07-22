@@ -440,22 +440,52 @@ void MagDynDlg::CalcHamiltonian()
 	ostr.precision(g_prec_gui);
 
 	// print hamiltonian
-	auto print_H = [&ostr](const t_mat& H, const t_vec_real& Qvec, const std::string& Qstr = "Q")
+	auto print_H = [&ostr](const t_mat& H, const t_vec_real& Qvec,
+		const std::string& Qstr = "Q", const std::string& mQstr = "-Q")
 	{
 		ostr << "<p><h3>Hamiltonian at " << Qstr <<  " = ("
 			<< Qvec[0] << ", " << Qvec[1] << ", " << Qvec[2] << ")</h3>";
 		ostr << "<table style=\"border:0px\">";
 
-		for(std::size_t i=0; i<H.size1(); ++i)
+		// horizontal header
+		ostr << "<tr><th/>";
+		for(std::size_t col = 0; col < H.size2()/2; ++col)
+		{
+			ostr << "<th style=\"padding-right:8px\">" << "b<sub>" << (col + 1)
+				<< "</sub>(" << Qstr << ")" << "</th>";
+		}
+		for(std::size_t col = H.size2()/2; col < H.size2(); ++col)
+		{
+			ostr << "<th style=\"padding-right:8px\">" << "b<sub>" << (col - H.size2()/2 + 1)
+				<< "</sub><sup>&#x2020;</sup>(" << mQstr << ")" << "</th>";
+		}
+		ostr << "</tr>";
+
+		for(std::size_t row = 0; row < H.size1(); ++row)
 		{
 			ostr << "<tr>";
-			for(std::size_t j=0; j<H.size2(); ++j)
+
+			// vertical header
+			if(row < H.size1() / 2)
 			{
-				t_cplx elem = H(i, j);
+				ostr << "<th style=\"padding-right:8px\">" << "b<sub>" << (row + 1)
+					<< "</sub><sup>&#x2020;</sup>(" << Qstr << ")" << "</th>";
+			}
+			else
+			{
+				ostr << "<th style=\"padding-right:8px\">" << "b<sub>" << (row - H.size1()/2 + 1)
+					<< "</sub>(" << mQstr << ")" << "</th>";
+			}
+
+			// components
+			for(std::size_t col = 0; col < H.size2(); ++col)
+			{
+				t_cplx elem = H(row, col);
 				tl2::set_eps_0<t_cplx, t_real>(elem, g_eps);
 				ostr << "<td style=\"padding-right:8px\">"
 					<< elem << "</td>";
 			}
+
 			ostr << "</tr>";
 		}
 		ostr << "</table></p>";
@@ -465,7 +495,7 @@ void MagDynDlg::CalcHamiltonian()
 	t_mat H = m_dyn.CalcHamiltonian(Q);
 	const bool is_comm = !m_dyn.IsIncommensurate();
 	if(m_hamiltonian_comp[0]->isChecked() || is_comm)  // always calculate commensurate case
-		print_H(H, Q, "Q");
+		print_H(H, Q, "Q", "-Q");
 
 	// print shifted hamiltonians for incommensurate case
 	if(!is_comm)
@@ -483,14 +513,14 @@ void MagDynDlg::CalcHamiltonian()
 			{
 				// get hamiltonian at Q + ordering vector
 				t_mat H_p = m_dyn.CalcHamiltonian(Q + O);
-				print_H(H_p, Q + O, "Q + O");
+				print_H(H_p, Q + O, "Q + O", "Q - O");
 			}
 
 			if(m_hamiltonian_comp[2]->isChecked())
 			{
 				// get hamiltonian at Q - ordering vector
 				t_mat H_m = m_dyn.CalcHamiltonian(Q - O);
-				print_H(H_m, Q - O, "Q - O");
+				print_H(H_m, Q - O, "Q - O", "Q + O");
 			}
 		}
 	}
@@ -590,7 +620,7 @@ void MagDynDlg::CalcHamiltonian()
 		ostr << "<tr>";
 		ostr << "<th style=\"padding-right:16px\">Energy E</td>";
 		ostr << "<th style=\"padding-right:16px\">Correlation S(Q, E)</td>";
-		ostr << "<th style=\"padding-right:16px\">Neutron S⟂(Q, E)</td>";
+		ostr << "<th style=\"padding-right:16px\">Projection S<sub>&#x27C2;</sub>(Q, E)</td>";
 		ostr << "<th style=\"padding-right:16px\">Weight</td>";
 		ostr << "</tr>";
 

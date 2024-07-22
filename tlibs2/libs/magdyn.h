@@ -3068,6 +3068,8 @@ private:
 
 	// ordering wave vector for incommensurate structures
 	t_vec_real m_ordering{ tl2::zero<t_vec_real>(3) };
+
+	// helix rotation axis for incommensurate structures
 	t_vec_real m_rotaxis{ tl2::create<t_vec_real>({ 1., 0., 0. }) };
 
 	// calculate the hamiltonian for Q, Q+ordering, and Q-ordering
