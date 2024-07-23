@@ -2282,6 +2282,23 @@ requires is_mat<t_mat>
 }
 
 
+/**
+ * split a matrix into a symmetric and a skew-symmetric part
+ * @see https://en.wikipedia.org/wiki/Skew-symmetric_matrix
+ */
+template<class t_mat>
+std::pair<t_mat, t_mat> split_symm(const t_mat& mat)
+requires is_mat<t_mat>
+{
+	using namespace tl2_ops;
+	const t_mat mat_T = trans<t_mat>(mat);
+
+	return std::make_pair<t_mat, t_mat>(
+		0.5 * (mat + mat_T),
+		0.5 * (mat - mat_T));
+}
+
+
 // -----------------------------------------------------------------------------
 /**
  * set values lower than epsilon to zero
@@ -4375,7 +4392,7 @@ requires is_vec<t_vec>
  */
 template<class t_mat, class t_vec, class T=typename t_vec::value_type>
 std::tuple<t_mat, t_mat>
-covariance(const std::vector<t_vec>& vecVals, const std::vector<T>* pProb = 0)
+covariance(const std::vector<t_vec>& vecVals, const std::vector<T>* pProb = nullptr)
 requires is_mat<t_mat> && is_vec<t_vec>
 {
 	using t_vecvec = typename std::remove_reference<decltype(vecVals)>::type;
