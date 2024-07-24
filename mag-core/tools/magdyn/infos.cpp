@@ -24,6 +24,7 @@
  */
 
 #include "infos.h"
+#include "defs.h"
 
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QPushButton>
@@ -60,6 +61,9 @@ InfoDlg::InfoDlg(QWidget* pParent, QSettings *sett)
 	fontTitle.setBold(true);
 	labelTitle->setFont(fontTitle);
 	labelTitle->setAlignment(Qt::AlignHCenter);
+
+	auto labelVersion = new QLabel("Version " MAGCORE_VER ".", infopanel);
+	labelVersion->setAlignment(Qt::AlignHCenter);
 
 	auto labelAuthor = new QLabel("Written by Tobias Weber <tweber@ill.fr>.", infopanel);
 	labelAuthor->setAlignment(Qt::AlignHCenter);
@@ -103,6 +107,7 @@ InfoDlg::InfoDlg(QWidget* pParent, QSettings *sett)
 
 	int y = 0;
 	grid->addWidget(labelTitle, y++,0, 1,1);
+	grid->addWidget(labelVersion, y++,0, 1,1);
 	grid->addWidget(labelAuthor, y++,0, 1,1);
 	grid->addWidget(labelDate, y++,0, 1,1);
 

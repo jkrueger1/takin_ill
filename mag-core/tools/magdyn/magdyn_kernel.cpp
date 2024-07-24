@@ -494,7 +494,9 @@ void MagDynDlg::SyncToKernel()
 	// ground state energy
 	std::ostringstream ostrGS;
 	ostrGS.precision(g_prec_gui);
-	ostrGS << "E0 = " << m_dyn.CalcGroundStateEnergy() << " meV";
+	t_real E0 = m_dyn.CalcGroundStateEnergy();
+	tl2::set_eps_0(E0, g_eps);
+	ostrGS << "E0 = " << E0 << " meV";
 	m_statusFixed->setText(ostrGS.str().c_str());
 }
 
