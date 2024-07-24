@@ -72,8 +72,8 @@ params = {
     "reso_method" : "eck",
 
     # scattering triangle
-    "ki" : 2.981,
-    "kf" : 2.981,
+    "ki" : 2.662,
+    "kf" : 2.662,
     "E"  : helpers.get_E(2.981, 2.981),
     "Q"  : 2.,
 
@@ -95,9 +95,9 @@ params = {
     "dist_ana_det"     : 23.5  * helpers.cm2A,
 
     # shapes
-    "src_shape"    : "circular",     # "rectangular" or "circular"
+    "src_shape"    : "rectangular",  # "rectangular" or "circular"
     "sample_shape" : "cylindrical",  # "cuboid" or "cylindrical"
-    "det_shape"    : "circular",     # "rectangular" or "circular"
+    "det_shape"    : "rectangular",  # "rectangular" or "circular"
 
     # component sizes
     "src_w"    : 17.  * helpers.cm2A,
@@ -213,7 +213,7 @@ params_fc = {
     "dist_ana_det"     : 23.5  * helpers.cm2A,
 
     # shapes
-    "src_shape"    : "circular",     # "rectangular" or "circular"
+    "src_shape"    : "rectangular",  # "rectangular" or "circular"
     "sample_shape" : "cylindrical",  # "cuboid" or "cylindrical"
     "det_shape"    : "circular",     # "rectangular" or "circular"
 
