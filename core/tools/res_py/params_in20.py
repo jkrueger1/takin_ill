@@ -100,7 +100,7 @@ params = {
     "det_shape"    : "rectangular",  # "rectangular" or "circular"
 
     # component sizes
-    "src_w"    : 17.  * helpers.cm2A,
+    "src_w"    : 2.   * helpers.cm2A,
     "src_h"    : 17.  * helpers.cm2A,
     "mono_d"   : 0.2  * helpers.cm2A,
     "mono_w"   : 22.5 * helpers.cm2A,
@@ -147,7 +147,7 @@ params = {
     "ana_curv_v_formula" : None,
 
     # guide before monochromator
-    "use_guide"   : True,
+    "use_guide"   : False,
     "guide_div_h" : 15. * helpers.min2rad,
     "guide_div_v" : 15. * helpers.min2rad,
 
@@ -218,7 +218,7 @@ params_fc = {
     "det_shape"    : "circular",     # "rectangular" or "circular"
 
     # component sizes
-    "src_w"    : 17.  * helpers.cm2A,
+    "src_w"    : 2.   * helpers.cm2A,
     "src_h"    : 17.  * helpers.cm2A,
     "mono_d"   : 0.2  * helpers.cm2A,
     "mono_w"   : 22.5 * helpers.cm2A,
@@ -265,7 +265,7 @@ params_fc = {
     "ana_curv_v_formula" : None,
 
     # guide before monochromator
-    "use_guide"   : True,
+    "use_guide"   : False,
     "guide_div_h" : 15. * helpers.min2rad,
     "guide_div_v" : 15. * helpers.min2rad,
 

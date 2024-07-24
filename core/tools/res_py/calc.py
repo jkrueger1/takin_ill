@@ -168,8 +168,12 @@ argparser.add_argument("-i", "--instr", default = None, type = str,
     help = "set the parameters to a pre-defined instrument (in20/in20fc)")
 argparser.add_argument("--silent", action = "store_true",
     help = "disable output")
+argparser.add_argument("-o", "--out_file", default = "", type = str,
+    help = "output file for results")
+argparser.add_argument("--plot_file", default = "", type = str,
+    help = "output file for plots")
 argparser.add_argument("-p", "--plot", action = "store_true",
-    help = "plot results")
+    help = "plot results on screen")
 argparser.add_argument("-m", "--reso_method", default = None, type = str,
     help = "resolution method to use (cn/pop/eck)")
 argparser.add_argument("--kf_vert", action = "store_true",
@@ -182,6 +186,8 @@ argparser.add_argument("-E", "--E", default = None, type = float,
     help = "energy transfer")
 argparser.add_argument("-Q", "--Q", default = None, type = float,
     help = "momentum transfer")
+argparser.add_argument("--twotheta", default = None, type = float,
+    help = "sample scattering angle")
 argparser.add_argument("--mono_sense", default = None, type = float,
     help = "monochromator scattering sense")
 argparser.add_argument("--sample_sense", default = None, type = float,
@@ -216,7 +222,9 @@ if parsedargs.instr != None:
         params = params_in20.params_fc
 
 # get parsed command-line arguments
+out_file = parsedargs.out_file
 show_plots = parsedargs.plot
+plot_file = parsedargs.plot_file
 params["verbose"] = not parsedargs.silent
 
 if parsedargs.reso_method != None:
@@ -231,6 +239,9 @@ if parsedargs.kf != None:
 
 if parsedargs.Q != None:
     params["Q"] = parsedargs.Q
+
+if parsedargs.twotheta != None:
+    params["Q"] = helpers.get_Q(params["ki"], params["kf"], parsedargs.twotheta * helpers.deg2rad)
 
 if parsedargs.mono_sense != None:
     params["mono_sense"] = parsedargs.mono_sense
@@ -327,8 +338,8 @@ if not res["ok"]:
 
 if params["verbose"]:
     print("R0 = %g, Vol = %g" % (res["r0"], res["res_vol"]))
-    print("Resolution matrix:\n%s" % res["reso"])
-    print("Resolution vector: %s" % res["reso_v"])
+    print("Resolution matrix (Q_para [1/A], Q_perp [1/A], Q_up [1/A], E [meV]):\n%s" % res["reso"])
+    print("Resolution vector (Q_para [1/A], Q_perp [1/A], Q_up [1/A], E [meV]):\n%s" % res["reso_v"])
     print("Resolution scalar: %g" % res["reso_s"])
 # -----------------------------------------------------------------------------
 
@@ -339,7 +350,50 @@ if params["verbose"]:
 ellipses = reso.calc_ellipses(res["reso"], params["verbose"])
 
 
-# plot ellipses
-if show_plots:
-    reso.plot_ellipses(ellipses, params["verbose"])
+if show_plots or plot_file != "":
+    # plot ellipses
+    reso.plot_ellipses(ellipses, params["verbose"], show_plots, plot_file)
+# -----------------------------------------------------------------------------
+
+
+# -----------------------------------------------------------------------------
+# write the results to a file
+# -----------------------------------------------------------------------------
+if out_file != "":
+    with open(out_file, "w") as file:
+        print("[resolution]", file = file)
+
+        print("\tmethod = %s" % params["reso_method"], file = file)
+        print("", file = file)
+
+        print("\tR0 = %g" % res["r0"], file = file)
+        print("\tV = %g" % res["res_vol"], file = file)
+        print("", file = file)
+
+        for i in range(0, 4):
+            for j in range(0, 4):
+                print("\treso_%d%d = %g" % (i, j, res["reso"][i][j]), file = file)
+        print("", file = file)
+
+        for i in range(0, 4):
+            print("\treso_v%d = %g" % (i, res["reso_v"][i]), file = file)
+        print("", file = file)
+
+        print("\treso_s = %g" % res["reso_s"], file = file)
+
+
+        print("\n\n[principal_axes]", file = file)
+
+        for i in range(0, 4):
+            for j in range(0, 4):
+                print("\teigensys_%d%d = %g" % (i, j, ellipses["rot"][i][j]), file = file)
+        print("", file = file)
+
+        for i in range(0, 4):
+            print("\teigenval_%d = %g" % (i, ellipses["evals"][i]), file = file)
+        print("", file = file)
+
+        for i in range(0, 4):
+            print("\tfwhm_%d = %g" % (i, ellipses["fwhms"][i]), file = file)
+        print("", file = file)
 # -----------------------------------------------------------------------------

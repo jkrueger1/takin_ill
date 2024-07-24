@@ -138,20 +138,20 @@ def descr_ellipse(quadric):
     if len(quadric) == 2:
         angles = np.array([ np.arctan2(evecs[1][0], evecs[0][0]) ])
 
-    return [fwhms, angles/np.pi*180., evecs, evals]
+    return [fwhms, angles*helpers.rad2deg, evecs, evals]
 
 
 #
 # describes the ellipsoid by a principal axis trafo and by 2d cuts
 #
-def calc_ellipses(Qres_Q, verbose=True):
+def calc_ellipses(Qres_Q, verbose = True):
     # 4d ellipsoid
     [fwhms, angles, rot, evals] = descr_ellipse(Qres_Q)
 
     if verbose:
         print()
         print("Eigenvalues: %s" % evals)
-        print("Eigensystem:\n%s" % rot)
+        print("Eigensystem (Q_para [1/A], Q_perp [1/A], Q_up [1/A], E [meV]):\n%s" % rot)
         print()
         print("Coherent-elastic fwhms: %s" % (calc_coh_fwhms(Qres_Q)))
         print("Incoherent-elastic fwhms: %s" % (calc_incoh_fwhms(Qres_Q)))
@@ -215,6 +215,10 @@ def calc_ellipses(Qres_Q, verbose=True):
 
 
     results = {
+        # 4d ellipsoid
+        "fwhms" : fwhms, "rot" : rot, "evals" : evals,
+
+        # projected and sliced ellipses
         "fwhms_QxE" : fwhms_QxE, "rot_QxE" : rot_QxE,
         "fwhms_QyE" : fwhms_QyE, "rot_QyE" : rot_QyE,
         "fwhms_QzE" : fwhms_QzE, "rot_QzE" : rot_QzE,
@@ -232,7 +236,7 @@ def calc_ellipses(Qres_Q, verbose=True):
 #
 # shows the 2d ellipses
 #
-def plot_ellipses(ellis, verbose=True, plot_results=True, file="", dpi=600, ellipse_points=128, use_tex=False):
+def plot_ellipses(ellis, verbose = True, plot_results = True, file = "", dpi = 600, ellipse_points = 128, use_tex = False):
     import mpl_toolkits.mplot3d as mplot3d
     import matplotlib
     import matplotlib.pyplot as plot

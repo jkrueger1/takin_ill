@@ -42,6 +42,7 @@ sig2fwhm = 2.*np.sqrt(2.*np.log(2.))
 cm2A = 1e8
 min2rad = 1./ 60. / 180.*np.pi
 rad2deg = 180. / np.pi
+deg2rad = np.pi / 180.
 #--------------------------------------------------------------------------
 
 
@@ -70,6 +71,11 @@ def get_ki(E, kf):
 def get_scattering_angle(ki, kf, Q):
     c = (ki**2. + kf**2. - Q**2.) / (2.*ki*kf)
     return np.arccos(c)
+
+
+def get_Q(ki, kf, twotheta):
+    c = np.cos(twotheta)
+    return np.sqrt(ki**2. + kf**2. - c*(2.*ki*kf))
 
 
 #

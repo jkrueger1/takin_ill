@@ -73,12 +73,12 @@
 		<pop_sample_wq>1.000000e+00</pop_sample_wq>
 		<pop_source_rect>1</pop_source_rect>
 		<pop_src_h>1.700000e+01</pop_src_h>
-		<pop_src_w>1.700000e+01</pop_src_w>
+		<pop_src_w>2</pop_src_w>
 		<sample_mosaic>3.000000e+01</sample_mosaic>
 		<sample_scatter_sense>1</sample_scatter_sense>
 		<scatter_kf_vert>0</scatter_kf_vert>
 		<use_general_R0>1</use_general_R0>
-		<use_guide>1</use_guide>
+		<use_guide>0</use_guide>
 		<use_kf3>0</use_kf3>
 		<use_kfki>0</use_kfki>
 		<use_ki3>0</use_ki3>
