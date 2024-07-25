@@ -1,14 +1,12 @@
 /**
  * minimisation test
  * @author Tobias Weber <tweber@ill.fr>
- * @date 27-aug-20
+ * @date 25-jul-24
  * @license GPLv3, see 'LICENSE' file
- *
- * g++-10 -std=c++20 -I.. -o min min0.cpp ../libs/log.cpp -lMinuit2
  *
  * ----------------------------------------------------------------------------
  * tlibs
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -41,16 +39,43 @@ namespace testtools = boost::test_tools;
 using t_types_real = std::tuple<double, float>;
 
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(test_expr_real, t_real, t_types_real)
+
+// minimise lambda function with fixed args
+BOOST_AUTO_TEST_CASE_TEMPLATE(test_min1, t_real, t_types_real)
 {
-	std::string func{"(x - 5.67)^2"};
+	auto func = [](t_real x)
+	{
+		return (x - 5.67) * (x - 5.67);
+	};
 
-	std::vector<std::string> params{{"x"}};
-	std::vector<t_real> vals{{0.}};
-	std::vector<t_real> errs{{0.1}};
-	std::vector<bool> fixed{false};
+	std::vector<std::string> params{{ "x", }};
+	std::vector<t_real> vals{{ 0., }};
+	std::vector<t_real> errs{{ 5, }};
+	std::vector<bool> fixed{{ false, }};
 
-	bool ok = tl2::minimise_expr(func, params, vals, errs, &fixed);
+	bool ok = tl2::minimise<t_real, 1>(func, params, vals, errs, &fixed);
+
+	BOOST_TEST(ok);
+	BOOST_TEST(tl2::equals<t_real>(vals[0], 5.67, 1e-3));
+}
+
+
+
+// minimise lambda function with non-fixed args
+BOOST_AUTO_TEST_CASE_TEMPLATE(test_min1_dynarg, t_real, t_types_real)
+{
+	auto func = [](const std::vector<tl2::t_real_min>& args)
+	{
+		const tl2::t_real_min& x = args[0];
+		return (x - 5.67) * (x - 5.67);
+	};
+
+	std::vector<std::string> params{{ "x", }};
+	std::vector<t_real> vals{{ 0., }};
+	std::vector<t_real> errs{{ 5, }};
+	std::vector<bool> fixed{{ false, }};
+
+	bool ok = tl2::minimise_dynargs<t_real>(1, func, params, vals, errs, &fixed);
 
 	BOOST_TEST(ok);
 	BOOST_TEST(tl2::equals<t_real>(vals[0], 5.67, 1e-3));

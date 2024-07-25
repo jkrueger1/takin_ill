@@ -84,7 +84,7 @@ public:
 
 
 /**
- * interface using supplied functions
+ * interface using supplied functions with a fixed number of parameters
  * num_args also includes the "x" parameter to the function, m_vecVals does not
  */
 template<class t_real, std::size_t num_args, typename t_func>
@@ -93,7 +93,7 @@ class FitterLamFuncModel : public FitterFuncModel<t_real>
 protected:
 	t_func m_func{};
 	std::vector<t_real> m_vecVals{};
-	bool m_bSeparateFreeParam = 1;	// separate "x" from parameters (for fitter)
+	bool m_bSeparateFreeParam{true};  // separate "x" from parameters (for fitter)
 
 public:
 	FitterLamFuncModel(t_func func, bool bSeparateX = true)
@@ -114,10 +114,13 @@ public:
 	virtual t_real operator()(t_real x = t_real(0)) const override
 	{
 		std::vector<t_real> vecValsWithX;
+		vecValsWithX.reserve(num_args);
+
 		if(m_bSeparateFreeParam)
 		{
 			vecValsWithX.push_back(x);
-			for(t_real d : m_vecVals) vecValsWithX.push_back(d);
+			for(t_real d : m_vecVals)
+				vecValsWithX.push_back(d);
 		}
 
 		const std::vector<t_real> *pvecVals = m_bSeparateFreeParam ? &vecValsWithX : &m_vecVals;
@@ -130,6 +133,67 @@ public:
 	{
 		FitterLamFuncModel<t_real, num_args, t_func>* pMod =
 			new FitterLamFuncModel<t_real, num_args, t_func>(m_func);
+
+		pMod->m_vecVals = this->m_vecVals;
+		pMod->m_bSeparateFreeParam = this->m_bSeparateFreeParam;
+
+		return pMod;
+	}
+};
+
+
+
+/**
+ * interface using supplied functions with a dynamic number of parameters
+ */
+template<class t_real, typename t_func>
+class FitterDynLamFuncModel : public FitterFuncModel<t_real>
+{
+protected:
+	t_func m_func{};
+	std::size_t m_num_args{1};
+	std::vector<t_real> m_vecVals{};
+	bool m_bSeparateFreeParam{true};  // separate "x" from parameters (for fitter)
+
+public:
+	/**
+	 * num_args also includes the "x" parameter to the function, m_vecVals does not
+	 */
+	FitterDynLamFuncModel(std::size_t num_args, t_func func, bool bSeparateX = true)
+	: m_num_args{num_args}, m_func{func}, m_vecVals{}, m_bSeparateFreeParam{bSeparateX}
+	{
+		m_vecVals.resize(m_bSeparateFreeParam ? m_num_args-1 : m_num_args);
+	}
+
+
+	virtual bool SetParams(const std::vector<t_real>& vecParams) override
+	{
+		for(std::size_t i = 0; i < std::min(vecParams.size(), m_vecVals.size()); ++i)
+			m_vecVals[i] = vecParams[i];
+		return true;
+	}
+
+
+	virtual t_real operator()(t_real x = t_real(0)) const override
+	{
+		std::vector<t_real> vecValsWithX;
+		vecValsWithX.reserve(m_num_args);
+
+		if(m_bSeparateFreeParam)
+		{
+			vecValsWithX.push_back(x);
+			for(t_real d : m_vecVals)
+				vecValsWithX.push_back(d);
+		}
+
+		return m_func(m_bSeparateFreeParam ? vecValsWithX : m_vecVals);
+	}
+
+
+	virtual FitterDynLamFuncModel* copy() const override
+	{
+		FitterDynLamFuncModel<t_real, t_func>* pMod =
+		new FitterDynLamFuncModel<t_real, t_func>(m_num_args, m_func);
 
 		pMod->m_vecVals = this->m_vecVals;
 		pMod->m_bSeparateFreeParam = this->m_bSeparateFreeParam;
@@ -514,7 +578,7 @@ bool fit_expr(const std::string& func,
 
 
 /**
- * find function minimum
+ * find function minimum using a lambda function with fixed args
  */
 template<class t_real = t_real_min, std::size_t num_args, typename t_func>
 bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
@@ -532,6 +596,61 @@ bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
 			}
 
 		FitterLamFuncModel<t_real_min, num_args, t_func> mod(func, false);
+		MiniFunction<t_real_min> chi2(&mod);
+
+		ROOT::Minuit2::MnUserParameters params;
+		for(std::size_t iParam = 0; iParam < vecParamNames.size(); ++iParam)
+		{
+			params.Add(vecParamNames[iParam], static_cast<t_real_min>(vecVals[iParam]), static_cast<t_real_min>(vecErrs[iParam]));
+			if(pVecFixed && (*pVecFixed)[iParam])
+				params.Fix(vecParamNames[iParam]);
+		}
+
+		ROOT::Minuit2::MnMigrad migrad(chi2, params, 2);
+		ROOT::Minuit2::FunctionMinimum mini = migrad();
+		bool bMinimumValid = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
+
+		for(std::size_t iParam = 0; iParam < vecParamNames.size(); ++iParam)
+		{
+			vecVals[iParam] = static_cast<t_real>(mini.UserState().Value(vecParamNames[iParam]));
+			vecErrs[iParam] = static_cast<t_real>(std::fabs(mini.UserState().Error(vecParamNames[iParam])));
+		}
+
+		if(bDebug)
+			std::cerr << mini << std::endl;
+
+		return bMinimumValid;
+	}
+	catch(const std::exception& ex)
+	{
+		std::cerr << "Fitter: " << ex.what() << std::endl;
+	}
+
+	return false;
+}
+
+
+
+/**
+ * find function minimum using a lambda function with variable args
+ */
+template<class t_real = t_real_min, typename t_func>
+bool minimise_dynargs(std::size_t num_args, t_func&& func,
+	const std::vector<std::string>& vecParamNames,
+	std::vector<t_real>& vecVals, std::vector<t_real>& vecErrs,
+	const std::vector<bool>* pVecFixed = nullptr, bool bDebug = true) noexcept
+{
+	try
+	{
+		// check if all params are fixed
+		if(pVecFixed && std::all_of(pVecFixed->begin(), pVecFixed->end(),
+			[](bool b)->bool { return b; }))
+			{
+				std::cerr << "Fitter: All parameters are fixed." << std::endl;
+				return false;
+			}
+
+		FitterDynLamFuncModel<t_real_min, t_func> mod(num_args, func, false);
 		MiniFunction<t_real_min> chi2(&mod);
 
 		ROOT::Minuit2::MnUserParameters params;

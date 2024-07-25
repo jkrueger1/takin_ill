@@ -40,8 +40,13 @@ namespace testtools = boost::test_tools;
 using t_types_real = std::tuple<double, float>;
 
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(test_expr_real, t_real, t_types_real)
+BOOST_AUTO_TEST_CASE_TEMPLATE(test_fit1, t_real, t_types_real)
 {
+	auto func = [](t_real x, t_real amp, t_real freq, t_real offs)
+	{
+		return amp*std::sin(freq*x) + offs;
+	};
+
 	t_real amp = 1.;
 	t_real freq = 2*tl2::pi<t_real>;
 	t_real offs = 12.;
@@ -50,14 +55,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_expr_real, t_real, t_types_real)
 	for(t_real x = 0.; x < 1.; x += 0.05)
 	{
 		xs.push_back(x);
-		ys.push_back(amp*std::sin(freq*x) + offs);
+		ys.push_back(func(x, amp, freq, offs));
 		yerrs.push_back(0.1);
 	}
-
-	auto func = [](t_real x, t_real amp, t_real freq, t_real offs)
-	{
-		return amp*std::sin(freq*x) + offs;
-	};
 
 	std::vector<std::string> params{{
 		"amp",

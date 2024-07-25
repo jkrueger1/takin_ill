@@ -65,9 +65,11 @@
 #include "phys.h"
 #include "algos.h"
 #include "expr.h"
+#include "fit.h"
 
 // enables debug output
 //#define __TLIBS2_MAGDYN_DEBUG_OUTPUT__
+//#define USE_MINUIT
 
 
 
@@ -2405,6 +2407,42 @@ public:
 		}
 
 		return E;
+	}
+
+
+
+	/**
+	 * minimise energy to found ground state
+	 */
+	void CalcGroundState()
+	{
+#if defined(__TLIBS2_USE_MINUIT__) && defined(USE_MINUIT)
+
+		// function to minimise
+		auto func = [this](const std::vector<tl2::t_real_min>& args)
+		{
+			// set new spin configuration
+			auto dyn = *this;
+
+			// TODO
+
+			// ground state energy with the new configuration
+			return dyn.CalcGroundStateEnergy();
+		};
+
+		t_size num_args = 1;
+		std::vector<std::string> params;
+		std::vector<t_real> vals, errs;
+		std::vector<bool> fixed;
+
+		// TODO
+
+		if(!tl2::minimise_dynargs<t_real>(num_args, func, params, vals, errs, &fixed))
+			std::cerr << "Magdyn error: Ground state minimisation did not converge." << std::endl;
+
+#else  // __TLIBS2_USE_MINUIT__
+		std::cerr << "Magdyn error: Ground state minimisation support disabled." << std::endl;
+#endif
 	}
 	// --------------------------------------------------------------------
 
