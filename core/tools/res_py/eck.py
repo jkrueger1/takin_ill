@@ -359,7 +359,7 @@ def calc(param):
 
 
     # --------------------------------------------------------------------------
-    # integrate last 2 vars -> equs 57 & 58 in [eck14]
+    # integrate last 2 vars -> equs. 57 & 58 in [eck14]
 
     U2 = reso.quadric_proj(U1, 5)
     # careful: factor -0.5*... missing in U matrix compared to normal gaussian!

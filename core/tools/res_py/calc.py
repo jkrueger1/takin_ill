@@ -238,6 +238,7 @@ if parsedargs.reso_method != None:
 
 if parsedargs.kf_vert != None:
     params["kf_vert"] = parsedargs.kf_vert
+    # TODO: flip y and z parameters if this is enabled
 if parsedargs.ki != None:
     params["ki"] = parsedargs.ki
 if parsedargs.kf != None:

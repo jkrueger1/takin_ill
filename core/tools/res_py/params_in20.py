@@ -49,6 +49,19 @@ def mono_curv_v_formula(params):
 
 
 #
+# ana vertical curvature
+#
+def ana_curv_v_formula(params):
+    foclen = helpers.focal_len(params["dist_sample_ana"] / helpers.cm2A,
+        params["dist_ana_det"] / helpers.cm2A)
+
+    curv_cm = helpers.foc_curv_2(foclen,
+        params["kf"], params["ana_xtal_d"], True)
+
+    return curv_cm
+
+
+#
 # mono horizontal curvature
 #
 def mono_curv_h_formula(params):
@@ -59,6 +72,23 @@ def mono_curv_h_formula(params):
         params["ki"], params["mono_xtal_d"], False)
 
     return curv_cm
+
+
+#
+# ana horizontal curvature
+#
+def ana_curv_h_formula(params):
+    len1 = params["dist_sample_ana"]
+    len2 = params["dist_sample_ana"]
+    foclen = helpers.focal_len(len1 / helpers.cm2A,
+        len2 / helpers.cm2A)
+
+    curv_cm = helpers.foc_curv_2(foclen,
+        params["kf"], params["ana_xtal_d"], False)
+
+    return curv_cm
+
+
 
 
 #
@@ -74,7 +104,7 @@ params = {
     # scattering triangle
     "ki" : 2.662,
     "kf" : 2.662,
-    "E"  : helpers.get_E(2.981, 2.981),
+    "E"  : helpers.get_E(2.662, 2.662),
     "Q"  : 2.,
 
     # d spacings
@@ -134,17 +164,17 @@ params = {
     "mono_is_optimally_curved_h" : False,
     "ana_is_optimally_curved_h"  : False,
     "mono_curv_h_formula" : mono_curv_h_formula,
-    "ana_curv_h_formula" : None,
+    "ana_curv_h_formula" : ana_curv_h_formula,
 
     # vertical focusing
     "mono_curv_v" : 0.,
-    "ana_curv_v"  : 0.,
+    "ana_curv_v"  : 37. * helpers.cm2A,
     "mono_is_curved_v" : True,
-    "ana_is_curved_v"  : False,
+    "ana_is_curved_v"  : True,
     "mono_is_optimally_curved_v" : False,
     "ana_is_optimally_curved_v"  : False,
     "mono_curv_v_formula" : mono_curv_v_formula,
-    "ana_curv_v_formula" : None,
+    "ana_curv_v_formula" : ana_curv_v_formula,
 
     # guide before monochromator
     "use_guide"   : False,
@@ -152,14 +182,14 @@ params = {
     "guide_div_v" : 15. * helpers.min2rad,
 
     # horizontal mosaics
-    "mono_mosaic"   : 33. * helpers.min2rad,
+    "mono_mosaic"   : 27. * helpers.min2rad,
     "sample_mosaic" : 30. * helpers.min2rad,
-    "ana_mosaic"    : 33. * helpers.min2rad,
+    "ana_mosaic"    : 27. * helpers.min2rad,
 
     # vertical mosaics
-    "mono_mosaic_v"   : 33. * helpers.min2rad,
+    "mono_mosaic_v"   : 27. * helpers.min2rad,
     "sample_mosaic_v" : 30. * helpers.min2rad,
-    "ana_mosaic_v"    :  1. * helpers.min2rad,
+    "ana_mosaic_v"    : 27. * helpers.min2rad,
 
     # calculate R0 factor (not needed if only the ellipses are to be plotted)
     "calc_R0" : True,
@@ -215,7 +245,7 @@ params_fc = {
     # shapes
     "src_shape"    : "rectangular",  # "rectangular" or "circular"
     "sample_shape" : "cylindrical",  # "cuboid" or "cylindrical"
-    "det_shape"    : "circular",     # "rectangular" or "circular"
+    "det_shape"    : "rectangular",  # "rectangular" or "circular"
 
     # component sizes
     "src_w"    : 2.   * helpers.cm2A,
@@ -230,7 +260,7 @@ params_fc = {
     "ana_w"    : 1.5  * helpers.cm2A,
     "ana_h"    : 13.3 * helpers.cm2A,
     "det_w"    : 2.5  * helpers.cm2A,
-    "det_h"    : 2.5  * helpers.cm2A,
+    "det_h"    : 6.58 * helpers.cm2A,
 
     # horizontal collimation
     "coll_h_pre_mono"    : 9999. * helpers.min2rad,
@@ -256,9 +286,9 @@ params_fc = {
 
     # vertical focusing
     "mono_curv_v" : 0.,
-    "ana_curv_v"  : 0.,
+    "ana_curv_v"  : 200. * helpers.cm2A,
     "mono_is_curved_v" : True,
-    "ana_is_curved_v"  : False,
+    "ana_is_curved_v"  : True,
     "mono_is_optimally_curved_v" : False,
     "ana_is_optimally_curved_v"  : False,
     "mono_curv_v_formula" : mono_curv_v_formula,
@@ -270,12 +300,12 @@ params_fc = {
     "guide_div_v" : 15. * helpers.min2rad,
 
     # horizontal mosaics
-    "mono_mosaic"   : 33. * helpers.min2rad,
+    "mono_mosaic"   : 27. * helpers.min2rad,
     "sample_mosaic" : 30. * helpers.min2rad,
     "ana_mosaic"    :  1. * helpers.min2rad,
 
     # vertical mosaics
-    "mono_mosaic_v"   : 33. * helpers.min2rad,
+    "mono_mosaic_v"   : 27. * helpers.min2rad,
     "sample_mosaic_v" : 30. * helpers.min2rad,
     "ana_mosaic_v"    :  1. * helpers.min2rad,
 
