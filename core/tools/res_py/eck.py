@@ -235,6 +235,13 @@ def calc(param):
     res = {}
 
     res["Q_avg"] = np.array([ Q, 0., 0., E ])
+    res["ki"] = ki
+    res["kf"] = kf
+    res["Q_ki"] = Q_ki
+    res["Q_kf"] = Q_kf
+    res["twotheta"] = twotheta
+    res["theta_m"] = thetam
+    res["theta_a"] = thetaa
 
     # -------------------------------------------------------------------------
 

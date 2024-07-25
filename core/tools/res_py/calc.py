@@ -188,6 +188,12 @@ argparser.add_argument("-Q", "--Q", default = None, type = float,
     help = "momentum transfer")
 argparser.add_argument("--twotheta", default = None, type = float,
     help = "sample scattering angle")
+argparser.add_argument("--pos_x", default = None, type = float,
+    help = "sample x position")
+argparser.add_argument("--pos_y", default = None, type = float,
+    help = "sample y position")
+argparser.add_argument("--pos_z", default = None, type = float,
+    help = "sample z position")
 argparser.add_argument("--mono_sense", default = None, type = float,
     help = "monochromator scattering sense")
 argparser.add_argument("--sample_sense", default = None, type = float,
@@ -244,6 +250,13 @@ if parsedargs.twotheta != None:
     params["Q"] = helpers.get_Q(params["ki"], params["kf"], params["twotheta"])
 else:
     params["twotheta"] = helpers.get_scattering_angle(params["ki"], params["kf"], params["Q"])
+
+if parsedargs.pos_x != None:
+    params["pos_x"] = parsedargs.pos_x * helpers.cm2A
+if parsedargs.pos_y != None:
+    params["pos_y"] = parsedargs.pos_y * helpers.cm2A
+if parsedargs.pos_z != None:
+    params["pos_z"] = parsedargs.pos_z * helpers.cm2A
 
 if parsedargs.mono_sense != None:
     params["mono_sense"] = parsedargs.mono_sense
@@ -365,7 +378,20 @@ if out_file != "":
     with open(out_file, "w") as file:
         log("\nWriting results to \"%s\"." % out_file)
 
-        print("[resolution]", file = file)
+        print("[scattering_triangle]", file = file)
+        print("\tQ = %g" % res["Q_avg"][0], file = file)
+        print("\tE = %g" % res["Q_avg"][3], file = file)
+        print("\tki = %g" % res["ki"], file = file)
+        print("\tkf = %g" % res["kf"], file = file)
+        print("\tQ_ki = %g" % (res["Q_ki"] * helpers.rad2deg), file = file)
+        print("\tQ_kf = %g" % (res["Q_kf"] * helpers.rad2deg), file = file)
+        print("\t2theta = %g" % (res["twotheta"] * helpers.rad2deg), file = file)
+        print("\ttheta_m = %g" % (res["theta_m"] * helpers.rad2deg), file = file)
+        print("\ttheta_a = %g" % (res["theta_a"] * helpers.rad2deg), file = file)
+        print("", file = file)
+
+
+        print("\n[resolution]", file = file)
 
         print("\tR0 = %g" % res["r0"], file = file)
         print("\tV = %g" % res["res_vol"], file = file)
