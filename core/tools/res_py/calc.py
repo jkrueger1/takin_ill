@@ -176,7 +176,7 @@ argparser.add_argument("-p", "--plot", action = "store_true",
     help = "plot results on screen")
 argparser.add_argument("-m", "--reso_method", default = None, type = str,
     help = "resolution method to use (cn/pop/eck)")
-argparser.add_argument("--kf_vert", action = "store_true",
+argparser.add_argument("--kf_vert", default = None, action = "store_true",
     help = "scatter vertically in the kf axis (only for Eckold-Sobolev method)")
 argparser.add_argument("--ki", default = None, type = float,
     help = "incoming wavenumber")
@@ -230,8 +230,8 @@ params["verbose"] = not parsedargs.silent
 if parsedargs.reso_method != None:
     params["reso_method"] = parsedargs.reso_method
 
-params["kf_vert"] = parsedargs.kf_vert
-
+if parsedargs.kf_vert != None:
+    params["kf_vert"] = parsedargs.kf_vert
 if parsedargs.ki != None:
     params["ki"] = parsedargs.ki
 if parsedargs.kf != None:
@@ -239,9 +239,11 @@ if parsedargs.kf != None:
 
 if parsedargs.Q != None:
     params["Q"] = parsedargs.Q
-
 if parsedargs.twotheta != None:
-    params["Q"] = helpers.get_Q(params["ki"], params["kf"], parsedargs.twotheta * helpers.deg2rad)
+    params["twotheta"] = parsedargs.twotheta * helpers.deg2rad
+    params["Q"] = helpers.get_Q(params["ki"], params["kf"], params["twotheta"])
+else:
+    params["twotheta"] = helpers.get_scattering_angle(params["ki"], params["kf"], params["Q"])
 
 if parsedargs.mono_sense != None:
     params["mono_sense"] = parsedargs.mono_sense
@@ -302,9 +304,13 @@ if parsedargs.ana_curv_h_opt:
     params["ana_is_curved_h"] = True
 
 
-if params["verbose"]:
-    print("ki = %g / A, kf = %g / A, E = %g meV, Q = %g / A." %
-        (params["ki"], params["kf"], params["E"], params["Q"]))
+def log(msg):
+    if params["verbose"]:
+        print(msg)
+
+
+log("ki = %g / A, kf = %g / A, E = %g meV, Q = %g / A." %
+    (params["ki"], params["kf"], params["E"], params["Q"]))
 # -----------------------------------------------------------------------------
 
 
@@ -316,17 +322,14 @@ import pop
 import eck
 
 if params["reso_method"] == "eck":
-    if params["verbose"]:
-        print("\nCalculating using Eckold-Sobolev method. Scattering %s in kf." %
-              ("vertically" if params["kf_vert"] else "horizontally"))
+    log("\nCalculating using Eckold-Sobolev method. Scattering %s in kf." %
+        ("vertically" if params["kf_vert"] else "horizontally"))
     res = eck.calc(params)
 elif params["reso_method"] == "pop":
-    if params["verbose"]:
-        print("\nCalculating using Popovici method.")
+    log("\nCalculating using Popovici method.")
     res = pop.calc(params, False)
 elif params["reso_method"] == "cn":
-    if params["verbose"]:
-        print("\nsCalculating using Cooper-Nathans method.")
+    log("\nsCalculating using Cooper-Nathans method.")
     res = pop.calc(params, True)
 else:
     raise "ResPy: Invalid resolution calculation method selected."
@@ -336,11 +339,10 @@ if not res["ok"]:
     exit(-1)
 
 
-if params["verbose"]:
-    print("R0 = %g, Vol = %g" % (res["r0"], res["res_vol"]))
-    print("Resolution matrix (Q_para [1/A], Q_perp [1/A], Q_up [1/A], E [meV]):\n%s" % res["reso"])
-    print("Resolution vector (Q_para [1/A], Q_perp [1/A], Q_up [1/A], E [meV]):\n%s" % res["reso_v"])
-    print("Resolution scalar: %g" % res["reso_s"])
+log("R0 = %g, Vol = %g" % (res["r0"], res["res_vol"]))
+log("Resolution matrix (Q_para [1/A], Q_perp [1/A], Q_up [1/A], E [meV]):\n%s" % res["reso"])
+log("Resolution vector (Q_para [1/A], Q_perp [1/A], Q_up [1/A], E [meV]):\n%s" % res["reso_v"])
+log("Resolution scalar: %g" % res["reso_s"])
 # -----------------------------------------------------------------------------
 
 
@@ -361,10 +363,9 @@ if show_plots or plot_file != "":
 # -----------------------------------------------------------------------------
 if out_file != "":
     with open(out_file, "w") as file:
-        print("[resolution]", file = file)
+        log("\nWriting results to \"%s\"." % out_file)
 
-        print("\tmethod = %s" % params["reso_method"], file = file)
-        print("", file = file)
+        print("[resolution]", file = file)
 
         print("\tR0 = %g" % res["r0"], file = file)
         print("\tV = %g" % res["res_vol"], file = file)
@@ -380,9 +381,10 @@ if out_file != "":
         print("", file = file)
 
         print("\treso_s = %g" % res["reso_s"], file = file)
+        print("", file = file)
 
 
-        print("\n\n[principal_axes]", file = file)
+        print("\n[principal_axes]", file = file)
 
         for i in range(0, 4):
             for j in range(0, 4):
@@ -396,4 +398,25 @@ if out_file != "":
         for i in range(0, 4):
             print("\tfwhm_%d = %g" % (i, ellipses["fwhms"][i]), file = file)
         print("", file = file)
+
+        for i in range(0, 4):
+            print("\tfwhm_coh_%d = %g" % (i, ellipses["fwhms_coh"][i]), file = file)
+        print("", file = file)
+
+        for i in range(0, 4):
+            print("\tfwhm_inc_%d = %g" % (i, ellipses["fwhms_inc"][i]), file = file)
+        print("", file = file)
+
+
+        print("\n[parameters]", file = file)
+
+        for [ key, value ] in params.items():
+            if isinstance(value, float):
+                print("\t%s = %g" % (key, value), file = file)
+            elif isinstance(value, int):
+                print("\t%s = %d" % (key, value), file = file)
+            elif callable(value):
+                print("\t%s = <func>" % key, file = file)
+            else:
+                print("\t%s = \"%s\"" % (key, value), file = file)
 # -----------------------------------------------------------------------------

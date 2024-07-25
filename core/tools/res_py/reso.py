@@ -147,15 +147,17 @@ def descr_ellipse(quadric):
 def calc_ellipses(Qres_Q, verbose = True):
     # 4d ellipsoid
     [fwhms, angles, rot, evals] = descr_ellipse(Qres_Q)
+    fwhms_coh = calc_coh_fwhms(Qres_Q)
+    fwhms_inc = calc_incoh_fwhms(Qres_Q)
 
     if verbose:
         print()
         print("Eigenvalues: %s" % evals)
         print("Eigensystem (Q_para [1/A], Q_perp [1/A], Q_up [1/A], E [meV]):\n%s" % rot)
         print()
-        print("Coherent-elastic fwhms: %s" % (calc_coh_fwhms(Qres_Q)))
-        print("Incoherent-elastic fwhms: %s" % (calc_incoh_fwhms(Qres_Q)))
         print("Principal axes fwhms: %s" % fwhms)
+        print("Coherent-elastic fwhms: %s" % fwhms_coh)
+        print("Incoherent-elastic fwhms: %s" % fwhms_inc)
 
 
     # 2d sliced ellipses
@@ -217,6 +219,7 @@ def calc_ellipses(Qres_Q, verbose = True):
     results = {
         # 4d ellipsoid
         "fwhms" : fwhms, "rot" : rot, "evals" : evals,
+        "fwhms_coh" : fwhms_coh, "fwhms_inc" : fwhms_inc,
 
         # projected and sliced ellipses
         "fwhms_QxE" : fwhms_QxE, "rot_QxE" : rot_QxE,
