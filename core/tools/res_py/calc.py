@@ -329,7 +329,7 @@ elif params["reso_method"] == "pop":
     log("\nCalculating using Popovici method.")
     res = pop.calc(params, False)
 elif params["reso_method"] == "cn":
-    log("\nsCalculating using Cooper-Nathans method.")
+    log("\nCalculating using Cooper-Nathans method.")
     res = pop.calc(params, True)
 else:
     raise "ResPy: Invalid resolution calculation method selected."
