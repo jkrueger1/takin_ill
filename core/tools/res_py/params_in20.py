@@ -78,10 +78,10 @@ def mono_curv_h_formula(params):
 # ana horizontal curvature
 #
 def ana_curv_h_formula(params):
-    len1 = params["dist_sample_ana"]
-    len2 = params["dist_sample_ana"]
-    foclen = helpers.focal_len(len1 / helpers.cm2A,
-        len2 / helpers.cm2A)
+    len1 = params["dist_sample_ana"] / helpers.cm2A
+    #len2 = params["dist_ana_det"] / helpers.cm2A
+    len2 = params["dist_sample_ana"] / helpers.cm2A
+    foclen = helpers.focal_len(len1, len2)
 
     curv_cm = helpers.foc_curv_2(foclen,
         params["kf"], params["ana_xtal_d"], False)
