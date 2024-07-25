@@ -85,9 +85,9 @@ public:
 
 /**
  * interface using supplied functions
- * iNumArgs also includes the "x" parameter to the function, m_vecVals does not
+ * num_args also includes the "x" parameter to the function, m_vecVals does not
  */
-template<class t_real, std::size_t iNumArgs, typename t_func>
+template<class t_real, std::size_t num_args, typename t_func>
 class FitterLamFuncModel : public FitterFuncModel<t_real>
 {
 protected:
@@ -99,7 +99,7 @@ public:
 	FitterLamFuncModel(t_func func, bool bSeparateX = true)
 		: m_func{func}, m_vecVals{}, m_bSeparateFreeParam{bSeparateX}
 	{
-		m_vecVals.resize(m_bSeparateFreeParam ? iNumArgs-1 : iNumArgs);
+		m_vecVals.resize(m_bSeparateFreeParam ? num_args-1 : num_args);
 	}
 
 
@@ -121,15 +121,15 @@ public:
 		}
 
 		const std::vector<t_real> *pvecVals = m_bSeparateFreeParam ? &vecValsWithX : &m_vecVals;
-		t_real funcval = call<iNumArgs, t_func, t_real, std::vector>(m_func, *pvecVals);
+		t_real funcval = call<num_args, t_func, t_real, std::vector>(m_func, *pvecVals);
 		return funcval;
 	}
 
 
 	virtual FitterLamFuncModel* copy() const override
 	{
-		FitterLamFuncModel<t_real, iNumArgs, t_func>* pMod =
-			new FitterLamFuncModel<t_real, iNumArgs, t_func>(m_func);
+		FitterLamFuncModel<t_real, num_args, t_func>* pMod =
+			new FitterLamFuncModel<t_real, num_args, t_func>(m_func);
 
 		pMod->m_vecVals = this->m_vecVals;
 		pMod->m_bSeparateFreeParam = this->m_bSeparateFreeParam;
@@ -142,7 +142,7 @@ public:
 
 /**
  * interface using supplied functions
- * iNumArgs also includes the "x" parameter to the function, m_vecVals does not
+ * num_args also includes the "x" parameter to the function, m_vecVals does not
  */
 template<class t_real>
 class FitterParsedFuncModel : public FitterFuncModel<t_real>
@@ -158,7 +158,8 @@ protected:
 
 
 public:
-	FitterParsedFuncModel(const std::string& func, const std::string& xName, const std::vector<std::string>& vecNames)
+	FitterParsedFuncModel(const std::string& func, const std::string& xName,
+		const std::vector<std::string>& vecNames)
 		: m_func{func}, m_xName{xName}, m_vecNames{vecNames}
 	{
 		if(!m_expr.parse(m_func))
@@ -169,7 +170,7 @@ public:
 	virtual bool SetParams(const std::vector<t_real>& vecParams) override
 	{
 		m_vecVals.resize(vecParams.size());
-		for(std::size_t i=0; i<std::min(vecParams.size(), m_vecVals.size()); ++i)
+		for(std::size_t i = 0; i < std::min(vecParams.size(), m_vecVals.size()); ++i)
 			m_vecVals[i] = vecParams[i];
 		return true;
 	}
@@ -184,7 +185,7 @@ public:
 		if(m_xName != "")
 			expr.register_var(m_xName, x);
 
-		for(std::size_t i=0; i<m_vecVals.size(); ++i)
+		for(std::size_t i = 0; i < m_vecVals.size(); ++i)
 			expr.register_var(m_vecNames[i], m_vecVals[i]);
 
 		t_real val = expr.eval();
@@ -223,9 +224,9 @@ protected:
 
 
 public:
-	Chi2Function(const FitterFuncModel<t_real_min>* fkt=0,
-		std::size_t num_pts=0, const t_real *px=0,
-		const t_real *py=0, const t_real *pdy=0)
+	Chi2Function(const FitterFuncModel<t_real_min> *fkt = nullptr,
+		std::size_t num_pts = 0, const t_real *px = nullptr,
+		const t_real *py = nullptr, const t_real *pdy = nullptr)
 		: m_pfkt{fkt}, m_num_pts{num_pts}, m_px{px}, m_py{py}, m_pdy{pdy}
 	{}
 
@@ -261,16 +262,20 @@ public:
 		FitterFuncModel<t_real_min>* pfkt = uptrFkt.get();
 
 		pfkt->SetParams(vecParams);
-		return tl2::chi2<t_real_min, decltype(*pfkt), const t_real*>(*pfkt, m_num_pts, m_px, m_py, m_pdy);
+		return tl2::chi2<t_real_min, decltype(*pfkt), const t_real*>(
+			*pfkt, m_num_pts, m_px, m_py, m_pdy);
 	}
 
-	virtual t_real_min Up() const override { return m_dSigma*m_dSigma; }
+	virtual t_real_min Up() const override
+	{
+		return m_dSigma*m_dSigma;
+	}
 
 	virtual t_real_min operator()(const std::vector<t_real_min>& vecParams) const override
 	{
 		t_real_min dChi2 = chi2(vecParams);
 		if(m_bDebug)
-			std::cerr << "Fitter: chi2 = " << dChi2 << std::endl;
+			std::cerr << "Fitter: chi2 = " << dChi2 << "." << std::endl;
 		return dChi2;
 	}
 
@@ -294,7 +299,7 @@ protected:
 	t_real_min m_dSigma = 1.;
 
 public:
-	MiniFunction(const FitterFuncModel<t_real_min>* fkt=0) : m_pfkt(fkt) {}
+	MiniFunction(const FitterFuncModel<t_real_min>* fkt = nullptr) : m_pfkt(fkt) {}
 	virtual ~MiniFunction() = default;
 
 	MiniFunction(const MiniFunction<t_real>& other)
@@ -307,7 +312,10 @@ public:
 		this->m_dSigma = other.m_dSigma;
 	}
 
-	virtual t_real_min Up() const override { return m_dSigma*m_dSigma; }
+	virtual t_real_min Up() const override
+	{
+		return m_dSigma*m_dSigma;
+	}
 
 	virtual t_real_min operator()(const std::vector<t_real_min>& vecParams) const override
 	{
@@ -333,14 +341,14 @@ public:
 /**
  * fit function to x,y,dy data points
  */
-template<class t_real = t_real_min, std::size_t iNumArgs, typename t_func>
+template<class t_real = t_real_min, std::size_t num_args, typename t_func>
 bool fit(t_func&& func,
 
 	const std::vector<t_real>& vecX,
 	const std::vector<t_real>& vecY,
 	const std::vector<t_real>& vecYErr,
 
-	const std::vector<std::string>& vecParamNames,	// size: iNumArgs-1
+	const std::vector<std::string>& vecParamNames,	// size: num_args-1
 	std::vector<t_real>& vecVals,
 	std::vector<t_real>& vecErrs,
 	const std::vector<bool>* pVecFixed = nullptr,
@@ -351,7 +359,7 @@ bool fit(t_func&& func,
 	{
 		if(!vecX.size() || !vecY.size() || !vecYErr.size())
 		{
-			std::cerr << "Fitter: No data given to fitter." << std::endl;
+			std::cerr << "Fitter: No data given." << std::endl;
 			return false;
 		}
 
@@ -376,7 +384,7 @@ bool fit(t_func&& func,
 			for(t_real d : vecYErr) vecYErrConverted.push_back(static_cast<t_real_min>(d));
 		}
 
-		FitterLamFuncModel<t_real_min, iNumArgs, t_func> mod(func);
+		FitterLamFuncModel<t_real_min, num_args, t_func> mod(func);
 
 		std::unique_ptr<Chi2Function<t_real_min>> chi2;
 		if constexpr(std::is_same_v<t_real, t_real_min>)
@@ -428,7 +436,7 @@ bool fit_expr(const std::string& func,
 	const std::vector<t_real>& vecYErr,
 
 	const std::string& strXName,
-	const std::vector<std::string>& vecParamNames,	// size: iNumArgs-1
+	const std::vector<std::string>& vecParamNames,	// size: num_args-1
 	std::vector<t_real>& vecVals,
 	std::vector<t_real>& vecErrs,
 	const std::vector<bool>* pVecFixed = nullptr,
@@ -439,7 +447,7 @@ bool fit_expr(const std::string& func,
 	{
 		if(!vecX.size() || !vecY.size() || !vecYErr.size())
 		{
-			std::cerr << "Fitter: No data given to fitter." << std::endl;
+			std::cerr << "Fitter: No data given." << std::endl;
 			return false;
 		}
 
@@ -508,7 +516,7 @@ bool fit_expr(const std::string& func,
 /**
  * find function minimum
  */
-template<class t_real = t_real_min, std::size_t iNumArgs, typename t_func>
+template<class t_real = t_real_min, std::size_t num_args, typename t_func>
 bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
 	std::vector<t_real>& vecVals, std::vector<t_real>& vecErrs,
 	const std::vector<bool>* pVecFixed = nullptr, bool bDebug = true) noexcept
@@ -523,7 +531,7 @@ bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
 				return false;
 			}
 
-		FitterLamFuncModel<t_real_min, iNumArgs, t_func> mod(func, false);
+		FitterLamFuncModel<t_real_min, num_args, t_func> mod(func, false);
 		MiniFunction<t_real_min> chi2(&mod);
 
 		ROOT::Minuit2::MnUserParameters params;
@@ -637,13 +645,14 @@ template<typename T> T bernstein(int i, int n, T t)
 template<class t_vec, typename T=typename t_vec::value_type>
 t_vec bezier(const t_vec* P, std::size_t N, T t)
 {
-	if(N==0) return t_vec{};
+	if(N == 0)
+		return t_vec{};
 	const int n = N-1;
 
 	t_vec vec(P[0].size());
-	for(std::size_t i=0; i<vec.size(); ++i) vec[i] = T(0);
+	for(std::size_t i = 0; i < vec.size(); ++i) vec[i] = T(0);
 
-	for(int i=0; i<=n; ++i)
+	for(int i = 0; i <= n; ++i)
 		vec += P[i]*bernstein(i, n, t);
 
 	return vec;
@@ -657,7 +666,7 @@ t_vec bezier(const t_vec* P, std::size_t N, T t)
 template<typename T>
 T bspline_base(int i, int j, T t, const std::vector<T>& knots)
 {
-	if(j==0)
+	if(j == 0)
 	{
 		if((knots[i] <= t) && (t < knots[i+1]) && (knots[i]<knots[i+1]))
 			return 1.;
@@ -684,16 +693,17 @@ T bspline_base(int i, int j, T t, const std::vector<T>& knots)
 template<class t_vec, typename T=typename t_vec::value_type>
 t_vec bspline(const t_vec* P, std::size_t N, T t, const std::vector<T>& knots)
 {
-	if(N==0) return t_vec{};
+	if(N == 0)
+		return t_vec{};
 	const int n = N-1;
 	const int m = knots.size()-1;
 	const int degree = m-n-1;
 
 	t_vec vec(P[0].size());
-	for(std::size_t i=0; i<vec.size(); ++i)
+	for(std::size_t i = 0; i < vec.size(); ++i)
 		vec[i] = T(0);
 
-	for(int i=0; i<=n; ++i)
+	for(int i = 0; i <= n; ++i)
 		vec += P[i]*bspline_base(i, degree, t, knots);
 
 	return vec;
@@ -749,7 +759,7 @@ class BSpline
 		{
 			m_pvecs.reset(new t_vec[m_iN]);
 
-			for(std::size_t i=0; i<m_iN; ++i)
+			for(std::size_t i = 0; i < m_iN; ++i)
 			{
 				m_pvecs[i].resize(2);
 				m_pvecs[i][0] = px[i];
@@ -761,7 +771,7 @@ class BSpline
 
 
 			// set knots to uniform, nonperiodic B-Spline
-			for(unsigned int i=0; i<m_iDegree+1; ++i)
+			for(unsigned int i = 0; i < m_iDegree+1; ++i)
 				m_vecKnots[i] = 0.+i*m_eps;
 			for(unsigned int i=iM-m_iDegree-1; i<iM; ++i)
 				m_vecKnots[i] = 1.-i*m_eps;
@@ -772,7 +782,7 @@ class BSpline
 
 		t_vec operator()(T t) const
 		{
-			if(m_iN==0)
+			if(m_iN == 0)
 			{
 				t_vec vecNull(2);
 				vecNull[0] = vecNull[1] = 0.;
@@ -782,8 +792,10 @@ class BSpline
 			t_vec vec = bspline<t_vec, T>(m_pvecs.get(), m_iN, t, m_vecKnots);
 
 			// remove epsilon dependence
-			if(t<=0.) vec = m_pvecs[0];
-			if(t>=1.) vec = m_pvecs[m_iN-1];
+			if(t <= 0.)
+				vec = m_pvecs[0];
+			if(t >= 1.)
+				vec = m_pvecs[m_iN-1];
 
 			return vec;
 		}
@@ -816,7 +828,9 @@ public:
 		// ensure that vector is sorted by x values
 		std::stable_sort(m_pvecs.get(), m_pvecs.get()+m_iN,
 			[](const t_vec& vec1, const t_vec& vec2) -> bool
-			{ return vec1[0] < vec2[0]; });
+		{
+			return vec1[0] < vec2[0];
+		});
 	}
 
 
@@ -825,12 +839,16 @@ public:
 		const auto* iterBegin = m_pvecs.get();
 		const auto* iterEnd = m_pvecs.get() + m_iN;
 
-		if(m_iN == 0) return T(0);
-		if(m_iN == 1) return (*iterBegin)[1];
+		if(m_iN == 0)
+			return T(0);
+		else if(m_iN == 1)
+			return (*iterBegin)[1];
 
 		const auto* iterLower = std::lower_bound(iterBegin, iterEnd, x,
 			[](const t_vec& vec, const T& x) -> bool
-			{ return vec[0] < x; });
+		{
+			return vec[0] < x;
+		});
 
 		// lower bound at end of range?
 		if(iterLower == iterEnd || iterLower == iterEnd-1)

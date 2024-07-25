@@ -661,11 +661,11 @@ T CG_coeff(T S, T s1, T s2, T ms1, T ms2)
  * @see https://en.wikipedia.org/wiki/Spherical_coordinate_system
  */
 template<class T = double>
-std::tuple<T,T,T> cart_to_sph(T x, T y, T z)
+std::tuple<T, T, T> cart_to_sph(T x, T y, T z)
 {
 	T rho = std::sqrt(x*x + y*y + z*z);
 	T phi = std::atan2(y, x);
-	T theta = std::acos(z/rho);
+	T theta = std::acos(z / rho);
 
 	return std::make_tuple(rho, phi, theta);
 }
@@ -676,7 +676,7 @@ std::tuple<T,T,T> cart_to_sph(T x, T y, T z)
  * @see https://en.wikipedia.org/wiki/Spherical_coordinate_system
  */
 template<class T = double>
-std::tuple<T,T,T> sph_to_cart(T rho, T phi, T theta)
+std::tuple<T, T, T> sph_to_cart(T rho, T phi, T theta)
 {
 	T x = rho * std::cos(phi)*std::sin(theta);
 	T y = rho * std::sin(phi)*std::sin(theta);
@@ -691,10 +691,10 @@ std::tuple<T,T,T> sph_to_cart(T rho, T phi, T theta)
  * @see https://en.wikipedia.org/wiki/Spherical_coordinate_system
  */
 template<class T = double>
-std::tuple<T,T,T> cyl_to_sph(T rho_cyl, T phi_cyl, T z_cyl)
+std::tuple<T, T, T> cyl_to_sph(T rho_cyl, T phi_cyl, T z_cyl)
 {
 	T rho = std::sqrt(rho_cyl*rho_cyl + z_cyl*z_cyl);
-	T theta = std::acos(z_cyl/rho);
+	T theta = std::acos(z_cyl / rho);
 
 	return std::make_tuple(rho, phi_cyl, theta);
 }
@@ -705,7 +705,7 @@ std::tuple<T,T,T> cyl_to_sph(T rho_cyl, T phi_cyl, T z_cyl)
  * @see https://en.wikipedia.org/wiki/Spherical_coordinate_system
  */
 template<class T = double>
-std::tuple<T,T,T> sph_to_cyl(T rho_sph, T phi_sph, T theta_sph)
+std::tuple<T, T, T> sph_to_cyl(T rho_sph, T phi_sph, T theta_sph)
 {
 	T rho = rho_sph * std::sin(theta_sph);
 	T z = rho_sph * std::cos(theta_sph);
@@ -719,7 +719,7 @@ std::tuple<T,T,T> sph_to_cyl(T rho_sph, T phi_sph, T theta_sph)
  * @see https://en.wikipedia.org/wiki/Cylindrical_coordinate_system
  */
 template<class T = double>
-std::tuple<T,T,T> cyl_to_cart(T rho, T phi, T z)
+std::tuple<T, T, T> cyl_to_cart(T rho, T phi, T z)
 {
 	T x = rho * std::cos(phi);
 	T y = rho * std::sin(phi);
@@ -733,7 +733,7 @@ std::tuple<T,T,T> cyl_to_cart(T rho, T phi, T z)
  * @see https://en.wikipedia.org/wiki/Cylindrical_coordinate_system
  */
 template<class T = double>
-std::tuple<T,T,T> cart_to_cyl(T x, T y, T z)
+std::tuple<T, T, T> cart_to_cyl(T x, T y, T z)
 {
 	T rho = std::sqrt(x*x + y*y);
 	T phi = std::atan2(y, x);
@@ -748,7 +748,7 @@ std::tuple<T,T,T> cart_to_cyl(T x, T y, T z)
  * @see see http://mathworld.wolfram.com/GnomonicProjection.html
  */
 template<class T = double>
-std::tuple<T,T> gnomonic_proj(T twophi_crys, T twotheta_crys)
+std::tuple<T, T> gnomonic_proj(T twophi_crys, T twotheta_crys)
 {
 	T x = -std::tan(twophi_crys);
 	T y = std::tan(twotheta_crys) / std::cos(twophi_crys);
@@ -763,7 +763,7 @@ std::tuple<T,T> gnomonic_proj(T twophi_crys, T twotheta_crys)
  * @see http://mathworld.wolfram.com/StereographicProjection.html
  */
 template<class T = double>
-std::tuple<T,T> stereographic_proj(T twophi_crys, T twotheta_crys, T rad)
+std::tuple<T, T> stereographic_proj(T twophi_crys, T twotheta_crys, T rad)
 {
 	const T sth = std::sin(twotheta_crys);
 	const T cth = std::cos(twotheta_crys);
