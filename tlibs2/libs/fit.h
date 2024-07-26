@@ -150,8 +150,8 @@ template<class t_real, typename t_func>
 class FitterDynLamFuncModel : public FitterFuncModel<t_real>
 {
 protected:
-	t_func m_func{};
 	std::size_t m_num_args{1};
+	t_func m_func{};
 	std::vector<t_real> m_vecVals{};
 	bool m_bSeparateFreeParam{true};  // separate "x" from parameters (for fitter)
 

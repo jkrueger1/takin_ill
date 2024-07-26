@@ -135,7 +135,7 @@ add_test(math math)
 add_test(rotation rotation)
 add_test(stat1 stat1)
 add_test(quat1 quat1)
-add_test(lestsq leastsq)
+add_test(leastsq leastsq)
 add_test(eig eig)
 add_test(chol chol)
 add_test(ode ode)
@@ -145,4 +145,18 @@ add_test(fit0 fit0)
 add_test(fit1 fit1)
 add_test(cov cov)
 add_test(fft fft)
+# -----------------------------------------------------------------------------
+
+
+# -----------------------------------------------------------------------------
+# add rpaths
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+	foreach(tool IN ITEMS magdyn magdyn2 eig chol ode cryst leastsq rotation mat0 mat1 mat2 mat3)
+		message(STATUS "Setting rpath for ${tool}...")
+
+		add_custom_command(TARGET ${tool} POST_BUILD
+			COMMAND install_name_tool -add_rpath /usr/local/lib $<TARGET_FILE:${tool}>
+			WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+	endforeach()
+endif()
 # -----------------------------------------------------------------------------

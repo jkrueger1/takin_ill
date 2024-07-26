@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_min1, t_real, t_types_real)
 	std::vector<std::string> params{{ "x", }};
 	std::vector<t_real> vals{{ 0., }};
 	std::vector<t_real> errs{{ 5, }};
-	std::vector<bool> fixed{{ false, }};
+	std::vector<bool> fixed{ false, };
 
 	bool ok = tl2::minimise<t_real, 1>(func, params, vals, errs, &fixed);
 
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_min1_dynarg, t_real, t_types_real)
 	std::vector<std::string> params{{ "x", }};
 	std::vector<t_real> vals{{ 0., }};
 	std::vector<t_real> errs{{ 5, }};
-	std::vector<bool> fixed{{ false, }};
+	std::vector<bool> fixed{ false, };
 
 	bool ok = tl2::minimise_dynargs<t_real>(1, func, params, vals, errs, &fixed);
 

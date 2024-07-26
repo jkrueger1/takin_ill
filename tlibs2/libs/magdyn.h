@@ -471,7 +471,7 @@ public:
 	{
 		std::vector<const MagneticSite*> sites;
 
-		for(const auto& site : GetMagneticSites())
+		for(const MagneticSite& site : GetMagneticSites())
 		{
 			if(site.name == name)
 				sites.push_back(&site);
@@ -723,7 +723,7 @@ public:
 	{
 		// is a variable with the same name already registered?
 		auto iter = std::find_if(m_variables.begin(), m_variables.end(),
-			[&var](const auto& thevar)
+			[&var](const Variable& thevar)
 		{
 			return thevar.name == var.name;
 		});
@@ -2233,14 +2233,14 @@ public:
 		EnergiesAndWeights new_energies_and_correlations{};
 		new_energies_and_correlations.reserve(energies_and_correlations.size());
 
-		for(const auto& curState : energies_and_correlations)
+		for(const EnergyAndWeight& curState : energies_and_correlations)
 		{
 			const t_real curE = curState.E;
 
 			auto iter = std::find_if(
 				new_energies_and_correlations.begin(),
 				new_energies_and_correlations.end(),
-				[curE, this](const auto& E_and_S) -> bool
+				[curE, this](const EnergyAndWeight& E_and_S) -> bool
 			{
 				t_real E = E_and_S.E;
 				return tl2::equals<t_real>(E, curE, m_eps);
@@ -2369,7 +2369,7 @@ public:
 		// get minimum
 		const auto min_iter = std::min_element(
 			energies_and_correlations.begin(), energies_and_correlations.end(),
-			[](const auto& E_and_S_1, const auto& E_and_S_2) -> bool
+			[](const EnergyAndWeight& E_and_S_1, const EnergyAndWeight& E_and_S_2) -> bool
 		{
 			return std::abs(E_and_S_1.E) < std::abs(E_and_S_2.E);
 		});
@@ -2425,6 +2425,9 @@ public:
 			auto dyn = *this;
 
 			// TODO
+			for(const MagneticSite& site : dyn.GetMagneticSites())
+			{
+			}
 
 			// ground state energy with the new configuration
 			return dyn.CalcGroundStateEnergy();
@@ -2537,7 +2540,7 @@ public:
 		{
 			const t_result& result = task->get_future().get();
 
-			for(const auto& E_and_S : result.E_and_S)
+			for(const EnergyAndWeight& E_and_S : result.E_and_S)
 			{
 				ostr	<< std::setw(m_prec*2) << std::left << result.h
 					<< std::setw(m_prec*2) << std::left << result.k
@@ -2939,7 +2942,7 @@ public:
 		node.put<std::string>("magnetic_form_factor", GetMagneticFormFactor());
 
 		// variables
-		for(const auto& var : GetVariables())
+		for(const Variable& var : GetVariables())
 		{
 			boost::property_tree::ptree itemNode;
 			itemNode.put<std::string>("name", var.name);
@@ -2949,7 +2952,7 @@ public:
 		}
 
 		// magnetic sites
-		for(const auto& site : GetMagneticSites())
+		for(const MagneticSite& site : GetMagneticSites())
 		{
 			boost::property_tree::ptree itemNode;
 			itemNode.put<std::string>("name", site.name);
@@ -2982,7 +2985,7 @@ public:
 		}
 
 		// exchange terms
-		for(const auto& term : GetExchangeTerms())
+		for(const ExchangeTerm& term : GetExchangeTerms())
 		{
 			boost::property_tree::ptree itemNode;
 			itemNode.put<std::string>("name", term.name);
