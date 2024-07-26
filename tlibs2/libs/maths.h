@@ -664,8 +664,8 @@ template<class T = double>
 std::tuple<T, T, T> cart_to_sph(T x, T y, T z)
 {
 	T rho = std::sqrt(x*x + y*y + z*z);
-	T phi = std::atan2(y, x);
-	T theta = std::acos(z / rho);
+	T phi = std::atan2(y, x);      // range: [-pi, pi]
+	T theta = std::acos(z / rho);  // range: [0, pi]
 
 	return std::make_tuple(rho, phi, theta);
 }

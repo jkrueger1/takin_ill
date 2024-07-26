@@ -2447,10 +2447,13 @@ public:
 		t_size num_args = GetMagneticSitesCount() * 2;
 		std::vector<std::string> params;
 		std::vector<t_real> vals, errs;
+		std::vector<t_real> lower_lims, upper_lims;
 		std::vector<bool> fixed;
 		params.reserve(num_args);
 		vals.reserve(num_args);
 		errs.reserve(num_args);
+		lower_lims.reserve(num_args);
+		upper_lims.reserve(num_args);
 		fixed.reserve(num_args);
 
 		for(const MagneticSite& site : GetMagneticSites())
@@ -2468,11 +2471,19 @@ public:
 			vals.push_back(phi);
 			vals.push_back(theta);
 
-			errs.push_back(tl2::pi<t_real> * 2. / 2.);
+			lower_lims.push_back(-tl2::pi<t_real>);
+			lower_lims.push_back(0);
+
+			upper_lims.push_back(tl2::pi<t_real>);
+			upper_lims.push_back(tl2::pi<t_real>);
+
+			errs.push_back(tl2::pi<t_real>);
 			errs.push_back(tl2::pi<t_real> / 2.);
 		}
 
-		if(tl2::minimise_dynargs<t_real>(num_args, func, params, vals, errs, &fixed))
+		const bool verbose = true;
+		if(tl2::minimise_dynargs<t_real>(num_args, func,
+			params, vals, errs, &fixed, &lower_lims, &upper_lims, verbose))
 		{
 			// set the spins to the newly-found ground state
 			for(t_size site_idx = 0; site_idx < GetMagneticSitesCount(); ++site_idx)

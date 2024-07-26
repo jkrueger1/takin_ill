@@ -457,21 +457,21 @@ bool fit(t_func&& func,
 			chi2 = std::make_unique<Chi2Function<t_real_min>>(&mod, vecXConverted.size(), vecXConverted.data(), vecYConverted.data(), vecYErrConverted.data());
 
 		ROOT::Minuit2::MnUserParameters params;
-		for(std::size_t iParam = 0; iParam < vecParamNames.size(); ++iParam)
+		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
 		{
-			params.Add(vecParamNames[iParam], static_cast<t_real_min>(vecVals[iParam]), static_cast<t_real_min>(vecErrs[iParam]));
-			if(pVecFixed && (*pVecFixed)[iParam])
-				params.Fix(vecParamNames[iParam]);
+			params.Add(vecParamNames[param_idx], static_cast<t_real_min>(vecVals[param_idx]), static_cast<t_real_min>(vecErrs[param_idx]));
+			if(pVecFixed && (*pVecFixed)[param_idx])
+				params.Fix(vecParamNames[param_idx]);
 		}
 
 		ROOT::Minuit2::MnMigrad migrad(*chi2, params, 2);
 		ROOT::Minuit2::FunctionMinimum mini = migrad();
 		bool bValidFit = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
 
-		for(std::size_t iParam = 0; iParam < vecParamNames.size(); ++iParam)
+		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
 		{
-			vecVals[iParam] = static_cast<t_real>(mini.UserState().Value(vecParamNames[iParam]));
-			vecErrs[iParam] = static_cast<t_real>(std::fabs(mini.UserState().Error(vecParamNames[iParam])));
+			vecVals[param_idx] = static_cast<t_real>(mini.UserState().Value(vecParamNames[param_idx]));
+			vecErrs[param_idx] = static_cast<t_real>(std::fabs(mini.UserState().Error(vecParamNames[param_idx])));
 		}
 
 		if(bDebug)
@@ -545,21 +545,21 @@ bool fit_expr(const std::string& func,
 			chi2 = std::make_unique<Chi2Function<t_real_min>>(&mod, vecXConverted.size(), vecXConverted.data(), vecYConverted.data(), vecYErrConverted.data());
 
 		ROOT::Minuit2::MnUserParameters params;
-		for(std::size_t iParam = 0; iParam < vecParamNames.size(); ++iParam)
+		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
 		{
-			params.Add(vecParamNames[iParam], static_cast<t_real_min>(vecVals[iParam]), static_cast<t_real_min>(vecErrs[iParam]));
-			if(pVecFixed && (*pVecFixed)[iParam])
-				params.Fix(vecParamNames[iParam]);
+			params.Add(vecParamNames[param_idx], static_cast<t_real_min>(vecVals[param_idx]), static_cast<t_real_min>(vecErrs[param_idx]));
+			if(pVecFixed && (*pVecFixed)[param_idx])
+				params.Fix(vecParamNames[param_idx]);
 		}
 
 		ROOT::Minuit2::MnMigrad migrad(*chi2, params, 2);
 		ROOT::Minuit2::FunctionMinimum mini = migrad();
 		bool bValidFit = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
 
-		for(std::size_t iParam = 0; iParam < vecParamNames.size(); ++iParam)
+		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
 		{
-			vecVals[iParam] = static_cast<t_real>(mini.UserState().Value(vecParamNames[iParam]));
-			vecErrs[iParam] = static_cast<t_real>(std::fabs(mini.UserState().Error(vecParamNames[iParam])));
+			vecVals[param_idx] = static_cast<t_real>(mini.UserState().Value(vecParamNames[param_idx]));
+			vecErrs[param_idx] = static_cast<t_real>(std::fabs(mini.UserState().Error(vecParamNames[param_idx])));
 		}
 
 		if(bDebug)
@@ -583,7 +583,10 @@ bool fit_expr(const std::string& func,
 template<class t_real = t_real_min, std::size_t num_args, typename t_func>
 bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
 	std::vector<t_real>& vecVals, std::vector<t_real>& vecErrs,
-	const std::vector<bool>* pVecFixed = nullptr, bool bDebug = true) noexcept
+	const std::vector<bool>* pVecFixed = nullptr,
+	const std::vector<t_real>* pVecLowerLimits = nullptr,
+	const std::vector<t_real>* pVecUpperLimits = nullptr,
+	bool bDebug = true) noexcept
 {
 	try
 	{
@@ -599,21 +602,27 @@ bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
 		MiniFunction<t_real_min> chi2(&mod);
 
 		ROOT::Minuit2::MnUserParameters params;
-		for(std::size_t iParam = 0; iParam < vecParamNames.size(); ++iParam)
+		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
 		{
-			params.Add(vecParamNames[iParam], static_cast<t_real_min>(vecVals[iParam]), static_cast<t_real_min>(vecErrs[iParam]));
-			if(pVecFixed && (*pVecFixed)[iParam])
-				params.Fix(vecParamNames[iParam]);
+			params.Add(vecParamNames[param_idx],
+				static_cast<t_real_min>(vecVals[param_idx]),
+				static_cast<t_real_min>(vecErrs[param_idx]));
+			if(pVecLowerLimits)
+				params.SetLowerLimit(vecParamNames[param_idx], (*pVecLowerLimits)[param_idx]);
+			if(pVecUpperLimits)
+				params.SetUpperLimit(vecParamNames[param_idx], (*pVecUpperLimits)[param_idx]);
+			if(pVecFixed && (*pVecFixed)[param_idx])
+				params.Fix(vecParamNames[param_idx]);
 		}
 
 		ROOT::Minuit2::MnMigrad migrad(chi2, params, 2);
 		ROOT::Minuit2::FunctionMinimum mini = migrad();
 		bool bMinimumValid = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
 
-		for(std::size_t iParam = 0; iParam < vecParamNames.size(); ++iParam)
+		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
 		{
-			vecVals[iParam] = static_cast<t_real>(mini.UserState().Value(vecParamNames[iParam]));
-			vecErrs[iParam] = static_cast<t_real>(std::fabs(mini.UserState().Error(vecParamNames[iParam])));
+			vecVals[param_idx] = static_cast<t_real>(mini.UserState().Value(vecParamNames[param_idx]));
+			vecErrs[param_idx] = static_cast<t_real>(std::fabs(mini.UserState().Error(vecParamNames[param_idx])));
 		}
 
 		if(bDebug)
@@ -638,7 +647,10 @@ template<class t_real = t_real_min, typename t_func>
 bool minimise_dynargs(std::size_t num_args, t_func&& func,
 	const std::vector<std::string>& vecParamNames,
 	std::vector<t_real>& vecVals, std::vector<t_real>& vecErrs,
-	const std::vector<bool>* pVecFixed = nullptr, bool bDebug = true) noexcept
+	const std::vector<bool>* pVecFixed = nullptr,
+	const std::vector<t_real>* pVecLowerLimits = nullptr,
+	const std::vector<t_real>* pVecUpperLimits = nullptr,
+	bool bDebug = true) noexcept
 {
 	try
 	{
@@ -654,21 +666,27 @@ bool minimise_dynargs(std::size_t num_args, t_func&& func,
 		MiniFunction<t_real_min> chi2(&mod);
 
 		ROOT::Minuit2::MnUserParameters params;
-		for(std::size_t iParam = 0; iParam < vecParamNames.size(); ++iParam)
+		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
 		{
-			params.Add(vecParamNames[iParam], static_cast<t_real_min>(vecVals[iParam]), static_cast<t_real_min>(vecErrs[iParam]));
-			if(pVecFixed && (*pVecFixed)[iParam])
-				params.Fix(vecParamNames[iParam]);
+			params.Add(vecParamNames[param_idx],
+				static_cast<t_real_min>(vecVals[param_idx]),
+				static_cast<t_real_min>(vecErrs[param_idx]));
+			if(pVecLowerLimits)
+				params.SetLowerLimit(vecParamNames[param_idx], (*pVecLowerLimits)[param_idx]);
+			if(pVecUpperLimits)
+				params.SetUpperLimit(vecParamNames[param_idx], (*pVecUpperLimits)[param_idx]);
+			if(pVecFixed && (*pVecFixed)[param_idx])
+				params.Fix(vecParamNames[param_idx]);
 		}
 
 		ROOT::Minuit2::MnMigrad migrad(chi2, params, 2);
 		ROOT::Minuit2::FunctionMinimum mini = migrad();
 		bool bMinimumValid = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
 
-		for(std::size_t iParam = 0; iParam < vecParamNames.size(); ++iParam)
+		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
 		{
-			vecVals[iParam] = static_cast<t_real>(mini.UserState().Value(vecParamNames[iParam]));
-			vecErrs[iParam] = static_cast<t_real>(std::fabs(mini.UserState().Error(vecParamNames[iParam])));
+			vecVals[param_idx] = static_cast<t_real>(mini.UserState().Value(vecParamNames[param_idx]));
+			vecErrs[param_idx] = static_cast<t_real>(std::fabs(mini.UserState().Error(vecParamNames[param_idx])));
 		}
 
 		if(bDebug)
@@ -708,21 +726,21 @@ bool minimise_expr(const std::string& func, const std::vector<std::string>& vecP
 		MiniFunction<t_real_min> chi2(&mod);
 
 		ROOT::Minuit2::MnUserParameters params;
-		for(std::size_t iParam = 0; iParam < vecParamNames.size(); ++iParam)
+		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
 		{
-			params.Add(vecParamNames[iParam], static_cast<t_real_min>(vecVals[iParam]), static_cast<t_real_min>(vecErrs[iParam]));
-			if(pVecFixed && (*pVecFixed)[iParam])
-				params.Fix(vecParamNames[iParam]);
+			params.Add(vecParamNames[param_idx], static_cast<t_real_min>(vecVals[param_idx]), static_cast<t_real_min>(vecErrs[param_idx]));
+			if(pVecFixed && (*pVecFixed)[param_idx])
+				params.Fix(vecParamNames[param_idx]);
 		}
 
 		ROOT::Minuit2::MnMigrad migrad(chi2, params, 2);
 		ROOT::Minuit2::FunctionMinimum mini = migrad();
 		bool bMinimumValid = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
 
-		for(std::size_t iParam = 0; iParam < vecParamNames.size(); ++iParam)
+		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
 		{
-			vecVals[iParam] = static_cast<t_real>(mini.UserState().Value(vecParamNames[iParam]));
-			vecErrs[iParam] = static_cast<t_real>(std::fabs(mini.UserState().Error(vecParamNames[iParam])));
+			vecVals[param_idx] = static_cast<t_real>(mini.UserState().Value(vecParamNames[param_idx]));
+			vecErrs[param_idx] = static_cast<t_real>(std::fabs(mini.UserState().Error(vecParamNames[param_idx])));
 		}
 
 		if(bDebug)
