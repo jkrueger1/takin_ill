@@ -585,7 +585,7 @@ struct _var_to_str_impl
 {
 	t_str operator()(const T& t,
 		std::streamsize iPrec = std::numeric_limits<T>::max_digits10,
-		int iGroup=-1)
+		int iGroup = -1)
 	{
 		//if(std::is_convertible<T, t_str>::value)
 		//	return *reinterpret_cast<const t_str*>(&t);

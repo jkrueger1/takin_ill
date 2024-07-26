@@ -69,7 +69,7 @@
 
 // enables debug output
 //#define __TLIBS2_MAGDYN_DEBUG_OUTPUT__
-//#define USE_MINUIT
+//#define __TLIBS2_MAGDYN_USE_MINUIT__
 
 
 
@@ -168,7 +168,7 @@ struct t_MagneticSite
 	// calculated properties
 	t_vec_real pos_calc{};       // magnetic site position
 
-	t_vec spin_dir_calc{};       // spin vector
+	t_vec_real spin_dir_calc{};  // spin vector
 	t_vec trafo_z_calc{};        // trafo z vector (3rd column in trafo matrix)
 	t_vec trafo_plane_calc{};    // trafo orthogonal plane (1st and 2nd coumns)
 	t_vec trafo_plane_conj_calc{};
@@ -953,10 +953,10 @@ public:
 			{
 				MagneticSite newsite = site;
 				newsite.pos_calc = positions[idx];
-				newsite.pos[0] = tl2::var_to_str(newsite.pos_calc[0]);
-				newsite.pos[1] = tl2::var_to_str(newsite.pos_calc[1]);
-				newsite.pos[2] = tl2::var_to_str(newsite.pos_calc[2]);
-				newsite.name += "_" + tl2::var_to_str(idx + 1);
+				newsite.pos[0] = tl2::var_to_str(newsite.pos_calc[0], m_prec);
+				newsite.pos[1] = tl2::var_to_str(newsite.pos_calc[1], m_prec);
+				newsite.pos[2] = tl2::var_to_str(newsite.pos_calc[2], m_prec);
+				newsite.name += "_" + tl2::var_to_str(idx + 1, m_prec);
 
 				newsites.emplace_back(std::move(newsite));
 			}
@@ -1087,17 +1087,17 @@ public:
 				newterm.site1 = GetMagneticSite(newterm.site1_calc).name;
 				newterm.site2 = GetMagneticSite(newterm.site2_calc).name;
 				newterm.dist_calc = to_3vec<t_vec_real>(sc2 - sc1);
-				newterm.dist[0] = tl2::var_to_str(newterm.dist_calc[0]);
-				newterm.dist[1] = tl2::var_to_str(newterm.dist_calc[1]);
-				newterm.dist[2] = tl2::var_to_str(newterm.dist_calc[2]);
+				newterm.dist[0] = tl2::var_to_str(newterm.dist_calc[0], m_prec);
+				newterm.dist[1] = tl2::var_to_str(newterm.dist_calc[1], m_prec);
+				newterm.dist[2] = tl2::var_to_str(newterm.dist_calc[2], m_prec);
 
 				for(std::uint8_t idx1 = 0; idx1 < 3; ++idx1)
 				{
-					newterm.dmi[idx1] = tl2::var_to_str(newdmis[op_idx][idx1]);
+					newterm.dmi[idx1] = tl2::var_to_str(newdmis[op_idx][idx1], m_prec);
 					for(std::uint8_t idx2 = 0; idx2 < 3; ++idx2)
-						newterm.Jgen[idx1][idx2] = tl2::var_to_str(newJgens[op_idx](idx1, idx2));
+						newterm.Jgen[idx1][idx2] = tl2::var_to_str(newJgens[op_idx](idx1, idx2), m_prec);
 				}
-				newterm.name += "_" + tl2::var_to_str(op_idx + 1);
+				newterm.name += "_" + tl2::var_to_str(op_idx + 1, m_prec);
 
 				newterms.emplace_back(std::move(newterm));
 			}
@@ -1205,12 +1205,12 @@ public:
 			newterm.site1 = GetMagneticSite(newterm.site1_calc).name;
 			newterm.site2 = GetMagneticSite(newterm.site2_calc).name;
 			newterm.dist_calc = coupling.sc_vec;
-			newterm.dist[0] = tl2::var_to_str(newterm.dist_calc[0]);
-			newterm.dist[1] = tl2::var_to_str(newterm.dist_calc[1]);
-			newterm.dist[2] = tl2::var_to_str(newterm.dist_calc[2]);
+			newterm.dist[0] = tl2::var_to_str(newterm.dist_calc[0], m_prec);
+			newterm.dist[1] = tl2::var_to_str(newterm.dist_calc[1], m_prec);
+			newterm.dist[2] = tl2::var_to_str(newterm.dist_calc[2], m_prec);
 			newterm.length_calc = coupling.dist;
 			newterm.J = "0";
-			newterm.name += "coupling_" + tl2::var_to_str(coupling_idx + 1);
+			newterm.name += "coupling_" + tl2::var_to_str(coupling_idx + 1, m_prec);
 			newterms.emplace_back(std::move(newterm));
 
 			++coupling_idx;
@@ -1448,7 +1448,7 @@ public:
 
 			// defaults
 			site.pos_calc = tl2::zero<t_vec_real>(3);
-			site.spin_dir_calc = tl2::zero<t_vec>(3);
+			site.spin_dir_calc = tl2::zero<t_vec_real>(3);
 			site.trafo_z_calc = tl2::zero<t_vec>(3);
 			site.trafo_plane_calc = tl2::zero<t_vec>(3);
 			site.trafo_plane_conj_calc = tl2::zero<t_vec>(3);
@@ -1495,7 +1495,7 @@ public:
 				{
 					if(parser.parse_noexcept(site.spin_dir[idx]))
 					{
-						site.spin_dir_calc[idx] = parser.eval_noexcept();
+						site.spin_dir_calc[idx] = parser.eval_noexcept().real();
 					}
 					else
 					{
@@ -2416,7 +2416,7 @@ public:
 	 */
 	void CalcGroundState()
 	{
-#if defined(__TLIBS2_USE_MINUIT__) && defined(USE_MINUIT)
+#if defined(__TLIBS2_USE_MINUIT__) && defined(__TLIBS2_MAGDYN_USE_MINUIT__)
 
 		// function to minimise
 		auto func = [this](const std::vector<tl2::t_real_min>& args)
@@ -2424,24 +2424,84 @@ public:
 			// set new spin configuration
 			auto dyn = *this;
 
-			// TODO
-			for(const MagneticSite& site : dyn.GetMagneticSites())
+			for(t_size site_idx = 0; site_idx < dyn.GetMagneticSitesCount(); ++site_idx)
 			{
+				MagneticSite& site = dyn.m_sites[site_idx];
+
+				const t_real phi = args[site_idx * 2 + 0];
+				const t_real theta = args[site_idx * 2 + 1];
+
+				auto [ x, y, z ] = tl2::sph_to_cart<t_real>(1., phi, theta);
+				site.spin_dir[0] = tl2::var_to_str(x, m_prec);
+				site.spin_dir[1] = tl2::var_to_str(y, m_prec);
+				site.spin_dir[2] = tl2::var_to_str(z, m_prec);
+
+				dyn.CalcMagneticSite(site);
 			}
 
 			// ground state energy with the new configuration
 			return dyn.CalcGroundStateEnergy();
 		};
 
-		t_size num_args = 1;
+		// add minimisation parameters and initial values
+		t_size num_args = GetMagneticSitesCount() * 2;
 		std::vector<std::string> params;
 		std::vector<t_real> vals, errs;
 		std::vector<bool> fixed;
+		params.reserve(num_args);
+		vals.reserve(num_args);
+		errs.reserve(num_args);
+		fixed.reserve(num_args);
 
-		// TODO
+		for(const MagneticSite& site : GetMagneticSites())
+		{
+			const t_vec_real& S = site.spin_dir_calc;
+			auto [ rho, phi, theta ] =  tl2::cart_to_sph<t_real>(S[0], S[1], S[2]);
 
-		if(!tl2::minimise_dynargs<t_real>(num_args, func, params, vals, errs, &fixed))
+			params.emplace_back(site.name + "_phi");
+			params.emplace_back(site.name + "_theta");
+
+			// TODO
+			fixed.push_back(true);
+			fixed.push_back(false);
+
+			vals.push_back(phi);
+			vals.push_back(theta);
+
+			errs.push_back(tl2::pi<t_real> * 2. / 2.);
+			errs.push_back(tl2::pi<t_real> / 2.);
+		}
+
+		if(tl2::minimise_dynargs<t_real>(num_args, func, params, vals, errs, &fixed))
+		{
+			// set the spins to the newly-found ground state
+			for(t_size site_idx = 0; site_idx < GetMagneticSitesCount(); ++site_idx)
+			{
+				MagneticSite& site = m_sites[site_idx];
+
+				const t_real phi = vals[site_idx * 2 + 0];
+				const t_real theta = vals[site_idx * 2 + 1];
+
+				auto [ x, y, z ] = tl2::sph_to_cart<t_real>(1., phi, theta);
+				tl2::set_eps_0(x, m_eps);
+				tl2::set_eps_0(y, m_eps);
+				tl2::set_eps_0(z, m_eps);
+				site.spin_dir[0] = tl2::var_to_str(x, m_prec);
+				site.spin_dir[1] = tl2::var_to_str(y, m_prec);
+				site.spin_dir[2] = tl2::var_to_str(z, m_prec);
+
+				CalcMagneticSite(site);
+
+				using namespace tl2_ops;
+				std::cout << site.name << ": phi = " << phi << ", "
+					<< "theta = " << theta << ", "
+					<< "S = " << site.spin_dir_calc << std::endl;
+			}
+		}
+		else
+		{
 			std::cerr << "Magdyn error: Ground state minimisation did not converge." << std::endl;
+		}
 
 #else  // __TLIBS2_USE_MINUIT__
 		std::cerr << "Magdyn error: Ground state minimisation support disabled." << std::endl;
@@ -2666,7 +2726,7 @@ public:
 				if(seen_names.find(magnetic_site.name) != seen_names.end())
 				{
 					// try to create a unique name
-					magnetic_site.name += "_" + tl2::var_to_str(unique_name_counter);
+					magnetic_site.name += "_" + tl2::var_to_str(unique_name_counter, m_prec);
 					++unique_name_counter;
 				}
 				else
@@ -2733,7 +2793,7 @@ public:
 				if(seen_names.find(exchange_term.name) != seen_names.end())
 				{
 					// try to create a unique name
-					exchange_term.name += "_" + tl2::var_to_str(unique_name_counter);
+					exchange_term.name += "_" + tl2::var_to_str(unique_name_counter, m_prec);
 					++unique_name_counter;
 				}
 				else
@@ -3070,21 +3130,10 @@ protected:
 	 * rotate local spin to ferromagnetic [001] direction
 	 * @see equations (7) and (9) from (Toth 2015)
 	 */
-	std::tuple<t_vec, t_vec> spin_to_trafo(const t_vec& spin_dir)
+	std::tuple<t_vec, t_vec> spin_to_trafo(const t_vec_real& spin_dir)
 	{
-		const auto [spin_re, spin_im] =
-			tl2::split_cplx<t_vec, t_vec_real>(spin_dir);
-
-		if(m_perform_checks && !tl2::equals_0<t_vec_real>(spin_im, m_eps))
-		{
-			std::cerr << "Magdyn warning: "
-				<< "Spin vector should be purely real."
-				<< std::endl;
-		}
-
-		//spin_re /= tl2::norm<t_vec_real>(spin_re);
 		const t_mat_real _rot = tl2::rotation<t_mat_real, t_vec_real>(
-			spin_re, m_zdir, &m_rotaxis, m_eps);
+			spin_dir, m_zdir, &m_rotaxis, m_eps);
 
 		const t_mat rot = tl2::convert<t_mat, t_mat_real>(_rot);
 		return rot_to_trafo(rot);
