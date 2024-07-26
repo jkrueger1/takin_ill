@@ -599,7 +599,7 @@ bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
 			}
 
 		FitterLamFuncModel<t_real_min, num_args, t_func> mod(func, false);
-		MiniFunction<t_real_min> chi2(&mod);
+		MiniFunction<t_real_min> minfunc(&mod);
 
 		ROOT::Minuit2::MnUserParameters params;
 		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
@@ -607,15 +607,17 @@ bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
 			params.Add(vecParamNames[param_idx],
 				static_cast<t_real_min>(vecVals[param_idx]),
 				static_cast<t_real_min>(vecErrs[param_idx]));
-			if(pVecLowerLimits)
+			if(pVecLowerLimits && pVecUpperLimits)
+				params.SetLimits(vecParamNames[param_idx], (*pVecLowerLimits)[param_idx], (*pVecUpperLimits)[param_idx]);
+			else if(pVecLowerLimits && !pVecUpperLimits)
 				params.SetLowerLimit(vecParamNames[param_idx], (*pVecLowerLimits)[param_idx]);
-			if(pVecUpperLimits)
+			else if(pVecUpperLimits && !pVecLowerLimits)
 				params.SetUpperLimit(vecParamNames[param_idx], (*pVecUpperLimits)[param_idx]);
 			if(pVecFixed && (*pVecFixed)[param_idx])
 				params.Fix(vecParamNames[param_idx]);
 		}
 
-		ROOT::Minuit2::MnMigrad migrad(chi2, params, 2);
+		ROOT::Minuit2::MnMigrad migrad(minfunc, params, 2);
 		ROOT::Minuit2::FunctionMinimum mini = migrad();
 		bool bMinimumValid = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
 
@@ -663,7 +665,7 @@ bool minimise_dynargs(std::size_t num_args, t_func&& func,
 			}
 
 		FitterDynLamFuncModel<t_real_min, t_func> mod(num_args, func, false);
-		MiniFunction<t_real_min> chi2(&mod);
+		MiniFunction<t_real_min> minfunc(&mod);
 
 		ROOT::Minuit2::MnUserParameters params;
 		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
@@ -671,15 +673,17 @@ bool minimise_dynargs(std::size_t num_args, t_func&& func,
 			params.Add(vecParamNames[param_idx],
 				static_cast<t_real_min>(vecVals[param_idx]),
 				static_cast<t_real_min>(vecErrs[param_idx]));
-			if(pVecLowerLimits)
+			if(pVecLowerLimits && pVecUpperLimits)
+				params.SetLimits(vecParamNames[param_idx], (*pVecLowerLimits)[param_idx], (*pVecUpperLimits)[param_idx]);
+			else if(pVecLowerLimits && !pVecUpperLimits)
 				params.SetLowerLimit(vecParamNames[param_idx], (*pVecLowerLimits)[param_idx]);
-			if(pVecUpperLimits)
+			else if(pVecUpperLimits && !pVecLowerLimits)
 				params.SetUpperLimit(vecParamNames[param_idx], (*pVecUpperLimits)[param_idx]);
 			if(pVecFixed && (*pVecFixed)[param_idx])
 				params.Fix(vecParamNames[param_idx]);
 		}
 
-		ROOT::Minuit2::MnMigrad migrad(chi2, params, 2);
+		ROOT::Minuit2::MnMigrad migrad(minfunc, params, 2);
 		ROOT::Minuit2::FunctionMinimum mini = migrad();
 		bool bMinimumValid = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
 
@@ -723,7 +727,7 @@ bool minimise_expr(const std::string& func, const std::vector<std::string>& vecP
 			}
 
 		FitterParsedFuncModel<t_real_min> mod(func, "", vecParamNames);
-		MiniFunction<t_real_min> chi2(&mod);
+		MiniFunction<t_real_min> minfunc(&mod);
 
 		ROOT::Minuit2::MnUserParameters params;
 		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
@@ -733,7 +737,7 @@ bool minimise_expr(const std::string& func, const std::vector<std::string>& vecP
 				params.Fix(vecParamNames[param_idx]);
 		}
 
-		ROOT::Minuit2::MnMigrad migrad(chi2, params, 2);
+		ROOT::Minuit2::MnMigrad migrad(minfunc, params, 2);
 		ROOT::Minuit2::FunctionMinimum mini = migrad();
 		bool bMinimumValid = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
 

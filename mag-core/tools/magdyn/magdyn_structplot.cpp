@@ -467,9 +467,9 @@ void MagDynDlg::StructPlotSync()
 		else
 		{
 			spin_vec = tl2::create<t_vec_gl>({
-				t_real_gl(site.spin_dir_calc[0].real() * site.spin_mag_calc),
-				t_real_gl(site.spin_dir_calc[1].real() * site.spin_mag_calc),
-				t_real_gl(site.spin_dir_calc[2].real() * site.spin_mag_calc),
+				t_real_gl(site.spin_dir_calc[0] * site.spin_mag_calc),
+				t_real_gl(site.spin_dir_calc[1] * site.spin_mag_calc),
+				t_real_gl(site.spin_dir_calc[2] * site.spin_mag_calc),
 			});
 
 			if(is_incommensurate)

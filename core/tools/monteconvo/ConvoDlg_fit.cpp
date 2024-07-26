@@ -181,12 +181,26 @@ void ConvoDlg::StartFit()
 			tl::trim(vecLimits[0]);
 			tl::trim(vecLimits[1]);
 
-			if(vecLimits[0]!="" && tl::str_to_lower(vecLimits[0])!="open" && tl::str_to_lower(vecLimits[0])!="none")
+			bool has_lower_lims = vecLimits[0] != "" &&
+				tl::str_to_lower(vecLimits[0]) != "open" &&
+				tl::str_to_lower(vecLimits[0])!="none";
+			bool has_upper_lims = vecLimits[1] != "" &&
+				tl::str_to_lower(vecLimits[1]) != "open" &&
+				tl::str_to_lower(vecLimits[1])!="none";
+
+			if(has_lower_limits && has_upper_limits)
+			{
+				limLower = tl::str_to_var<t_real_min>(vecLimits[0]);
+				limUpper = tl::str_to_var<t_real_min>(vecLimits[1]);
+
+				params.SetLimits(varname, *limLower, *limUpper);
+			}
+			else if(has_lower_limits && !has_upper_limits)
 			{
 				limLower = tl::str_to_var<t_real_min>(vecLimits[0]);
 				params.SetLowerLimit(varname, *limLower);
 			}
-			if(vecLimits[1]!="" && tl::str_to_lower(vecLimits[1])!="open" && tl::str_to_lower(vecLimits[1])!="none")
+			else if(has_upper_limits && !has_lower_limits)
 			{
 				limUpper = tl::str_to_var<t_real_min>(vecLimits[1]);
 				params.SetUpperLimit(varname, *limUpper);
@@ -260,7 +274,8 @@ void ConvoDlg::StartFit()
 			return;
 		}
 
-		mini.reset(new minuit::FunctionMinimum((*minimiser)(spinMaxCalls->value(), spinTolerance->value())));
+		mini.reset(new minuit::FunctionMinimum(
+			(*minimiser)(spinMaxCalls->value(), spinTolerance->value())));
 		mini_valid = mini->IsValid() && mini->HasValidParameters() && mini->UserState().IsValid();
 	}
 	catch(const StopRequestedEx& req)

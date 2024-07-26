@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_magdyn2, t_real, t_types_real)
 		"site2_phi",
 	}};
 
-	if(magdyn.CalcGroundState(&fixed_params))
+	if(magdyn.CalcGroundState(&fixed_params), true)
 	{
 		std::cout << "Found ground state spins:" << std::endl;
 

@@ -2429,10 +2429,12 @@ public:
 			{
 				MagneticSite& site = dyn.m_sites[site_idx];
 
-				const t_real phi = args[site_idx * 2 + 0];
-				const t_real theta = args[site_idx * 2 + 1];
+				t_real u = args[site_idx * 2 + 0];
+				t_real v = args[site_idx * 2 + 1];
 
+				auto [ phi, theta ] = tl2::uv_to_sph<t_real>(u, v);
 				auto [ x, y, z ] = tl2::sph_to_cart<t_real>(1., phi, theta);
+
 				site.spin_dir[0] = tl2::var_to_str(x, m_prec);
 				site.spin_dir[1] = tl2::var_to_str(y, m_prec);
 				site.spin_dir[2] = tl2::var_to_str(z, m_prec);
@@ -2461,9 +2463,10 @@ public:
 		{
 			const t_vec_real& S = site.spin_dir_calc;
 			auto [ rho, phi, theta ] =  tl2::cart_to_sph<t_real>(S[0], S[1], S[2]);
+			auto [ u, v ] = tl2::sph_to_uv<t_real>(phi, theta);
 
-			std::string phi_name = site.name + "_phi";
-			std::string theta_name = site.name + "_theta";
+			std::string phi_name = site.name + "_phi";     // phi or u parameter
+			std::string theta_name = site.name + "_theta"; // theta or v parameter
 			params.push_back(phi_name);
 			params.push_back(theta_name);
 
@@ -2477,17 +2480,17 @@ public:
 			fixed.push_back(fix_phi);
 			fixed.push_back(fix_theta);
 
-			vals.push_back(phi);
-			vals.push_back(theta);
+			vals.push_back(u);
+			vals.push_back(v);
 
-			lower_lims.push_back(-tl2::pi<t_real>);
-			lower_lims.push_back(0);
+			lower_lims.push_back(0. -m_eps);
+			lower_lims.push_back(0. -m_eps);
 
-			upper_lims.push_back(tl2::pi<t_real>);
-			upper_lims.push_back(tl2::pi<t_real>);
+			upper_lims.push_back(1. + m_eps);
+			upper_lims.push_back(1. + m_eps);
 
-			errs.push_back(tl2::pi<t_real>);
-			errs.push_back(tl2::pi<t_real> / 2.);
+			errs.push_back(0.1);
+			errs.push_back(0.1);
 		}
 
 		if(tl2::minimise_dynargs<t_real>(num_args, func,
@@ -2498,13 +2501,17 @@ public:
 			{
 				MagneticSite& site = m_sites[site_idx];
 
-				const t_real phi = vals[site_idx * 2 + 0];
-				const t_real theta = vals[site_idx * 2 + 1];
+				t_real u = vals[site_idx * 2 + 0];
+				t_real v = vals[site_idx * 2 + 1];
+				tl2::set_eps_round<t_real>(u, m_eps);
+				tl2::set_eps_round<t_real>(v, m_eps);
 
+				auto [ phi, theta ] = tl2::uv_to_sph<t_real>(u, v);
 				auto [ x, y, z ] = tl2::sph_to_cart<t_real>(1., phi, theta);
-				tl2::set_eps_0(x, m_eps);
-				tl2::set_eps_0(y, m_eps);
-				tl2::set_eps_0(z, m_eps);
+				tl2::set_eps_round<t_real>(x, m_eps);
+				tl2::set_eps_round<t_real>(y, m_eps);
+				tl2::set_eps_round<t_real>(z, m_eps);
+
 				site.spin_dir[0] = tl2::var_to_str(x, m_prec);
 				site.spin_dir[1] = tl2::var_to_str(y, m_prec);
 				site.spin_dir[2] = tl2::var_to_str(z, m_prec);
@@ -2513,7 +2520,10 @@ public:
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
 				using namespace tl2_ops;
-				std::cout << site.name << ": phi = " << phi << ", "
+				std::cout << site.name
+					<< ": u = " << u << ", "
+					<< "v = " << v << ", "
+					<< "phi = " << phi << ", "
 					<< "theta = " << theta << ", "
 					<< "S = " << site.spin_dir_calc << std::endl;
 #endif

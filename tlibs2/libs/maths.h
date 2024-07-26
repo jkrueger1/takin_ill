@@ -687,6 +687,45 @@ std::tuple<T, T, T> sph_to_cart(T rho, T phi, T theta)
 
 
 /**
+ * uv parameter -> spherical (for uniform point distribution on sphere)
+ * u in [0, 1], v in [0, 1]
+ * @see https://mathworld.wolfram.com/SpherePointPicking.html
+ */
+template<class T = double>
+std::tuple<T, T> uv_to_sph(T u, T v)
+{
+	T phi = T(2)*pi<T>*u - pi<T>;
+
+	// "reflect back" out-of-range parameter
+	if(v < 0.)
+		v = -v;
+	else if(v > 1.)
+		v -= v - 1.;
+
+	T c = T(2)*v - T(1);
+	c = std::clamp<T>(c, -1., 1.);
+	T theta = std::acos(c);
+
+	return std::make_tuple(phi, theta);
+}
+
+
+/**
+ * spherical -> uv parameter
+ * u in [0, 1], v in [0, 1]
+ * @see https://mathworld.wolfram.com/SpherePointPicking.html
+ */
+template<class T = double>
+std::tuple<T, T> sph_to_uv(T phi, T theta)
+{
+	T u = (phi + pi<T>) / (T(2) * pi<T>);
+	T v = (std::cos(theta) + T(1)) / T(2);
+
+	return std::make_tuple(u, v);
+}
+
+
+/**
  * cylindrical -> spherical
  * @see https://en.wikipedia.org/wiki/Spherical_coordinate_system
  */
@@ -2301,6 +2340,126 @@ requires is_mat<t_mat>
 
 // -----------------------------------------------------------------------------
 /**
+ * set values close to an integer value to that integer
+ * scalar version
+ */
+template<typename t_real>
+void set_eps_round(t_real& d, t_real eps = std::numeric_limits<t_real>::epsilon())
+requires is_scalar<t_real> && (!is_complex<t_real>)
+{
+	t_real rd = std::round(d);
+	if(equals<t_real>(d, rd, eps))
+		d = rd;
+};
+
+
+template<typename t_real, typename t_real_2>
+void set_eps_round(t_real& d, t_real_2 eps = std::numeric_limits<t_real_2>::epsilon())
+requires is_scalar<t_real> && is_scalar<t_real_2> && (!is_complex<t_real> && !is_complex<t_real_2>)
+{
+	t_real rd = std::round(d);
+	if(equals<t_real>(d, rd, eps))
+		d = rd;
+};
+
+
+/**
+ * set values close to an integer value to that integer
+ * complex version
+ */
+template<typename t_cplx, class t_real = typename t_cplx::value_type>
+void set_eps_round(t_cplx& c, t_real eps = std::numeric_limits<t_real>::epsilon())
+requires is_complex<t_cplx> && is_scalar<t_real>
+{
+	t_real rd_re = std::round(c.real());
+	if(equals<t_real>(c.real(), rd_re, eps))
+		c.real(rd_re);
+
+	t_real rd_im = std::round(c.imag());
+	if(equals<t_real>(c.imag(), rd_im, eps))
+		c.imag(rd_im);
+};
+
+
+/**
+ * set values lower than epsilon to zero
+ * complex vector version
+ */
+template<typename t_vec, typename t_val = typename t_vec::value_type>
+void set_eps_round(t_vec& vec,
+	typename t_val::value_type eps = std::numeric_limits<typename t_val::value_type>::epsilon())
+requires is_basic_vec<t_vec> && is_complex<t_val>
+{
+	for(std::size_t i = 0; i < vec.size(); ++i)
+		set_eps_round<t_val, typename t_val::value_type>(vec[i], eps);
+};
+
+
+/**
+ * set values close to an integer value to that integer
+ * real vector version
+ */
+template<typename t_vec, typename t_real = typename t_vec::value_type>
+void set_eps_round(t_vec& vec, t_real eps = std::numeric_limits<t_real>::epsilon())
+requires is_basic_vec<t_vec> && (!is_complex<t_real>)
+{
+	for(std::size_t i = 0; i < vec.size(); ++i)
+		set_eps_round<t_real>(vec[i], eps);
+};
+
+
+/**
+ * set values close to an integer value to that integer
+ * quaternion version
+ */
+template<typename t_quat, typename t_real = typename t_quat::value_type>
+void set_eps_round(t_quat& quat, t_real eps = std::numeric_limits<t_real>::epsilon())
+requires is_quat<t_quat>
+{
+	t_real re = quat.R_component_1();
+	t_real im1 = quat.R_component_2();
+	t_real im2 = quat.R_component_3();
+	t_real im3 = quat.R_component_4();
+
+	set_eps_round<t_real>(re, eps);
+	set_eps_round<t_real>(im1, eps);
+	set_eps_round<t_real>(im2, eps);
+	set_eps_round<t_real>(im3, eps);
+
+	quat = t_quat(re, im1, im2, im3);
+};
+
+
+/**
+ * set values close to an integer value to that integer
+ * complex matrix version
+ */
+template<typename t_mat, typename t_val = typename t_mat::value_type>
+void set_eps_round(t_mat& mat,
+	typename t_val::value_type eps = std::numeric_limits<typename t_val::value_type>::epsilon())
+requires is_basic_mat<t_mat> && is_complex<t_val>
+{
+	for(std::size_t i = 0; i < mat.size1(); ++i)
+		for(std::size_t j = 0; j < mat.size2(); ++j)
+			set_eps_round<t_val, typename t_val::value_type>(mat(i,j), eps);
+};
+
+
+/**
+ * set values close to an integer value to that integer
+ * real matrix version
+ */
+template<typename t_mat, typename t_val = typename t_mat::value_type>
+void set_eps_round(t_mat& mat, t_val eps = std::numeric_limits<t_val>::epsilon())
+requires is_basic_mat<t_mat> && (!is_complex<t_val>)
+{
+	for(std::size_t i = 0; i < mat.size1(); ++i)
+		for(std::size_t j = 0; j < mat.size2(); ++j)
+			set_eps_round<t_val>(mat(i, j), eps);
+};
+
+
+/**
  * set values lower than epsilon to zero
  * scalar version
  */
@@ -2339,13 +2498,27 @@ requires is_complex<t_cplx> && is_scalar<t_real>
 
 /**
  * set values lower than epsilon to zero
- * vector version
+ * complex vector version
+ */
+template<typename t_vec, typename t_val = typename t_vec::value_type>
+void set_eps_0(t_vec& vec,
+	typename t_val::value_type eps = std::numeric_limits<typename t_val::value_type>::epsilon())
+requires is_basic_vec<t_vec> && is_complex<t_val>
+{
+	for(std::size_t i = 0; i < vec.size(); ++i)
+		set_eps_0<t_val, typename t_val::value_type>(vec[i], eps);
+};
+
+
+/**
+ * set values lower than epsilon to zero
+ * real vector version
  */
 template<typename t_vec, typename t_real = typename t_vec::value_type>
 void set_eps_0(t_vec& vec, t_real eps = std::numeric_limits<t_real>::epsilon())
-requires is_basic_vec<t_vec>
+requires is_basic_vec<t_vec> && (!is_complex<t_real>)
 {
-	for(std::size_t i=0; i<vec.size(); ++i)
+	for(std::size_t i = 0; i < vec.size(); ++i)
 		set_eps_0<t_real>(vec[i], eps);
 };
 
@@ -2374,29 +2547,29 @@ requires is_quat<t_quat>
 
 /**
  * set values lower than epsilon to zero
- * matrix version
+ * complex matrix version
  */
 template<typename t_mat, typename t_val = typename t_mat::value_type>
 void set_eps_0(t_mat& mat,
 	typename t_val::value_type eps = std::numeric_limits<typename t_val::value_type>::epsilon())
 requires is_basic_mat<t_mat> && is_complex<t_val>
 {
-	for(std::size_t i=0; i<mat.size1(); ++i)
-		for(std::size_t j=0; j<mat.size2(); ++j)
+	for(std::size_t i = 0; i < mat.size1(); ++i)
+		for(std::size_t j = 0; j < mat.size2(); ++j)
 			set_eps_0<t_val, typename t_val::value_type>(mat(i,j), eps);
 };
 
 
 /**
  * set values lower than epsilon to zero
- * complex matrix version
+ * real matrix version
  */
 template<typename t_mat, typename t_val = typename t_mat::value_type>
 void set_eps_0(t_mat& mat, t_val eps = std::numeric_limits<t_val>::epsilon())
 requires is_basic_mat<t_mat> && (!is_complex<t_val>)
 {
-	for(std::size_t i=0; i<mat.size1(); ++i)
-		for(std::size_t j=0; j<mat.size2(); ++j)
+	for(std::size_t i = 0; i < mat.size1(); ++i)
+		for(std::size_t j = 0; j < mat.size2(); ++j)
 			set_eps_0<t_val>(mat(i,j), eps);
 };
 // -----------------------------------------------------------------------------
