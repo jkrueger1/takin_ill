@@ -26,9 +26,12 @@
  */
 
 #define BOOST_TEST_MODULE Magdyn Test
+
 #include <boost/test/included/unit_test.hpp>
+#include <boost/type_index.hpp>
 namespace test = boost::unit_test;
 namespace testtools = boost::test_tools;
+namespace ty = boost::typeindex;
 
 #include "libs/magdyn.h"
 
@@ -38,15 +41,15 @@ using t_types_real = std::tuple<double, float>;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(test_magdyn, t_real, t_types_real)
 {
-	static constexpr t_real eps = 1e-4;
-
 	// real type name
-	std::string real_name;
-	if constexpr(std::is_same_v<t_real, double>)
-		real_name = "double";
-	else if constexpr(std::is_same_v<t_real, float>)
-		real_name = "float";
+	const std::string real_name = ty::type_id_with_cvr<t_real>().pretty_name();
 
+	std::cout << "\n================================================================================" << std::endl;
+	std::cout << "Running tests with " << real_name << " data type." << std::endl;
+	std::cout << "================================================================================" << std::endl;
+
+
+	static constexpr t_real eps = 1e-4;
 
 	// types
 	using t_cplx = std::complex<t_real>;
@@ -134,4 +137,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_magdyn, t_real, t_types_real)
 
 	// save magnetic model
 	magdyn.Save("model_" + real_name + ".magdyn");
+	std::cout << "================================================================================" << std::endl;
 }

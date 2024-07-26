@@ -2414,11 +2414,12 @@ public:
 	/**
 	 * minimise energy to found ground state
 	 */
-	void CalcGroundState()
+	bool CalcGroundState(const std::unordered_set<std::string>* fixed_params = nullptr,
+		bool verbose = false)
 	{
 #if defined(__TLIBS2_USE_MINUIT__) && defined(__TLIBS2_MAGDYN_USE_MINUIT__)
 
-		// function to minimise
+		// function to minimise the state's energy
 		auto func = [this](const std::vector<tl2::t_real_min>& args)
 		{
 			// set new spin configuration
@@ -2461,12 +2462,20 @@ public:
 			const t_vec_real& S = site.spin_dir_calc;
 			auto [ rho, phi, theta ] =  tl2::cart_to_sph<t_real>(S[0], S[1], S[2]);
 
-			params.emplace_back(site.name + "_phi");
-			params.emplace_back(site.name + "_theta");
+			std::string phi_name = site.name + "_phi";
+			std::string theta_name = site.name + "_theta";
+			params.push_back(phi_name);
+			params.push_back(theta_name);
 
-			// TODO
-			fixed.push_back(true);
-			fixed.push_back(false);
+			bool fix_phi = false;
+			bool fix_theta = false;
+			if(fixed_params)
+			{
+				fix_phi = (fixed_params->find(phi_name) != fixed_params->end());
+				fix_theta = (fixed_params->find(theta_name) != fixed_params->end());
+			}
+			fixed.push_back(fix_phi);
+			fixed.push_back(fix_theta);
 
 			vals.push_back(phi);
 			vals.push_back(theta);
@@ -2481,7 +2490,6 @@ public:
 			errs.push_back(tl2::pi<t_real> / 2.);
 		}
 
-		const bool verbose = true;
 		if(tl2::minimise_dynargs<t_real>(num_args, func,
 			params, vals, errs, &fixed, &lower_lims, &upper_lims, verbose))
 		{
@@ -2503,19 +2511,25 @@ public:
 
 				CalcMagneticSite(site);
 
+#ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
 				using namespace tl2_ops;
 				std::cout << site.name << ": phi = " << phi << ", "
 					<< "theta = " << theta << ", "
 					<< "S = " << site.spin_dir_calc << std::endl;
+#endif
 			}
+
+			return true;
 		}
 		else
 		{
 			std::cerr << "Magdyn error: Ground state minimisation did not converge." << std::endl;
+			return false;
 		}
 
 #else  // __TLIBS2_USE_MINUIT__
 		std::cerr << "Magdyn error: Ground state minimisation support disabled." << std::endl;
+		return false;
 #endif
 	}
 	// --------------------------------------------------------------------
