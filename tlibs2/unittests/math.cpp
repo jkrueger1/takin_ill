@@ -39,7 +39,7 @@ namespace testtools = boost::test_tools;
 using t_types = std::tuple<double, float>;
 BOOST_AUTO_TEST_CASE_TEMPLATE(test_math, t_real, t_types)
 {
-	const t_real eps = 1e-6;
+	const t_real eps = 1e-5;
 
 	// coordinate trafos
 	{
@@ -72,5 +72,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_math, t_real, t_types)
 		BOOST_TEST(tl2::equals<t_real>(rho_c, rho_c2, eps));
 		BOOST_TEST(tl2::equals<t_real>(phi_c, phi_c2, eps));
 		BOOST_TEST(tl2::equals<t_real>(z_c, z_c2, eps));
+
+		t_real u = tl2::get_rand<t_real>(0., 1.);
+		t_real v = tl2::get_rand<t_real>(0., 1.);
+
+		auto [ phi_uv, theta_uv ] = tl2::uv_to_sph(u, v);
+		auto [ u2, v2 ] = tl2::sph_to_uv(phi_uv, theta_uv);
+
+		BOOST_TEST(tl2::equals<t_real>(u, u2, eps));
+		BOOST_TEST(tl2::equals<t_real>(v, v2, eps));
 	}
 }

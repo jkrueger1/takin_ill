@@ -32,7 +32,9 @@ cmake_policy(SET CMP0078 NEW)
 cmake_policy(SET CMP0086 NEW)
 enable_testing()
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/../../setup/cmake")
+list(APPEND CMAKE_MODULE_PATH
+	"${PROJECT_SOURCE_DIR}"
+	"${PROJECT_SOURCE_DIR}/../../setup/cmake")
 
 
 message("Build type: ${CMAKE_BUILD_TYPE}")
@@ -45,6 +47,8 @@ endif()
 set(CMAKE_CXX_STANDARD 20)
 add_compile_options(-std=c++20)
 add_compile_options(-Wall -Wextra)
+
+add_definitions(-D__TLIBS2_MAGDYN_USE_MINUIT__)
 
 
 # -----------------------------------------------------------------------------

@@ -30,8 +30,15 @@ set(CMAKE_CXX_STANDARD 20)
 add_compile_options(-std=c++20)
 add_compile_options(-Wall -Wextra -Weffc++)
 
+
+# -----------------------------------------------------------------------------
 #options
-option(USE_QT "use Qt" TRUE)
+# -----------------------------------------------------------------------------
+option(USE_QT     "use Qt"     TRUE)
+option(USE_HDF    "use HDF"    TRUE)
+option(USE_MINUIT "use Minuit" TRUE)
+# -----------------------------------------------------------------------------
+
 
 list(APPEND CMAKE_MODULE_PATH
 	"${PROJECT_SOURCE_DIR}"
@@ -65,6 +72,9 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 endif()
 
 
+# -----------------------------------------------------------------------------
+# packages
+# -----------------------------------------------------------------------------
 find_package(Threads REQUIRED)
 
 find_package(Boost REQUIRED COMPONENTS program_options)
@@ -75,7 +85,22 @@ find_package(Lapacke REQUIRED)
 add_definitions(-DUSE_LAPACK=1)
 include_directories("${Lapacke_INCLUDE_DIRS}")
 
-find_package(HDF5 COMPONENTS CXX)
+if(USE_MINUIT)
+	find_package(Minuit2)
+endif()
+
+if(Minuit2_FOUND)
+	message("Using Minuit 2.")
+	include_directories("${Minuit2_INCLUDE_DIRS}")
+	add_definitions(-D__TLIBS2_MAGDYN_USE_MINUIT__)
+else()
+	message("Disabling Minuit support.")
+	set(Minuit2_LIBRARIES "")
+endif()
+
+if(USE_HDF)
+	find_package(HDF5 COMPONENTS CXX)
+endif()
 if(HDF5_FOUND)
 	message("Using HDF5 version ${HDF5_VERSION}.")
 	include_directories("${HDF5_CXX_INCLUDE_DIRS}")
@@ -84,6 +109,7 @@ else()
 	message("Disabling HDF5 file support.")
 	set(HDF5_CXX_LIBRARIES "")
 endif()
+# -----------------------------------------------------------------------------
 
 
 include_directories("${PROJECT_SOURCE_DIR}")
@@ -147,6 +173,7 @@ if(USE_QT)
 		${Boost_LIBRARIES}
 		${Lapacke_LIBRARIES}
 		${HDF5_CXX_LIBRARIES}
+		${Minuit2_LIBRARIES}
 #		ws2_32  # for mingw
 	)
 else()
@@ -164,11 +191,15 @@ else()
 		${Boost_LIBRARIES}
 		${Lapacke_LIBRARIES}
 		${HDF5_CXX_LIBRARIES}
+		${Minuit2_LIBRARIES}
 #		ws2_32  # for mingw
 	)
 endif()
 
 
+# -----------------------------------------------------------------------------
+# rpath
+# -----------------------------------------------------------------------------
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 	target_link_options(takin_magdyn
 		# create an __info_plist section in the binary
@@ -180,3 +211,4 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 	)
 endif()
+# -----------------------------------------------------------------------------
