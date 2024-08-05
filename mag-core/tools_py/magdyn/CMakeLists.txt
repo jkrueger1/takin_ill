@@ -31,7 +31,7 @@ cmake_policy(SET CMP0086 NEW)
 
 list(APPEND CMAKE_MODULE_PATH
 	"${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/cmake"
-	"${PROJECT_SOURCE_DIR}/../../setup/cmake")
+	"${PROJECT_SOURCE_DIR}/../../../setup/cmake")
 
 
 message("Project: ${PROJECT_NAME}, build type: ${CMAKE_BUILD_TYPE}.")
@@ -57,6 +57,12 @@ message("Using Boost version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boo
 # -----------------------------------------------------------------------------
 
 
+# -----------------------------------------------------------------------------
+# Lapack(e)
+find_package(Lapacke REQUIRED)
+add_definitions(-DUSE_LAPACK=1)
+# -----------------------------------------------------------------------------
+
 
 # -----------------------------------------------------------------------------
 # Python
@@ -71,6 +77,7 @@ include_directories(
 	"${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/libs"
 	"${PROJECT_SOURCE_DIR}/../.." "${PROJECT_SOURCE_DIR}/../../tlibs2"
 	"${Boost_INCLUDE_DIRS}" "${Boost_INCLUDE_DIRS}/.."
+	"${Lapacke_INCLUDE_DIRS}"
 	"${Python3_INCLUDE_DIRS}"
 	"${PROJECT_SOURCE_DIR}/../../ext/gemmi/include" "${PROJECT_SOURCE_DIR}/../../ext/gemmi/third_party"
 )
@@ -87,7 +94,7 @@ set_source_files_properties(magdyn.i PROPERTIES CPLUSPLUS TRUE)
 set_source_files_properties(magdyn.i PROPERTIES SWIG_FLAGS "-I ${PROJECT_SOURCE_DIR}/libs")
 
 swig_add_library(magdyn_py LANGUAGE python SOURCES magdyn.i)
-target_link_libraries(magdyn_py Python3::Python -llapacke)
+target_link_libraries(magdyn_py Python3::Python ${Lapacke_LIBRARIES})
 
 # installation
 get_property(MAGDYN_AUX_FILES TARGET magdyn_py PROPERTY SWIG_SUPPORT_FILES)
