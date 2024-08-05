@@ -179,10 +179,10 @@ InfoDlg::InfoDlg(QWidget* pParent, QSettings *sett)
 	if(m_sett)
 	{
 		// restore dialog geometry
-		if(m_sett->contains("notes/geo"))
+		if(m_sett->contains("infos/geo"))
 			restoreGeometry(m_sett->value("infos/geo").toByteArray());
 		else
-			resize(800, 800);
+			resize(700, 700);
         }
 }
 

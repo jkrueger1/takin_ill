@@ -49,4 +49,4 @@ fi
 # -----------------------------------------------------------------------------
 
 #	g++-10 llvm llvm-dev \
-#	liblapacke-dev libqcustomplot-dev libqhull-dev
+#	liblapacke-dev libqcustomplot-dev libqhull-dev gemmi-dev

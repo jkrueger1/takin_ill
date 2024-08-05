@@ -4394,7 +4394,8 @@ requires is_mat<t_mat> && is_vec<t_vec>
 
 	// reciprocal basis, RECI = REAL^(-T)
 	const auto [basisInv, bOk] = inv<t_mat>(basis);
-	if(!bOk) return zero<t_vec>(uv1.size());
+	if(!bOk)
+		return zero<t_vec>(uv1.size());
 
 	t_vec pt = _pt - vert1;		// real pt
 	pt = basisInv * pt;		// reciprocal pt

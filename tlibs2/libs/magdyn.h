@@ -1180,7 +1180,7 @@ public:
 
 				coupling.dist = tl2::norm<t_vec_real>(
 					coupling.pos2_sc_lab - coupling.pos1_uc_lab);
-				if(coupling.dist <= dist_max)
+				if(coupling.dist <= dist_max && coupling.dist > m_eps)
 					couplings.emplace_back(std::move(coupling));
 			}
 		}
@@ -1842,10 +1842,9 @@ public:
 		const auto [J_Q, J_Q0] = CalcReciprocalJs(Qvec);
 
 		// create the hamiltonian of equation (25) and (26) from (Toth 2015)
-		t_mat A         = tl2::zero<t_mat>(N, N);
-		t_mat A_conj_mQ = tl2::zero<t_mat>(N, N);
-		t_mat B         = tl2::zero<t_mat>(N, N);
-		t_mat C         = tl2::zero<t_mat>(N, N);
+		t_mat H00     = tl2::zero<t_mat>(N, N);
+		t_mat H00c_mQ = tl2::zero<t_mat>(N, N);  // H00*(-Q)
+		t_mat H0N     = tl2::zero<t_mat>(N, N);
 
 		bool use_field = !tl2::equals_0<t_real>(m_field.mag, m_eps)
 			&& m_field.dir.size() == 3;
@@ -1856,18 +1855,18 @@ public:
 			const MagneticSite& s_i = GetMagneticSite(i);
 
 			// get the pre-calculated u and v vectors for the commensurate case
-			const t_vec& u_i      = s_i.trafo_plane_calc;
-			const t_vec& u_conj_i = s_i.trafo_plane_conj_calc;
-			const t_vec& v_i      = s_i.trafo_z_calc;
+			const t_vec& u_i  = s_i.trafo_plane_calc;
+			const t_vec& uc_i = s_i.trafo_plane_conj_calc;  // u*_i
+			const t_vec& v_i  = s_i.trafo_z_calc;
 
 			for(t_size j = 0; j < N; ++j)
 			{
 				const MagneticSite& s_j = GetMagneticSite(j);
 
 				// get the pre-calculated u and v vectors for the commensurate case
-				const t_vec& u_j      = s_j.trafo_plane_calc;
-				const t_vec& u_conj_j = s_j.trafo_plane_conj_calc;
-				const t_vec& v_j      = s_j.trafo_z_calc;
+				const t_vec& u_j  = s_j.trafo_plane_calc;
+				const t_vec& uc_j = s_j.trafo_plane_conj_calc;  // u*_j
+				const t_vec& v_j  = s_j.trafo_z_calc;
 
 				// get the pre-calculated exchange matrices for the (i, j) coupling
 				const t_indices indices_ij = std::make_pair(i, j);
@@ -1883,15 +1882,17 @@ public:
 					const t_real S_mag = 0.5 * std::sqrt(s_i.spin_mag_calc * s_j.spin_mag_calc);
 
 					// equation (26) from (Toth 2015)
-					A(i, j)         = S_mag * tl2::inner_noconj<t_vec>(u_i,      (*J_Q33)  * u_conj_j);
-					A_conj_mQ(i, j) = S_mag * tl2::inner_noconj<t_vec>(u_conj_i, (*J_Q33)  * u_j);
-					B(i, j)         = S_mag * tl2::inner_noconj<t_vec>(u_i,      (*J_Q33)  * u_j);
+					H00(i, j)     += S_mag * tl2::inner_noconj<t_vec>(u_i,  (*J_Q33) * uc_j);
+					H00c_mQ(i, j) += S_mag * tl2::inner_noconj<t_vec>(uc_i, (*J_Q33) * u_j);
+					H0N(i, j)     += S_mag * tl2::inner_noconj<t_vec>(u_i,  (*J_Q33) * u_j);
 				}
 
 				if(J_Q033)
 				{
 					// equation (26) from (Toth 2015)
-					C(i, i)        += s_j.spin_mag_calc * tl2::inner_noconj<t_vec>(v_i, (*J_Q033) * v_j);
+					t_cplx c = s_j.spin_mag_calc * tl2::inner_noconj<t_vec>(v_i, (*J_Q033) * v_j);
+					H00(i, i)     -= c;
+					H00c_mQ(i, i) -= c;
 				}
 			}  // end of iteration over j sites
 
@@ -1906,17 +1907,17 @@ public:
 				constexpr const t_real muB = tl2::mu_B<t_real>
 					/ tl2::meV<t_real> * tl2::tesla<t_real>;
 
-				A(i, i)         -= muB * Bgv;
-				A_conj_mQ(i, i) -= std::conj(muB * Bgv);
+				H00(i, i)     -= muB * Bgv;
+				H00c_mQ(i, i) -= std::conj(muB * Bgv);
 			}
 		}  // end of iteration over i sites
 
 		// equation (25) from (Toth 2015)
-		t_mat H = tl2::zero<t_mat>(N*2, N*2);
-		tl2::set_submat(H, A - C,         0, 0);
-		tl2::set_submat(H, B,             0, N);
-		tl2::set_submat(H, tl2::herm(B),  N, 0);
-		tl2::set_submat(H, A_conj_mQ - C, N, N);
+		t_mat H = tl2::create<t_mat>(N*2, N*2);
+		tl2::set_submat(H, H00,            0, 0);
+		tl2::set_submat(H, H0N,            0, N);
+		tl2::set_submat(H, tl2::herm(H0N), N, 0);
+		tl2::set_submat(H, H00c_mQ,        N, N);
 
 		return H;
 	}
@@ -1937,9 +1938,7 @@ public:
 			return {};
 
 		// equation (30) from (Toth 2015)
-		t_mat g_sign = tl2::zero<t_mat>(N*2, N*2);
-		for(t_size i = 0; i < N; ++i)
-			g_sign(i, i) = 1.;
+		t_mat g_sign = tl2::unit<t_mat>(N*2, N*2);
 		for(t_size i = N; i < 2*N; ++i)
 			g_sign(i, i) = -1.;
 
@@ -2107,10 +2106,10 @@ public:
 		for(std::uint8_t y_idx = 0; y_idx < 3; ++y_idx)
 		{
 			// equations (44) from (Toth 2015)
-			t_mat V = tl2::create<t_mat>(N, N);
-			t_mat W = tl2::create<t_mat>(N, N);
-			t_mat Y = tl2::create<t_mat>(N, N);
-			t_mat Z = tl2::create<t_mat>(N, N);
+			t_mat M0N = tl2::create<t_mat>(N, N);
+			t_mat M00 = tl2::create<t_mat>(N, N);
+			t_mat MNN = tl2::create<t_mat>(N, N);
+			t_mat MN0 = tl2::create<t_mat>(N, N);
 
 			for(t_size i = 0; i < N; ++i)
 			for(t_size j = 0; j < N; ++j)
@@ -2122,8 +2121,8 @@ public:
 				// get the pre-calculated u vectors
 				const t_vec& u_i = s_i.ge_trafo_plane_calc;
 				const t_vec& u_j = s_j.ge_trafo_plane_calc;
-				const t_vec& u_conj_i = s_i.ge_trafo_plane_conj_calc;
-				const t_vec& u_conj_j = s_j.ge_trafo_plane_conj_calc;
+				const t_vec& uc_i = s_i.ge_trafo_plane_conj_calc;
+				const t_vec& uc_j = s_j.ge_trafo_plane_conj_calc;
 
 				// pre-factors of equation (44) from (Toth 2015)
 				const t_real S_mag = std::sqrt(s_i.spin_mag_calc * s_j.spin_mag_calc);
@@ -2131,18 +2130,18 @@ public:
 					tl2::inner<t_vec_real>(s_j.pos_calc - s_i.pos_calc, Qvec));
 
 				// matrix elements of equation (44) from (Toth 2015)
-				Y(i, j) = phase * S_mag * u_i[x_idx]      * u_conj_j[y_idx];
-				V(i, j) = phase * S_mag * u_conj_i[x_idx] * u_conj_j[y_idx];
-				Z(i, j) = phase * S_mag * u_i[x_idx]      * u_j[y_idx];
-				W(i, j) = phase * S_mag * u_conj_i[x_idx] * u_j[y_idx];
+				M0N(i, j) = phase * S_mag * u_i[x_idx]  * u_j[y_idx];
+				M00(i, j) = phase * S_mag * u_i[x_idx]  * uc_j[y_idx];
+				MNN(i, j) = phase * S_mag * uc_i[x_idx] * u_j[y_idx];
+				MN0(i, j) = phase * S_mag * uc_i[x_idx] * uc_j[y_idx];
 			} // end of iteration over sites
 
 			// equation (47) from (Toth 2015)
 			t_mat M = tl2::create<t_mat>(N*2, N*2);
-			tl2::set_submat(M, Y, 0, 0);
-			tl2::set_submat(M, V, N, 0);
-			tl2::set_submat(M, Z, 0, N);
-			tl2::set_submat(M, W, N, N);
+			tl2::set_submat(M, M0N, 0, N);
+			tl2::set_submat(M, M00, 0, 0);
+			tl2::set_submat(M, MNN, N, N);
+			tl2::set_submat(M, MN0, N, 0);
 
 			const t_mat M_trafo = trafo_herm * M * trafo;
 
@@ -2210,7 +2209,7 @@ public:
 			t_vec_real Q_lab = m_xtalUB * Q_rlu;
 			t_mat_real rotQ = tl2::rotation<t_mat_real>(h_lab, Q_lab, &l_lab, m_eps, true);
 			t_mat_real rotQ_hkl = m_xtalUBinv * rotQ * m_xtalUB;
-			auto [rotQ_hkl_inv, rotQ_hkl_inv_ok] = tl2::inv(rotQ_hkl);
+			const auto [rotQ_hkl_inv, rotQ_hkl_inv_ok] = tl2::inv(rotQ_hkl);
 			if(!rotQ_hkl_inv_ok)
 				std::cerr << "Magdyn error: Cannot invert Q rotation matrix." << std::endl;
 
@@ -2432,8 +2431,8 @@ public:
 				t_real u = args[site_idx * 2 + 0];
 				t_real v = args[site_idx * 2 + 1];
 
-				auto [ phi, theta ] = tl2::uv_to_sph<t_real>(u, v);
-				auto [ x, y, z ] = tl2::sph_to_cart<t_real>(1., phi, theta);
+				const auto [ phi, theta ] = tl2::uv_to_sph<t_real>(u, v);
+				const auto [ x, y, z ] = tl2::sph_to_cart<t_real>(1., phi, theta);
 
 				site.spin_dir[0] = tl2::var_to_str(x, m_prec);
 				site.spin_dir[1] = tl2::var_to_str(y, m_prec);
@@ -2462,8 +2461,8 @@ public:
 		for(const MagneticSite& site : GetMagneticSites())
 		{
 			const t_vec_real& S = site.spin_dir_calc;
-			auto [ rho, phi, theta ] =  tl2::cart_to_sph<t_real>(S[0], S[1], S[2]);
-			auto [ u, v ] = tl2::sph_to_uv<t_real>(phi, theta);
+			const auto [ rho, phi, theta ] =  tl2::cart_to_sph<t_real>(S[0], S[1], S[2]);
+			const auto [ u, v ] = tl2::sph_to_uv<t_real>(phi, theta);
 
 			std::string phi_name = site.name + "_phi";     // phi or u parameter
 			std::string theta_name = site.name + "_theta"; // theta or v parameter
@@ -2506,7 +2505,7 @@ public:
 				tl2::set_eps_round<t_real>(u, m_eps);
 				tl2::set_eps_round<t_real>(v, m_eps);
 
-				auto [ phi, theta ] = tl2::uv_to_sph<t_real>(u, v);
+				const auto [ phi, theta ] = tl2::uv_to_sph<t_real>(u, v);
 				auto [ x, y, z ] = tl2::sph_to_cart<t_real>(1., phi, theta);
 				tl2::set_eps_round<t_real>(x, m_eps);
 				tl2::set_eps_round<t_real>(y, m_eps);
@@ -3261,3 +3260,4 @@ private:
 
 }
 #endif
+
