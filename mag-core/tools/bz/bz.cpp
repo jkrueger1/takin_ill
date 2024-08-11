@@ -476,6 +476,7 @@ BZDlg::BZDlg(QWidget* pParent) : QDialog{pParent},
 		auto sep1 = new QFrame(infopanel); sep1->setFrameStyle(QFrame::HLine);
 		auto sep2 = new QFrame(infopanel); sep2->setFrameStyle(QFrame::HLine);
 		auto sep3 = new QFrame(infopanel); sep3->setFrameStyle(QFrame::HLine);
+		auto sep4 = new QFrame(infopanel); sep4->setFrameStyle(QFrame::HLine);
 
 		std::string strBoost = BOOST_LIB_VERSION;
 		algo::replace_all(strBoost, "_", ".");
@@ -491,6 +492,12 @@ BZDlg::BZDlg(QWidget* pParent) : QDialog{pParent},
 
 		auto labelDate = new QLabel("May 2022.", infopanel);
 		labelDate->setAlignment(Qt::AlignHCenter);
+
+		auto labelPaper = new QLabel("Paper DOI: "
+			"<a href=\"https://doi.org/10.1016/j.softx.2023.101471\">10.1016/j.softx.2023.101471</a>.",
+			infopanel);
+		labelPaper->setWordWrap(true);
+		labelPaper->setOpenExternalLinks(true);
 
 		// renderer infos
 		for(int i=0; i<4; ++i)
@@ -511,6 +518,9 @@ BZDlg::BZDlg(QWidget* pParent) : QDialog{pParent},
 			y++,0, 1,1);
 		grid->addWidget(sep1, y++,0, 1,1);
 
+		grid->addWidget(labelPaper, y++,0, 1,1);
+		grid->addWidget(sep2, y++,0, 1,1);
+
 		grid->addWidget(new QLabel(
 			QString("Compiler: ") +
 			QString(BOOST_COMPILER) + ".",
@@ -525,7 +535,7 @@ BZDlg::BZDlg(QWidget* pParent) : QDialog{pParent},
 			QString(__TIME__) + ".",
 			infopanel), y++,0, 1,1);
 
-		grid->addWidget(sep2, y++,0, 1,1);
+		grid->addWidget(sep3, y++,0, 1,1);
 
 		auto labelQt = new QLabel(QString(
 			"<a href=\"http://code.qt.io/cgit/\">Qt</a>"
@@ -548,7 +558,7 @@ BZDlg::BZDlg(QWidget* pParent) : QDialog{pParent},
 		labelGemmi->setOpenExternalLinks(true);
 		grid->addWidget(labelGemmi, y++,0, 1,1);
 
-		grid->addWidget(sep3, y++,0, 1,1);
+		grid->addWidget(sep4, y++,0, 1,1);
 
 		for(int i=0; i<4; ++i)
 			grid->addWidget(m_labelGlInfos[i], y++,0, 1,1);

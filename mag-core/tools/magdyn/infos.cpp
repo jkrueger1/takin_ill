@@ -72,7 +72,9 @@ InfoDlg::InfoDlg(QWidget* pParent, QSettings *sett)
 	labelDate->setAlignment(Qt::AlignHCenter);
 
 	auto labelPaper = new QLabel(
-		"This program implements the formalism from "
+		"Paper DOI: "
+		"<a href=\"https://doi.org/10.1016/j.softx.2023.101471\">10.1016/j.softx.2023.101471</a>."
+		"<br>This program implements the formalism from "
 		"<a href=\"https://doi.org/10.1088/0953-8984/27/16/166002\">this paper</a> "
 		"(which is also available <a href=\"https://doi.org/10.48550/arXiv.1402.6069\">here</a>).",
 		infopanel);
