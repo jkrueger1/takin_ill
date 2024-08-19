@@ -188,19 +188,19 @@ void ConvoDlg::StartFit()
 				tl::str_to_lower(vecLimits[1]) != "open" &&
 				tl::str_to_lower(vecLimits[1])!="none";
 
-			if(has_lower_limits && has_upper_limits)
+			if(has_lower_lims && has_upper_lims)
 			{
 				limLower = tl::str_to_var<t_real_min>(vecLimits[0]);
 				limUpper = tl::str_to_var<t_real_min>(vecLimits[1]);
 
 				params.SetLimits(varname, *limLower, *limUpper);
 			}
-			else if(has_lower_limits && !has_upper_limits)
+			else if(has_lower_lims && !has_upper_lims)
 			{
 				limLower = tl::str_to_var<t_real_min>(vecLimits[0]);
 				params.SetLowerLimit(varname, *limLower);
 			}
-			else if(has_upper_limits && !has_lower_limits)
+			else if(has_upper_lims && !has_lower_lims)
 			{
 				limUpper = tl::str_to_var<t_real_min>(vecLimits[1]);
 				params.SetUpperLimit(varname, *limUpper);
