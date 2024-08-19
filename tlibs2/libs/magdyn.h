@@ -2413,11 +2413,10 @@ public:
 	/**
 	 * minimise energy to found ground state
 	 */
+#if defined(__TLIBS2_USE_MINUIT__) && defined(__TLIBS2_MAGDYN_USE_MINUIT__)
 	bool CalcGroundState(const std::unordered_set<std::string>* fixed_params = nullptr,
 		bool verbose = false)
 	{
-#if defined(__TLIBS2_USE_MINUIT__) && defined(__TLIBS2_MAGDYN_USE_MINUIT__)
-
 		// function to minimise the state's energy
 		auto func = [this](const std::vector<tl2::t_real_min>& args)
 		{
@@ -2535,12 +2534,15 @@ public:
 			std::cerr << "Magdyn error: Ground state minimisation did not converge." << std::endl;
 			return false;
 		}
-
+	}
 #else  // __TLIBS2_USE_MINUIT__
+	bool CalcGroundState(const std::unordered_set<std::string>* = nullptr, bool = false)
+	{
 		std::cerr << "Magdyn error: Ground state minimisation support disabled." << std::endl;
 		return false;
-#endif
 	}
+#endif
+
 	// --------------------------------------------------------------------
 
 
