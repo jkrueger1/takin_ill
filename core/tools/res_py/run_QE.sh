@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# calculates the instrumental resolution for several Q points
+# calculates the instrumental resolution for several (Q, E) points
 #
 # @author Tobias Weber <tweber@ill.fr>
 # @date aug-2024
@@ -34,28 +34,35 @@ mkdir -p results
 
 
 # Q parameter range
-Q_start=1
+Q_start=2
 Q_end=4
 Q_step=0.1
 
+# E parameter range
+E_start=-2
+E_end=2
+E_step=0.1
+
+
 # run for several 2theta values
-for Q in $(LC_ALL=C seq ${Q_start} ${Q_step} ${Q_end})
-do
-    echo -e "--------------------------------------------------------------------------------"
-    echo -e "Running calculation for Q = ${Q} / A..."
-    echo -e "--------------------------------------------------------------------------------"
+for Q in $(LC_ALL=C seq ${Q_start} ${Q_step} ${Q_end}); do
+for E in $(LC_ALL=C seq ${E_start} ${E_step} ${E_end}); do
+	echo -e "--------------------------------------------------------------------------------"
+	echo -e "Running calculation for Q = ${Q} / A and E = ${E} meV..."
+	echo -e "--------------------------------------------------------------------------------"
 
-    # output file name for results
-    results_file="results/Q_${Q}.dat"
+	# output file name for results
+	results_file="results/Q_${Q}_E_${E}.dat"
 
-    # run the resolution calculation
-    if ! python3 ./calc.py -i in20fc \
-        --kf 2.662 --Q ${Q} \
-        -o "${results_file}"
-    then
-        echo -e "Error: Failed to run calculation program."
-        exit -1
-    fi
+	# run the resolution calculation
+	if ! python3 ./calc.py -m pop \
+		--kf 2.662 --Q ${Q} --E ${E} \
+		-o "${results_file}"
+	then
+		echo -e "Error: Failed to run calculation program."
+		exit -1
+	fi
 
-    echo -e "--------------------------------------------------------------------------------\n"
+	echo -e "--------------------------------------------------------------------------------\n"
+done
 done
