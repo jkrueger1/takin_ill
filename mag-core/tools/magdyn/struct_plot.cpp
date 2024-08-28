@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------------
  */
 
-#include "structplot.h"
+#include "struct_plot.h"
 #include "helper.h"
 
 #include <unordered_set>

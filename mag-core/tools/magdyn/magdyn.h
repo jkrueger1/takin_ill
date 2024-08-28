@@ -65,7 +65,7 @@
 #include "gui_defs.h"
 #include "graph.h"
 #include "table_import.h"
-#include "structplot.h"
+#include "struct_plot.h"
 #include "trafos.h"
 #include "notes.h"
 #include "infos.h"
@@ -406,15 +406,15 @@ private:
 	bool m_ignoreSitesCalc = false;
 	bool m_stopRequested = false;
 
+	// optional features
+	bool m_allow_ortho_spin = false;
+	bool m_allow_general_J = false;
+
 	// data for dispersion plot
 	QVector<qreal> m_qs_data{}, m_Es_data{}, m_ws_data{};
 	QVector<qreal> m_qs_data_channel[3]{}, m_Es_data_channel[3]{}, m_ws_data_channel[3]{};
 	t_size m_Q_idx{};                 // plot x axis
 	t_real m_Q_min{}, m_Q_max{};      // plot x axis range
-
-	// optional features
-	bool m_allow_ortho_spin = false;
-	bool m_allow_general_J = false;
 
 
 public slots:

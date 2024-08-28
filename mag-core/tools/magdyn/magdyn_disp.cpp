@@ -234,7 +234,7 @@ void MagDynDlg::CalcDispersion()
 	m_Es_data.reserve(num_pts*10);
 	m_ws_data.reserve(num_pts*10);
 
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		m_qs_data_channel[i].reserve(num_pts*10);
 		m_Es_data_channel[i].reserve(num_pts*10);
