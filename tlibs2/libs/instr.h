@@ -313,7 +313,7 @@ class FileInstrBase
 
 	public:
 		virtual bool MatchColumn(const std::string& strRegex,
-			std::string& strColName, bool bSortByCounts=0, bool bFilterEmpty=true) const;
+			std::string& strColName, bool bSortByCounts=false, bool bFilterEmpty=true) const;
 
 		static std::shared_ptr<FileInstrBase<t_real>> LoadInstr(const char* pcFile);
 };

@@ -42,8 +42,8 @@ namespace algo = boost::algorithm;
 /**
  * set up the gui
  */
-InfoDlg::InfoDlg(QWidget* pParent, QSettings *sett)
-	: QDialog{pParent}, m_sett(sett)
+InfoDlg::InfoDlg(QWidget* parent, QSettings *sett)
+	: QDialog{parent}, m_sett(sett)
 {
 	setWindowTitle("About");
 	setSizeGripEnabled(true);

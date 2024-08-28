@@ -40,8 +40,8 @@ static const std::string g_b64_prefix = "__base64__";
 /**
  * set up the gui
  */
-NotesDlg::NotesDlg(QWidget* pParent, QSettings *sett)
-	: QDialog{pParent}, m_sett(sett)
+NotesDlg::NotesDlg(QWidget* parent, QSettings *sett)
+	: QDialog{parent}, m_sett(sett)
 {
 	setWindowTitle("Notes");
 	setSizeGripEnabled(true);

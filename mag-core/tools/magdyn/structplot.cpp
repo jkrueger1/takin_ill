@@ -1,5 +1,5 @@
 /**
- * magnetic dynamics -- calculations for structure plot
+ * magnetic dynamics -- magnetic structure plotting
  * @author Tobias Weber <tweber@ill.fr>
  * @date 2022 - 2024
  * @license GPLv3, see 'LICENSE' file
@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------------
  */
 
-#include "magdyn.h"
+#include "structplot.h"
 #include "helper.h"
 
 #include <unordered_set>
@@ -36,83 +36,86 @@
 using namespace tl2_ops;
 
 
+
 /**
- * show the 3d view of the magnetic structure
+ * shows the 3d view of the magnetic structure
  */
-void MagDynDlg::ShowStructurePlot()
+StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
+	: QDialog{parent}, m_sett{sett}, m_info_dlg{info}
 {
-	// plot widget
-	if(!m_structplot_dlg)
-	{
-		m_structplot_dlg = new QDialog(this);
-		m_structplot_dlg->setWindowTitle("Structure Viewer");
-		m_structplot_dlg->setFont(this->font());
-		m_structplot_dlg->setSizeGripEnabled(true);
+	setWindowTitle("Structure Viewer");
+	setSizeGripEnabled(true);
 
-		m_structplot = new tl2::GlPlot(this);
-		m_structplot->GetRenderer()->SetRestrictCamTheta(false);
-		m_structplot->GetRenderer()->SetLight(
-			0, tl2::create<t_vec3_gl>({ 5, 5, 5 }));
-		m_structplot->GetRenderer()->SetLight(
-			1, tl2::create<t_vec3_gl>({ -5, -5, -5 }));
-		m_structplot->GetRenderer()->SetCoordMax(1.);
-		m_structplot->GetRenderer()->GetCamera().SetDist(1.5);
-		m_structplot->GetRenderer()->GetCamera().UpdateTransformation();
-		m_structplot->setSizePolicy(QSizePolicy{
-			QSizePolicy::Expanding, QSizePolicy::Expanding});
+	// create gl plotter
+	m_structplot = new tl2::GlPlot(this);
+	m_structplot->GetRenderer()->SetRestrictCamTheta(false);
+	m_structplot->GetRenderer()->SetLight(
+		0, tl2::create<t_vec3_gl>({ 5, 5, 5 }));
+	m_structplot->GetRenderer()->SetLight(
+		1, tl2::create<t_vec3_gl>({ -5, -5, -5 }));
+	m_structplot->GetRenderer()->SetCoordMax(1.);
+	m_structplot->GetRenderer()->GetCamera().SetDist(1.5);
+	m_structplot->GetRenderer()->GetCamera().UpdateTransformation();
+	m_structplot->setSizePolicy(QSizePolicy{
+		QSizePolicy::Expanding, QSizePolicy::Expanding});
 
-		m_structplot_coordcross = new QCheckBox("Show Coordinates", this);
-		m_structplot_coordcross->setChecked(true);
+	m_coordcross = new QCheckBox("Show Coordinates", this);
+	m_coordcross->setChecked(true);
 
-		m_structplot_labels = new QCheckBox("Show Labels", this);
-		m_structplot_labels->setChecked(true);
+	m_labels = new QCheckBox("Show Labels", this);
+	m_labels->setChecked(true);
 
-		m_structplot_status = new QLabel(this);
+	m_status = new QLabel(this);
 
-		m_structplot_context= new QMenu(this);
-		QAction *acDel = new QAction("Delete Object", m_structplot_context);
-		QAction *acCentre = new QAction("Centre Camera", m_structplot_context);
-		m_structplot_context->addAction(acDel);
-		m_structplot_context->addSeparator();
-		m_structplot_context->addAction(acCentre);
+	m_context = new QMenu(this);
+	QAction *acDel = new QAction("Delete Object", m_context);
+	QAction *acCentre = new QAction("Centre Camera", m_context);
+	m_context->addAction(acDel);
+	m_context->addSeparator();
+	m_context->addAction(acCentre);
 
-		auto grid = new QGridLayout(m_structplot_dlg);
-		grid->setSpacing(4);
-		grid->setContentsMargins(6, 6, 6, 6);
-		grid->addWidget(m_structplot, 0,0,1,2);
-		grid->addWidget(m_structplot_coordcross, 1,0,1,1);
-		grid->addWidget(m_structplot_labels, 1,1,1,1);
-		grid->addWidget(m_structplot_status, 2,0,1,2);
+	auto grid = new QGridLayout(this);
+	grid->setSpacing(4);
+	grid->setContentsMargins(6, 6, 6, 6);
+	grid->addWidget(m_structplot, 0,0,1,2);
+	grid->addWidget(m_coordcross, 1,0,1,1);
+	grid->addWidget(m_labels, 1,1,1,1);
+	grid->addWidget(m_status, 2,0,1,2);
 
-		connect(m_structplot, &tl2::GlPlot::AfterGLInitialisation,
-			this, &MagDynDlg::StructPlotAfterGLInitialisation);
-		connect(m_structplot->GetRenderer(), &tl2::GlPlotRenderer::PickerIntersection,
-			this, &MagDynDlg::StructPlotPickerIntersection);
-		connect(m_structplot, &tl2::GlPlot::MouseClick,
-			this, &MagDynDlg::StructPlotMouseClick);
-		connect(m_structplot, &tl2::GlPlot::MouseDown,
-			this, &MagDynDlg::StructPlotMouseDown);
-		connect(m_structplot, &tl2::GlPlot::MouseUp,
-			this, &MagDynDlg::StructPlotMouseUp);
-		connect(acDel, &QAction::triggered,
-			this, &MagDynDlg::StructPlotDelete);
-		connect(acCentre, &QAction::triggered,
-			this, &MagDynDlg::StructPlotCentreCamera);
-		connect(m_structplot_coordcross, &QCheckBox::toggled,
-			this, &MagDynDlg::StructPlotShowCoordCross);
-		connect(m_structplot_labels, &QCheckBox::toggled,
-			this, &MagDynDlg::StructPlotShowLabels);
+	connect(m_structplot, &tl2::GlPlot::AfterGLInitialisation,
+		this, &StructPlotDlg::AfterGLInitialisation);
+	connect(m_structplot->GetRenderer(), &tl2::GlPlotRenderer::PickerIntersection,
+		this, &StructPlotDlg::PickerIntersection);
+	connect(m_structplot, &tl2::GlPlot::MouseClick,
+		this, &StructPlotDlg::MouseClick);
+	connect(m_structplot, &tl2::GlPlot::MouseDown,
+		this, &StructPlotDlg::MouseDown);
+	connect(m_structplot, &tl2::GlPlot::MouseUp,
+		this, &StructPlotDlg::MouseUp);
+	connect(acDel, &QAction::triggered,
+		this, &StructPlotDlg::DeleteItem);
+	connect(acCentre, &QAction::triggered,
+		this, &StructPlotDlg::CentreCamera);
+	connect(m_coordcross, &QCheckBox::toggled,
+		this, &StructPlotDlg::ShowCoordCross);
+	connect(m_labels, &QCheckBox::toggled,
+		this, &StructPlotDlg::ShowLabels);
 
-		if(m_sett && m_sett->contains("geo_struct_view"))
-			m_structplot_dlg->restoreGeometry(
-				m_sett->value("geo_struct_view").toByteArray());
-		else
-			m_structplot_dlg->resize(500, 500);
-	}
+	if(m_sett && m_sett->contains("struct_view/geo"))
+		restoreGeometry(m_sett->value("struct_view/geo").toByteArray());
+	else
+		resize(500, 500);
+}
 
-	m_structplot_dlg->show();
-	m_structplot_dlg->raise();
-	m_structplot_dlg->focusWidget();
+
+
+/**
+ * dialog is closing
+ */
+void StructPlotDlg::closeEvent(QCloseEvent *)
+{
+	if(m_sett)
+		m_sett->setValue("struct_view/geo", saveGeometry());
 }
 
 
@@ -120,41 +123,41 @@ void MagDynDlg::ShowStructurePlot()
 /**
  * structure plot picker intersection
  */
-void MagDynDlg::StructPlotPickerIntersection(
+void StructPlotDlg::PickerIntersection(
         const t_vec3_gl* pos, std::size_t objIdx,
         [[maybe_unused]] const t_vec3_gl* posSphere)
 {
-	m_structplot_status->setText("");
-	m_structplot_cur_obj = std::nullopt;
-	m_structplot_cur_atom = std::nullopt;
-	m_structplot_cur_term = std::nullopt;
+	m_status->setText("");
+	m_cur_obj = std::nullopt;
+	m_cur_atom = std::nullopt;
+	m_cur_term = std::nullopt;
 
 	if(!pos)
 		return;
 
-	m_structplot_cur_obj = objIdx;
+	m_cur_obj = objIdx;
 
 	// look for magnetic sites
-	if(auto iter_atoms = m_structplot_atoms.find(objIdx);
-		iter_atoms != m_structplot_atoms.end())
+	if(auto iter_atoms = m_atoms.find(objIdx);
+		iter_atoms != m_atoms.end())
 	{
-		m_structplot_cur_atom = iter_atoms->second.site->name;
-		m_structplot_status->setText(("Site " + *m_structplot_cur_atom).c_str());
+		m_cur_atom = iter_atoms->second.site->name;
+		m_status->setText(("Site " + *m_cur_atom).c_str());
 		return;
 	}
 
 	// look for exchange terms
-	if(auto iter_terms = m_structplot_terms.find(objIdx);
-		iter_terms != m_structplot_terms.end())
+	if(auto iter_terms = m_terms.find(objIdx);
+		iter_terms != m_terms.end())
 	{
-		m_structplot_cur_term = iter_terms->second.term->name;
+		m_cur_term = iter_terms->second.term->name;
 
 		std::ostringstream ostr;
 		ostr.precision(g_prec_gui);
-		ostr << "Coupling " << *m_structplot_cur_term
+		ostr << "Coupling " << *m_cur_term
 			<< " (length: " << iter_terms->second.term->length_calc << " \xe2\x84\xab)";
 
-		m_structplot_status->setText(ostr.str().c_str());
+		m_status->setText(ostr.str().c_str());
 		return;
 	}
 }
@@ -164,22 +167,18 @@ void MagDynDlg::StructPlotPickerIntersection(
 /**
  * delete currently selected magnetic site or bond
  */
-void MagDynDlg::StructPlotDelete()
+void StructPlotDlg::DeleteItem()
 {
-	if(m_structplot_cur_atom)
+	if(m_cur_atom)
 	{
-		if(t_size idx = m_dyn.GetMagneticSiteIndex(*m_structplot_cur_atom);
-			idx < m_dyn.GetMagneticSitesCount())
-			DelTabItem(m_sitestab, idx, idx+1);
-		m_structplot_cur_atom = std::nullopt;
+		emit DeleteSite(*m_cur_atom);
+		m_cur_atom = std::nullopt;
 	}
 
-	if(m_structplot_cur_term)
+	if(m_cur_term)
 	{
-		if(t_size idx = m_dyn.GetExchangeTermIndex(*m_structplot_cur_term);
-			idx < m_dyn.GetExchangeTermsCount())
-			DelTabItem(m_termstab, idx, idx+1);
-		m_structplot_cur_term = std::nullopt;
+		emit DeleteTerm(*m_cur_term);
+		m_cur_term = std::nullopt;
 	}
 }
 
@@ -188,7 +187,7 @@ void MagDynDlg::StructPlotDelete()
 /**
  * show or hide the coordinate system
  */
-void MagDynDlg::StructPlotShowCoordCross(bool show)
+void StructPlotDlg::ShowCoordCross(bool show)
 {
 	if(auto obj = m_structplot->GetRenderer()->GetCoordCross(); obj)
 	{
@@ -202,7 +201,7 @@ void MagDynDlg::StructPlotShowCoordCross(bool show)
 /**
  * show or hide the object labels
  */
-void MagDynDlg::StructPlotShowLabels(bool show)
+void StructPlotDlg::ShowLabels(bool show)
 {
 	m_structplot->GetRenderer()->SetLabelsVisible(show);
 	m_structplot->update();
@@ -213,13 +212,13 @@ void MagDynDlg::StructPlotShowLabels(bool show)
 /**
  * centre camera on currently selected object
  */
-void MagDynDlg::StructPlotCentreCamera()
+void StructPlotDlg::CentreCamera()
 {
-	if(!m_structplot_cur_obj)
+	if(!m_cur_obj)
 		return;
 
 	const t_mat_gl& mat = m_structplot->GetRenderer()->
-		GetObjectMatrix(*m_structplot_cur_obj);
+		GetObjectMatrix(*m_cur_obj);
 	m_structplot->GetRenderer()->GetCamera().Centre(mat);
 	m_structplot->GetRenderer()->GetCamera().UpdateTransformation();
 }
@@ -229,16 +228,16 @@ void MagDynDlg::StructPlotCentreCamera()
 /**
  * structure plot mouse button clicked
  */
-void MagDynDlg::StructPlotMouseClick(
+void StructPlotDlg::MouseClick(
 	[[maybe_unused]] bool left,
 	[[maybe_unused]] bool mid,
 	[[maybe_unused]] bool right)
 {
-	if(right && m_structplot_cur_obj)
+	if(right && m_cur_obj)
 	{
 		const QPointF& _pt = m_structplot->GetRenderer()->GetMousePosition();
 		QPoint pt = m_structplot->mapToGlobal(_pt.toPoint());
-		m_structplot_context->popup(pt);
+		m_context->popup(pt);
 	}
 }
 
@@ -247,32 +246,16 @@ void MagDynDlg::StructPlotMouseClick(
 /**
  * structure plot mouse button pressed
  */
-void MagDynDlg::StructPlotMouseDown(
+void StructPlotDlg::MouseDown(
 	[[maybe_unused]] bool left,
 	[[maybe_unused]] bool mid,
 	[[maybe_unused]] bool right)
 {
-	if(left && m_structplot_cur_atom)
-	{
-		if(t_size idx = m_dyn.GetMagneticSiteIndex(*m_structplot_cur_atom);
-			idx < m_dyn.GetMagneticSitesCount())
-		{
-			// select current site in table
-			m_tabs_in->setCurrentWidget(m_sitespanel);
-			m_sitestab->setCurrentCell(idx, 0);
-		}
-	}
+	if(left && m_cur_atom)
+		emit SelectSite(*m_cur_atom);
 
-	if(left && m_structplot_cur_term)
-	{
-		if(t_size idx = m_dyn.GetExchangeTermIndex(*m_structplot_cur_term);
-			idx < m_dyn.GetExchangeTermsCount())
-		{
-			// select current term in table
-			m_tabs_in->setCurrentWidget(m_termspanel);
-			m_termstab->setCurrentCell(idx, 0);
-		}
-	}
+	if(left && m_cur_term)
+		emit SelectTerm(*m_cur_term);
 }
 
 
@@ -280,7 +263,7 @@ void MagDynDlg::StructPlotMouseDown(
 /**
  * structure plot mouse button released
  */
-void MagDynDlg::StructPlotMouseUp(
+void StructPlotDlg::MouseUp(
 	[[maybe_unused]] bool left,
 	[[maybe_unused]] bool mid,
 	[[maybe_unused]] bool right)
@@ -292,42 +275,43 @@ void MagDynDlg::StructPlotMouseUp(
 /**
  * after structure plot initialisation
  */
-void MagDynDlg::StructPlotAfterGLInitialisation()
+void StructPlotDlg::AfterGLInitialisation()
 {
 	if(!m_structplot)
 		return;
 
 	// reference sphere for linked objects
-	m_structplot_sphere = m_structplot->GetRenderer()->AddSphere(
+	m_sphere = m_structplot->GetRenderer()->AddSphere(
 		0.05, 0.,0.,0., 1.,1.,1.,1.);
-	m_structplot->GetRenderer()->SetObjectVisible(
-		m_structplot_sphere, false);
+	m_structplot->GetRenderer()->SetObjectVisible(m_sphere, false);
 
 	// reference arrow for linked objects
-	m_structplot_arrow = m_structplot->GetRenderer()->AddArrow(
+	m_arrow = m_structplot->GetRenderer()->AddArrow(
 		0.015, 0.25, 0.,0.,0.5,  1.,1.,1.,1.);
-	m_structplot->GetRenderer()->SetObjectVisible(
-		m_structplot_arrow, false);
+	m_structplot->GetRenderer()->SetObjectVisible(m_arrow, false);
 
 	// reference cylinder for linked objects
-	m_structplot_cyl = m_structplot->GetRenderer()->AddCylinder(
+	m_cyl = m_structplot->GetRenderer()->AddCylinder(
 		0.01, 1., 0.,0.,0.5,  1.,1.,1.,1.);
-	m_structplot->GetRenderer()->SetObjectVisible(
-		m_structplot_cyl, false);
+	m_structplot->GetRenderer()->SetObjectVisible(m_cyl, false);
 
 	// GL device info
-	auto [strGlVer, strGlShaderVer, strGlVendor, strGlRenderer]
-		= m_structplot->GetRenderer()->GetGlDescr();
-	m_info_dlg->SetGlInfo(0,
-		QString("GL Version: %1.").arg(strGlVer.c_str()));
-	m_info_dlg->SetGlInfo(1,
-		QString("GL Shader Version: %1.").arg(strGlShaderVer.c_str()));
-	m_info_dlg->SetGlInfo(2,
-		QString("GL Vendor: %1.").arg(strGlVendor.c_str()));
-	m_info_dlg->SetGlInfo(3,
-		QString("GL Device: %1.").arg(strGlRenderer.c_str()));
+	if(m_info_dlg)
+	{
+		auto [strGlVer, strGlShaderVer, strGlVendor, strGlRenderer]
+			= m_structplot->GetRenderer()->GetGlDescr();
 
-	StructPlotSync();
+		m_info_dlg->SetGlInfo(0,
+			QString("GL Version: %1.").arg(strGlVer.c_str()));
+		m_info_dlg->SetGlInfo(1,
+			QString("GL Shader Version: %1.").arg(strGlShaderVer.c_str()));
+		m_info_dlg->SetGlInfo(2,
+			QString("GL Vendor: %1.").arg(strGlVendor.c_str()));
+		m_info_dlg->SetGlInfo(3,
+			QString("GL Device: %1.").arg(strGlRenderer.c_str()));
+	}
+
+	Sync();
 }
 
 
@@ -336,32 +320,32 @@ void MagDynDlg::StructPlotAfterGLInitialisation()
  * get the sites and exchange terms and
  * transfer them to the structure plotter
  */
-void MagDynDlg::StructPlotSync()
+void StructPlotDlg::Sync()
 {
-	if(!m_structplot)
+	if(!m_structplot || !m_dyn)
 		return;
 
 	// get sites and terms
-	const auto& sites = m_dyn.GetMagneticSites();
-	const auto& terms = m_dyn.GetExchangeTerms();
-	const auto& field = m_dyn.GetExternalField();
-	const auto& ordering = m_dyn.GetOrderingWavevector();
-	const auto& rotaxis = m_dyn.GetRotationAxis();
-	const bool is_incommensurate = m_dyn.IsIncommensurate();
+	const auto& sites = m_dyn->GetMagneticSites();
+	const auto& terms = m_dyn->GetExchangeTerms();
+	const auto& field = m_dyn->GetExternalField();
+	const auto& ordering = m_dyn->GetOrderingWavevector();
+	const auto& rotaxis = m_dyn->GetRotationAxis();
+	const bool is_incommensurate = m_dyn->IsIncommensurate();
 
 
 	// clear old magnetic sites
-	for(const auto& [atom_idx, atom_site] : m_structplot_atoms)
+	for(const auto& [atom_idx, atom_site] : m_atoms)
 		m_structplot->GetRenderer()->RemoveObject(atom_idx);
 
-	m_structplot_atoms.clear();
+	m_atoms.clear();
 
 
 	// clear old terms
-	for(const auto& [term_idx, term] : m_structplot_terms)
+	for(const auto& [term_idx, term] : m_terms)
 		m_structplot->GetRenderer()->RemoveObject(term_idx);
 
-	m_structplot_terms.clear();
+	m_terms.clear();
 
 
 	// hashes of already seen magnetic sites
@@ -415,7 +399,7 @@ void MagDynDlg::StructPlotSync()
 
 		// get user-defined colour
 		bool user_col = false;
-		if(site_idx < std::size_t(m_sitestab->rowCount()))
+		if(m_sitestab && site_idx < std::size_t(m_sitestab->rowCount()))
 		{
 			user_col = get_colour<t_real_gl>(
 				m_sitestab->item(site_idx, COL_SITE_RGB)->text().toStdString(), rgb);
@@ -435,16 +419,16 @@ void MagDynDlg::StructPlotSync()
 		t_real_gl scale = 1.;
 
 		std::size_t obj = m_structplot->GetRenderer()->AddLinkedObject(
-			m_structplot_sphere, 0,0,0, rgb[0], rgb[1], rgb[2], 1);
+			m_sphere, 0,0,0, rgb[0], rgb[1], rgb[2], 1);
 
 		std::size_t arrow = m_structplot->GetRenderer()->AddLinkedObject(
-			m_structplot_arrow, 0,0,0, rgb[0], rgb[1], rgb[2], 1);
+			m_arrow, 0,0,0, rgb[0], rgb[1], rgb[2], 1);
 
 		{
 			AtomSiteInfo siteinfo;
 			siteinfo.site = &site;
-			m_structplot_atoms.emplace(std::make_pair(obj, siteinfo));
-			m_structplot_atoms.emplace(std::make_pair(arrow, std::move(siteinfo)));
+			m_atoms.emplace(std::make_pair(obj, siteinfo));
+			m_atoms.emplace(std::make_pair(arrow, std::move(siteinfo)));
 		}
 
 		t_vec_gl pos_vec = tl2::create<t_vec_gl>({
@@ -531,19 +515,21 @@ void MagDynDlg::StructPlotSync()
 
 		// get colour
 		t_real_gl rgb[3] {0., 0.75, 0.};
-		if(term_idx < std::size_t(m_termstab->rowCount()))
+		if(m_termstab && term_idx < std::size_t(m_termstab->rowCount()))
+		{
 			get_colour<t_real_gl>(
 				m_termstab->item(term_idx, COL_XCH_RGB)->text().toStdString(), rgb);
+		}
 
 		t_real_gl scale = 1.;
 
 		std::size_t obj = m_structplot->GetRenderer()->AddLinkedObject(
-			m_structplot_cyl, 0, 0, 0, rgb[0], rgb[1], rgb[2], 1);
+			m_cyl, 0, 0, 0, rgb[0], rgb[1], rgb[2], 1);
 
 		{
 			ExchangeTermInfo terminfo;
 			terminfo.term = &term;
-			m_structplot_terms.emplace(std::make_pair(obj, std::move(terminfo)));
+			m_terms.emplace(std::make_pair(obj, std::move(terminfo)));
 		}
 
 		// connection from unit cell magnetic site...
@@ -596,12 +582,12 @@ void MagDynDlg::StructPlotSync()
 		if(tl2::norm<t_vec_gl>(dmi_vec) > g_eps)
 		{
 			std::size_t objDmi = m_structplot->GetRenderer()->AddLinkedObject(
-				m_structplot_arrow, 0,0,0, rgb[0], rgb[1], rgb[2], 1);
+				m_arrow, 0,0,0, rgb[0], rgb[1], rgb[2], 1);
 
 			{
 				ExchangeTermInfo terminfo;
 				terminfo.term = &term;
-				m_structplot_terms.emplace(std::make_pair(
+				m_terms.emplace(std::make_pair(
 					objDmi, std::move(terminfo)));
 			}
 

@@ -483,7 +483,7 @@ ResoResults calc_eck(const EckParams& eck)
 	// integrate last 2 vars -> equs 57 & 58 in [eck14]
 	t_mat U2 = quadric_proj(U1, ECK_K_Z);
 	// careful: factor -0.5*... missing in U matrix compared to normal gaussian!
-	t_mat U = t_real(2) * quadric_proj(U2, ECK_K_Y);
+	t_mat U = /*sig2fwhm*sig2fwhm /*/ t_real(2) * quadric_proj(U2, ECK_K_Y);
 
 	t_vec V2 = quadric_proj(V1, U1, ECK_K_Z);
 	t_vec V = quadric_proj(V2, U2, ECK_K_Y);

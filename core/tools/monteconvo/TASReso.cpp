@@ -57,7 +57,7 @@ TASReso::TASReso()
 {
 	m_res.resize(1);
 
-	m_opts.bCenter = 0;
+	m_opts.bCenter = false;
 	m_opts.coords = McNeutronCoords::RLU;
 }
 

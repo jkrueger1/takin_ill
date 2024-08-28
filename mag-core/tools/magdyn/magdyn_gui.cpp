@@ -147,7 +147,7 @@ void MagDynDlg::CreateMainWindow()
 	// signals
 	connect(m_btnStart, &QAbstractButton::clicked, [this]() { this->CalcAll(); });
 	connect(btnStop, &QAbstractButton::clicked, [this]() { m_stopRequested = true; });
-	connect(btnShowStruct, &QAbstractButton::clicked, this, &MagDynDlg::ShowStructurePlot);
+	connect(btnShowStruct, &QAbstractButton::clicked, this, &MagDynDlg::ShowStructPlotDlg);
 }
 
 
@@ -353,7 +353,7 @@ void MagDynDlg::CreateSitesPanel()
 		this, &MagDynDlg::GenerateSitesFromSG);
 
 	connect(btnMirrorAtoms, &QAbstractButton::clicked, this, &MagDynDlg::MirrorAtoms);
-	connect(btnShowStruct, &QAbstractButton::clicked, this, &MagDynDlg::ShowStructurePlot);
+	connect(btnShowStruct, &QAbstractButton::clicked, this, &MagDynDlg::ShowStructPlotDlg);
 
 	connect(m_comboSGSites, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
 		[this](int idx)
@@ -2027,13 +2027,20 @@ void MagDynDlg::CreateExportPanel()
 /**
  * notes dialog
  */
-void MagDynDlg::CreateNotesDlg()
+void MagDynDlg::ShowNotesDlg(bool only_create)
 {
-	if(m_notes_dlg)
-		return;
+	if(!m_notes_dlg)
+	{
+		m_notes_dlg = new NotesDlg(this, m_sett);
+		m_notes_dlg->setFont(this->font());
+	}
 
-	m_notes_dlg = new NotesDlg(this, m_sett);
-	m_notes_dlg->setFont(this->font());
+	if(!only_create)
+	{
+		m_notes_dlg->show();
+		m_notes_dlg->raise();
+		m_notes_dlg->activateWindow();
+	}
 }
 
 
@@ -2041,13 +2048,49 @@ void MagDynDlg::CreateNotesDlg()
 /**
  * about dialog
  */
-void MagDynDlg::CreateInfoDlg()
+void MagDynDlg::ShowInfoDlg(bool only_create)
 {
-	if(m_info_dlg)
-		return;
+	if(!m_info_dlg)
+	{
+		m_info_dlg = new InfoDlg(this, m_sett);
+		m_info_dlg->setFont(this->font());
+	}
 
-	m_info_dlg = new InfoDlg(this, m_sett);
-	m_info_dlg->setFont(this->font());
+	if(!only_create)
+	{
+		m_info_dlg->show();
+		m_info_dlg->raise();
+		m_info_dlg->activateWindow();
+	}
+}
+
+
+
+/**
+ * structure plotter dialog
+ */
+void MagDynDlg::ShowStructPlotDlg(bool only_create)
+{
+	if(!m_structplot_dlg)
+	{
+		m_structplot_dlg = new StructPlotDlg(this, m_sett, m_info_dlg);
+		m_structplot_dlg->setFont(this->font());
+
+		m_structplot_dlg->SetKernel(&m_dyn);
+		m_structplot_dlg->SetTables(m_sitestab, m_termstab);
+
+		QObject::connect(m_structplot_dlg, &StructPlotDlg::SelectSite, this, &MagDynDlg::SelectSite);
+		QObject::connect(m_structplot_dlg, &StructPlotDlg::SelectTerm, this, &MagDynDlg::SelectTerm);
+		QObject::connect(m_structplot_dlg, &StructPlotDlg::DeleteSite, this, &MagDynDlg::DeleteSite);
+		QObject::connect(m_structplot_dlg, &StructPlotDlg::DeleteTerm, this, &MagDynDlg::DeleteTerm);
+	}
+
+	if(!only_create)
+	{
+		m_structplot_dlg->show();
+		m_structplot_dlg->raise();
+		m_structplot_dlg->activateWindow();
+	}
 }
 
 
@@ -2337,18 +2380,9 @@ void MagDynDlg::CreateMenuBar()
 		}
 	};
 
-	connect(acStructNotes, &QAction::triggered, [this]()
-	{
-		if(!m_notes_dlg)
-			CreateNotesDlg();
-
-		m_notes_dlg->show();
-		m_notes_dlg->raise();
-		m_notes_dlg->activateWindow();
-	});
-
+	connect(acStructNotes, &QAction::triggered, this, &MagDynDlg::ShowNotesDlg);
 	connect(acStructSymIdx, &QAction::triggered, this, &MagDynDlg::CalcSymmetryIndices);
-	connect(acStructView, &QAction::triggered, this, &MagDynDlg::ShowStructurePlot);
+	connect(acStructView, &QAction::triggered, this, &MagDynDlg::ShowStructPlotDlg);
 	connect(acStructImport, &QAction::triggered, this, &MagDynDlg::ShowTableImporter);
 	connect(acStructExportSun, &QAction::triggered,
 		this, static_cast<void (MagDynDlg::*)()>(&MagDynDlg::ExportToSunny));
@@ -2444,15 +2478,7 @@ void MagDynDlg::CreateMenuBar()
 	});
 
 	// show info dialog
-	connect(acAbout, &QAction::triggered, [this]()
-	{
-		if(!m_info_dlg)
-			CreateInfoDlg();
-
-		m_info_dlg->show();
-		m_info_dlg->raise();
-		m_info_dlg->activateWindow();
-	});
+	connect(acAbout, &QAction::triggered, this, &MagDynDlg::ShowInfoDlg);
 
 	// menu bar
 	m_menu->addMenu(menuFile);

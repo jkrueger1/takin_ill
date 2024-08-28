@@ -57,8 +57,8 @@ MagDynDlg::MagDynDlg(QWidget* pParent) : QDialog{pParent},
 	CreateMenuBar();
 
 	// create dialogs
-	CreateInfoDlg();
-	CreateNotesDlg();
+	ShowInfoDlg(true);
+	ShowNotesDlg(true);
 
 	// create input panels
 	CreateSitesPanel();
@@ -187,9 +187,6 @@ void MagDynDlg::closeEvent(QCloseEvent *)
 
 	if(m_split_inout)
 		m_sett->setValue("splitter", m_split_inout->saveState());
-
-	if(m_structplot_dlg)
-		m_sett->setValue("geo_struct_view", m_structplot_dlg->saveGeometry());
 }
 
 
@@ -234,7 +231,8 @@ void MagDynDlg::CalcAll()
 {
 	// calculate structure
 	SyncToKernel();
-	StructPlotSync();
+	if(m_structplot_dlg)
+		m_structplot_dlg->Sync();
 
 	// calculate dynamics
 	CalcDispersion();

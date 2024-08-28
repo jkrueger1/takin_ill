@@ -61,136 +61,14 @@
 #include "tlibs2/libs/magdyn.h"
 #include "tlibs2/libs/qt/numerictablewidgetitem.h"
 #include "tlibs2/libs/qt/recent.h"
-#include "tlibs2/libs/qt/glplot.h"
 
-#include "defs.h"
+#include "gui_defs.h"
 #include "graph.h"
 #include "table_import.h"
+#include "structplot.h"
 #include "trafos.h"
 #include "notes.h"
 #include "infos.h"
-
-
-
-/**
- * user data for table items
- */
-enum : int
-{
-	DATA_ROLE_NAME = Qt::UserRole + 0,
-	//DATA_ROLE_IDX  = Qt::UserRole + 1,  // TODO: index used in kernel
-};
-
-
-
-/**
- * export file types
- */
-enum : int
-{
-	EXPORT_HDF5 = 0,
-	EXPORT_GRID = 1,
-	EXPORT_TEXT = 2,
-};
-
-
-
-/**
- * columns of the sites table
- */
-enum : int
-{
-	COL_SITE_NAME = 0,                                 // label
-	COL_SITE_POS_X, COL_SITE_POS_Y, COL_SITE_POS_Z,    // site position
-	COL_SITE_SYM_IDX,                                  // symmetry index
-	COL_SITE_SPIN_X, COL_SITE_SPIN_Y, COL_SITE_SPIN_Z, // spin direction
-	COL_SITE_SPIN_MAG,                                 // spin magnitude
-	COL_SITE_RGB,                                      // colour
-	COL_SITE_SPIN_ORTHO_X, COL_SITE_SPIN_ORTHO_Y, COL_SITE_SPIN_ORTHO_Z,
-
-	NUM_SITE_COLS
-};
-
-
-
-/**
- * columns of the exchange terms table
- */
-enum : int
-{
-	COL_XCH_NAME = 0,                                // label
-	COL_XCH_ATOM1_IDX, COL_XCH_ATOM2_IDX,            // site names or indices
-	COL_XCH_DIST_X, COL_XCH_DIST_Y, COL_XCH_DIST_Z,  // unit cell distance
-	COL_XCH_SYM_IDX,                                 // symmetry index
-	COL_XCH_INTERACTION,                             // isotropic exchange interaction
-	COL_XCH_DMI_X, COL_XCH_DMI_Y, COL_XCH_DMI_Z,     // antisymmetric DMI
-	COL_XCH_RGB,                                     // colour
-	COL_XCH_GEN_XX, COL_XCH_GEN_XY, COL_XCH_GEN_XZ,  //
-	COL_XCH_GEN_YX, COL_XCH_GEN_YY, COL_XCH_GEN_YZ,  // general interaction matrix
-	COL_XCH_GEN_ZX, COL_XCH_GEN_ZY, COL_XCH_GEN_ZZ,  //
-
-	NUM_XCH_COLS
-};
-
-
-
-/**
- * columns of the variables table
- */
-enum : int
-{
-	COL_VARS_NAME = 0,
-	COL_VARS_VALUE_REAL,
-	COL_VARS_VALUE_IMAG,
-
-	NUM_VARS_COLS
-};
-
-
-
-/**
- * columns of the table with saved fields
- */
-enum : int
-{
-	COL_FIELD_H = 0, COL_FIELD_K, COL_FIELD_L,
-	COL_FIELD_MAG,
-
-	NUM_FIELD_COLS
-};
-
-
-
-/**
- * columns of the table with saved Q coordinates
- */
-enum : int
-{
-	COL_COORD_HI = 0, COL_COORD_KI, COL_COORD_LI,
-	COL_COORD_HF, COL_COORD_KF, COL_COORD_LF,
-
-	NUM_COORD_COLS
-};
-
-
-
-/**
- * infos for magnetic sites
- */
-struct AtomSiteInfo
-{
-	const t_magdyn::MagneticSite* site = nullptr;
-};
-
-
-
-/**
- * infos for exchange term
- */
-struct ExchangeTermInfo
-{
-	const t_magdyn::ExchangeTerm* term = nullptr;
-};
 
 
 
@@ -219,7 +97,7 @@ struct SitesComboBox : public QComboBox, QTableWidgetItem
  * magnon calculation dialog
  */
 class MagDynDlg : public QDialog
-{
+{ Q_OBJECT
 public:
 	MagDynDlg(QWidget* pParent = nullptr);
 	virtual ~MagDynDlg();
@@ -347,25 +225,12 @@ protected:
 	// settings dialog
 	QDialog *m_settings_dlg{};
 
-	// structure plotter
-	QDialog *m_structplot_dlg{};
-	QLabel *m_structplot_status{};
-	QCheckBox *m_structplot_coordcross{};
-	QCheckBox *m_structplot_labels{};
-	QMenu *m_structplot_context{};
-
-	tl2::GlPlot *m_structplot{};
-	std::unordered_map<std::size_t, AtomSiteInfo> m_structplot_atoms{};
-	std::unordered_map<std::size_t, ExchangeTermInfo> m_structplot_terms{};
-	std::optional<std::size_t> m_structplot_cur_obj{};
-	std::optional<std::string> m_structplot_cur_atom{};
-	std::optional<std::string> m_structplot_cur_term{};
-
 	// dialogs
 	TableImportDlg *m_table_import_dlg{};  // table import dialog
 	NotesDlg *m_notes_dlg{};               // notes dialog
 	TrafoCalculator *m_trafos{};           // trafo calculator
 	InfoDlg *m_info_dlg{};                 // info dialog
+	StructPlotDlg *m_structplot_dlg{};     // magnetic structure plotter
 
 
 protected:
@@ -374,8 +239,9 @@ protected:
 	void CreateMenuBar();
 
 	// set up dialogs
-	void CreateInfoDlg();
-	void CreateNotesDlg();
+	void ShowInfoDlg(bool only_create = false);
+	void ShowNotesDlg(bool only_create = false);
+	void ShowStructPlotDlg(bool only_create = false);
 	void InitSettingsDlg();
 	void InitSettings();
 
@@ -499,21 +365,6 @@ protected:
 	void ImportAtoms(const std::vector<TableImportAtom>&);
 	void ImportCouplings(const std::vector<TableImportCoupling>&);
 
-	// structure plotter
-	void ShowStructurePlot();
-	void StructPlotMouseClick(bool left, bool mid, bool right);
-	void StructPlotMouseDown(bool left, bool mid, bool right);
-	void StructPlotMouseUp(bool left, bool mid, bool right);
-	void StructPlotPickerIntersection(
-		const t_vec3_gl* pos, std::size_t objIdx,
-		const t_vec3_gl* posSphere);
-	void StructPlotAfterGLInitialisation();
-	void StructPlotSync();
-	void StructPlotDelete();
-	void StructPlotShowCoordCross(bool show);
-	void StructPlotShowLabels(bool show);
-	void StructPlotCentreCamera();
-
 	// disable/enable gui input for threaded operations
 	void EnableInput();
 	void DisableInput();
@@ -561,14 +412,17 @@ private:
 	t_size m_Q_idx{};                 // plot x axis
 	t_real m_Q_min{}, m_Q_max{};      // plot x axis range
 
-	// reference object handles
-	std::size_t m_structplot_sphere = 0;
-	std::size_t m_structplot_arrow = 0;
-	std::size_t m_structplot_cyl = 0;
-
 	// optional features
 	bool m_allow_ortho_spin = false;
 	bool m_allow_general_J = false;
+
+
+public slots:
+	void SelectSite(const std::string& site);
+	void SelectTerm(const std::string& term);
+
+	void DeleteSite(const std::string& site);
+	void DeleteTerm(const std::string& term);
 };
 
 

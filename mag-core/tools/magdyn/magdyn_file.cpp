@@ -51,7 +51,9 @@ void MagDynDlg::Clear()
 	{
 		this_->m_ignoreCalc = false;
 		//this_->SyncToKernel();
-		this_->StructPlotSync();
+
+		if(this_->m_structplot_dlg)
+			this_->m_structplot_dlg->Sync();
 	} BOOST_SCOPE_EXIT_END
 	m_ignoreCalc = true;
 

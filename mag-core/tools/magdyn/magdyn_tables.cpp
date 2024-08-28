@@ -898,3 +898,63 @@ void MagDynDlg::ShowTableContextMenu(
 	else
 		pMenuNoItem->popup(ptGlob);
 }
+
+
+
+/**
+ * set the selection to the given site in the corresponding table
+ */
+void MagDynDlg::SelectSite(const std::string& site)
+{
+	if(t_size idx = m_dyn.GetMagneticSiteIndex(site);
+	   idx < m_dyn.GetMagneticSitesCount())
+	{
+		// select current site in table
+		m_tabs_in->setCurrentWidget(m_sitespanel);
+		m_sitestab->setCurrentCell(idx, 0);
+	}
+}
+
+
+
+/**
+ * set the selection to the given term in the corresponding table
+ */
+void MagDynDlg::SelectTerm(const std::string& term)
+{
+	if(t_size idx = m_dyn.GetExchangeTermIndex(term);
+	   idx < m_dyn.GetExchangeTermsCount())
+	{
+		// select current term in table
+		m_tabs_in->setCurrentWidget(m_termspanel);
+		m_termstab->setCurrentCell(idx, 0);
+	}
+}
+
+
+
+/**
+ * delete the given site from the corresponding table
+ */
+void MagDynDlg::DeleteSite(const std::string& site)
+{
+	if(t_size idx = m_dyn.GetMagneticSiteIndex(site);
+		idx < m_dyn.GetMagneticSitesCount())
+	{
+		DelTabItem(m_sitestab, idx, idx + 1);
+	}
+}
+
+
+
+/**
+ * delete the given term from the corresponding table
+ */
+void MagDynDlg::DeleteTerm(const std::string& term)
+{
+	if(t_size idx = m_dyn.GetExchangeTermIndex(term);
+		idx < m_dyn.GetExchangeTermsCount())
+	{
+		DelTabItem(m_termstab, idx, idx + 1);
+	}
+}
