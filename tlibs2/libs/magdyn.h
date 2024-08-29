@@ -2287,8 +2287,7 @@ public:
 		{
 			// equations (39) and (40) from (Toth 2015)
 			const t_mat proj_norm = tl2::convert<t_mat>(
-				tl2::projector<t_mat_real, t_vec_real>(
-					m_rotaxis, true));
+				tl2::projector<t_mat_real, t_vec_real>(m_rotaxis, true));
 
 			t_mat rot_incomm = tl2::unit<t_mat>(3);
 			rot_incomm -= s_imag * m_phase_sign * tl2::skewsymmetric<t_mat, t_vec>(m_rotaxis);

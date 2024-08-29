@@ -23,7 +23,6 @@
 # ----------------------------------------------------------------------------
 #
 
-import math
 import instr
 import numpy
 import scipy.constants as co
@@ -36,7 +35,7 @@ import scipy.constants as co
 #
 def norm_counts_to_mon(y, dy, m, dm):
 	val = y / m;
-	err = math.sqrt(math.pow(dy/m, 2.) + math.pow(dm*y/(m*m), 2.))
+	err = numpy.sqrt((dy/m)**2. + (dm*y/(m*m))**2.)
 
 	return [val, err]
 
@@ -65,12 +64,8 @@ def load_data(datfile, mergefiles = [], intensity_scale = 1.):
 			instrdat.MergeWith(tomerge)
 
 
-	hs = []
-	ks = []
-	ls = []
-	Es = []
-	Is = []
-	Is_err = []
+	hs = []; ks = []; ls = []; Es = []
+	Is = []; Is_err = []
 
 	cntcol = instrdat.GetCol(instrdat.GetCountVar())
 	moncol = instrdat.GetCol(instrdat.GetMonVar())
@@ -87,8 +82,8 @@ def load_data(datfile, mergefiles = [], intensity_scale = 1.):
 
 		counts = cntcol[point_idx]
 		mon = moncol[point_idx]
-		counts_err = math.sqrt(counts)
-		mon_err = math.sqrt(mon)
+		counts_err = numpy.sqrt(counts)
+		mon_err = numpy.sqrt(mon)
 
 		if counts == 0:
 			counts_err = 1.
@@ -156,9 +151,9 @@ col_ctr_err  = 6
 		instrdat.GetSampleLattice()[0],
 		instrdat.GetSampleLattice()[1],
 		instrdat.GetSampleLattice()[2],
-		instrdat.GetSampleAngles()[0] / math.pi * 180.,
-		instrdat.GetSampleAngles()[1] / math.pi * 180.,
-		instrdat.GetSampleAngles()[2] / math.pi * 180.,
+		instrdat.GetSampleAngles()[0] / numpy.pi * 180.,
+		instrdat.GetSampleAngles()[1] / numpy.pi * 180.,
+		instrdat.GetSampleAngles()[2] / numpy.pi * 180.,
 		instrdat.GetMonoAnaD()[0], instrdat.GetMonoAnaD()[1],
 		1 if instrdat.GetScatterSenses()[0] else -1,
 		1 if instrdat.GetScatterSenses()[1] else -1,
