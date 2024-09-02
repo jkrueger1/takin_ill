@@ -107,7 +107,6 @@ calc = nothing
 function TakinInit()
 	println("TakinInit: Setting up magnetic model...")
 
-
 	# set up magnetic sites and xtal lattice
 	magsites = Crystal(
 		lattice_vectors(5, 5, 5, 90, 90, 90),
@@ -141,7 +140,6 @@ function TakinInit()
 
 	# set up spin-wave calculator
 	global calc = SpinWaveTheory(magsys; apply_g = true)
-
 
 	println("TakinInit: Finished setting up magnetic model.")
 end
