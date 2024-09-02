@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -54,17 +54,17 @@ SqwPy::SqwPy(const std::string& strFile) : m_pmtx(std::make_shared<std::mutex>()
 	if(!tl::file_exists(strFile.c_str()))
 	{
 		tl::log_err("Could not find Python script file: \"", strFile, "\".");
-		m_bOk = 0;
+		m_bOk = false;
 		return;
 	}
 
 	std::string strDir = tl::get_dir(strFile);
 	std::string strMod = tl::get_file_noext(tl::get_file_nodir(strFile));
-	const bool bSetScriptCWD = 1;
+	const bool bSetScriptCWD = true;
 
 	try	// mandatory stuff
 	{
-		static bool bInited = 0;
+		static bool bInited = false;
 		if(!bInited)
 		{
 			::Py_InitializeEx(0);
@@ -77,7 +77,7 @@ SqwPy::SqwPy(const std::string& strFile) : m_pmtx(std::make_shared<std::mutex>()
 			std::string strPy = Py_GetVersion();
 			tl::find_all_and_replace(strPy, std::string("\n"), std::string(", "));
 			tl::log_debug("Initialised Python interpreter version ", strPy, ".");
-			bInited = 1;
+			bInited = true;
 		}
 
 		// set script paths
@@ -109,7 +109,7 @@ SqwPy::SqwPy(const std::string& strFile) : m_pmtx(std::make_shared<std::mutex>()
 		if(m_mod.is_none())
 		{
 			tl::log_err("Invalid Python module \"", strMod, "\".");
-			m_bOk = 0;
+			m_bOk = false;
 			return;
 		}
 
@@ -124,7 +124,8 @@ SqwPy::SqwPy(const std::string& strFile) : m_pmtx(std::make_shared<std::mutex>()
 			if(moddict.has_key("TakinInit"))
 			{
 				m_Init = moddict["TakinInit"];
-				if(!!m_Init) m_Init();
+				if(!!m_Init)
+					m_Init();
 			}
 			else
 			{
@@ -148,7 +149,7 @@ SqwPy::SqwPy(const std::string& strFile) : m_pmtx(std::make_shared<std::mutex>()
 		PyErr_Print();
 		PyErr_Clear();
 
-		m_bOk = 0;
+		m_bOk = false;
 	}
 }
 
@@ -286,7 +287,7 @@ std::vector<SqwBase::t_var> SqwPy::GetVars() const
 	{
 		py::dict dict = py::extract<py::dict>(m_mod.attr("__dict__"));
 
-		for(py::ssize_t i=0; i<py::len(dict.items()); ++i)
+		for(py::ssize_t i = 0; i < py::len(dict.items()); ++i)
 		{
 			// name
 			std::string strName = py::extract<std::string>(dict.items()[i][0]);
@@ -346,10 +347,10 @@ void SqwPy::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 	{
 		py::dict dict = py::extract<py::dict>(m_mod.attr("__dict__"));
 		std::vector<bool> vecVarsSet;
-		for(std::size_t iCurVar=0; iCurVar<vecVars.size(); ++iCurVar)
-			vecVarsSet.push_back(0);
+		for(std::size_t iCurVar = 0; iCurVar < vecVars.size(); ++iCurVar)
+			vecVarsSet.push_back(false);
 
-		for(py::ssize_t i=0; i<py::len(dict.items()); ++i)
+		for(py::ssize_t i = 0; i < py::len(dict.items()); ++i)
 		{
 			// variable name
 			std::string strName = py::extract<std::string>(dict.items()[i][0]);
@@ -357,16 +358,16 @@ void SqwPy::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 			if(strName[0] == '_') continue;
 
 			// look for the variable name in vecVars
-			bool bFound = 0;
+			bool bFound = false;
 			std::string strNewVal;
 			for(std::size_t iCurVar=0; iCurVar<vecVars.size(); ++iCurVar)
 			{
 				const SqwBase::t_var& var = vecVars[iCurVar];
 				if(std::get<0>(var) == strName)
 				{
-					bFound = 1;
+					bFound = true;
 					strNewVal = std::get<2>(var);
-					vecVarsSet[iCurVar] = 1;
+					vecVarsSet[iCurVar] = true;
 					break;
 				}
 			}
@@ -377,7 +378,7 @@ void SqwPy::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 			dict[strName] = py::eval(py::str(strNewVal), dict);
 		}
 
-		for(std::size_t iCurVar=0; iCurVar<vecVarsSet.size(); ++iCurVar)
+		for(std::size_t iCurVar = 0; iCurVar < vecVarsSet.size(); ++iCurVar)
 		{
 			bool bVarSet = vecVarsSet[iCurVar];
 			if(!bVarSet)

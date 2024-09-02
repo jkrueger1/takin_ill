@@ -86,59 +86,64 @@ g_inc_amp  = 10.0       # incoherent intensity
 g_T        = 100.0      # temperature
 g_bose_cut = 0.02       # Bose cutoff
 
-g_J        = -1         # coupling constant
+g_S        = 1.0        # spin magnitudes
+g_J        = -1.0       # coupling constant
 g_negative = true       # repeat dispersion for -E
 # -----------------------------------------------------------------------------
 
 
 # -----------------------------------------------------------------------------
-# interface with sunny
+# interface with takin and sunny
 # -----------------------------------------------------------------------------
 using Sunny
 
-
-# set up magnetic sites and xtal lattice
-magsites = Crystal(
-	lattice_vectors(5, 5, 5, 90, 90, 90),
-	[
-		# site list
-		[ 0, 0, 0 ],
-	], 1)
+num_sites = 1
+calc = nothing
 
 
-# set up spin magnitudes and magnetic system
-magsys = System(magsites, ( 1, 1, 1 ),
-	[
-		SpinInfo(1, S = 1, g = -[ ge 0 0; 0 ge 0; 0 0 ge ]),
-	], :dipole)
-
-
-# spin directions
-set_dipole!(magsys, [ 0, 0, 1 ], ( 1, 1, 1, 1 ))
-
-
-# set up magnetic couplings
-set_exchange!(magsys,
-	[
-		g_J     0     0;
-		  0   g_J     0;
-		  0     0   g_J
-	], Bond(1, 1, [ 1, 0, 0 ]))
-
-
-# set up spin-wave calculator
-calc = SpinWaveTheory(magsys; apply_g = true)
-# -----------------------------------------------------------------------------
-
-
-# -----------------------------------------------------------------------------
-# interface with takin
-# -----------------------------------------------------------------------------
 #
 # the init function is called after Takin has changed a global variable (optional)
 #
 function TakinInit()
-	println("Calling TakinInit")
+	println("TakinInit: Setting up magnetic model...")
+
+
+	# set up magnetic sites and xtal lattice
+	magsites = Crystal(
+		lattice_vectors(5, 5, 5, 90, 90, 90),
+		[
+			# site list
+			[ 0, 0, 0 ],
+		], 1)
+
+	global num_sites = length(magsites.positions)
+
+
+	# set up spin magnitudes and magnetic system
+	magsys = System(magsites, ( 1, 1, 1 ),
+		[
+			SpinInfo(1, S = g_S, g = -[ ge 0 0; 0 ge 0; 0 0 ge ]),
+		], :dipole)
+
+
+	# spin directions
+	set_dipole!(magsys, [ 0, 0, 1 ], ( 1, 1, 1, 1 ))
+
+
+	# set up magnetic couplings
+	set_exchange!(magsys,
+		[
+			g_J     0     0;
+			  0   g_J     0;
+			  0     0   g_J
+		], Bond(1, 1, [ 1, 0, 0 ]))
+
+
+	# set up spin-wave calculator
+	global calc = SpinWaveTheory(magsys; apply_g = true)
+
+
+	println("TakinInit: Finished setting up magnetic model.")
 end
 
 
@@ -153,8 +158,7 @@ function TakinDisp(h::Float64, k::Float64, l::Float64)
 	energies, correlations = intensities_bands(calc, momenta,
 		intensity_formula(calc, :trace; kernel = delta_function_kernel))
 
-	num_sites = length(magsites.positions)
-	return [ energies[1, :], correlations[1, :] / num_sites ]
+	return [ energies[1, :], correlations[1, :] / Float64(num_sites) ]
 end
 
 

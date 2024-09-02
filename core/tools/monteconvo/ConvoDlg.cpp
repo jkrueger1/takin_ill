@@ -480,7 +480,8 @@ ConvoDlg::~ConvoDlg()
 
 void ConvoDlg::SqwModelChanged(int)
 {
-	if(!m_bAllowSqwReinit) return;
+	if(!m_bAllowSqwReinit)
+		return;
 
 	editSqw->clear();
 	createSqwModel("");
@@ -489,7 +490,8 @@ void ConvoDlg::SqwModelChanged(int)
 
 void ConvoDlg::createSqwModel(const QString& qstrFile)
 {
-	if(!m_bAllowSqwReinit) return;
+	if(!m_bAllowSqwReinit)
+		return;
 
 	if(m_pSqw)
 	{
@@ -536,10 +538,12 @@ void ConvoDlg::createSqwModel(const QString& qstrFile)
 void ConvoDlg::SqwParamsChanged(const std::vector<SqwBase::t_var>& vecVars,
 	const std::vector<SqwBase::t_var_fit>* pvecVarsFit)
 {
-	if(!m_pSqw) return;
+	if(!m_pSqw)
+		return;
 
 	m_pSqw->SetVars(vecVars);
-	if(pvecVarsFit) m_pSqw->InitFitVars(*pvecVarsFit);
+	if(pvecVarsFit)
+		m_pSqw->InitFitVars(*pvecVarsFit);
 
 #ifndef NDEBUG
 	// check: read parameters back in
@@ -625,7 +629,8 @@ ConvoDlg::t_sqwparams ConvoDlg::GetSqwParams(bool only_fitparams) const
 void ConvoDlg::ClearPlot1D()
 {
 	static const std::vector<t_real> vecZero;
-	if(!m_plotwrap) return;
+	if(!m_plotwrap)
+		return;
 
 	for(std::size_t iCurve=0; iCurve<CONVO_MAX_CURVES; ++iCurve)
 		set_qwt_data<t_real_reso>()(*m_plotwrap, vecZero, vecZero, iCurve, false);
