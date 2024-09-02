@@ -95,11 +95,12 @@ if(USE_QT)
 
 	add_executable(takin_bz
 		bz.cpp bz_file.cpp bz_calc.cpp
-		bz_plot.cpp bz_main.cpp
+		bz_main.cpp
 		bz_ops.cpp bz.h
 		bz_conf.cpp bz_conf.h
 		globals.cpp globals.h
 		bz_formulas.cpp
+		plot.cpp plot.h
 		plot_cut.cpp plot_cut.h
 		bz_lib.h
 		../../tlibs2/libs/qt/recent.cpp ../../tlibs2/libs/qt/recent.h

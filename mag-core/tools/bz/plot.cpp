@@ -25,9 +25,10 @@
  * ----------------------------------------------------------------------------
  */
 
-#include <QtWidgets/QGridLayout>
+#include "plot.h"
 
-#include "bz.h"
+#include <QtWidgets/QGridLayout>
+#include <sstream>
 
 #include "tlibs2/libs/phys.h"
 #include "tlibs2/libs/algos.h"
@@ -35,86 +36,97 @@
 using namespace tl2_ops;
 
 
-void BZDlg::ShowBZPlot()
+BZPlotDlg::BZPlotDlg(QWidget* parent, QSettings *sett, QLabel **infos)
+	: QDialog{parent}, m_sett{sett}, m_labelGlInfos{infos}
 {
-	// plot widget
-	if(!m_dlgPlot)
+	setWindowTitle("Brillouin Zone - 3D View");
+	setFont(parent->font());
+	setSizeGripEnabled(true);
+
+	m_plot = std::make_shared<tl2::GlPlot>(this);
+	m_plot->GetRenderer()->SetRestrictCamTheta(false);
+	m_plot->GetRenderer()->SetCull(false);
+	m_plot->GetRenderer()->SetBlend(true);
+	m_plot->GetRenderer()->SetLight(0, tl2::create<t_vec3_gl>({ 5, 5, 5 }));
+	m_plot->GetRenderer()->SetLight(1, tl2::create<t_vec3_gl>({ -5, -5, -5 }));
+	m_plot->GetRenderer()->SetCoordMax(1.);
+	m_plot->GetRenderer()->GetCamera().SetDist(2.);
+	m_plot->GetRenderer()->GetCamera().UpdateTransformation();
+
+	//auto labCoordSys = new QLabel("Coordinate System:", this);
+	//auto comboCoordSys = new QComboBox(this);
+	//comboCoordSys->addItem("Fractional Units (rlu)");
+	//comboCoordSys->addItem("Lab Units (\xe2\x84\xab)");
+
+	m_show_coordcross = new QCheckBox("Show Coordinates", this);
+	m_show_labels = new QCheckBox("Show Labels", this);
+	m_show_plane = new QCheckBox("Show Plane", this);
+	m_show_coordcross->setChecked(true);
+	m_show_labels->setChecked(true);
+	m_show_plane->setChecked(true);
+
+	// status bar
+	m_status = new QLabel(this);
+	m_status->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+	m_status->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+
+	m_plot->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
+	//labCoordSys->setSizePolicy(QSizePolicy{QSizePolicy::Fixed, QSizePolicy::Fixed});
+
+	auto grid = new QGridLayout(this);
+	grid->setSpacing(2);
+	grid->setContentsMargins(4,4,4,4);
+	grid->addWidget(m_plot.get(), 0,0,1,3);
+	//grid->addWidget(labCoordSys, 1,0,1,1);
+	//grid->addWidget(comboCoordSys, 1,1,1,1);
+	grid->addWidget(m_show_coordcross, 1,0,1,1);
+	grid->addWidget(m_show_labels, 1,1,1,1);
+	grid->addWidget(m_show_plane, 1,2,1,1);
+	grid->addWidget(m_status, 2,0,1,3);
+
+	connect(m_plot.get(), &tl2::GlPlot::AfterGLInitialisation,
+		this, &BZPlotDlg::AfterGLInitialisation);
+	connect(m_plot->GetRenderer(), &tl2::GlPlotRenderer::PickerIntersection,
+		this, &BZPlotDlg::PickerIntersection);
+	connect(m_plot.get(), &tl2::GlPlot::MouseDown,
+		this, &BZPlotDlg::PlotMouseDown);
+	connect(m_plot.get(), &tl2::GlPlot::MouseUp,
+		this, &BZPlotDlg::PlotMouseUp);
+	connect(m_show_coordcross, &QCheckBox::toggled,
+		this, &BZPlotDlg::ShowCoordCross);
+	connect(m_show_labels, &QCheckBox::toggled,
+		this, &BZPlotDlg::ShowLabels);
+	connect(m_show_plane, &QCheckBox::toggled,
+		this, &BZPlotDlg::ShowPlane);
+	/*connect(comboCoordSys, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+		this, [this](int val)
 	{
-		m_dlgPlot = new QDialog(this);
-		m_dlgPlot->setWindowTitle("Brillouin Zone - 3D View");
-		m_dlgPlot->setFont(this->font());
-
-		m_plot = std::make_shared<tl2::GlPlot>(this);
-		m_plot->GetRenderer()->SetRestrictCamTheta(false);
-		m_plot->GetRenderer()->SetCull(false);
-		m_plot->GetRenderer()->SetBlend(true);
-		m_plot->GetRenderer()->SetLight(0, tl2::create<t_vec3_gl>({ 5, 5, 5 }));
-		m_plot->GetRenderer()->SetLight(1, tl2::create<t_vec3_gl>({ -5, -5, -5 }));
-		m_plot->GetRenderer()->SetCoordMax(1.);
-		m_plot->GetRenderer()->GetCamera().SetDist(2.);
-		m_plot->GetRenderer()->GetCamera().UpdateTransformation();
-
-		//auto labCoordSys = new QLabel("Coordinate System:", this);
-		//auto comboCoordSys = new QComboBox(this);
-		//comboCoordSys->addItem("Fractional Units (rlu)");
-		//comboCoordSys->addItem("Lab Units (\xe2\x84\xab)");
-
-		m_plot_coordcross = new QCheckBox("Show Coordinates", this);
-		m_plot_labels = new QCheckBox("Show Labels", this);
-		m_plot_plane = new QCheckBox("Show Plane", this);
-		m_plot_coordcross->setChecked(true);
-		m_plot_labels->setChecked(true);
-		m_plot_plane->setChecked(true);
-
-		// status bar
-		m_status3D = new QLabel(this);
-		m_status3D->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-		m_status3D->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
-
-		m_plot->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
-		//labCoordSys->setSizePolicy(QSizePolicy{QSizePolicy::Fixed, QSizePolicy::Fixed});
-
-		auto grid = new QGridLayout(m_dlgPlot);
-		grid->setSpacing(2);
-		grid->setContentsMargins(4,4,4,4);
-		grid->addWidget(m_plot.get(), 0,0,1,3);
-		//grid->addWidget(labCoordSys, 1,0,1,1);
-		//grid->addWidget(comboCoordSys, 1,1,1,1);
-		grid->addWidget(m_plot_coordcross, 1,0,1,1);
-		grid->addWidget(m_plot_labels, 1,1,1,1);
-		grid->addWidget(m_plot_plane, 1,2,1,1);
-		grid->addWidget(m_status3D, 2,0,1,3);
-
-		connect(m_plot.get(), &tl2::GlPlot::AfterGLInitialisation, this, &BZDlg::AfterGLInitialisation);
-		connect(m_plot->GetRenderer(), &tl2::GlPlotRenderer::PickerIntersection, this, &BZDlg::PickerIntersection);
-		connect(m_plot.get(), &tl2::GlPlot::MouseDown, this, &BZDlg::PlotMouseDown);
-		connect(m_plot.get(), &tl2::GlPlot::MouseUp, this, &BZDlg::PlotMouseUp);
-		connect(m_plot_coordcross, &QCheckBox::toggled, this, &BZDlg::PlotShowCoordCross);
-		connect(m_plot_labels, &QCheckBox::toggled, this, &BZDlg::PlotShowLabels);
-		connect(m_plot_plane, &QCheckBox::toggled, this, &BZDlg::PlotShowPlane);
-		/*connect(comboCoordSys, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this](int val)
-		{
-			if(this->m_plot)
-				this->m_plot->GetRenderer()->SetCoordSys(val);
-		});*/
+		if(this->m_plot)
+			this->m_plot->GetRenderer()->SetCoordSys(val);
+	});*/
 
 
-		if(m_sett && m_sett->contains("geo_3dview"))
-			m_dlgPlot->restoreGeometry(m_sett->value("geo_3dview").toByteArray());
-		else
-			m_dlgPlot->resize(500,500);
-	}
+	if(m_sett && m_sett->contains("3dview/geo"))
+		restoreGeometry(m_sett->value("3dview/geo").toByteArray());
+	else
+		resize(500,500);
+}
 
-	m_dlgPlot->show();
-	m_dlgPlot->raise();
-	m_dlgPlot->focusWidget();
+
+/**
+ * dialog is closing
+ */
+void BZPlotDlg::closeEvent(QCloseEvent *)
+{
+	if(m_sett)
+		m_sett->setValue("3dview/geo", saveGeometry());
 }
 
 
 /**
  * show or hide the coordinate cross
  */
-void BZDlg::PlotShowCoordCross(bool show)
+void BZPlotDlg::ShowCoordCross(bool show)
 {
 	if(!m_plot)
 		return;
@@ -130,7 +142,7 @@ void BZDlg::PlotShowCoordCross(bool show)
 /**
  * show or hide the object labels
  */
-void BZDlg::PlotShowLabels(bool show)
+void BZPlotDlg::ShowLabels(bool show)
 {
 	if(!m_plot)
 		return;
@@ -143,7 +155,7 @@ void BZDlg::PlotShowLabels(bool show)
 /**
  * show or hide the BZ cut plane
  */
-void BZDlg::PlotShowPlane(bool show)
+void BZPlotDlg::ShowPlane(bool show)
 {
 	if(!m_plot)
 		return;
@@ -154,9 +166,25 @@ void BZDlg::PlotShowPlane(bool show)
 
 
 /**
+ * set the crystal matrices
+ */
+void BZPlotDlg::SetABTrafo(const t_mat& crystA, const t_mat& crystB)
+{
+	m_crystA = crystA;
+	m_crystB = crystB;
+
+	if(m_plot)
+	{
+		t_mat_gl matA{crystA};
+		m_plot->GetRenderer()->SetBTrafo(crystB, &matA);
+	}
+}
+
+
+/**
  * add a voronoi vertex to the plot
  */
-void BZDlg::PlotAddVoronoiVertex(const t_vec& pos)
+void BZPlotDlg::AddVoronoiVertex(const t_vec& pos)
 {
 	if(!m_plot)
 		return;
@@ -181,7 +209,7 @@ void BZDlg::PlotAddVoronoiVertex(const t_vec& pos)
 /**
  * add a bragg peak to the plot
  */
-void BZDlg::PlotAddBraggPeak(const t_vec& pos)
+void BZPlotDlg::AddBraggPeak(const t_vec& pos)
 {
 	if(!m_plot)
 		return;
@@ -206,7 +234,7 @@ void BZDlg::PlotAddBraggPeak(const t_vec& pos)
 /**
  * add polygons to the plot
  */
-void BZDlg::PlotAddTriangles(const std::vector<t_vec>& _vecs)
+void BZPlotDlg::AddTriangles(const std::vector<t_vec>& _vecs)
 {
 	if(!m_plot || _vecs.size() < 3)
 		return;
@@ -255,7 +283,7 @@ void BZDlg::PlotAddTriangles(const std::vector<t_vec>& _vecs)
 /**
  * set the brillouin zone cut plane
  */
-void BZDlg::PlotSetPlane(const t_vec& _norm, t_real d)
+void BZPlotDlg::SetPlane(const t_vec& _norm, t_real d)
 {
 	if(!m_plot)
 		return;
@@ -273,7 +301,7 @@ void BZDlg::PlotSetPlane(const t_vec& _norm, t_real d)
 }
 
 
-void BZDlg::ClearBZPlot()
+void BZPlotDlg::Clear()
 {
 	if(!m_plot)
 		return;
@@ -289,7 +317,7 @@ void BZDlg::ClearBZPlot()
 /**
  * mouse hovers over 3d object
  */
-void BZDlg::PickerIntersection(
+void BZPlotDlg::PickerIntersection(
 	const t_vec3_gl* pos,
 	std::size_t objIdx,
 	[[maybe_unused]] const t_vec3_gl* posSphere)
@@ -315,11 +343,11 @@ void BZDlg::PickerIntersection(
 		ostr << "Q = (" << QinvA[0] << ", " << QinvA[1] << ", " << QinvA[2] << ") Å⁻¹";
 		ostr << " = (" << Qrlu[0] << ", " << Qrlu[1] << ", " << Qrlu[2] << ") rlu.";
 
-		Set3DStatusMsg(ostr.str());
+		SetStatusMsg(ostr.str());
 	}
 	else
 	{
-		Set3DStatusMsg("");
+		SetStatusMsg("");
 	}
 }
 
@@ -328,9 +356,9 @@ void BZDlg::PickerIntersection(
 /**
  * set status label text in 3d dialog
  */
-void BZDlg::Set3DStatusMsg(const std::string& msg)
+void BZPlotDlg::SetStatusMsg(const std::string& msg)
 {
-	m_status3D->setText(msg.c_str());
+	m_status->setText(msg.c_str());
 }
 
 
@@ -338,7 +366,7 @@ void BZDlg::Set3DStatusMsg(const std::string& msg)
 /**
  * mouse button pressed
  */
-void BZDlg::PlotMouseDown(
+void BZPlotDlg::PlotMouseDown(
 	[[maybe_unused]] bool left,
 	[[maybe_unused]] bool mid,
 	[[maybe_unused]] bool right)
@@ -352,7 +380,7 @@ void BZDlg::PlotMouseDown(
 /**
  * mouse button released
  */
-void BZDlg::PlotMouseUp(
+void BZPlotDlg::PlotMouseUp(
 	[[maybe_unused]] bool left,
 	[[maybe_unused]] bool mid,
 	[[maybe_unused]] bool right)
@@ -360,7 +388,7 @@ void BZDlg::PlotMouseUp(
 }
 
 
-void BZDlg::AfterGLInitialisation()
+void BZPlotDlg::AfterGLInitialisation()
 {
 	if(!m_plot)
 		return;
@@ -376,12 +404,13 @@ void BZDlg::AfterGLInitialisation()
 	//m_plot->GetRenderer()->SetBTrafo(m_crystB);
 
 	// GL device info
-	auto [strGlVer, strGlShaderVer, strGlVendor, strGlRenderer]
-		= m_plot->GetRenderer()->GetGlDescr();
-	m_labelGlInfos[0]->setText(QString("GL Version: ") + strGlVer.c_str() + QString("."));
-	m_labelGlInfos[1]->setText(QString("GL Shader Version: ") + strGlShaderVer.c_str() + QString("."));
-	m_labelGlInfos[2]->setText(QString("GL Vendor: ") + strGlVendor.c_str() + QString("."));
-	m_labelGlInfos[3]->setText(QString("GL Device: ") + strGlRenderer.c_str() + QString("."));
-
-	CalcB(true);
+	if(m_labelGlInfos)
+	{
+		auto [strGlVer, strGlShaderVer, strGlVendor, strGlRenderer]
+			= m_plot->GetRenderer()->GetGlDescr();
+		m_labelGlInfos[0]->setText(QString("GL Version: ") + strGlVer.c_str() + QString("."));
+		m_labelGlInfos[1]->setText(QString("GL Shader Version: ") + strGlShaderVer.c_str() + QString("."));
+		m_labelGlInfos[2]->setText(QString("GL Vendor: ") + strGlVendor.c_str() + QString("."));
+		m_labelGlInfos[3]->setText(QString("GL Device: ") + strGlRenderer.c_str() + QString("."));
+	}
 }

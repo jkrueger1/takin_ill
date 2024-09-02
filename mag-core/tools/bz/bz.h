@@ -1,7 +1,7 @@
 /**
  * brillouin zone tool
  * @author Tobias Weber <tweber@ill.fr>
- * @date Maz-2022
+ * @date May-2022
  * @license GPLv3, see 'LICENSE' file
  *
  * ----------------------------------------------------------------------------
@@ -49,6 +49,7 @@
 
 #include "globals.h"
 #include "plot_cut.h"
+#include "plot.h"
 
 #include "tlibs2/libs/qt/recent.h"
 #include "tlibs2/libs/qt/glplot.h"
@@ -96,14 +97,8 @@ protected:
 	QTabWidget *m_tabs_in{}, *m_tabs_out{};
 
 	// 3d plotter
-	QDialog *m_dlgPlot = nullptr;
-	std::shared_ptr<tl2::GlPlot> m_plot;
-	std::size_t m_sphere = 0, m_plane = 0;
+	BZPlotDlg *m_dlgPlot = nullptr;
 	QLabel *m_labelGlInfos[4] = { nullptr, nullptr, nullptr, nullptr };
-	QLabel *m_status3D = nullptr;
-	QCheckBox *m_plot_coordcross = nullptr;
-	QCheckBox *m_plot_labels = nullptr;
-	QCheckBox *m_plot_plane = nullptr;
 
 	// symops panel
 	QDoubleSpinBox *m_editA = nullptr;
@@ -200,6 +195,9 @@ protected:
 	void ImportCIF();
 	void GetSymOpsFromSG();
 	void SaveCutSVG();
+	void ShowBZPlot();
+
+	void UpdateBZDescription();
 
 	void SetDrawOrder(int order, bool recalc = true);
 	void SetCalcOrder(int order, bool recalc = true);
@@ -212,25 +210,6 @@ protected:
 
 	// 3d bz cut plot
 	void BZCutMouseMoved(t_real x, t_real y);
-
-	// 3d bz plot
-	void ShowBZPlot();
-	void ClearBZPlot();
-	void PlotAddVoronoiVertex(const t_vec& pos);
-	void PlotAddBraggPeak(const t_vec& pos);
-	void PlotAddTriangles(const std::vector<t_vec>& vecs);
-	void PlotSetPlane(const t_vec& norm, t_real d);
-	void Set3DStatusMsg(const std::string& msg);
-	void PlotShowCoordCross(bool show);
-	void PlotShowLabels(bool show);
-	void PlotShowPlane(bool show);
-	void UpdateBZDescription();
-
-	void PlotMouseDown(bool left, bool mid, bool right);
-	void PlotMouseUp(bool left, bool mid, bool right);
-	void PickerIntersection(const t_vec3_gl* pos,
-		std::size_t objIdx, const t_vec3_gl* posSphere);
-	void AfterGLInitialisation();
 
 	virtual void closeEvent(QCloseEvent *evt) override;
 	virtual void dragEnterEvent(QDragEnterEvent *evt) override;
@@ -248,9 +227,6 @@ private:
 	bool m_symOpIgnoreChanges = 1;               // ignore sg changes
 	bool m_formulaIgnoreChanges = 1;             // ignore sg changes
 	bool m_ignoreCalc = 0;                       // ignore bz calculation
-
-	long m_curPickedObj = -1;                    // current 3d bz object
-	std::vector<std::size_t> m_plotObjs{};       // 3d bz plot objects
 };
 
 

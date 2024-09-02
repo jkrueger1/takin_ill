@@ -103,6 +103,7 @@ private:
 	std::size_t m_arrow = 0;
 	std::size_t m_cyl = 0;
 
+
 signals:
 	void SelectSite(const std::string& site);
 	void SelectTerm(const std::string& term);

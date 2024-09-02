@@ -746,17 +746,13 @@ void BZDlg::dropEvent(QDropEvent *evt)
 }
 
 
-
 void BZDlg::closeEvent(QCloseEvent *)
 {
 	if(m_sett)
 	{
 		m_recent.TrimEntries();
 		m_sett->setValue("recent_files", m_recent.GetRecentFiles());
-
 		m_sett->setValue("geo", saveGeometry());
-		if(m_dlgPlot)
-			m_sett->setValue("geo_3dview", m_dlgPlot->saveGeometry());
 
 		if(m_split_inout)
 			m_sett->setValue("splitter", m_split_inout->saveState());
@@ -772,4 +768,18 @@ void BZDlg::UpdateBZDescription()
 
 	// brillouin zone json description
 	m_bzresultsJSON->setPlainText(m_descrBZJSON.c_str());
+}
+
+
+/**
+ * show the 3d plotter
+ */
+void BZDlg::ShowBZPlot()
+{
+	if(!m_dlgPlot)
+		m_dlgPlot = new BZPlotDlg(this, m_sett, m_labelGlInfos);
+
+	m_dlgPlot->show();
+	m_dlgPlot->raise();
+	m_dlgPlot->focusWidget();
 }

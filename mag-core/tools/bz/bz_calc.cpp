@@ -133,11 +133,8 @@ void BZDlg::CalcB(bool full_recalc)
 	m_crystA = crystA * t_real(2)*tl2::pi<t_real>;
 	m_crystB = std::move(crystB);
 
-	if(m_plot)
-	{
-		t_mat_gl matA{m_crystA};
-		m_plot->GetRenderer()->SetBTrafo(m_crystB, &matA);
-	}
+	if(m_dlgPlot)
+		m_dlgPlot->SetABTrafo(m_crystA, m_crystB);
 
 	m_status->setText("B calculated successfully.");
 
@@ -167,24 +164,27 @@ void BZDlg::CalcBZ(bool full_recalc)
 	// calculate bz
 	bzcalc.CalcBZ();
 
-	// clear old plot
-	ClearBZPlot();
-
 	// set bz triangles
 	m_bz_polys = bzcalc.GetTriangles();
 
-	// add gamma point
-	std::size_t idx000 = bzcalc.Get000Peak();
-	const std::vector<t_vec>& Qs_invA = bzcalc.GetPeaksInvA();
-	if(idx000 < Qs_invA.size())
-		PlotAddBraggPeak(Qs_invA[idx000]);
+	if(m_dlgPlot)
+	{
+		// clear old plot
+		m_dlgPlot->Clear();
 
-	// add voronoi vertices forming the vertices of the BZ
-	for(const t_vec& voro : bzcalc.GetVertices())
-		PlotAddVoronoiVertex(voro);
+		// add gamma point
+		std::size_t idx000 = bzcalc.Get000Peak();
+		const std::vector<t_vec>& Qs_invA = bzcalc.GetPeaksInvA();
+		if(idx000 < Qs_invA.size())
+			m_dlgPlot->AddBraggPeak(Qs_invA[idx000]);
 
-	// add voronoi bisectors
-	PlotAddTriangles(bzcalc.GetAllTriangles());
+		// add voronoi vertices forming the vertices of the BZ
+		for(const t_vec& voro : bzcalc.GetVertices())
+			m_dlgPlot->AddVoronoiVertex(voro);
+
+		// add voronoi bisectors
+		m_dlgPlot->AddTriangles(bzcalc.GetAllTriangles());
+	}
 
 	// set bz description string
 	m_descrBZ = bzcalc.Print(g_prec);
@@ -415,7 +415,9 @@ void BZDlg::CalcBZCut()
 
 
 	// update calculation results
-	PlotSetPlane(norm_invA, d_invA);
+	if(m_dlgPlot)
+		m_dlgPlot->SetPlane(norm_invA, d_invA);
+
 	UpdateBZDescription();
 	CalcFormulas();
 }
