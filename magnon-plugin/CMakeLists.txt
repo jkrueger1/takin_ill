@@ -97,3 +97,15 @@ target_link_libraries(magnonmod
 	${Boost_LIBRARIES}
 	${Lapacke_LIBRARIES}
 )
+
+
+# -----------------------------------------------------------------------------
+# rpath
+# -----------------------------------------------------------------------------
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+	add_custom_command(TARGET magnonmod POST_BUILD
+		COMMAND install_name_tool -add_rpath /usr/local/lib $<TARGET_FILE:magnonmod>
+		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+	)
+endif()
+# -----------------------------------------------------------------------------
