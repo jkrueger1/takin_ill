@@ -43,7 +43,7 @@
 
 
 class BZPlotDlg : public QDialog
-{
+{ Q_OBJECT
 public:
 	BZPlotDlg(QWidget* pParent = nullptr, QSettings *sett = nullptr,
 		QLabel **infos = nullptr);
@@ -90,6 +90,10 @@ private:
 
 	long m_curPickedObj = -1;               // current 3d bz object
 	std::vector<std::size_t> m_plotObjs{};  // 3d bz plot objects
+
+
+signals:
+	void NeedRecalc();
 };
 
 

@@ -400,8 +400,7 @@ void BZPlotDlg::AfterGLInitialisation()
 	m_plot->GetRenderer()->SetObjectVisible(m_plane, true);
 	m_plot->GetRenderer()->SetObjectPriority(m_plane, 0);
 
-	// B matrix
-	//m_plot->GetRenderer()->SetBTrafo(m_crystB);
+	emit NeedRecalc();
 
 	// GL device info
 	if(m_labelGlInfos)

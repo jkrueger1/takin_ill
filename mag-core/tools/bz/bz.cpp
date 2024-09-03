@@ -218,8 +218,11 @@ BZDlg::BZDlg(QWidget* pParent) : QDialog{pParent},
 
 		// signals
 		for(QDoubleSpinBox* spin : { m_editA, m_editB, m_editC, m_editAlpha, m_editBeta, m_editGamma })
+		{
 			connect(spin, static_cast<void (QDoubleSpinBox::*)(double)>(
-				&QDoubleSpinBox::valueChanged), this, &BZDlg::CalcB);
+				&QDoubleSpinBox::valueChanged),
+				[this]() { this->CalcB(); });
+		}
 
 		connect(btnAdd, &QAbstractButton::clicked,
 			[this]() { this->AddSymOpTabItem(-1); });
@@ -264,7 +267,7 @@ BZDlg::BZDlg(QWidget* pParent) : QDialog{pParent},
 			// signals
 			connect(*cut, static_cast<void (QDoubleSpinBox::*)(double)>(
 				&QDoubleSpinBox::valueChanged),
-				this, &BZDlg::CalcBZCut);
+				[this]() { this->CalcBZCut(); });
 		}
 		m_cutX->setValue(1);
 		m_cutNZ->setValue(1);
@@ -669,11 +672,8 @@ BZDlg::BZDlg(QWidget* pParent) : QDialog{pParent},
 		connect(acExit, &QAction::triggered, this, &QDialog::close);
 		connect(ac3DView, &QAction::triggered, this, &BZDlg::ShowBZPlot);
 		connect(acCutSVG, &QAction::triggered, this, &BZDlg::SaveCutSVG);
-		connect(m_acCutHull, &QAction::triggered, this, &BZDlg::CalcBZCut);
-		connect(acAboutQt, &QAction::triggered, []()
-		{
-			qApp->aboutQt();
-		});
+		connect(m_acCutHull, &QAction::triggered, [this]() { this->CalcBZCut(); });
+		connect(acAboutQt, &QAction::triggered, []() { qApp->aboutQt(); });
 		connect(acAbout, &QAction::triggered, [dlgInfo]()
 		{
 			if(!dlgInfo)
@@ -777,7 +777,11 @@ void BZDlg::UpdateBZDescription()
 void BZDlg::ShowBZPlot()
 {
 	if(!m_dlgPlot)
+	{
 		m_dlgPlot = new BZPlotDlg(this, m_sett, m_labelGlInfos);
+		connect(m_dlgPlot, &BZPlotDlg::NeedRecalc,
+			[this]() { this->CalcB(); } );
+	}
 
 	m_dlgPlot->show();
 	m_dlgPlot->raise();
