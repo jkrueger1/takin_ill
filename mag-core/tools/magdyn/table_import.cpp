@@ -69,6 +69,22 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	m_spinAtomSZ->setPrefix("Sz = ");
 	m_spinAtomSMag->setPrefix("|S| = ");
 
+	m_spinAtomName->setToolTip("Index the site's name.");
+	m_spinAtomX->setToolTip("Index of the position vector's x component.");
+	m_spinAtomY->setToolTip("Index of the position vector's y component.");
+	m_spinAtomZ->setToolTip("Index of the position vector's z component.");
+	m_spinAtomSX->setToolTip("Index of the spin vector's x component.");
+	m_spinAtomSY->setToolTip("Index of the spin vector's y component.");
+	m_spinAtomSZ->setToolTip("Index of the spin vector's z component.");
+	m_spinAtomSMag->setToolTip("Index of the spin vector's magnitude.");
+
+	for(QSpinBox* spin : {m_spinAtomName, m_spinAtomX, m_spinAtomY, m_spinAtomZ,
+		m_spinAtomSX, m_spinAtomSY, m_spinAtomSZ, m_spinAtomSMag})
+	{
+		// -1 means not used
+		spin->setMinimum(-1);
+	}
+
 	m_spinAtomName->setValue(0);
 	m_spinAtomX->setValue(1);
 	m_spinAtomY->setValue(2);
@@ -77,13 +93,6 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	m_spinAtomSY->setValue(5);
 	m_spinAtomSZ->setValue(6);
 	m_spinAtomSMag->setValue(7);
-
-	for(QSpinBox* spin : {m_spinAtomName, m_spinAtomX, m_spinAtomY, m_spinAtomZ,
-		m_spinAtomSX, m_spinAtomSY, m_spinAtomSZ, m_spinAtomSMag})
-	{
-		// -1 means not used
-		spin->setMinimum(-1);
-	}
 
 	QLabel *labelAtoms = new QLabel("Magnetic Sites Table:", this);
 	m_editAtoms = new QTextEdit(this);
@@ -105,6 +114,7 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	m_spinCouplingDMIX = new QSpinBox(this);
 	m_spinCouplingDMIY = new QSpinBox(this);
 	m_spinCouplingDMIZ = new QSpinBox(this);
+	m_spinCouplingJGen = new QSpinBox(this);
 
 	m_spinCouplingName->setPrefix("name = ");
 	m_spinCouplingAtom1->setPrefix("site1 = ");
@@ -116,6 +126,28 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	m_spinCouplingDMIX->setPrefix("DMIx = ");
 	m_spinCouplingDMIY->setPrefix("DMIy = ");
 	m_spinCouplingDMIZ->setPrefix("DMIz = ");
+	m_spinCouplingJGen->setPrefix("Jgen = ");
+
+	m_spinCouplingName->setToolTip("Index the coupling's name.");
+	m_spinCouplingAtom1->setToolTip("Index of the first magnetic site in the coupling.");
+	m_spinCouplingAtom2->setToolTip("Index of the second magnetic site in the coupling.");
+	m_spinCouplingDX->setToolTip("Index unit cell vector's x component");
+	m_spinCouplingDY->setToolTip("Index unit cell vector's y component");
+	m_spinCouplingDZ->setToolTip("Index unit cell vector's z component");
+	m_spinCouplingJ->setToolTip("Index of the exchange constant.");
+	m_spinCouplingDMIX->setToolTip("Index of the DMI vector's x component.");
+	m_spinCouplingDMIY->setToolTip("Index of the DMI vector's y component.");
+	m_spinCouplingDMIZ->setToolTip("Index of the DMI vector's z component.");
+	m_spinCouplingJGen->setToolTip("First index of the general coupling 3x3 matrix."
+		"\nThe other 8 components are assumed to be in the subsequent columns.");
+
+	for(QSpinBox* spin : {m_spinCouplingName, m_spinCouplingAtom1, m_spinCouplingAtom2,
+		m_spinCouplingDX, m_spinCouplingDY, m_spinCouplingDZ, m_spinCouplingJ,
+		m_spinCouplingDMIX, m_spinCouplingDMIY, m_spinCouplingDMIZ, m_spinCouplingJGen})
+	{
+		// -1 means not used
+		spin->setMinimum(-1);
+	}
 
 	m_spinCouplingName->setValue(0);
 	m_spinCouplingAtom1->setValue(1);
@@ -127,14 +159,7 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	m_spinCouplingDMIX->setValue(7);
 	m_spinCouplingDMIY->setValue(8);
 	m_spinCouplingDMIZ->setValue(9);
-
-	for(QSpinBox* spin : {m_spinCouplingName, m_spinCouplingAtom1, m_spinCouplingAtom2,
-		m_spinCouplingDX, m_spinCouplingDY, m_spinCouplingDZ,
-		m_spinCouplingJ, m_spinCouplingDMIX, m_spinCouplingDMIY, m_spinCouplingDMIZ})
-	{
-		// -1 means not used
-		spin->setMinimum(-1);
-	}
+	m_spinCouplingJGen->setValue(-1);
 
 	QLabel *labelCouplings = new QLabel("Magnetic Couplings Table:", this);
 	m_editCouplings = new QTextEdit(this);
@@ -192,11 +217,12 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	grid->addWidget(m_spinCouplingAtom2, y++, 2, 1, 1);
 	grid->addWidget(m_spinCouplingDX, y, 0, 1, 1);
 	grid->addWidget(m_spinCouplingDY, y, 1, 1, 1);
-	grid->addWidget(m_spinCouplingDZ, y++, 2, 1, 1);
-	grid->addWidget(m_spinCouplingJ, y, 0, 1, 1);
-	grid->addWidget(m_spinCouplingDMIX, y, 1, 1, 1);
-	grid->addWidget(m_spinCouplingDMIY, y, 2, 1, 1);
-	grid->addWidget(m_spinCouplingDMIZ, y++, 3, 1, 1);
+	grid->addWidget(m_spinCouplingDZ, y, 2, 1, 1);
+	grid->addWidget(m_spinCouplingJ, y++, 3, 1, 1);
+	grid->addWidget(m_spinCouplingDMIX, y, 0, 1, 1);
+	grid->addWidget(m_spinCouplingDMIY, y, 1, 1, 1);
+	grid->addWidget(m_spinCouplingDMIZ, y, 2, 1, 1);
+	grid->addWidget(m_spinCouplingJGen, y++, 3, 1, 1);
 	grid->addWidget(labelCouplings, y++, 0, 1, 4);
 	grid->addWidget(m_editCouplings, y++, 0, 1, 4);
 	grid->addWidget(sep2, y++, 0, 1, 4);
@@ -233,7 +259,6 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 			m_spinAtomSZ->setValue(m_sett->value("tableimport/idx_atom_Sz").toInt());
 		if(m_sett->contains("tableimport/idx_atom_Smag"))
 			m_spinAtomSMag->setValue(m_sett->value("tableimport/idx_atom_Smag").toInt());
-
 		if(m_sett->contains("tableimport/idx_coupling_name"))
 			m_spinCouplingName->setValue(m_sett->value("tableimport/idx_coupling_name").toInt());
 		if(m_sett->contains("tableimport/idx_coupling_atomidx_1"))
@@ -254,6 +279,8 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 			m_spinCouplingDMIY->setValue(m_sett->value("tableimport/idx_coupling_DMIy").toInt());
 		if(m_sett->contains("tableimport/idx_coupling_DMIz"))
 			m_spinCouplingDMIZ->setValue(m_sett->value("tableimport/idx_coupling_DMIz").toInt());
+		if(m_sett->contains("tableimport/idx_coupling_J_general"))
+			m_spinCouplingJGen->setValue(m_sett->value("tableimport/idx_coupling_J_general").toInt());
 		if(m_sett->contains("tableimport/coupling_indices_1based"))
 			m_checkIndices1Based->setChecked(m_sett->value("tableimport/indices_1based").toBool());
 		if(m_sett->contains("tableimport/unite_incomplete_tokens"))
@@ -317,21 +344,21 @@ void TableImportDlg::ImportAtoms()
 			atompos.name = cols[idx_name];
 
 		if(idx_pos_x >= 0 && idx_pos_x < int(cols.size()))
-			atompos.x = tl2::str_to_var<t_real>(cols[idx_pos_x]);
+			atompos.pos[0] = cols[idx_pos_x];
 		if(idx_pos_y >= 0 && idx_pos_y < int(cols.size()))
-			atompos.y = tl2::str_to_var<t_real>(cols[idx_pos_y]);
+			atompos.pos[1] = cols[idx_pos_y];
 		if(idx_pos_z >= 0 && idx_pos_z < int(cols.size()))
-			atompos.z = tl2::str_to_var<t_real>(cols[idx_pos_z]);
+			atompos.pos[2] = cols[idx_pos_z];
 
 		if(idx_S_x >= 0 && idx_S_x < int(cols.size()))
-			atompos.Sx = tl2::str_to_var<t_real>(cols[idx_S_x]);
+			atompos.S[0] = cols[idx_S_x];
 		if(idx_S_y >= 0 && idx_S_y < int(cols.size()))
-			atompos.Sy = tl2::str_to_var<t_real>(cols[idx_S_y]);
+			atompos.S[1] = cols[idx_S_y];
 		if(idx_S_z >= 0 && idx_S_z < int(cols.size()))
-			atompos.Sz = tl2::str_to_var<t_real>(cols[idx_S_z]);
+			atompos.S[2] = cols[idx_S_z];
 
 		if(idx_S_mag >= 0 && idx_S_mag < int(cols.size()))
-			atompos.Smag = tl2::str_to_var<t_real>(cols[idx_S_mag]);
+			atompos.Smag = cols[idx_S_mag];
 
 		atompos_vec.emplace_back(std::move(atompos));
 	}
@@ -361,6 +388,7 @@ void TableImportDlg::ImportCouplings()
 	const int idx_dmix = m_spinCouplingDMIX->value();
 	const int idx_dmiy = m_spinCouplingDMIY->value();
 	const int idx_dmiz = m_spinCouplingDMIZ->value();
+	const int idx_J_gen = m_spinCouplingJGen->value();
 	const bool one_based = m_checkIndices1Based->isChecked();
 	const bool unite_incomplete = m_checkUniteIncompleteTokens->isChecked();
 	const bool ignore_symm = m_checkIgnoreSymmetricCoupling->isChecked();
@@ -394,19 +422,24 @@ void TableImportDlg::ImportCouplings()
 				--*coupling.atomidx2;
 		}
 		if(idx_dx >= 0 && idx_dx < int(cols.size()))
-			coupling.dx = tl2::str_to_var<t_real>(cols[idx_dx]);
+			coupling.d[0] = cols[idx_dx];
 		if(idx_dy >= 0 && idx_dy < int(cols.size()))
-			coupling.dy = tl2::str_to_var<t_real>(cols[idx_dy]);
+			coupling.d[1] = cols[idx_dy];
 		if(idx_dz >= 0 && idx_dz < int(cols.size()))
-			coupling.dz = tl2::str_to_var<t_real>(cols[idx_dz]);
+			coupling.d[2] = cols[idx_dz];
 		if(idx_J >= 0 && idx_J < int(cols.size()))
-			coupling.J = tl2::str_to_var<t_real>(cols[idx_J]);
+			coupling.J = cols[idx_J];
 		if(idx_dmix >= 0 && idx_dmix < int(cols.size()))
-			coupling.dmix = tl2::str_to_var<t_real>(cols[idx_dmix]);
+			coupling.dmi[0] = cols[idx_dmix];
 		if(idx_dmiy >= 0 && idx_dmiy < int(cols.size()))
-			coupling.dmiy = tl2::str_to_var<t_real>(cols[idx_dmiy]);
+			coupling.dmi[1] = cols[idx_dmiy];
 		if(idx_dmiz >= 0 && idx_dmiz < int(cols.size()))
-			coupling.dmiz = tl2::str_to_var<t_real>(cols[idx_dmiz]);
+			coupling.dmi[2] = cols[idx_dmiz];
+		if(idx_J_gen >= 0 && idx_J_gen + 8 < int(cols.size()))
+		{
+			for(std::size_t idx_j = 0; idx_j < 9; ++idx_j)
+				coupling.Jgen[idx_j] = cols[idx_J_gen + idx_j];
+		}
 
 		if(ignore_symm && HasSymmetricCoupling(couplings, coupling))
 			continue;
@@ -427,19 +460,24 @@ bool TableImportDlg::HasSymmetricCoupling(
 {
 	// are the needed properties available?
 	if(!coupling.atomidx1 || !coupling.atomidx2 ||
-		!coupling.dx || !coupling.dy || !coupling.dz)
+		!coupling.d[0].size() || !coupling.d[1].size() || !coupling.d[2].size())
 		return false;
 
 	for(const TableImportCoupling& c : couplings)
 	{
 		// are the needed properties available?
-		if(!c.atomidx1 || !c.atomidx2 || !c.dx || !c.dy || !c.dz)
+		if(!c.atomidx1 || !c.atomidx2 ||
+			!c.d[0].size() || !c.d[1].size() || !c.d[2].size())
 			continue;
 
+		// TODO: this doesn't work if the strings in c.d[i] contain expressions
 		if(*c.atomidx1 == *coupling.atomidx2 && *c.atomidx2 == *coupling.atomidx1
-			&& tl2::equals<t_real>(*c.dx, -*coupling.dx, g_eps)
-			&& tl2::equals<t_real>(*c.dy, -*coupling.dy, g_eps)
-			&& tl2::equals<t_real>(*c.dz, -*coupling.dz, g_eps))
+			&& tl2::equals<t_real>(tl2::str_to_var<t_real>(c.d[0]),
+				-tl2::str_to_var<t_real>(coupling.d[0]), g_eps)
+			&& tl2::equals<t_real>(tl2::str_to_var<t_real>(c.d[1]),
+				-tl2::str_to_var<t_real>(coupling.d[1]), g_eps)
+			&& tl2::equals<t_real>(tl2::str_to_var<t_real>(c.d[2]),
+				-tl2::str_to_var<t_real>(coupling.d[2]), g_eps))
 		{
 			return true;
 		}
@@ -491,6 +529,7 @@ void TableImportDlg::closeEvent(QCloseEvent *)
 	m_sett->setValue("tableimport/idx_coupling_DMIx", m_spinCouplingDMIX->value());
 	m_sett->setValue("tableimport/idx_coupling_DMIy", m_spinCouplingDMIY->value());
 	m_sett->setValue("tableimport/idx_coupling_DMIz", m_spinCouplingDMIZ->value());
+	m_sett->setValue("tableimport/idx_coupling_J_general", m_spinCouplingJGen->value());
 
 	m_sett->setValue("tableimport/indices_1based", m_checkIndices1Based->isChecked());
 	m_sett->setValue("tableimport/unite_incomplete_tokens", m_checkUniteIncompleteTokens->isChecked());

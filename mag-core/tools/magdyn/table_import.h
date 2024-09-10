@@ -43,21 +43,20 @@
 
 struct TableImportAtom
 {
-	std::optional<std::string> name{std::nullopt};
-	std::optional<t_real> x{std::nullopt}, y{std::nullopt}, z{std::nullopt};
-	std::optional<t_real> Sx{std::nullopt}, Sy{std::nullopt}, Sz{std::nullopt};
-	std::optional<t_real> Smag{std::nullopt};
+	std::string name{};
+	std::string pos[3]{};
+	std::string S[3]{}, Smag{};
 };
 
 
 
 struct TableImportCoupling
 {
-	std::optional<std::string> name{std::nullopt};
-	std::optional<t_size> atomidx1{std::nullopt}, atomidx2{std::nullopt};
-	std::optional<t_real> dx{std::nullopt}, dy{std::nullopt}, dz{std::nullopt};
-	std::optional<t_real> J{std::nullopt};
-	std::optional<t_real> dmix{std::nullopt}, dmiy{std::nullopt}, dmiz{std::nullopt};
+	std::string name{};
+	std::optional<t_size> atomidx1{}, atomidx2{};
+	std::string d[3]{};
+	std::string J{}, dmi[3]{};
+	std::string Jgen[3*3]{};
 };
 
 
@@ -101,7 +100,7 @@ private:
 	QSpinBox *m_spinCouplingName{};
 	QSpinBox *m_spinCouplingAtom1{}, *m_spinCouplingAtom2{};
 	QSpinBox *m_spinCouplingDX{}, *m_spinCouplingDY{}, *m_spinCouplingDZ{};
-	QSpinBox *m_spinCouplingJ{};
+	QSpinBox *m_spinCouplingJ{}, *m_spinCouplingJGen{};
 	QSpinBox *m_spinCouplingDMIX{}, *m_spinCouplingDMIY{}, *m_spinCouplingDMIZ{};
 
 	// options
