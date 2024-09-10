@@ -362,8 +362,8 @@ protected:
 
 	// table importer
 	void ShowTableImporter();
-	void ImportAtoms(const std::vector<TableImportAtom>&);
-	void ImportCouplings(const std::vector<TableImportCoupling>&);
+	void ImportAtoms(const std::vector<TableImportAtom>&, bool clear_existing = true);
+	void ImportCouplings(const std::vector<TableImportCoupling>&, bool clear_existing = true);
 
 	// disable/enable gui input for threaded operations
 	void EnableInput();

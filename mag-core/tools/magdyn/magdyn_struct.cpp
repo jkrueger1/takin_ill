@@ -263,7 +263,7 @@ void MagDynDlg::ShowTableImporter()
 		connect(m_table_import_dlg, &TableImportDlg::SetAtomsSignal,
 			this, &MagDynDlg::ImportAtoms);
 		connect(m_table_import_dlg, &TableImportDlg::SetCouplingsSignal,
-				this, &MagDynDlg::ImportCouplings);
+			this, &MagDynDlg::ImportCouplings);
 	}
 
 	m_table_import_dlg->show();
@@ -276,7 +276,8 @@ void MagDynDlg::ShowTableImporter()
 /**
  * import magnetic site positions from table dialog
  */
-void MagDynDlg::ImportAtoms(const std::vector<TableImportAtom>& atompos_vec)
+void MagDynDlg::ImportAtoms(const std::vector<TableImportAtom>& atompos_vec,
+	bool clear_existing)
 {
 	BOOST_SCOPE_EXIT(this_)
 	{
@@ -286,7 +287,9 @@ void MagDynDlg::ImportAtoms(const std::vector<TableImportAtom>& atompos_vec)
 	} BOOST_SCOPE_EXIT_END
 	m_ignoreCalc = true;
 
-	DelTabItem(m_sitestab, -1);  // remove original sites
+	// remove existing sites
+	if(clear_existing)
+		DelTabItem(m_sitestab, -1);
 
 	for(const TableImportAtom& atompos : atompos_vec)
 	{
@@ -317,7 +320,8 @@ void MagDynDlg::ImportAtoms(const std::vector<TableImportAtom>& atompos_vec)
 /**
  * import magnetic couplings from table dialog
  */
-void MagDynDlg::ImportCouplings(const std::vector<TableImportCoupling>& couplings)
+void MagDynDlg::ImportCouplings(const std::vector<TableImportCoupling>& couplings,
+	bool clear_existing)
 {
 	BOOST_SCOPE_EXIT(this_)
 	{
@@ -327,7 +331,9 @@ void MagDynDlg::ImportCouplings(const std::vector<TableImportCoupling>& coupling
 	} BOOST_SCOPE_EXIT_END
 	m_ignoreCalc = true;
 
-	DelTabItem(m_termstab, -1);  // remove original couplings
+	// remove existing couplings
+	if(clear_existing)
+		DelTabItem(m_termstab, -1);
 
 	for(const TableImportCoupling& coupling : couplings)
 	{

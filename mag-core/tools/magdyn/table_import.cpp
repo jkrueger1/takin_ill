@@ -147,6 +147,7 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	m_checkIndices1Based = new QCheckBox(this);
 	m_checkUniteIncompleteTokens = new QCheckBox(this);
 	m_checkIgnoreSymmetricCoupling = new QCheckBox(this);
+	m_checkClearExisting = new QCheckBox(this);
 
 	m_checkIndices1Based->setText("1-Based Indices");
 	m_checkIndices1Based->setToolTip("Are the indices 1-based or 0-based?");
@@ -154,10 +155,14 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	m_checkIgnoreSymmetricCoupling->setToolTip("Ignore couplings with flipped site indices and inverted distance vectors.");
 	m_checkUniteIncompleteTokens->setText("Unite Tokens");
 	m_checkUniteIncompleteTokens->setToolTip("Unite incomplete tokens, e.g. bracket expressions.");
+	m_checkClearExisting->setText("Clear Existing");
+	m_checkClearExisting->setToolTip("Clears the existing sites or coupling before importing the new ones."
+		"\nIf unchecked, new sites or couplings will be added to the end of the respective lists.");
 
 	m_checkIndices1Based->setChecked(false);
 	m_checkUniteIncompleteTokens->setChecked(true);
 	m_checkIgnoreSymmetricCoupling->setChecked(false);
+	m_checkClearExisting->setChecked(true);
 
 	QPushButton *btnImportAtoms = new QPushButton("Import Sites", this);
 	QPushButton *btnImportCouplings = new QPushButton("Import Couplings", this);
@@ -197,7 +202,8 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	grid->addWidget(sep2, y++, 0, 1, 4);
 	grid->addWidget(m_checkIndices1Based, y, 0, 1, 1);
 	grid->addWidget(m_checkUniteIncompleteTokens, y, 1, 1, 1);
-	grid->addWidget(m_checkIgnoreSymmetricCoupling, y++, 2, 1, 1);
+	grid->addWidget(m_checkIgnoreSymmetricCoupling, y, 2, 1, 1);
+	grid->addWidget(m_checkClearExisting, y++, 3, 1, 1);
 	grid->addWidget(btnImportAtoms, y, 0, 1, 1);
 	grid->addWidget(btnImportCouplings, y, 1, 1, 1);
 	grid->addWidget(btnHelp, y, 2, 1, 1);
@@ -254,6 +260,8 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 			m_checkUniteIncompleteTokens->setChecked(m_sett->value("tableimport/unite_incomplete_tokens").toBool());
 		if(m_sett->contains("tableimport/unite_incomplete_tokens"))
 			m_checkIgnoreSymmetricCoupling->setChecked(m_sett->value("tableimport/ignore_symmetric_couplings").toBool());
+		if(m_sett->contains("tableimport/clear_existing_items"))
+			m_checkClearExisting->setChecked(m_sett->value("tableimport/clear_existing_items").toBool());
 	}
 
 	// connections
@@ -290,6 +298,7 @@ void TableImportDlg::ImportAtoms()
 	const int idx_S_z = m_spinAtomSZ->value();
 	const int idx_S_mag = m_spinAtomSMag->value();
 	const bool unite_incomplete = m_checkUniteIncompleteTokens->isChecked();
+	const bool clear_existing_sites = m_checkClearExisting->isChecked();
 
 	std::vector<TableImportAtom> atompos_vec;
 	atompos_vec.reserve(lines.size());
@@ -327,7 +336,7 @@ void TableImportDlg::ImportAtoms()
 		atompos_vec.emplace_back(std::move(atompos));
 	}
 
-	emit SetAtomsSignal(atompos_vec);
+	emit SetAtomsSignal(atompos_vec, clear_existing_sites);
 }
 
 
@@ -355,6 +364,7 @@ void TableImportDlg::ImportCouplings()
 	const bool one_based = m_checkIndices1Based->isChecked();
 	const bool unite_incomplete = m_checkUniteIncompleteTokens->isChecked();
 	const bool ignore_symm = m_checkIgnoreSymmetricCoupling->isChecked();
+	const bool clear_existing_couplings = m_checkClearExisting->isChecked();
 
 	std::vector<TableImportCoupling> couplings;
 	couplings.reserve(lines.size());
@@ -404,7 +414,7 @@ void TableImportDlg::ImportCouplings()
 		couplings.emplace_back(std::move(coupling));
 	}
 
-	emit SetCouplingsSignal(couplings);
+	emit SetCouplingsSignal(couplings, clear_existing_couplings);
 }
 
 
@@ -485,4 +495,5 @@ void TableImportDlg::closeEvent(QCloseEvent *)
 	m_sett->setValue("tableimport/indices_1based", m_checkIndices1Based->isChecked());
 	m_sett->setValue("tableimport/unite_incomplete_tokens", m_checkUniteIncompleteTokens->isChecked());
 	m_sett->setValue("tableimport/ignore_symmetric_couplings", m_checkIgnoreSymmetricCoupling->isChecked());
+	m_sett->setValue("tableimport/clear_existing_items", m_checkClearExisting->isChecked());
 }

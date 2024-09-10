@@ -108,11 +108,12 @@ private:
 	QCheckBox *m_checkIndices1Based{};
 	QCheckBox *m_checkUniteIncompleteTokens{};
 	QCheckBox *m_checkIgnoreSymmetricCoupling{};
+	QCheckBox *m_checkClearExisting{};
 
 
 signals:
-	void SetAtomsSignal(const std::vector<TableImportAtom>&);
-	void SetCouplingsSignal(const std::vector<TableImportCoupling>&);
+	void SetAtomsSignal(const std::vector<TableImportAtom>&, bool clear_existing);
+	void SetCouplingsSignal(const std::vector<TableImportCoupling>&, bool clear_existing);
 };
 
 
