@@ -317,7 +317,9 @@ std::size_t GlPlotRenderer::AddArrow(t_real_gl rad, t_real_gl h,
 	t_real_gl x, t_real_gl y, t_real_gl z,
 	t_real_gl r, t_real_gl g, t_real_gl b, t_real_gl a)
 {
-	auto solid = tl2::create_cylinder<t_vec3_gl>(rad, h, 2, 32, rad, rad*1.5);
+	const t_real_gl arrow_r = rad * 2.;
+	const t_real_gl arrow_h = rad * 2.5;
+	auto solid = tl2::create_cylinder<t_vec3_gl>(rad, h, 2, 32, arrow_r, arrow_h);
 	auto [triagverts, norms, uvs] = tl2::create_triangles<t_vec3_gl>(solid);
 	auto [boundingSpherePos, boundingSphereRad] =
 		tl2::bounding_sphere<t_vec3_gl>(triagverts);
