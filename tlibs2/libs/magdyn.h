@@ -69,6 +69,8 @@
 
 // enables debug output
 //#define __TLIBS2_MAGDYN_DEBUG_OUTPUT__
+
+// enables ground state minimisation
 //#define __TLIBS2_MAGDYN_USE_MINUIT__
 
 
@@ -1617,6 +1619,12 @@ public:
 			// get site indices
 			term.site1_calc = GetMagneticSiteIndex(term.site1);
 			term.site2_calc = GetMagneticSiteIndex(term.site2);
+
+#ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
+			std::cout << "Coupling: "
+				<< term.name << ": " << term.site1 << " (" << term.site1_calc << ") -> "
+				<< term.site2 << " (" << term.site2_calc << ")." << std::endl;
+#endif
 
 			if(term.site1_calc >= GetMagneticSitesCount())
 			{

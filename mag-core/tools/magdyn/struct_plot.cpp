@@ -507,6 +507,10 @@ void StructPlotDlg::Sync()
 		if(term.site1_calc >= sites.size() || term.site2_calc >= sites.size())
 			continue;
 
+		// TODO: handle self-couplings (e.g. single-ion anisotropy)
+		if(term.site1_calc == term.site2_calc)
+			continue;
+
 		const auto& site1 = sites[term.site1_calc];
 		const auto& site2 = sites[term.site2_calc];
 

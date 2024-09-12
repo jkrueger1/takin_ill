@@ -2169,6 +2169,18 @@ requires is_scalar<t_real>
 
 
 /**
+ * tests for zero complex number
+ */
+template<class t_cplx, class t_real = typename t_cplx::value_type>
+bool equals_0(const t_cplx& val, typename t_cplx::value_type eps =
+	std::numeric_limits<typename t_cplx::value_type>::epsilon())
+requires is_complex<t_cplx>
+{
+	return tl2::equals<t_cplx>(val, t_cplx(0, 0), eps);
+}
+
+
+/**
  * tests for zero vector
  */
 template<class t_vec>

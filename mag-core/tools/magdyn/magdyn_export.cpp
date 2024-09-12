@@ -246,7 +246,7 @@ bool MagDynDlg::ExportToSunny(const QString& _filename)
 			<< "   " << get_str_var(term.J, true)              // 2,2
 			<< "\n\t]";
 
-		if(!tl2::equals_0(term.Jgen_calc))
+		if(!tl2::equals_0(term.Jgen_calc, g_eps))
 		{
 			ofstr	<< " +\n\t[\n"
 				<< "\t\t" << get_str_var(term.Jgen[0][0], true)
@@ -523,24 +523,41 @@ bool MagDynDlg::ExportToSpinW(const QString& _filename)
 	std::unordered_set<t_size> seen_term_sym_indices;
 	for(const t_term& term : m_dyn.GetExchangeTerms())
 	{
-		// only emit one coupling of a symmetry group
-		if(seen_term_sym_indices.find(term.sym_idx) != seen_term_sym_indices.end())
-			continue;
-		seen_term_sym_indices.insert(term.sym_idx);
+		t_size idx1 = m_dyn.GetMagneticSiteIndex(term.site1);
+		t_size idx2 = m_dyn.GetMagneticSiteIndex(term.site2);
+		bool is_aniso = (idx1 == idx2);
+
+		if(!is_aniso)
+		{
+			// only emit one coupling of a symmetry group
+			if(seen_term_sym_indices.find(term.sym_idx) != seen_term_sym_indices.end())
+				continue;
+			seen_term_sym_indices.insert(term.sym_idx);
+		}
 
 		ofstr << "% " << term.name << "\n";
 
-		std::string J = "\'J_" + term.name + "\'";
+		if(!tl2::equals_0(term.J_calc, g_eps))
+		{
+			std::string J = "\'J_" + term.name + "\'";
 
-		ofstr << "sw_obj.addmatrix(\"label\", "
-			<< J << ", \"value\", "
-			<< get_str_var(term.J)
-			<< ");\n";
+			ofstr << "sw_obj.addmatrix(\"label\", "
+				<< J << ", \"value\", "
+				<< get_str_var(term.J)
+				<< ");\n";
 
-		ofstr << "sw_obj.addcoupling(\"mat\", " << J << ", \"bond\", "
-			<< term.sym_idx << ");\n";
+			if(is_aniso)
+			{
+				ofstr << "sw_obj.addaniso(" << J << ", " << idx1 << ");\n";
+			}
+			else
+			{
+				ofstr << "sw_obj.addcoupling(\"mat\", " << J << ", \"bond\", "
+					<< term.sym_idx << ");\n";
+			}
+		}
 
-		if(!tl2::equals_0(term.dmi_calc))
+		if(!tl2::equals_0(term.dmi_calc, g_eps))
 		{
 			std::string DMI = "\'DMI_" + term.name + "\'";
 
@@ -551,11 +568,18 @@ bool MagDynDlg::ExportToSpinW(const QString& _filename)
 				<< get_str_var(term.dmi[2])
 				<< " ]);\n";
 
-			ofstr << "sw_obj.addcoupling(\"mat\", " << DMI << ", \"bond\", "
-				<< term.sym_idx << ");\n";
+			if(is_aniso)
+			{
+				ofstr << "sw_obj.addaniso(" << DMI << ", " << idx1 << ");\n";
+			}
+			else
+			{
+				ofstr << "sw_obj.addcoupling(\"mat\", " << DMI << ", \"bond\", "
+					<< term.sym_idx << ");\n";
+			}
 		}
 
-		if(!tl2::equals_0(term.Jgen_calc))
+		if(!tl2::equals_0(term.Jgen_calc, g_eps))
 		{
 			std::string GEN = "\'GEN_" + term.name + "\'";
 
@@ -572,8 +596,16 @@ bool MagDynDlg::ExportToSpinW(const QString& _filename)
 				<< get_str_var(term.Jgen[2][2]) << " "
 				<< " ]);\n";
 
-			ofstr << "sw_obj.addcoupling(\"mat\", " << GEN << ", \"bond\", "
-				<< term.sym_idx << ");\n";
+			if(is_aniso)
+			{
+				//std::string site_name = "\'" + m_dyn.GetMagneticSite(idx1).name + "\'";
+				ofstr << "sw_obj.addaniso(" << GEN << ", " << /*site_name*/ idx1 << ");\n";
+			}
+			else
+			{
+				ofstr << "sw_obj.addcoupling(\"mat\", " << GEN << ", \"bond\", "
+					<< term.sym_idx << ");\n";
+			}
 		}
 	}
 	// --------------------------------------------------------------------

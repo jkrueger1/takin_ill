@@ -38,7 +38,8 @@
  * set a unique name for the given table item
  */
 static void set_unique_tab_item_name(
-	QTableWidget *tab, QTableWidgetItem *item, int name_col, const std::string& prefix)
+	QTableWidget *tab, QTableWidgetItem *item,
+	int name_col, const std::string& prefix)
 {
 	if(!item)
 		return;
@@ -111,17 +112,19 @@ void MagDynDlg::AddSiteTabItem(
 		row = m_sites_cursor_row + 1;
 		bclone = true;
 	}
-
 	m_sitestab->setSortingEnabled(false);
 	m_sitestab->insertRow(row);
 
 	if(bclone)
 	{
-		for(int thecol = 0; thecol < NUM_SITE_COLS; ++thecol)
+		for(int thecol = 0; thecol < m_sitestab->columnCount(); ++thecol)
 		{
 			m_sitestab->setItem(row, thecol,
 				m_sitestab->item(m_sites_cursor_row, thecol)->clone());
 		}
+
+		m_sitestab->item(row, COL_SITE_NAME)->setText(
+			m_sitestab->item(row, COL_SITE_NAME)->text() + QString("_clone"));
 	}
 	else
 	{
@@ -335,7 +338,7 @@ void MagDynDlg::AddTermTabItem(
 
 	if(bclone)
 	{
-		for(int thecol = 0; thecol < NUM_XCH_COLS; ++thecol)
+		for(int thecol = 0; thecol < m_termstab->columnCount(); ++thecol)
 		{
 			m_termstab->setItem(row, thecol,
 				m_termstab->item(m_terms_cursor_row, thecol)->clone());
@@ -351,6 +354,9 @@ void MagDynDlg::AddTermTabItem(
 				m_termstab->setItem(row, thecol, combo);
 			}
 		}
+
+		m_termstab->item(row, COL_XCH_NAME)->setText(
+			m_termstab->item(row, COL_XCH_NAME)->text() + QString("_clone"));
 	}
 	else
 	{
@@ -447,7 +453,7 @@ void MagDynDlg::AddVariableTabItem(int row, const std::string& name, const t_cpl
 
 	if(bclone)
 	{
-		for(int thecol=0; thecol<NUM_VARS_COLS; ++thecol)
+		for(int thecol = 0; thecol < m_varstab->columnCount(); ++thecol)
 		{
 			m_varstab->setItem(row, thecol,
 				m_varstab->item(m_variables_cursor_row, thecol)->clone());
@@ -502,7 +508,7 @@ void MagDynDlg::AddFieldTabItem(
 
 	if(bclone)
 	{
-		for(int thecol=0; thecol<NUM_FIELD_COLS; ++thecol)
+		for(int thecol = 0; thecol < m_fieldstab->columnCount(); ++thecol)
 		{
 			m_fieldstab->setItem(row, thecol,
 				m_fieldstab->item(m_fields_cursor_row, thecol)->clone());
@@ -556,7 +562,7 @@ void MagDynDlg::AddCoordinateTabItem(
 
 	if(bclone)
 	{
-		for(int thecol=0; thecol<NUM_COORD_COLS; ++thecol)
+		for(int thecol = 0; thecol < m_coordinatestab->columnCount(); ++thecol)
 		{
 			m_coordinatestab->setItem(row, thecol,
 				m_coordinatestab->item(m_coordinates_cursor_row, thecol)->clone());
@@ -666,7 +672,7 @@ void MagDynDlg::MoveTabItemUp(QTableWidget *pTab)
 			continue;
 
 		pTab->insertRow(row-1);
-		for(int col=0; col<pTab->columnCount(); ++col)
+		for(int col = 0; col < pTab->columnCount(); ++col)
 		{
 			pTab->setItem(row-1, col, pTab->item(row+1, col)->clone());
 
@@ -729,7 +735,7 @@ void MagDynDlg::MoveTabItemDown(QTableWidget *pTab)
 			continue;
 
 		pTab->insertRow(row+2);
-		for(int col=0; col<pTab->columnCount(); ++col)
+		for(int col = 0; col < pTab->columnCount(); ++col)
 		{
 			pTab->setItem(row+2, col, pTab->item(row, col)->clone());
 
