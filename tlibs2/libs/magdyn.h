@@ -521,6 +521,7 @@ public:
 	 */
 	t_size GetExchangeTermIndex(const std::string& name) const
 	{
+		// try to find the term index by name
 		for(t_size idx = 0; idx < GetExchangeTermsCount(); ++idx)
 		{
 			if(GetExchangeTerm(idx).name == name)
@@ -543,7 +544,8 @@ public:
 				<< std::endl;
 		}
 
-		return GetExchangeTermsCount();  // return invalid index
+		// nothing found: return invalid index
+		return GetExchangeTermsCount();
 	}
 
 

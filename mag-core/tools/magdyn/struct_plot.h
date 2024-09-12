@@ -43,6 +43,27 @@
 
 
 /**
+ * infos for magnetic sites
+ */
+struct AtomSiteInfo
+{
+	std::string name{};
+};
+
+
+
+/**
+ * infos for exchange term
+ */
+struct ExchangeTermInfo
+{
+	std::string name{};
+	t_real length{};
+};
+
+
+
+/**
  * magnon calculation dialog
  */
 class StructPlotDlg : public QDialog

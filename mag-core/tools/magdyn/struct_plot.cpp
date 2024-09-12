@@ -141,7 +141,7 @@ void StructPlotDlg::PickerIntersection(
 	if(auto iter_atoms = m_atoms.find(objIdx);
 		iter_atoms != m_atoms.end())
 	{
-		m_cur_atom = iter_atoms->second.site->name;
+		m_cur_atom = iter_atoms->second.name;
 		m_status->setText(("Site " + *m_cur_atom).c_str());
 		return;
 	}
@@ -150,12 +150,13 @@ void StructPlotDlg::PickerIntersection(
 	if(auto iter_terms = m_terms.find(objIdx);
 		iter_terms != m_terms.end())
 	{
-		m_cur_term = iter_terms->second.term->name;
+		m_cur_term = iter_terms->second.name;
 
 		std::ostringstream ostr;
 		ostr.precision(g_prec_gui);
 		ostr << "Coupling " << *m_cur_term
-			<< " (length: " << iter_terms->second.term->length_calc << " \xe2\x84\xab)";
+			<< " (length: " << iter_terms->second.length
+			<< " \xe2\x84\xab)";
 
 		m_status->setText(ostr.str().c_str());
 		return;
@@ -426,7 +427,7 @@ void StructPlotDlg::Sync()
 
 		{
 			AtomSiteInfo siteinfo;
-			siteinfo.site = &site;
+			siteinfo.name = site.name;
 			m_atoms.emplace(std::make_pair(obj, siteinfo));
 			m_atoms.emplace(std::make_pair(arrow, std::move(siteinfo)));
 		}
@@ -493,14 +494,14 @@ void StructPlotDlg::Sync()
 
 
 	// iterate and add unit cell magnetic sites
-	for(std::size_t site_idx=0; site_idx<sites.size(); ++site_idx)
+	for(std::size_t site_idx = 0; site_idx < sites.size(); ++site_idx)
 	{
 		add_atom_site(site_idx, sites[site_idx], field, 0, 0, 0);
 	}
 
 
 	// iterate and add exchange terms
-	for(t_size term_idx=0; term_idx<terms.size(); ++term_idx)
+	for(t_size term_idx = 0; term_idx < terms.size(); ++term_idx)
 	{
 		const auto& term = terms[term_idx];
 		if(term.site1_calc >= sites.size() || term.site2_calc >= sites.size())
@@ -528,7 +529,8 @@ void StructPlotDlg::Sync()
 
 		{
 			ExchangeTermInfo terminfo;
-			terminfo.term = &term;
+			terminfo.name = term.name;
+			terminfo.length = term.length_calc;
 			m_terms.emplace(std::make_pair(obj, std::move(terminfo)));
 		}
 
@@ -586,7 +588,8 @@ void StructPlotDlg::Sync()
 
 			{
 				ExchangeTermInfo terminfo;
-				terminfo.term = &term;
+				terminfo.name = term.name;
+				terminfo.length = term.length_calc;
 				m_terms.emplace(std::make_pair(
 					objDmi, std::move(terminfo)));
 			}

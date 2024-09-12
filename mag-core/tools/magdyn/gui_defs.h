@@ -130,25 +130,4 @@ enum : int
 };
 
 
-
-/**
- * infos for magnetic sites
- */
-struct AtomSiteInfo
-{
-	const t_magdyn::MagneticSite* site = nullptr;
-};
-
-
-
-/**
- * infos for exchange term
- */
-struct ExchangeTermInfo
-{
-	const t_magdyn::ExchangeTerm* term = nullptr;
-};
-
-
-
 #endif
