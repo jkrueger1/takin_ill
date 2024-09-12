@@ -525,7 +525,7 @@ bool MagDynDlg::ExportToSpinW(const QString& _filename)
 	{
 		t_size idx1 = m_dyn.GetMagneticSiteIndex(term.site1);
 		t_size idx2 = m_dyn.GetMagneticSiteIndex(term.site2);
-		bool is_aniso = (idx1 == idx2);
+		bool is_aniso = (idx1 == idx2 && tl2::equals_0(term.dist_calc, g_eps));
 
 		if(!is_aniso)
 		{
@@ -548,7 +548,7 @@ bool MagDynDlg::ExportToSpinW(const QString& _filename)
 
 			if(is_aniso)
 			{
-				ofstr << "sw_obj.addaniso(" << J << ", " << idx1 << ");\n";
+				ofstr << "sw_obj.addaniso(" << J << ", " << idx1 + 1 << ");\n";
 			}
 			else
 			{
@@ -570,7 +570,7 @@ bool MagDynDlg::ExportToSpinW(const QString& _filename)
 
 			if(is_aniso)
 			{
-				ofstr << "sw_obj.addaniso(" << DMI << ", " << idx1 << ");\n";
+				ofstr << "sw_obj.addaniso(" << DMI << ", " << idx1 + 1 << ");\n";
 			}
 			else
 			{
@@ -599,7 +599,7 @@ bool MagDynDlg::ExportToSpinW(const QString& _filename)
 			if(is_aniso)
 			{
 				//std::string site_name = "\'" + m_dyn.GetMagneticSite(idx1).name + "\'";
-				ofstr << "sw_obj.addaniso(" << GEN << ", " << /*site_name*/ idx1 << ");\n";
+				ofstr << "sw_obj.addaniso(" << GEN << ", " << /*site_name*/ idx1 + 1 << ");\n";
 			}
 			else
 			{
