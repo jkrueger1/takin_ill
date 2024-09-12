@@ -1296,6 +1296,12 @@ public:
 	bool IsSymmetryEquivalent(const ExchangeTerm& term1, const ExchangeTerm& term2,
 		const std::vector<t_mat_real>& symops) const
 	{
+		// check if site indices are within bounds
+		const t_size N = GetMagneticSitesCount();
+		if(term1.site1_calc >= N || term1.site2_calc >= N ||
+			term2.site1_calc >= N || term2.site2_calc >= N)
+			return false;
+
 		// create unit cell site vectors
 		std::vector<t_vec_real> sites_uc = GetMagneticSitePositions(true);
 
