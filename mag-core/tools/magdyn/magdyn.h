@@ -164,7 +164,6 @@ protected:
 
 	// sites
 	QTableWidget *m_sitestab{};
-	QComboBox *m_comboSGSites{};
 	QDoubleSpinBox *m_xtallattice[3]{nullptr, nullptr, nullptr};
 	QDoubleSpinBox *m_xtalangles[3]{nullptr, nullptr, nullptr};
 	QDoubleSpinBox *m_scatteringplane[2*3]{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
@@ -174,7 +173,6 @@ protected:
 	QDoubleSpinBox *m_maxdist{};
 	QSpinBox *m_maxSC{};
 	QSpinBox *m_maxcouplings{};
-	QComboBox *m_comboSGTerms{};  // copy of m_comboSG
 	QDoubleSpinBox *m_ordering[3]{nullptr, nullptr, nullptr};
 	QDoubleSpinBox *m_normaxis[3]{nullptr, nullptr, nullptr};
 

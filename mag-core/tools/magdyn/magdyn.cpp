@@ -78,23 +78,11 @@ MagDynDlg::MagDynDlg(QWidget* pParent) : QDialog{pParent},
 	auto spacegroups = get_sgs<t_mat_real>();
 	m_SGops.clear();
 	m_SGops.reserve(spacegroups.size());
-
-	for(QComboBox* combo : {m_comboSG, m_comboSGSites, m_comboSGTerms})
-	{
-		if(!combo)
-			continue;
-		combo->clear();
-	}
+	m_comboSG->clear();
 
 	for(auto [sgnum, descr, ops] : spacegroups)
 	{
-		for(QComboBox* combo : {m_comboSG, m_comboSGSites, m_comboSGTerms})
-		{
-			if(!combo)
-				continue;
-			combo->addItem(descr.c_str(), combo->count());
-		}
-
+		m_comboSG->addItem(descr.c_str(), m_comboSG->count());
 		m_SGops.emplace_back(std::move(ops));
 	}
 

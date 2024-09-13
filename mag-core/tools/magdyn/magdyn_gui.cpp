@@ -254,17 +254,15 @@ void MagDynDlg::CreateSitesPanel()
 	btnMirrorAtoms->setToolTip("Flip the coordinates of the sites.");
 	btnShowStruct->setToolTip("Show a 3D view of the magnetic sites and couplings.");
 
-	m_comboSGSites = new QComboBox(m_sitespanel);
 	QPushButton *btnGenBySG = new QPushButton(
 		QIcon::fromTheme("insert-object"),
-		"Generate", m_sitespanel);
-	btnGenBySG->setToolTip("Create site positions from space group symmetry operators.");
+		"Create Symmetry-Equivalent Sites", m_sitespanel);
+	btnGenBySG->setToolTip("Create site positions from space group symmetry operators and existing positions.");
 
 	btnAdd->setFocusPolicy(Qt::StrongFocus);
 	btnDel->setFocusPolicy(Qt::StrongFocus);
 	btnUp->setFocusPolicy(Qt::StrongFocus);
 	btnDown->setFocusPolicy(Qt::StrongFocus);
-	m_comboSGSites->setFocusPolicy(Qt::StrongFocus);
 	btnGenBySG->setFocusPolicy(Qt::StrongFocus);
 
 	btnAdd->setSizePolicy(QSizePolicy{
@@ -303,9 +301,7 @@ void MagDynDlg::CreateSitesPanel()
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
 
-	grid->addWidget(new QLabel("Generate Sites From Space Group:"), y++,0,1,4);
-	grid->addWidget(m_comboSGSites, y,0,1,3);
-	grid->addWidget(btnGenBySG, y++,3,1,1);
+	grid->addWidget(btnGenBySG, y++,2,1,2);
 
 
 	// table CustomContextMenu
@@ -354,21 +350,6 @@ void MagDynDlg::CreateSitesPanel()
 
 	connect(btnMirrorAtoms, &QAbstractButton::clicked, this, &MagDynDlg::MirrorAtoms);
 	connect(btnShowStruct, &QAbstractButton::clicked, this, &MagDynDlg::ShowStructPlotDlg);
-
-	connect(m_comboSGSites, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-		[this](int idx)
-	{
-		// synchronise with other sg combobox
-		for(QComboBox* combo : {m_comboSG, m_comboSGTerms})
-		{
-			if(!combo)
-				continue;
-
-			combo->blockSignals(true);
-			combo->setCurrentIndex(idx);
-			combo->blockSignals(false);
-		}
-	});
 
 	connect(m_sitestab, &QTableWidget::itemSelectionChanged, [this]()
 	{
@@ -585,13 +566,11 @@ void MagDynDlg::CreateExchangeTermsPanel()
 
 
 	// couplings from space group
-	m_comboSGTerms = new QComboBox(m_termspanel);
 	QPushButton *btnGenBySG = new QPushButton(
 		QIcon::fromTheme("insert-object"),
-		"Generate", m_termspanel);
-	btnGenBySG->setToolTip("Create couplings from space group symmetry operators.");
+		"Create Symmetry-Equivalent Couplings", m_termspanel);
+	btnGenBySG->setToolTip("Create couplings from space group symmetry operators and existing couplings.");
 
-	m_comboSGTerms->setFocusPolicy(Qt::StrongFocus);
 	btnGenBySG->setFocusPolicy(Qt::StrongFocus);
 	btnGenBySG->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Fixed});
@@ -664,10 +643,7 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	grid->addWidget(m_maxSC, y,1,1,1);
 	grid->addWidget(m_maxcouplings, y,2,1,1);
 	grid->addWidget(btnGenByDist, y++,3,1,1);
-
-	grid->addWidget(new QLabel("Generate Coupling Terms From Space Group:"), y++,0,1,4);
-	grid->addWidget(m_comboSGTerms, y,0,1,3);
-	grid->addWidget(btnGenBySG, y++,3,1,1);
+	grid->addWidget(btnGenBySG, y++,2,1,2);
 
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
@@ -733,21 +709,6 @@ void MagDynDlg::CreateExchangeTermsPanel()
 		this, &MagDynDlg::GeneratePossibleCouplings);
 	connect(btnGenBySG, &QAbstractButton::clicked,
 		this, &MagDynDlg::GenerateCouplingsFromSG);
-
-	connect(m_comboSGTerms, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-		[this](int idx)
-	{
-		// synchronise with other sg combobox
-		for(QComboBox* combo : {m_comboSG, m_comboSGSites})
-		{
-			if(!combo)
-				continue;
-
-			combo->blockSignals(true);
-			combo->setCurrentIndex(idx);
-			combo->blockSignals(false);
-		}
-	});
 
 	connect(m_termstab, &QTableWidget::itemSelectionChanged, [this]()
 	{
@@ -935,22 +896,6 @@ void MagDynDlg::CreateSamplePanel()
 		QSizePolicy::Minimum, QSizePolicy::Expanding),
 		y++,0, 1,1);
 
-
-	// connections
-	connect(m_comboSG, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-		[this](int idx)
-	{
-		// synchronise with other sg combobox
-		for(QComboBox* combo : {m_comboSGSites, m_comboSGTerms})
-		{
-			if(!combo)
-				continue;
-
-			combo->blockSignals(true);
-			combo->setCurrentIndex(idx);
-			combo->blockSignals(false);
-		}
-	});
 
 	auto calc_all = [this]()
 	{
