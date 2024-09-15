@@ -250,13 +250,29 @@ void MagDynDlg::CreateSitesPanel()
 
 	QPushButton *btnMirrorAtoms = new QPushButton("Mirror", m_sitespanel);
 	QPushButton *btnShowStruct = new QPushButton("View...", m_sitespanel);
-
 	btnMirrorAtoms->setToolTip("Flip the coordinates of the sites.");
 	btnShowStruct->setToolTip("Show a 3D view of the magnetic sites and couplings.");
 
+	// enlarge cell
+	const char* idx_names[] = {"x = ", "y = ", "z = "};
+	for(int cell_idx = 0; cell_idx < 3; ++cell_idx)
+	{
+		m_enlargeCell[cell_idx] = new QSpinBox(m_sitespanel);
+		m_enlargeCell[cell_idx]->setMinimum(1);
+		m_enlargeCell[cell_idx]->setMaximum(99);
+		m_enlargeCell[cell_idx]->setValue(cell_idx == 2 ? 2 : 1);
+		m_enlargeCell[cell_idx]->setPrefix(idx_names[cell_idx]);
+		m_enlargeCell[cell_idx]->setToolTip("Order of supercell.");
+		m_enlargeCell[cell_idx]->setSizePolicy(QSizePolicy{
+			QSizePolicy::Expanding, QSizePolicy::Fixed});
+	}
+
+	QPushButton *btnEnlargeCell = new QPushButton("Generate", m_sitespanel);
+	btnEnlargeCell->setToolTip("Enlarge the unit cell.");
+
 	QPushButton *btnGenBySG = new QPushButton(
 		QIcon::fromTheme("insert-object"),
-		"Create Symmetry-Equivalent Sites", m_sitespanel);
+		"Generate", m_sitespanel);
 	btnGenBySG->setToolTip("Create site positions from space group symmetry operators and existing positions.");
 
 	btnAdd->setFocusPolicy(Qt::StrongFocus);
@@ -264,6 +280,7 @@ void MagDynDlg::CreateSitesPanel()
 	btnUp->setFocusPolicy(Qt::StrongFocus);
 	btnDown->setFocusPolicy(Qt::StrongFocus);
 	btnGenBySG->setFocusPolicy(Qt::StrongFocus);
+	btnEnlargeCell->setFocusPolicy(Qt::StrongFocus);
 
 	btnAdd->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Fixed});
@@ -275,7 +292,8 @@ void MagDynDlg::CreateSitesPanel()
 		QSizePolicy::Expanding, QSizePolicy::Fixed});
 	btnGenBySG->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Fixed});
-
+	btnEnlargeCell->setSizePolicy(QSizePolicy{
+		QSizePolicy::Expanding, QSizePolicy::Fixed});
 
 	auto grid = new QGridLayout(m_sitespanel);
 	grid->setSpacing(4);
@@ -290,7 +308,7 @@ void MagDynDlg::CreateSitesPanel()
 	grid->addWidget(btnMirrorAtoms, y,0,1,1);
 	grid->addWidget(btnShowStruct, y++,3,1,1);
 
-	auto sep1 = new QFrame(m_sampleenviropanel);
+	auto sep1 = new QFrame(m_sitespanel);
 	sep1->setFrameStyle(QFrame::HLine);
 
 	grid->addItem(new QSpacerItem(8, 8,
@@ -301,8 +319,14 @@ void MagDynDlg::CreateSitesPanel()
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
 
-	grid->addWidget(btnGenBySG, y++,2,1,2);
+	grid->addWidget(new QLabel("Enlarge Structure, Copying Existing Sites:", m_sitespanel), y++,0,1,4);
+	grid->addWidget(m_enlargeCell[0], y,0,1,1);
+	grid->addWidget(m_enlargeCell[1], y,1,1,1);
+	grid->addWidget(m_enlargeCell[2], y,2,1,1);
+	grid->addWidget(btnEnlargeCell, y++,3,1,1);
 
+	grid->addWidget(new QLabel("Create Symmetry-Equivalent Sites:", m_sitespanel), y,0,1,3);
+	grid->addWidget(btnGenBySG, y++,3,1,1);
 
 	// table CustomContextMenu
 	QMenu *menuTableContext = new QMenu(m_sitestab);
@@ -347,6 +371,8 @@ void MagDynDlg::CreateSitesPanel()
 		[this]() { this->MoveTabItemDown(m_sitestab); });
 	connect(btnGenBySG, &QAbstractButton::clicked,
 		this, &MagDynDlg::GenerateSitesFromSG);
+	connect(btnEnlargeCell, &QAbstractButton::clicked,
+		this, &MagDynDlg::EnlargeStructure);
 
 	connect(btnMirrorAtoms, &QAbstractButton::clicked, this, &MagDynDlg::MirrorAtoms);
 	connect(btnShowStruct, &QAbstractButton::clicked, this, &MagDynDlg::ShowStructPlotDlg);
@@ -568,7 +594,7 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	// couplings from space group
 	QPushButton *btnGenBySG = new QPushButton(
 		QIcon::fromTheme("insert-object"),
-		"Create Symmetry-Equivalent Couplings", m_termspanel);
+		"Generate", m_termspanel);
 	btnGenBySG->setToolTip("Create couplings from space group symmetry operators and existing couplings.");
 
 	btnGenBySG->setFocusPolicy(Qt::StrongFocus);
@@ -638,12 +664,13 @@ void MagDynDlg::CreateExchangeTermsPanel()
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
 
-	grid->addWidget(new QLabel("Generate Possible Coupling Terms By Distance (\xe2\x84\xab):"), y++,0,1,4);
+	grid->addWidget(new QLabel("Generate Possible Coupling Terms By Distance (\xe2\x84\xab):", m_termspanel), y++,0,1,4);
 	grid->addWidget(m_maxdist, y,0,1,1);
 	grid->addWidget(m_maxSC, y,1,1,1);
 	grid->addWidget(m_maxcouplings, y,2,1,1);
 	grid->addWidget(btnGenByDist, y++,3,1,1);
-	grid->addWidget(btnGenBySG, y++,2,1,2);
+	grid->addWidget(new QLabel("Create Symmetry-Equivalent Couplings:", m_termspanel), y,0,1,3);
+	grid->addWidget(btnGenBySG, y++,3,1,1);
 
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
@@ -653,13 +680,11 @@ void MagDynDlg::CreateExchangeTermsPanel()
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
 
-	grid->addWidget(new QLabel(QString("Ordering Vector:"),
-		m_termspanel), y,0,1,1);
+	grid->addWidget(new QLabel("Ordering Vector:", m_termspanel), y,0,1,1);
 	grid->addWidget(m_ordering[0], y,1,1,1);
 	grid->addWidget(m_ordering[1], y,2,1,1);
 	grid->addWidget(m_ordering[2], y++,3,1,1);
-	grid->addWidget(new QLabel(QString("Rotation Axis:"),
-		m_termspanel), y,0,1,1);
+	grid->addWidget(new QLabel("Rotation Axis:", m_termspanel), y,0,1,1);
 	grid->addWidget(m_normaxis[0], y,1,1,1);
 	grid->addWidget(m_normaxis[1], y,2,1,1);
 	grid->addWidget(m_normaxis[2], y++,3,1,1);
@@ -840,16 +865,16 @@ void MagDynDlg::CreateSamplePanel()
 	int y = 0;
 
 	// crystal
-	grid->addWidget(new QLabel("Crystal Definition"), y++,0,1,4);
-	grid->addWidget(new QLabel("Lattice (\xe2\x84\xab):"), y,0,1,1);
+	grid->addWidget(new QLabel("Crystal Definition", m_samplepanel), y++,0,1,4);
+	grid->addWidget(new QLabel("Lattice (\xe2\x84\xab):", m_samplepanel), y,0,1,1);
 	grid->addWidget(m_xtallattice[0], y,1,1,1);
 	grid->addWidget(m_xtallattice[1], y,2,1,1);
 	grid->addWidget(m_xtallattice[2], y++,3,1,1);
-	grid->addWidget(new QLabel("Angles (\xc2\xb0):"), y,0,1,1);
+	grid->addWidget(new QLabel("Angles (\xc2\xb0):", m_samplepanel), y,0,1,1);
 	grid->addWidget(m_xtalangles[0], y,1,1,1);
 	grid->addWidget(m_xtalangles[1], y,2,1,1);
 	grid->addWidget(m_xtalangles[2], y++,3,1,1);
-	grid->addWidget(new QLabel("Space Group:"), y,0,1,1);
+	grid->addWidget(new QLabel("Space Group:", m_samplepanel), y,0,1,1);
 	grid->addWidget(m_comboSG, y++,1,1,3);
 
 	// separator
@@ -865,12 +890,12 @@ void MagDynDlg::CreateSamplePanel()
 		y++,0, 1,1);
 
 	// scattering plane
-	grid->addWidget(new QLabel("Scattering plane"), y++,0,1,4);
-	grid->addWidget(new QLabel("Vector 1 (rlu):"), y,0,1,1);
+	grid->addWidget(new QLabel("Scattering plane", m_samplepanel), y++,0,1,4);
+	grid->addWidget(new QLabel("Vector 1 (rlu):", m_samplepanel), y,0,1,1);
 	grid->addWidget(m_scatteringplane[0], y,1,1,1);
 	grid->addWidget(m_scatteringplane[1], y,2,1,1);
 	grid->addWidget(m_scatteringplane[2], y++,3,1,1);
-	grid->addWidget(new QLabel("Vector 2 (rlu):"), y,0,1,1);
+	grid->addWidget(new QLabel("Vector 2 (rlu):", m_samplepanel), y,0,1,1);
 	grid->addWidget(m_scatteringplane[3], y,1,1,1);
 	grid->addWidget(m_scatteringplane[4], y,2,1,1);
 	grid->addWidget(m_scatteringplane[5], y++,3,1,1);
@@ -888,8 +913,8 @@ void MagDynDlg::CreateSamplePanel()
 		y++,0, 1,1);
 
 	// form factor formula
-	grid->addWidget(new QLabel("Magnetic Form Factor"), y++,0,1,4);
-	grid->addWidget(new QLabel("Enter Formula, f_M(Q) = "), y++,0,1,1);
+	grid->addWidget(new QLabel("Magnetic Form Factor", m_samplepanel), y++,0,1,4);
+	grid->addWidget(new QLabel("Enter Formula, f_M(Q) = ", m_samplepanel), y++,0,1,1);
 	grid->addWidget(m_ffact, y++,0,1,4);
 
 	grid->addItem(new QSpacerItem(8, 8,
@@ -1278,13 +1303,10 @@ void MagDynDlg::CreateSampleEnvPanel()
 	grid->setContentsMargins(6, 6, 6, 6);
 
 	int y = 0;
-	grid->addWidget(new QLabel(QString("Magnetic Field:"),
-		m_sampleenviropanel), y++,0,1,2);
-	grid->addWidget(new QLabel(QString("Magnitude:"),
-		m_sampleenviropanel), y,0,1,1);
+	grid->addWidget(new QLabel("Magnetic Field:", m_sampleenviropanel), y++,0,1,2);
+	grid->addWidget(new QLabel("Magnitude:", m_sampleenviropanel), y,0,1,1);
 	grid->addWidget(m_field_mag, y++,1,1,1);
-	grid->addWidget(new QLabel(QString("Direction (rlu):"),
-		m_sampleenviropanel), y,0,1,1);
+	grid->addWidget(new QLabel("Direction (rlu):", m_sampleenviropanel), y,0,1,1);
 	grid->addWidget(m_field_dir[0], y,1,1,1);
 	grid->addWidget(m_field_dir[1], y,2,1,1);
 	grid->addWidget(m_field_dir[2], y++,3,1,1);
@@ -1305,15 +1327,12 @@ void MagDynDlg::CreateSampleEnvPanel()
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
 
-	grid->addWidget(new QLabel(QString("Rotate Magnetic Field:"),
-		m_sampleenviropanel), y++,0,1,2);
-	grid->addWidget(new QLabel(QString("Axis (rlu):"),
-		m_sampleenviropanel), y,0,1,1);
+	grid->addWidget(new QLabel("Rotate Magnetic Field:", m_sampleenviropanel), y++,0,1,2);
+	grid->addWidget(new QLabel("Axis (rlu):", m_sampleenviropanel), y,0,1,1);
 	grid->addWidget(m_rot_axis[0], y,1,1,1);
 	grid->addWidget(m_rot_axis[1], y,2,1,1);
 	grid->addWidget(m_rot_axis[2], y++,3,1,1);
-	grid->addWidget(new QLabel(QString("Angle (\xc2\xb0):"),
-		m_sampleenviropanel), y,0,1,1);
+	grid->addWidget(new QLabel("Angle (\xc2\xb0):", m_sampleenviropanel), y,0,1,1);
 	grid->addWidget(m_rot_angle, y,1,1,1);
 	grid->addWidget(btn_rotate_ccw, y,2,1,1);
 	grid->addWidget(btn_rotate_cw, y++,3,1,1);
@@ -1326,8 +1345,7 @@ void MagDynDlg::CreateSampleEnvPanel()
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
 
-	grid->addWidget(new QLabel(QString("Saved Fields:"),
-		m_sampleenviropanel), y++,0,1,4);
+	grid->addWidget(new QLabel("Saved Fields:", m_sampleenviropanel), y++,0,1,4);
 	grid->addWidget(m_fieldstab, y,0,1,4);
 	grid->addWidget(btnAddField, ++y,0,1,1);
 	grid->addWidget(btnDelField, y,1,1,1);
@@ -1343,8 +1361,7 @@ void MagDynDlg::CreateSampleEnvPanel()
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
 
-	grid->addWidget(new QLabel(QString("Temperature:"),
-		m_sampleenviropanel), y,0,1,1);
+	grid->addWidget(new QLabel("Temperature:", m_sampleenviropanel), y,0,1,1);
 	grid->addWidget(m_temperature, y++,1,1,1);
 
 	auto calc_all = [this]()
@@ -1502,27 +1519,21 @@ void MagDynDlg::CreateDispersionPanel()
 
 	int y = 0;
 	grid->addWidget(m_plot, y++,0,1,4);
-	grid->addWidget(
-		new QLabel(QString("Start Q (rlu):"), m_disppanel), y,0,1,1);
+	grid->addWidget(new QLabel("Start Q (rlu):", m_disppanel), y,0,1,1);
 	grid->addWidget(m_Q_start[0], y,1,1,1);
 	grid->addWidget(m_Q_start[1], y,2,1,1);
 	grid->addWidget(m_Q_start[2], y++,3,1,1);
-	grid->addWidget(
-		new QLabel(QString("End Q (rlu):"), m_disppanel), y,0,1,1);
+	grid->addWidget(new QLabel("End Q (rlu):", m_disppanel), y,0,1,1);
 	grid->addWidget(m_Q_end[0], y,1,1,1);
 	grid->addWidget(m_Q_end[1], y,2,1,1);
 	grid->addWidget(m_Q_end[2], y++,3,1,1);
-	grid->addWidget(
-		new QLabel(QString("Q Count:"), m_disppanel), y,0,1,1);
+	grid->addWidget(new QLabel("Q Count:", m_disppanel), y,0,1,1);
 	grid->addWidget(m_num_points, y,1,1,1);
-	grid->addWidget(
-		new QLabel(QString("Weight Scale:"), m_disppanel), y,2,1,1);
+	grid->addWidget(new QLabel("Weight Scale:", m_disppanel), y,2,1,1);
 	grid->addWidget(m_weight_scale, y++,3,1,1);
-	grid->addWidget(
-		new QLabel(QString("Min. Weight:"), m_disppanel), y,0,1,1);
+	grid->addWidget(new QLabel("Min. Weight:", m_disppanel), y,0,1,1);
 	grid->addWidget(m_weight_min, y,1,1,1);
-	grid->addWidget(
-		new QLabel(QString("Max. Weight:"), m_disppanel), y,2,1,1);
+	grid->addWidget(new QLabel("Max. Weight:", m_disppanel), y,2,1,1);
 	grid->addWidget(m_weight_max, y++,3,1,1);
 
 	// signals
@@ -1615,8 +1626,7 @@ void MagDynDlg::CreateHamiltonPanel()
 
 	int y = 0;
 	grid->addWidget(m_hamiltonian, y++,0,1,4);
-	grid->addWidget(new QLabel(QString("Q:"),
-		m_hamiltonianpanel), y,0,1,1);
+	grid->addWidget(new QLabel("Q:", m_hamiltonianpanel), y,0,1,1);
 	grid->addWidget(m_q[0], y,1,1,1);
 	grid->addWidget(m_q[1], y,2,1,1);
 	grid->addWidget(m_q[2], y++,3,1,1);
@@ -1771,8 +1781,7 @@ void MagDynDlg::CreateCoordinatesPanel()
 	grid->setContentsMargins(6, 6, 6, 6);
 
 	int y = 0;
-	grid->addWidget(new QLabel(QString("Saved Q Coordinates / Paths:"),
-		m_coordinatespanel), y++,0,1,4);
+	grid->addWidget(new QLabel("Saved Q Coordinates / Paths:", m_coordinatespanel), y++,0,1,4);
 	grid->addWidget(m_coordinatestab, y,0,1,4);
 	grid->addWidget(btnAddCoord, ++y,0,1,1);
 	grid->addWidget(btnDelCoord, y,1,1,1);
@@ -1888,15 +1897,12 @@ void MagDynDlg::CreateExportPanel()
 	grid->setContentsMargins(6, 6, 6, 6);
 
 	int y = 0;
-	grid->addWidget(new QLabel(QString("Export Ranges:"),
-		m_exportpanel), y++,0,1,4);
-	grid->addWidget(new QLabel(QString("Start Q:"),
-		m_exportpanel), y,0,1,1);
+	grid->addWidget(new QLabel("Export Ranges:", m_exportpanel), y++,0,1,4);
+	grid->addWidget(new QLabel("Start Q:", m_exportpanel), y,0,1,1);
 	grid->addWidget(m_exportStartQ[0], y,1,1,1);
 	grid->addWidget(m_exportStartQ[1], y,2,1,1);
 	grid->addWidget(m_exportStartQ[2], y++,3,1,1);
-	grid->addWidget(new QLabel(QString("End Q:"),
-		m_exportpanel), y,0,1,1);
+	grid->addWidget(new QLabel("End Q:", m_exportpanel), y,0,1,1);
 	grid->addWidget(m_exportEndQ[0], y,1,1,1);
 	grid->addWidget(m_exportEndQ[1], y,2,1,1);
 	grid->addWidget(m_exportEndQ[2], y++,3,1,1);
@@ -1911,10 +1917,8 @@ void MagDynDlg::CreateExportPanel()
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
 
-	grid->addWidget(new QLabel(QString("Number of Grid Points per Q Direction:"),
-		m_exportpanel), y++,0,1,4);
-	grid->addWidget(new QLabel(QString("Points:"),
-		m_exportpanel), y,0,1,1);
+	grid->addWidget(new QLabel("Number of Grid Points per Q Direction:", m_exportpanel), y++,0,1,4);
+	grid->addWidget(new QLabel("Points:", m_exportpanel), y,0,1,1);
 	grid->addWidget(m_exportNumPoints[0], y,1,1,1);
 	grid->addWidget(m_exportNumPoints[1], y,2,1,1);
 	grid->addWidget(m_exportNumPoints[2], y++,3,1,1);
@@ -1954,8 +1958,7 @@ void MagDynDlg::CreateExportPanel()
 		QSizePolicy::Minimum, QSizePolicy::Expanding),
 		y++,0,1,4);
 
-	grid->addWidget(new QLabel(QString("Export Format:"),
-		m_exportpanel), y,0,1,1);
+	grid->addWidget(new QLabel("Export Format:", m_exportpanel), y,0,1,1);
 	grid->addWidget(m_exportFormat, y,1,1,1);
 	grid->addWidget(btn_export, y++,3,1,1);
 

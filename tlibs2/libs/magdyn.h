@@ -1229,6 +1229,62 @@ public:
 
 
 	/**
+	 * enlarge the magnetic structure
+	 */
+	void EnlargeStructure(t_size x_size, t_size y_size, t_size z_size)
+	{
+		CalcExternalField();
+		CalcMagneticSites();
+
+		const t_size num_sites = GetMagneticSitesCount();
+		const t_size num_terms = GetExchangeTermsCount();
+		m_sites.reserve(num_sites * x_size * y_size * z_size);
+		m_exchange_terms.reserve(num_terms * x_size * y_size * z_size);
+
+		// iterate over enlarged structure
+		for(t_size x_idx = 0; x_idx < x_size; ++x_idx)
+		for(t_size y_idx = 0; y_idx < y_size; ++y_idx)
+		for(t_size z_idx = 0; z_idx < z_size; ++z_idx)
+		{
+			// original sites
+			if(x_idx == 0 && y_idx == 0 && z_idx == 0)
+				continue;
+
+			std::string ext_id = "_" + tl2::var_to_str(x_idx + 1, m_prec) +
+				"_" + tl2::var_to_str(y_idx + 1, m_prec) +
+				"_" + tl2::var_to_str(z_idx + 1, m_prec);
+
+			// duplicate sites
+			for(t_size site_idx = 0; site_idx < num_sites; ++site_idx)
+			{
+				MagneticSite newsite = GetMagneticSite(site_idx);
+				newsite.pos_calc += tl2::create<t_vec_real>({x_idx, y_idx, z_idx});
+				newsite.pos[0] = tl2::var_to_str(newsite.pos_calc[0], m_prec);
+				newsite.pos[1] = tl2::var_to_str(newsite.pos_calc[1], m_prec);
+				newsite.pos[2] = tl2::var_to_str(newsite.pos_calc[2], m_prec);
+				newsite.name += ext_id;
+				AddMagneticSite(std::move(newsite));
+			}
+
+			// duplicate couplings
+			for(t_size term_idx = 0; term_idx < num_terms; ++term_idx)
+			{
+				ExchangeTerm newterm = GetExchangeTerm(term_idx);
+				newterm.site1 += ext_id;
+				newterm.site2 += ext_id;
+				AddExchangeTerm(std::move(newterm));
+			}
+		}
+
+		//RemoveDuplicateMagneticSites();
+		//RemoveDuplicateExchangeTerms();
+		CalcMagneticSites();
+		CalcExchangeTerms();
+	}
+
+
+
+	/**
 	 * remove literal duplicate sites (not symmetry-equivalent ones)
 	 */
 	void RemoveDuplicateMagneticSites()

@@ -164,9 +164,7 @@ protected:
 
 	// sites
 	QTableWidget *m_sitestab{};
-	QDoubleSpinBox *m_xtallattice[3]{nullptr, nullptr, nullptr};
-	QDoubleSpinBox *m_xtalangles[3]{nullptr, nullptr, nullptr};
-	QDoubleSpinBox *m_scatteringplane[2*3]{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+	QSpinBox *m_enlargeCell[3]{nullptr, nullptr, nullptr};
 
 	// terms, ordering vector, and rotation axis
 	QTableWidget *m_termstab{};
@@ -177,6 +175,9 @@ protected:
 	QDoubleSpinBox *m_normaxis[3]{nullptr, nullptr, nullptr};
 
 	// sample
+	QDoubleSpinBox *m_xtallattice[3]{nullptr, nullptr, nullptr};
+	QDoubleSpinBox *m_xtalangles[3]{nullptr, nullptr, nullptr};
+	QDoubleSpinBox *m_scatteringplane[2*3]{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 	std::vector<std::vector<t_mat_real>> m_SGops{};
 	QComboBox *m_comboSG{};
 	QPlainTextEdit *m_ffact{};    // magnetic form factor formula
@@ -338,6 +339,7 @@ protected:
 	void GenerateSitesFromSG();
 	void GenerateCouplingsFromSG();
 	void GeneratePossibleCouplings();
+	void EnlargeStructure();
 	const std::vector<t_mat_real>& GetSymOpsForCurrentSG(bool show_err = true) const;
 
 	// transfer sites from the kernel

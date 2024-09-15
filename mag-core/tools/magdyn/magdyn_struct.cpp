@@ -196,6 +196,33 @@ void MagDynDlg::GenerateCouplingsFromSG()
 
 
 /**
+ * enlarge the unit cell by copying the existing elements
+ */
+void MagDynDlg::EnlargeStructure()
+{
+	try
+	{
+		t_size x_size = m_enlargeCell[0]->value();
+		t_size y_size = m_enlargeCell[1]->value();
+		t_size z_size = m_enlargeCell[2]->value();
+
+		SyncToKernel();
+		m_dyn.EnlargeStructure(x_size, y_size, z_size);
+		SyncSitesFromKernel();
+		SyncTermsFromKernel();
+
+		if(m_autocalc->isChecked())
+			CalcAll();
+	}
+	catch(const std::exception& ex)
+	{
+		QMessageBox::critical(this, "Magnetic Dynamics", ex.what());
+	}
+}
+
+
+
+/**
  * generate possible couplings up to a certain distance
  */
 void MagDynDlg::GeneratePossibleCouplings()
