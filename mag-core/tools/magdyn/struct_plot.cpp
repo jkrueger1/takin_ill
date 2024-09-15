@@ -67,12 +67,20 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 
 	m_status = new QLabel(this);
 
-	m_context = new QMenu(this);
-	QAction *acDel = new QAction("Delete Object", m_context);
-	QAction *acCentre = new QAction("Centre Camera", m_context);
-	m_context->addAction(acDel);
-	m_context->addSeparator();
-	m_context->addAction(acCentre);
+	m_context_site = new QMenu(this);
+	QAction *acDelSite = new QAction("Delete Site", m_context_site);
+	QAction *acFlipSpin = new QAction("Flip Spin", m_context_site);
+	QAction *acCentre = new QAction("Centre Camera", m_context_site);
+	m_context_site->addAction(acDelSite);
+	m_context_site->addAction(acFlipSpin);
+	m_context_site->addSeparator();
+	m_context_site->addAction(acCentre);
+
+	m_context_term = new QMenu(this);
+	QAction *acDelTerm = new QAction("Delete Coupling", m_context_term);
+	m_context_term->addAction(acDelTerm);
+	m_context_term->addSeparator();
+	m_context_term->addAction(acCentre);
 
 	auto grid = new QGridLayout(this);
 	grid->setSpacing(4);
@@ -86,20 +94,15 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 		this, &StructPlotDlg::AfterGLInitialisation);
 	connect(m_structplot->GetRenderer(), &tl2::GlPlotRenderer::PickerIntersection,
 		this, &StructPlotDlg::PickerIntersection);
-	connect(m_structplot, &tl2::GlPlot::MouseClick,
-		this, &StructPlotDlg::MouseClick);
-	connect(m_structplot, &tl2::GlPlot::MouseDown,
-		this, &StructPlotDlg::MouseDown);
-	connect(m_structplot, &tl2::GlPlot::MouseUp,
-		this, &StructPlotDlg::MouseUp);
-	connect(acDel, &QAction::triggered,
-		this, &StructPlotDlg::DeleteItem);
-	connect(acCentre, &QAction::triggered,
-		this, &StructPlotDlg::CentreCamera);
-	connect(m_coordcross, &QCheckBox::toggled,
-		this, &StructPlotDlg::ShowCoordCross);
-	connect(m_labels, &QCheckBox::toggled,
-		this, &StructPlotDlg::ShowLabels);
+	connect(m_structplot, &tl2::GlPlot::MouseClick, this, &StructPlotDlg::MouseClick);
+	connect(m_structplot, &tl2::GlPlot::MouseDown, this, &StructPlotDlg::MouseDown);
+	connect(m_structplot, &tl2::GlPlot::MouseUp, this, &StructPlotDlg::MouseUp);
+	connect(acFlipSpin, &QAction::triggered, this, &StructPlotDlg::FlipSpin);
+	connect(acDelSite, &QAction::triggered, this, &StructPlotDlg::DeleteItem);
+	connect(acDelTerm, &QAction::triggered, this, &StructPlotDlg::DeleteItem);
+	connect(acCentre, &QAction::triggered, this, &StructPlotDlg::CentreCamera);
+	connect(m_coordcross, &QCheckBox::toggled, this, &StructPlotDlg::ShowCoordCross);
+	connect(m_labels, &QCheckBox::toggled, this, &StructPlotDlg::ShowLabels);
 
 	if(m_sett && m_sett->contains("struct_view/geo"))
 		restoreGeometry(m_sett->value("struct_view/geo").toByteArray());
@@ -129,7 +132,7 @@ void StructPlotDlg::PickerIntersection(
 {
 	m_status->setText("");
 	m_cur_obj = std::nullopt;
-	m_cur_atom = std::nullopt;
+	m_cur_site = std::nullopt;
 	m_cur_term = std::nullopt;
 
 	if(!pos)
@@ -138,49 +141,57 @@ void StructPlotDlg::PickerIntersection(
 	m_cur_obj = objIdx;
 
 	// look for magnetic sites
-	if(auto iter_atoms = m_atoms.find(objIdx);
-		iter_atoms != m_atoms.end())
+	if(auto iter_sites = m_sites.find(objIdx);
+		iter_sites != m_sites.end())
 	{
-		m_cur_atom = iter_atoms->second.name;
-		m_status->setText(("Site " + *m_cur_atom).c_str());
-		return;
+		m_cur_site = iter_sites->second.name;
+		m_status->setText(("Site: " + *m_cur_site).c_str());
 	}
 
 	// look for exchange terms
-	if(auto iter_terms = m_terms.find(objIdx);
+	else if(auto iter_terms = m_terms.find(objIdx);
 		iter_terms != m_terms.end())
 	{
 		m_cur_term = iter_terms->second.name;
 
 		std::ostringstream ostr;
 		ostr.precision(g_prec_gui);
-		ostr << "Coupling " << *m_cur_term
+		ostr << "Coupling: " << *m_cur_term
 			<< " (length: " << iter_terms->second.length
 			<< " \xe2\x84\xab)";
 
 		m_status->setText(ostr.str().c_str());
-		return;
 	}
 }
 
 
 
 /**
- * delete currently selected magnetic site or bond
+ * delete currently selected magnetic site or coupling
  */
 void StructPlotDlg::DeleteItem()
 {
-	if(m_cur_atom)
+	if(m_cur_site)
 	{
-		emit DeleteSite(*m_cur_atom);
-		m_cur_atom = std::nullopt;
+		emit DeleteSite(*m_cur_site);
+		m_cur_site = std::nullopt;
 	}
-
-	if(m_cur_term)
+	else if(m_cur_term)
 	{
 		emit DeleteTerm(*m_cur_term);
 		m_cur_term = std::nullopt;
 	}
+}
+
+
+
+/**
+ * invert the currently selected site's spin
+ */
+void StructPlotDlg::FlipSpin()
+{
+	if(m_cur_site)
+		emit FlipSiteSpin(*m_cur_site);
 }
 
 
@@ -238,7 +249,11 @@ void StructPlotDlg::MouseClick(
 	{
 		const QPointF& _pt = m_structplot->GetRenderer()->GetMousePosition();
 		QPoint pt = m_structplot->mapToGlobal(_pt.toPoint());
-		m_context->popup(pt);
+
+		if(m_cur_site)
+			m_context_site->popup(pt);
+		else if(m_cur_term)
+			m_context_term->popup(pt);
 	}
 }
 
@@ -252,8 +267,8 @@ void StructPlotDlg::MouseDown(
 	[[maybe_unused]] bool mid,
 	[[maybe_unused]] bool right)
 {
-	if(left && m_cur_atom)
-		emit SelectSite(*m_cur_atom);
+	if(left && m_cur_site)
+		emit SelectSite(*m_cur_site);
 
 	if(left && m_cur_term)
 		emit SelectTerm(*m_cur_term);
@@ -336,10 +351,10 @@ void StructPlotDlg::Sync()
 
 
 	// clear old magnetic sites
-	for(const auto& [atom_idx, atom_site] : m_atoms)
-		m_structplot->GetRenderer()->RemoveObject(atom_idx);
+	for(const auto& [site_idx, site] : m_sites)
+		m_structplot->GetRenderer()->RemoveObject(site_idx);
 
-	m_atoms.clear();
+	m_sites.clear();
 
 
 	// clear old terms
@@ -350,11 +365,11 @@ void StructPlotDlg::Sync()
 
 
 	// hashes of already seen magnetic sites
-	std::unordered_set<std::size_t> atom_hashes;
+	std::unordered_set<std::size_t> site_hashes;
 
 
 	// calculate the hash of a magnetic site
-	auto get_atom_hash = [](const t_magdyn::MagneticSite& site,
+	auto get_site_hash = [](const t_magdyn::MagneticSite& site,
 		t_real_gl sc_x, t_real_gl sc_y, t_real_gl sc_z)
 			-> std::size_t
 	{
@@ -373,17 +388,17 @@ void StructPlotDlg::Sync()
 
 
 	// check if the magnetic site has already been seen
-	auto atom_not_yet_seen = [&atom_hashes, &get_atom_hash](
+	auto site_not_yet_seen = [&site_hashes, &get_site_hash](
 		const t_magdyn::MagneticSite& site,
 		t_real_gl sc_x, t_real_gl sc_y, t_real_gl sc_z)
 	{
-		std::size_t hash = get_atom_hash(site, sc_x, sc_y, sc_z);
-		return atom_hashes.find(hash) == atom_hashes.end();
+		std::size_t hash = get_site_hash(site, sc_x, sc_y, sc_z);
+		return site_hashes.find(hash) == site_hashes.end();
 	};
 
 
 	// add a magnetic site to the plot
-	auto add_atom_site = [this, &atom_hashes, &get_atom_hash,
+	auto add_site = [this, &site_hashes, &get_site_hash,
 		is_incommensurate, &ordering, &rotaxis](
 		std::size_t site_idx,
 		const t_magdyn::MagneticSite& site,
@@ -426,10 +441,10 @@ void StructPlotDlg::Sync()
 			m_arrow, 0,0,0, rgb[0], rgb[1], rgb[2], 1);
 
 		{
-			AtomSiteInfo siteinfo;
+			MagneticSiteInfo siteinfo;
 			siteinfo.name = site.name;
-			m_atoms.emplace(std::make_pair(obj, siteinfo));
-			m_atoms.emplace(std::make_pair(arrow, std::move(siteinfo)));
+			m_sites.emplace(std::make_pair(obj, siteinfo));
+			m_sites.emplace(std::make_pair(arrow, std::move(siteinfo)));
 		}
 
 		t_vec_gl pos_vec = tl2::create<t_vec_gl>({
@@ -488,15 +503,15 @@ void StructPlotDlg::Sync()
 		//m_structplot->GetRenderer()->SetObjectLabel(arrow, site.name);
 
 		// mark the magnetic site as already seen
-		std::size_t hash = get_atom_hash(site, sc_x, sc_y, sc_z);
-		atom_hashes.insert(hash);
+		std::size_t hash = get_site_hash(site, sc_x, sc_y, sc_z);
+		site_hashes.insert(hash);
 	};
 
 
 	// iterate and add unit cell magnetic sites
 	for(std::size_t site_idx = 0; site_idx < sites.size(); ++site_idx)
 	{
-		add_atom_site(site_idx, sites[site_idx], field, 0, 0, 0);
+		add_site(site_idx, sites[site_idx], field, 0, 0, 0);
 	}
 
 
@@ -554,8 +569,8 @@ void StructPlotDlg::Sync()
 		});
 
 		// add the supercell site if it hasn't been inserted yet
-		if(atom_not_yet_seen(site2, sc_x, sc_y, sc_z))
-			add_atom_site(term.site2_calc, site2, field, sc_x, sc_y, sc_z);
+		if(site_not_yet_seen(site2, sc_x, sc_y, sc_z))
+			add_site(term.site2_calc, site2, field, sc_x, sc_y, sc_z);
 
 		t_vec_gl dir_vec = pos2_vec - pos1_vec;
 		t_real_gl dir_len = tl2::norm<t_vec_gl>(dir_vec);

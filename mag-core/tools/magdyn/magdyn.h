@@ -419,9 +419,10 @@ private:
 
 public slots:
 	void SelectSite(const std::string& site);
-	void SelectTerm(const std::string& term);
-
 	void DeleteSite(const std::string& site);
+	void FlipSiteSpin(const std::string& site);
+
+	void SelectTerm(const std::string& term);
 	void DeleteTerm(const std::string& term);
 };
 

@@ -45,7 +45,7 @@
 /**
  * infos for magnetic sites
  */
-struct AtomSiteInfo
+struct MagneticSiteInfo
 {
 	std::string name{};
 };
@@ -87,11 +87,16 @@ protected:
 	void MouseClick(bool left, bool mid, bool right);
 	void MouseDown(bool left, bool mid, bool right);
 	void MouseUp(bool left, bool mid, bool right);
+
+	void AfterGLInitialisation();
+
 	void PickerIntersection(
 		const t_vec3_gl* pos, std::size_t objIdx,
 		const t_vec3_gl* posSphere);
-	void AfterGLInitialisation();
+
 	void DeleteItem();
+	void FlipSpin();
+
 	void ShowCoordCross(bool show);
 	void ShowLabels(bool show);
 	void CentreCamera();
@@ -110,13 +115,13 @@ private:
 	QLabel *m_status{};
 	QCheckBox *m_coordcross{};
 	QCheckBox *m_labels{};
-	QMenu *m_context{};
+	QMenu *m_context_site{}, *m_context_term{};
 
 	tl2::GlPlot *m_structplot{};
-	std::unordered_map<std::size_t, AtomSiteInfo> m_atoms{};
+	std::unordered_map<std::size_t, MagneticSiteInfo> m_sites{};
 	std::unordered_map<std::size_t, ExchangeTermInfo> m_terms{};
 	std::optional<std::size_t> m_cur_obj{};
-	std::optional<std::string> m_cur_atom{};
+	std::optional<std::string> m_cur_site{};
 	std::optional<std::string> m_cur_term{};
 
 	// reference object handles
@@ -127,9 +132,10 @@ private:
 
 signals:
 	void SelectSite(const std::string& site);
-	void SelectTerm(const std::string& term);
-
 	void DeleteSite(const std::string& site);
+	void FlipSiteSpin(const std::string& site);
+
+	void SelectTerm(const std::string& term);
 	void DeleteTerm(const std::string& term);
 };
 

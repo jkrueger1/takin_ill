@@ -623,16 +623,12 @@ void MagDynDlg::DelTabItem(QTableWidget *pTab, int begin, int end)
 	else if(begin == -2)	// clear selected
 	{
 		for(int row : GetSelectedRows(pTab, true))
-		{
 			pTab->removeRow(row);
-		}
 	}
 	else if(begin >= 0 && end >= 0)		// clear given range
 	{
 		for(int row=end-1; row>=begin; --row)
-		{
 			pTab->removeRow(row);
-		}
 	}
 
 	UpdateVerticalHeader(pTab);
@@ -690,7 +686,7 @@ void MagDynDlg::MoveTabItemUp(QTableWidget *pTab)
 		pTab->removeRow(row+1);
 	}
 
-	for(int row=0; row<pTab->rowCount(); ++row)
+	for(int row = 0; row < pTab->rowCount(); ++row)
 	{
 		if(auto *item = pTab->item(row, 0);
 			item && std::find(selected.begin(), selected.end(), row+1) != selected.end())
@@ -753,7 +749,7 @@ void MagDynDlg::MoveTabItemDown(QTableWidget *pTab)
 		pTab->removeRow(row);
 	}
 
-	for(int row=0; row<pTab->rowCount(); ++row)
+	for(int row = 0; row < pTab->rowCount(); ++row)
 	{
 		if(auto *item = pTab->item(row, 0);
 			item && std::find(selected.begin(), selected.end(), row-1) != selected.end())
@@ -924,6 +920,43 @@ void MagDynDlg::SelectSite(const std::string& site)
 
 
 /**
+ * delete the given site from the corresponding table
+ */
+void MagDynDlg::DeleteSite(const std::string& site)
+{
+	if(t_size idx = m_dyn.GetMagneticSiteIndex(site);
+		idx < m_dyn.GetMagneticSitesCount())
+	{
+		DelTabItem(m_sitestab, idx, idx + 1);
+	}
+}
+
+
+
+/**
+ * invert the site's spin
+ */
+void MagDynDlg::FlipSiteSpin(const std::string& site)
+{
+	if(t_size idx = m_dyn.GetMagneticSiteIndex(site);
+		idx < m_dyn.GetMagneticSitesCount())
+	{
+		auto *spin_x = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_sitestab->item(idx, COL_SITE_SPIN_X));
+		auto *spin_y = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_sitestab->item(idx, COL_SITE_SPIN_Y));
+		auto *spin_z = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_sitestab->item(idx, COL_SITE_SPIN_Z));
+
+		spin_x->SetValue(-spin_x->GetValue());
+		spin_y->SetValue(-spin_y->GetValue());
+		spin_z->SetValue(-spin_z->GetValue());
+	}
+}
+
+
+
+/**
  * set the selection to the given term in the corresponding table
  */
 void MagDynDlg::SelectTerm(const std::string& term)
@@ -934,20 +967,6 @@ void MagDynDlg::SelectTerm(const std::string& term)
 		// select current term in table
 		m_tabs_in->setCurrentWidget(m_termspanel);
 		m_termstab->setCurrentCell(idx, 0);
-	}
-}
-
-
-
-/**
- * delete the given site from the corresponding table
- */
-void MagDynDlg::DeleteSite(const std::string& site)
-{
-	if(t_size idx = m_dyn.GetMagneticSiteIndex(site);
-		idx < m_dyn.GetMagneticSitesCount())
-	{
-		DelTabItem(m_sitestab, idx, idx + 1);
 	}
 }
 

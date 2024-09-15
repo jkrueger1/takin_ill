@@ -2029,10 +2029,13 @@ void MagDynDlg::ShowStructPlotDlg(bool only_create)
 
 		QObject::connect(m_structplot_dlg, &StructPlotDlg::SelectSite,
 			this, &MagDynDlg::SelectSite);
-		QObject::connect(m_structplot_dlg, &StructPlotDlg::SelectTerm,
-			this, &MagDynDlg::SelectTerm);
 		QObject::connect(m_structplot_dlg, &StructPlotDlg::DeleteSite,
 			this, &MagDynDlg::DeleteSite);
+		QObject::connect(m_structplot_dlg, &StructPlotDlg::FlipSiteSpin,
+			this, &MagDynDlg::FlipSiteSpin);
+
+		QObject::connect(m_structplot_dlg, &StructPlotDlg::SelectTerm,
+			this, &MagDynDlg::SelectTerm);
 		QObject::connect(m_structplot_dlg, &StructPlotDlg::DeleteTerm,
 			this, &MagDynDlg::DeleteTerm);
 	}
