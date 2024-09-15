@@ -298,6 +298,12 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 			m_maxSC->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<int>("config.couplings_max_count"))
 			m_maxcouplings->setValue(*optVal);
+		if(auto optVal = magdyn.get_optional<int>("config.sites_extcell_x"))
+			m_extCell[0]->setValue(*optVal);
+		if(auto optVal = magdyn.get_optional<int>("config.sites_extcell_y"))
+			m_extCell[1]->setValue(*optVal);
+		if(auto optVal = magdyn.get_optional<int>("config.sites_extcell_z"))
+			m_extCell[2]->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<bool>("config.use_genJ"))
 		{
 			if(!m_allow_general_J && *optVal)
@@ -669,6 +675,9 @@ bool MagDynDlg::Save(const QString& filename)
 		magdyn.put<t_real>("config.couplings_max_dist", m_maxdist->value());
 		magdyn.put<int>("config.couplings_max_supercell", m_maxSC->value());
 		magdyn.put<int>("config.couplings_max_count", m_maxcouplings->value());
+		magdyn.put<int>("config.sites_extcell_x", m_extCell[0]->value());
+		magdyn.put<int>("config.sites_extcell_y", m_extCell[1]->value());
+		magdyn.put<int>("config.sites_extcell_z", m_extCell[2]->value());
 
 		// save magnon calculator configuration
 		if(!m_dyn.Save(magdyn))

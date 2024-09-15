@@ -508,7 +508,8 @@ void StructPlotDlg::Sync()
 			continue;
 
 		// TODO: handle self-couplings (e.g. single-ion anisotropy)
-		if(term.site1_calc == term.site2_calc)
+		if(term.site1_calc == term.site2_calc &&
+			tl2::equals_0<t_vec_real>(term.dist_calc, g_eps))
 			continue;
 
 		const auto& site1 = sites[term.site1_calc];

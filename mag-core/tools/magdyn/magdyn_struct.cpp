@@ -196,18 +196,18 @@ void MagDynDlg::GenerateCouplingsFromSG()
 
 
 /**
- * enlarge the unit cell by copying the existing elements
+ * extend the unit cell by copying the existing elements
  */
-void MagDynDlg::EnlargeStructure()
+void MagDynDlg::ExtendStructure()
 {
 	try
 	{
-		t_size x_size = m_enlargeCell[0]->value();
-		t_size y_size = m_enlargeCell[1]->value();
-		t_size z_size = m_enlargeCell[2]->value();
+		t_size x_size = m_extCell[0]->value();
+		t_size y_size = m_extCell[1]->value();
+		t_size z_size = m_extCell[2]->value();
 
 		SyncToKernel();
-		m_dyn.EnlargeStructure(x_size, y_size, z_size);
+		m_dyn.ExtendStructure(x_size, y_size, z_size);
 		SyncSitesFromKernel();
 		SyncTermsFromKernel();
 

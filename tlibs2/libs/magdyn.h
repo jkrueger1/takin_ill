@@ -485,6 +485,22 @@ public:
 
 
 	/**
+	 * get magnetic site with the given name
+	 */
+	const MagneticSite* FindMagneticSite(const std::string& name) const
+	{
+		for(const MagneticSite& site : GetMagneticSites())
+		{
+			if(site.name == name)
+				return &site;
+		}
+		
+		return nullptr;
+	}
+
+
+
+	/**
 	 * get the index of a magnetic site from its name
 	 */
 	t_size GetMagneticSiteIndex(const std::string& name) const
@@ -1229,9 +1245,9 @@ public:
 
 
 	/**
-	 * enlarge the magnetic structure
+	 * extend the magnetic structure
 	 */
-	void EnlargeStructure(t_size x_size, t_size y_size, t_size z_size)
+	void ExtendStructure(t_size x_size, t_size y_size, t_size z_size)
 	{
 		CalcExternalField();
 		CalcMagneticSites();
@@ -1241,7 +1257,7 @@ public:
 		m_sites.reserve(num_sites * x_size * y_size * z_size);
 		m_exchange_terms.reserve(num_terms * x_size * y_size * z_size);
 
-		// iterate over enlarged structure
+		// iterate over extended structure
 		for(t_size x_idx = 0; x_idx < x_size; ++x_idx)
 		for(t_size y_idx = 0; y_idx < y_size; ++y_idx)
 		for(t_size z_idx = 0; z_idx < z_size; ++z_idx)
@@ -1276,10 +1292,47 @@ public:
 			}
 		}
 
-		//RemoveDuplicateMagneticSites();
-		//RemoveDuplicateExchangeTerms();
+		RemoveDuplicateMagneticSites();
+		RemoveDuplicateExchangeTerms();
+		FixExchangeTerms();
 		CalcMagneticSites();
 		CalcExchangeTerms();
+	}
+
+
+
+	/**
+	 * modify exchange term whose sites point to sc positions that are also available in the uc
+	 */
+	void FixExchangeTerms()
+	{
+		for(ExchangeTerm& term : GetExchangeTerms())
+		{
+			// coupling within uc?
+			if(tl2::equals_0<t_vec_real>(term.dist_calc, m_eps))
+				continue;
+
+			// find site 2
+			const MagneticSite* site2_uc = FindMagneticSite(term.site2);
+			if(!site2_uc)
+				continue;
+
+			// get site 2 sc vector
+			t_vec_real site2_sc = site2_uc->pos_calc + term.dist_calc;
+
+			// see if site 2's sc vector is also available in the uc
+			for(const MagneticSite& site : GetMagneticSites())
+			{
+				if(tl2::equals<t_vec_real>(site.pos_calc, site2_sc))
+				{
+					// found the identical site
+					term.site2 = site.name;
+					term.dist[0] = term.dist[1] = term.dist[2] = "0";
+					term.dist_calc = tl2::zero<t_vec_real>(3);
+					break;
+				}
+			}
+		}
 	}
 
 
@@ -1327,7 +1380,7 @@ public:
 
 
 	/**
-	 * are two sites equivalent with respect to the given symmetry operators
+	 * are two sites equivalent with respect to the given symmetry operators?
 	 */
 	bool IsSymmetryEquivalent(const MagneticSite& site1, const MagneticSite& site2,
 		const std::vector<t_mat_real>& symops) const
@@ -1349,7 +1402,7 @@ public:
 
 
 	/**
-	 * are two couplings equivalent with respect to the given symmetry operators
+	 * are two couplings equivalent with respect to the given symmetry operators?
 	 */
 	bool IsSymmetryEquivalent(const ExchangeTerm& term1, const ExchangeTerm& term2,
 		const std::vector<t_mat_real>& symops) const
@@ -2914,8 +2967,8 @@ public:
 				if(auto name1 = term.second.get_optional<std::string>("atom_1_name"); name1)
 				{
 					// get the magnetic site index via the name
-					if(auto sites1 = FindMagneticSites(*name1); sites1.size() == 1)
-						exchange_term.site1 = sites1[0]->name;
+					if(const MagneticSite* sites1 = FindMagneticSite(*name1); sites1)
+						exchange_term.site1 = sites1->name;
 					else
 					{
 						std::cerr << "Magdyn error: "
@@ -2933,8 +2986,8 @@ public:
 
 				if(auto name2 = term.second.get_optional<std::string>("atom_2_name"); name2)
 				{
-					if(auto sites2 = FindMagneticSites(*name2); sites2.size() == 1)
-						exchange_term.site2 = sites2[0]->name;
+					if(const MagneticSite* sites2 = FindMagneticSite(*name2); sites2)
+						exchange_term.site2 = sites2->name;
 					else
 					{
 						std::cerr << "Magdyn error: "

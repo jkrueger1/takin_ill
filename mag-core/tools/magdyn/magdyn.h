@@ -164,7 +164,7 @@ protected:
 
 	// sites
 	QTableWidget *m_sitestab{};
-	QSpinBox *m_enlargeCell[3]{nullptr, nullptr, nullptr};
+	QSpinBox *m_extCell[3]{nullptr, nullptr, nullptr};
 
 	// terms, ordering vector, and rotation axis
 	QTableWidget *m_termstab{};
@@ -339,7 +339,7 @@ protected:
 	void GenerateSitesFromSG();
 	void GenerateCouplingsFromSG();
 	void GeneratePossibleCouplings();
-	void EnlargeStructure();
+	void ExtendStructure();
 	const std::vector<t_mat_real>& GetSymOpsForCurrentSG(bool show_err = true) const;
 
 	// transfer sites from the kernel

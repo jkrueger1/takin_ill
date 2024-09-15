@@ -253,22 +253,22 @@ void MagDynDlg::CreateSitesPanel()
 	btnMirrorAtoms->setToolTip("Flip the coordinates of the sites.");
 	btnShowStruct->setToolTip("Show a 3D view of the magnetic sites and couplings.");
 
-	// enlarge cell
+	// extend cell
 	const char* idx_names[] = {"x = ", "y = ", "z = "};
 	for(int cell_idx = 0; cell_idx < 3; ++cell_idx)
 	{
-		m_enlargeCell[cell_idx] = new QSpinBox(m_sitespanel);
-		m_enlargeCell[cell_idx]->setMinimum(1);
-		m_enlargeCell[cell_idx]->setMaximum(99);
-		m_enlargeCell[cell_idx]->setValue(cell_idx == 2 ? 2 : 1);
-		m_enlargeCell[cell_idx]->setPrefix(idx_names[cell_idx]);
-		m_enlargeCell[cell_idx]->setToolTip("Order of supercell.");
-		m_enlargeCell[cell_idx]->setSizePolicy(QSizePolicy{
+		m_extCell[cell_idx] = new QSpinBox(m_sitespanel);
+		m_extCell[cell_idx]->setMinimum(1);
+		m_extCell[cell_idx]->setMaximum(99);
+		m_extCell[cell_idx]->setValue(cell_idx == 2 ? 2 : 1);
+		m_extCell[cell_idx]->setPrefix(idx_names[cell_idx]);
+		m_extCell[cell_idx]->setToolTip("Order of supercell.");
+		m_extCell[cell_idx]->setSizePolicy(QSizePolicy{
 			QSizePolicy::Expanding, QSizePolicy::Fixed});
 	}
 
-	QPushButton *btnEnlargeCell = new QPushButton("Generate", m_sitespanel);
-	btnEnlargeCell->setToolTip("Enlarge the unit cell.");
+	QPushButton *btnExtCell = new QPushButton("Generate", m_sitespanel);
+	btnExtCell->setToolTip("Extend the unit cell.");
 
 	QPushButton *btnGenBySG = new QPushButton(
 		QIcon::fromTheme("insert-object"),
@@ -280,7 +280,7 @@ void MagDynDlg::CreateSitesPanel()
 	btnUp->setFocusPolicy(Qt::StrongFocus);
 	btnDown->setFocusPolicy(Qt::StrongFocus);
 	btnGenBySG->setFocusPolicy(Qt::StrongFocus);
-	btnEnlargeCell->setFocusPolicy(Qt::StrongFocus);
+	btnExtCell->setFocusPolicy(Qt::StrongFocus);
 
 	btnAdd->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Fixed});
@@ -292,7 +292,7 @@ void MagDynDlg::CreateSitesPanel()
 		QSizePolicy::Expanding, QSizePolicy::Fixed});
 	btnGenBySG->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Fixed});
-	btnEnlargeCell->setSizePolicy(QSizePolicy{
+	btnExtCell->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Fixed});
 
 	auto grid = new QGridLayout(m_sitespanel);
@@ -319,11 +319,11 @@ void MagDynDlg::CreateSitesPanel()
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
 
-	grid->addWidget(new QLabel("Enlarge Structure, Copying Existing Sites:", m_sitespanel), y++,0,1,4);
-	grid->addWidget(m_enlargeCell[0], y,0,1,1);
-	grid->addWidget(m_enlargeCell[1], y,1,1,1);
-	grid->addWidget(m_enlargeCell[2], y,2,1,1);
-	grid->addWidget(btnEnlargeCell, y++,3,1,1);
+	grid->addWidget(new QLabel("Extend Structure, Copying Existing Sites:", m_sitespanel), y++,0,1,4);
+	grid->addWidget(m_extCell[0], y,0,1,1);
+	grid->addWidget(m_extCell[1], y,1,1,1);
+	grid->addWidget(m_extCell[2], y,2,1,1);
+	grid->addWidget(btnExtCell, y++,3,1,1);
 
 	grid->addWidget(new QLabel("Create Symmetry-Equivalent Sites:", m_sitespanel), y,0,1,3);
 	grid->addWidget(btnGenBySG, y++,3,1,1);
@@ -371,8 +371,8 @@ void MagDynDlg::CreateSitesPanel()
 		[this]() { this->MoveTabItemDown(m_sitestab); });
 	connect(btnGenBySG, &QAbstractButton::clicked,
 		this, &MagDynDlg::GenerateSitesFromSG);
-	connect(btnEnlargeCell, &QAbstractButton::clicked,
-		this, &MagDynDlg::EnlargeStructure);
+	connect(btnExtCell, &QAbstractButton::clicked,
+		this, &MagDynDlg::ExtendStructure);
 
 	connect(btnMirrorAtoms, &QAbstractButton::clicked, this, &MagDynDlg::MirrorAtoms);
 	connect(btnShowStruct, &QAbstractButton::clicked, this, &MagDynDlg::ShowStructPlotDlg);
