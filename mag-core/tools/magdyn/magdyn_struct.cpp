@@ -206,8 +206,12 @@ void MagDynDlg::ExtendStructure()
 		t_size y_size = m_extCell[1]->value();
 		t_size z_size = m_extCell[2]->value();
 
+		bool remove_duplicates = true;
+		bool flip_spin = false;
+
 		SyncToKernel();
-		m_dyn.ExtendStructure(x_size, y_size, z_size);
+		m_dyn.ExtendStructure(x_size, y_size, z_size,
+			remove_duplicates, flip_spin);
 		SyncSitesFromKernel();
 		SyncTermsFromKernel();
 

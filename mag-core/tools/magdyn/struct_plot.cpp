@@ -63,14 +63,14 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	m_coordcross->setChecked(true);
 
 	m_labels = new QCheckBox("Show Labels", this);
-	m_labels->setChecked(true);
+	m_labels->setChecked(false);
 
 	m_status = new QLabel(this);
 
 	m_context_site = new QMenu(this);
 	QAction *acDelSite = new QAction("Delete Site", m_context_site);
 	QAction *acFlipSpin = new QAction("Flip Spin", m_context_site);
-	QAction *acCentre = new QAction("Centre Camera", m_context_site);
+	QAction *acCentre = new QAction("Centre Camera on Object", m_context_site);
 	m_context_site->addAction(acDelSite);
 	m_context_site->addAction(acFlipSpin);
 	m_context_site->addSeparator();
@@ -103,6 +103,9 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	connect(acCentre, &QAction::triggered, this, &StructPlotDlg::CentreCamera);
 	connect(m_coordcross, &QCheckBox::toggled, this, &StructPlotDlg::ShowCoordCross);
 	connect(m_labels, &QCheckBox::toggled, this, &StructPlotDlg::ShowLabels);
+
+	ShowCoordCross(m_coordcross->isChecked());
+	ShowLabels(m_labels->isChecked());
 
 	if(m_sett && m_sett->contains("struct_view/geo"))
 		restoreGeometry(m_sett->value("struct_view/geo").toByteArray());
@@ -229,8 +232,7 @@ void StructPlotDlg::CentreCamera()
 	if(!m_cur_obj)
 		return;
 
-	const t_mat_gl& mat = m_structplot->GetRenderer()->
-		GetObjectMatrix(*m_cur_obj);
+	const t_mat_gl& mat = m_structplot->GetRenderer()->GetObjectMatrix(*m_cur_obj);
 	m_structplot->GetRenderer()->GetCamera().Centre(mat);
 	m_structplot->GetRenderer()->GetCamera().UpdateTransformation();
 }

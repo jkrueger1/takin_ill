@@ -1247,7 +1247,8 @@ public:
 	/**
 	 * extend the magnetic structure
 	 */
-	void ExtendStructure(t_size x_size, t_size y_size, t_size z_size)
+	void ExtendStructure(t_size x_size, t_size y_size, t_size z_size,
+		bool remove_duplicates = true, bool flip_spin = true)
 	{
 		CalcExternalField();
 		CalcMagneticSites();
@@ -1274,11 +1275,22 @@ public:
 			for(t_size site_idx = 0; site_idx < num_sites; ++site_idx)
 			{
 				MagneticSite newsite = GetMagneticSite(site_idx);
+
+				newsite.name += ext_id;
 				newsite.pos_calc += tl2::create<t_vec_real>({x_idx, y_idx, z_idx});
 				newsite.pos[0] = tl2::var_to_str(newsite.pos_calc[0], m_prec);
 				newsite.pos[1] = tl2::var_to_str(newsite.pos_calc[1], m_prec);
 				newsite.pos[2] = tl2::var_to_str(newsite.pos_calc[2], m_prec);
-				newsite.name += ext_id;
+
+				if(flip_spin && (x_idx + y_idx + z_idx) % 2 != 0)
+				{
+					// flip spin
+					newsite.spin_dir_calc = -newsite.spin_dir_calc;
+					newsite.spin_dir[0] = tl2::var_to_str(newsite.spin_dir_calc[0], m_prec);
+					newsite.spin_dir[1] = tl2::var_to_str(newsite.spin_dir_calc[1], m_prec);
+					newsite.spin_dir[2] = tl2::var_to_str(newsite.spin_dir_calc[2], m_prec);
+				}
+
 				AddMagneticSite(std::move(newsite));
 			}
 
@@ -1286,15 +1298,21 @@ public:
 			for(t_size term_idx = 0; term_idx < num_terms; ++term_idx)
 			{
 				ExchangeTerm newterm = GetExchangeTerm(term_idx);
+
 				newterm.site1 += ext_id;
 				newterm.site2 += ext_id;
+
 				AddExchangeTerm(std::move(newterm));
 			}
 		}
 
-		RemoveDuplicateMagneticSites();
-		RemoveDuplicateExchangeTerms();
-		FixExchangeTerms();
+		if(remove_duplicates)
+		{
+			RemoveDuplicateMagneticSites();
+			RemoveDuplicateExchangeTerms();
+		}
+
+		FixExchangeTerms(x_size, y_size, z_size);
 		CalcMagneticSites();
 		CalcExchangeTerms();
 	}
@@ -1304,7 +1322,7 @@ public:
 	/**
 	 * modify exchange term whose sites point to sc positions that are also available in the uc
 	 */
-	void FixExchangeTerms()
+	void FixExchangeTerms(t_size x_size = 1, t_size y_size = 1, t_size z_size = 1)
 	{
 		for(ExchangeTerm& term : GetExchangeTerms())
 		{
@@ -1320,15 +1338,48 @@ public:
 			// get site 2 sc vector
 			t_vec_real site2_sc = site2_uc->pos_calc + term.dist_calc;
 
-			// see if site 2's sc vector is also available in the uc
+			// fix couplings that are now internal:
+			// see if site 2's sc vector is now also available in the uc
+			bool fixed_coupling = false;
 			for(const MagneticSite& site : GetMagneticSites())
 			{
-				if(tl2::equals<t_vec_real>(site.pos_calc, site2_sc))
+				if(tl2::equals<t_vec_real>(site.pos_calc, site2_sc, m_eps))
 				{
 					// found the identical site
 					term.site2 = site.name;
 					term.dist[0] = term.dist[1] = term.dist[2] = "0";
 					term.dist_calc = tl2::zero<t_vec_real>(3);
+					fixed_coupling = true;
+					break;
+				}
+			}
+			if(fixed_coupling)
+				continue;
+
+			// fix external couplings
+			t_vec_real site2_newsc = site2_sc;
+
+			site2_newsc[0] = std::fmod(site2_newsc[0], t_real(x_size));
+			site2_newsc[1] = std::fmod(site2_newsc[1], t_real(y_size));
+			site2_newsc[2] = std::fmod(site2_newsc[2], t_real(z_size));
+
+			if(site2_newsc[0] < t_real(0))
+				site2_newsc[0] += t_real(x_size);
+			if(site2_newsc[1] < t_real(0))
+				site2_newsc[1] += t_real(y_size);
+			if(site2_newsc[2] < t_real(0))
+				site2_newsc[2] += t_real(z_size);
+
+			for(const MagneticSite& site : GetMagneticSites())
+			{
+				if(tl2::equals<t_vec_real>(site.pos_calc, site2_newsc, m_eps))
+				{
+					// found the identical site
+					term.site2 = site.name;
+					term.dist_calc = site2_sc - site2_newsc;
+					term.dist[0] = tl2::var_to_str(term.dist_calc[0], m_prec);
+					term.dist[1] = tl2::var_to_str(term.dist_calc[1], m_prec);
+					term.dist[2] = tl2::var_to_str(term.dist_calc[2], m_prec);
 					break;
 				}
 			}
