@@ -95,6 +95,7 @@ set_source_files_properties(magdyn.i PROPERTIES SWIG_FLAGS "-I ${PROJECT_SOURCE_
 
 swig_add_library(magdyn_py LANGUAGE python SOURCES magdyn.i)
 target_link_libraries(magdyn_py Python3::Python ${Lapacke_LIBRARIES})
+#target_link_libraries(magdyn_py Python3::Python /usr/local/lib/liblapacke.a /usr/local/lib/liblapack.a /usr/local/lib/libblas.a libgfortran.so)
 
 # installation
 get_property(MAGDYN_AUX_FILES TARGET magdyn_py PROPERTY SWIG_SUPPORT_FILES)
