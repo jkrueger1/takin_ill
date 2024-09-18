@@ -797,7 +797,8 @@ public:
 		catch(const std::exception& ex)
 		{
 			m_xtalA = m_xtalB = tl2::unit<t_mat_real>(3);
-			std::cerr << "Magdyn error: Could not calculate crystal matrices." << std::endl;
+			std::cerr << "Magdyn error: Could not calculate crystal matrices."
+				<< std::endl;
 		}
 	}
 
@@ -821,12 +822,14 @@ public:
 			std::tie(m_xtalUBinv, inv_ok) = tl2::inv(m_xtalUB);
 
 			if(!inv_ok)
-				std::cerr << "Magdyn error: UB matrix is not invertible." << std::endl;
+				std::cerr << "Magdyn error: UB matrix is not invertible."
+					<< std::endl;
 		}
 		catch(const std::exception& ex)
 		{
 			m_xtalUB = m_xtalUBinv = tl2::unit<t_mat_real>(3);
-			std::cerr << "Magdyn error: Could not calculate scattering plane matrices." << std::endl;
+			std::cerr << "Magdyn error: Could not calculate scattering plane matrices."
+				<< std::endl;
 		}
 	}
 	// --------------------------------------------------------------------
@@ -1785,15 +1788,18 @@ public:
 			}
 
 			// symmetric interaction
-			if(parser.parse_noexcept(term.J))
+			if(term.J == "")
+			{
+				term.J_calc = t_real(0);
+			}
+			else if(parser.parse_noexcept(term.J))
 			{
 				term.J_calc = parser.eval_noexcept();
 			}
 			else
 			{
 				std::cerr << "Magdyn error: Parsing J term \""
-					<< term.J << "\"."
-					<< std::endl;
+					<< term.J << "\"." << std::endl;
 			}
 
 			for(std::uint8_t i = 0; i < 3; ++i)
@@ -1863,8 +1869,7 @@ public:
 		catch(const std::exception& ex)
 		{
 			std::cerr << "Magdyn error: Calculating coupling \"" << term.name << "\"."
-				<< " Reason: " << ex.what() << "."
-				<< std::endl;
+				<< " Reason: " << ex.what() << "." << std::endl;
 		}
 	}
 
@@ -2357,7 +2362,8 @@ public:
 			t_mat_real rotQ_hkl = m_xtalUBinv * rotQ * m_xtalUB;
 			const auto [rotQ_hkl_inv, rotQ_hkl_inv_ok] = tl2::inv(rotQ_hkl);
 			if(!rotQ_hkl_inv_ok)
-				std::cerr << "Magdyn error: Cannot invert Q rotation matrix." << std::endl;
+				std::cerr << "Magdyn error: Cannot invert Q rotation matrix."
+					<< std::endl;
 
 			t_mat rotQ_hkl_cplx = tl2::convert<t_mat, t_mat_real>(rotQ_hkl);
 			t_mat rotQ_hkl_inv_cplx = tl2::convert<t_mat, t_mat_real>(rotQ_hkl_inv);
@@ -2676,14 +2682,16 @@ public:
 		}
 		else
 		{
-			std::cerr << "Magdyn error: Ground state minimisation did not converge." << std::endl;
+			std::cerr << "Magdyn error: Ground state minimisation did not converge."
+				<< std::endl;
 			return false;
 		}
 	}
 #else  // __TLIBS2_USE_MINUIT__
 	bool CalcGroundState(const std::unordered_set<std::string>* = nullptr, bool = false)
 	{
-		std::cerr << "Magdyn error: Ground state minimisation support disabled." << std::endl;
+		std::cerr << "Magdyn error: Ground state minimisation support disabled."
+			<< std::endl;
 		return false;
 	}
 #endif

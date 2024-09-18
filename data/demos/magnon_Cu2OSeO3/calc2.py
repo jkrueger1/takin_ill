@@ -34,27 +34,19 @@ save_dispersion        = False  # write dispersion to file
 print_dispersion       = False  # write dispersion to console
 plot_dispersion        = True   # show dispersion plot
 only_positive_energies = True   # ignore magnon annihilation?
-use_threadpool         = True   # parallelise calculation
+use_threadpool         = False  # parallelise calculation
+max_threads            = 4      # number of worker threads
+num_Q_points           = 256    # number of Qs to calculate on a dispersion direction
+S_scale                = 64.    # weight scaling and clamp factors
+S_clamp_min            = 1.     #
+S_clamp_max            = 500.   #
+S_filter_min           = -1.    # don't filter
+modelfile              = "model.magdyn"
+dispfile               = "disp.dat"
 
 # dispersion plotting range
-hkl_start = numpy.array([ 0., 0., 0.5 ])
-hkl_end   = numpy.array([ 1., 1., 0.5 ])
-
-# number of Qs to calculate on a dispersion direction
-num_Q_points = 256
-
-# number of worker threads
-max_threads = 4
-
-# weight scaling and clamp factors
-S_scale      = 64.
-S_clamp_min  = 1.
-S_clamp_max  = 500.
-S_filter_min = -1.    # don't filter
-
-# files
-modelfile = "model.magdyn"
-dispfile  = "disp.dat"
+hkl_start              = numpy.array([ 0., 0., 0.5 ])
+hkl_end                = numpy.array([ 1., 1., 0.5 ])
 # -----------------------------------------------------------------------------
 
 
@@ -106,17 +98,18 @@ data_S = []
 def append_data(h, k, l, E, S):
 	weight = S * S_scale
 
-	if weight > S_filter_min:
-		if weight < S_clamp_min:
-			weight = S_clamp_min
-		elif weight > S_clamp_max:
-			weight = S_clamp_max
+	if weight < S_filter_min:
+		return
+	if weight < S_clamp_min:
+		weight = S_clamp_min
+	elif weight > S_clamp_max:
+		weight = S_clamp_max
 
-		data_h.append(h)
-		data_k.append(k)
-		data_l.append(l)
-		data_E.append(E)
-		data_S.append(weight)
+	data_h.append(h)
+	data_k.append(k)
+	data_l.append(l)
+	data_E.append(E)
+	data_S.append(weight)
 
 
 if use_threadpool:
@@ -172,9 +165,8 @@ else:  # no thread pool
 # -----------------------------------------------------------------------------
 # plot the results
 if plot_dispersion:
-	print("Plotting dispersion...")
-
 	import matplotlib.pyplot as plot
+	print("Plotting dispersion...")
 
 	fig = plot.figure()
 

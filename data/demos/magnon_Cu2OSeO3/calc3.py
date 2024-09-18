@@ -25,37 +25,27 @@
 
 import numpy
 import magdyn
-import concurrent.futures as fut
-import matplotlib.pyplot as plot
 
 
 # -----------------------------------------------------------------------------
 # options
 print_dispersion       = False  # write dispersion to console
 only_positive_energies = True   # ignore magnon annihilation?
+use_threadpool         = False  # parallelise calculation
+max_threads            = 8      # number of worker threads
+num_Q_points           = 256    # number of Qs on a dispersion branch
+S_scale                = 64.    # weight scaling and clamp factors
+S_clamp_min            = 1.     #
+S_clamp_max            = 500.   #
+S_filter_min           = -1.    # don't filter
+modelfile              = "model.magdyn"
+plotfile               = ""     # file to save plot to
 
-# number of worker threads
-max_threads = 8
-
-# dispersion branches to plot
-dispersion = [
+dispersion = [                  # dispersion branches to plot
 	numpy.array([ 0., 0., 0.5 ]),
 	numpy.array([ 1., 1., 0.5 ]),
 	numpy.array([ 1., 0.5, 1. ]),
 ]
-
-# number of Qs to calculate on a dispersion branch
-num_Q_points = 256
-
-# weight scaling and clamp factors
-S_scale      = 64.
-S_clamp_min  = 1.
-S_clamp_max  = 500.
-S_filter_min = -1.    # don't filter
-
-# files
-modelfile = "model.magdyn"
-plotfile  = ""
 # -----------------------------------------------------------------------------
 
 
@@ -125,42 +115,68 @@ for branch_idx in range(num_branches):
 		axis_idx = 2
 	dispersion_plot_indices.append(axis_idx)
 
+
 	data_h = []
 	data_k = []
 	data_l = []
 	data_E = []
 	data_S = []
 
-	# calculate a branch
-	Es_futures = []
-	with fut.ProcessPoolExecutor(max_workers = max_threads) as exe:
-		# submit tasks
-		for hkl in numpy.linspace(hkl_start, hkl_end, num_Q_points):
-			Es_futures.append(exe.submit(calc_Es, hkl[0], hkl[1], hkl[2]))
+	#
+	# add a data point
+	#
+	def append_data(h, k, l, E, S):
+		weight = S * S_scale
 
-		# get results from tasks
-		for Es_future in Es_futures:
-			for (h, k, l, E, weight) in Es_future.result():
-				if only_positive_energies and E < 0.:
+		if weight < S_filter_min:
+			return
+
+		if weight < S_clamp_min:
+			weight = S_clamp_min
+		elif weight > S_clamp_max:
+			weight = S_clamp_max
+
+		data_h.append(h)
+		data_k.append(k)
+		data_l.append(l)
+		data_E.append(E)
+		data_S.append(weight)
+
+
+	if use_threadpool:
+		print(f"Using {max_threads} threads.")
+		import concurrent.futures as fut
+
+		# calculate a branch
+		with fut.ProcessPoolExecutor(max_workers = max_threads) as exe:
+			# submit tasks
+			Es_futures = []
+			for hkl in numpy.linspace(hkl_start, hkl_end, num_Q_points):
+				Es_futures.append(exe.submit(calc_Es, hkl[0], hkl[1], hkl[2]))
+
+			# get results from tasks
+			for Es_future in Es_futures:
+				for (h, k, l, E, weight) in Es_future.result():
+					if only_positive_energies and E < 0.:
+						continue
+
+					append_data(h, k, l, E, weight)
+
+					if print_dispersion:
+						print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(
+							h, k, l, E, weight))
+
+	else:  # no thread pool
+		for hkl in numpy.linspace(hkl_start, hkl_end, num_Q_points):
+			for S in mag.CalcEnergies(hkl[0], hkl[1], hkl[2], False):
+				if only_positive_energies and S.E < 0.:
 					continue
 
-				weight = weight * S_scale
-
-				if weight > S_filter_min:
-					if weight < S_clamp_min:
-						weight = S_clamp_min
-					elif weight > S_clamp_max:
-						weight = S_clamp_max
-
-					data_h.append(h)
-					data_k.append(k)
-					data_l.append(l)
-					data_E.append(E)
-					data_S.append(weight)
+				append_data(hkl[0], hkl[1], hkl[2], S.E, S.weight)
 
 				if print_dispersion:
 					print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(
-						h, k, l, E, weight))
+						hkl[0], hkl[1], hkl[2], S.E, S.weight))
 
 	data.append([ branch_idx, data_h, data_k, data_l, data_E, data_S ])
 # -----------------------------------------------------------------------------
@@ -168,6 +184,7 @@ for branch_idx in range(num_branches):
 
 # -----------------------------------------------------------------------------
 # plot the results
+import matplotlib.pyplot as plot
 print("\nPlotting dispersion branches...")
 
 (plt, axes) = plot.subplots(nrows = 1, ncols = num_branches, sharey = True)
