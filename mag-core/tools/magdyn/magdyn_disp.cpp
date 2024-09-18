@@ -291,15 +291,16 @@ void MagDynDlg::CalcDispersion()
 	for(t_size i = 0; i < num_pts; ++i)
 	{
 		auto task = [this, &mtx, i, num_pts, E0,
-			use_projector, use_weights, ignore_annihilation,
-			&Q_start, &Q_end]()
+			use_projector, use_weights, ignore_annihilation, &Q_start, &Q_end]()
 		{
-			const t_vec_real Q = tl2::create<t_vec_real>(
-			{
-				std::lerp(Q_start[0], Q_end[0], t_real(i)/t_real(num_pts-1)),
-				std::lerp(Q_start[1], Q_end[1], t_real(i)/t_real(num_pts-1)),
-				std::lerp(Q_start[2], Q_end[2], t_real(i)/t_real(num_pts-1)),
-			});
+			const t_vec_real Q = num_pts > 1
+				? tl2::create<t_vec_real>(
+				{
+					std::lerp(Q_start[0], Q_end[0], t_real(i) / t_real(num_pts - 1)),
+					std::lerp(Q_start[1], Q_end[1], t_real(i) / t_real(num_pts - 1)),
+					std::lerp(Q_start[2], Q_end[2], t_real(i) / t_real(num_pts - 1)),
+				})
+				: tl2::create<t_vec_real>({ Q_start[0], Q_start[1], Q_start[2] });
 
 			auto energies_and_correlations = m_dyn.CalcEnergies(Q, !use_weights);
 

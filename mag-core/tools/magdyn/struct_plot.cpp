@@ -242,6 +242,7 @@ void StructPlotDlg::CentreCameraOnObject()
 	const t_mat_gl& mat = m_structplot->GetRenderer()->GetObjectMatrix(*m_cur_obj);
 	m_structplot->GetRenderer()->GetCamera().Centre(mat);
 	m_structplot->GetRenderer()->GetCamera().UpdateTransformation();
+	m_structplot->update();
 }
 
 
@@ -254,6 +255,7 @@ void StructPlotDlg::CentreCamera()
 	t_mat_gl matCentre = tl2::hom_translation<t_mat_gl>(m_centre[0], m_centre[1], m_centre[2]);
 	m_structplot->GetRenderer()->GetCamera().Centre(matCentre);
 	m_structplot->GetRenderer()->GetCamera().UpdateTransformation();
+	m_structplot->update();
 }
 
 
