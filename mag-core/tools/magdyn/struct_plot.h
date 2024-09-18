@@ -100,12 +100,13 @@ protected:
 	void ShowCoordCross(bool show);
 	void ShowLabels(bool show);
 	void CentreCamera();
+	void CentreCameraOnObject();
 
 	virtual void closeEvent(QCloseEvent *) override;
 
 
 private:
-	const t_magdyn *m_dyn = nullptr;
+	const t_magdyn *m_dyn{};
 
 	// connections to main dialog
 	QSettings *m_sett{};
@@ -115,7 +116,7 @@ private:
 	QLabel *m_status{};
 	QCheckBox *m_coordcross{};
 	QCheckBox *m_labels{};
-	QMenu *m_context_site{}, *m_context_term{};
+	QMenu *m_context{}, *m_context_site{}, *m_context_term{};
 
 	tl2::GlPlot *m_structplot{};
 	std::unordered_map<std::size_t, MagneticSiteInfo> m_sites{};
@@ -123,11 +124,12 @@ private:
 	std::optional<std::size_t> m_cur_obj{};
 	std::optional<std::string> m_cur_site{};
 	std::optional<std::string> m_cur_term{};
+	t_vec_gl m_centre{tl2::zero<t_vec_gl>(3)};
 
 	// reference object handles
-	std::size_t m_sphere = 0;
-	std::size_t m_arrow = 0;
-	std::size_t m_cyl = 0;
+	std::size_t m_sphere{};
+	std::size_t m_arrow{};
+	std::size_t m_cyl{};
 
 
 signals:

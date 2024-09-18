@@ -94,20 +94,25 @@ extern t_real g_cholesky_delta;
 // optional features
 extern int g_allow_ortho_spin, g_allow_general_J;
 
-#ifndef DONT_USE_QT
-// gui theme and font
-extern QString g_theme, g_font;
-#endif
-
 // use native menubar and dialogs?
 extern int g_use_native_menubar, g_use_native_dialogs;
 
 // plot colour
 extern std::string g_colPlot;
 
+// structure plotter settings
+extern t_real g_structplot_site_rad;
+extern t_real g_structplot_term_rad;
+extern t_real g_structplot_dmi_rad;
+extern t_real g_structplot_dmi_len;
+
+
 #ifndef DONT_USE_QT
-// transfer the setting from the takin core program
-void get_settings_from_takin_core();
+	// gui theme and font
+	extern QString g_theme, g_font;
+
+	// transfer the setting from the takin core program
+	void get_settings_from_takin_core();
 #endif
 // ----------------------------------------------------------------------------
 
@@ -118,7 +123,7 @@ void get_settings_from_takin_core();
 // ----------------------------------------------------------------------------
 #include "settings.h"
 
-constexpr std::array<SettingsVariable, 11> g_settingsvariables
+constexpr std::array<SettingsVariable, 15> g_settingsvariables
 {{
 	// threads
 	{
@@ -173,6 +178,28 @@ constexpr std::array<SettingsVariable, 11> g_settingsvariables
 		.description = "Plot colour.",
 		.key = "plot_colour",
 		.value = &g_colPlot,
+	},
+
+	// structure plotter settings
+	{
+		.description = "Site radius in 3d structure plotter.",
+		.key = "structplot_site_radius",
+		.value = &g_structplot_site_rad,
+	},
+	{
+		.description = "Coupling radius in 3d structure plotter.",
+		.key = "structplot_term_radius",
+		.value = &g_structplot_term_rad,
+	},
+	{
+		.description = "DMI vector radius in 3d structure plotter.",
+		.key = "structplot_dmi_radius",
+		.value = &g_structplot_dmi_rad,
+	},
+	{
+		.description = "DMI vector length in 3d structure plotter.",
+		.key = "structplot_dmi_length",
+		.value = &g_structplot_dmi_len,
 	},
 
 	// optional features

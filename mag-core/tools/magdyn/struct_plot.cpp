@@ -60,27 +60,36 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 		QSizePolicy::Expanding, QSizePolicy::Expanding});
 
 	m_coordcross = new QCheckBox("Show Coordinates", this);
-	m_coordcross->setChecked(true);
+	m_coordcross->setChecked(false);
 
 	m_labels = new QCheckBox("Show Labels", this);
 	m_labels->setChecked(false);
 
 	m_status = new QLabel(this);
 
+	// general context menu
+	m_context = new QMenu(this);
+	QAction *acCentre = new QAction("Centre Camera", m_context);
+	m_context->addAction(acCentre);
+
+	// context menu for sites
 	m_context_site = new QMenu(this);
 	QAction *acDelSite = new QAction("Delete Site", m_context_site);
 	QAction *acFlipSpin = new QAction("Flip Spin", m_context_site);
-	QAction *acCentre = new QAction("Centre Camera on Object", m_context_site);
+	QAction *acCentreOnObject = new QAction("Centre Camera on Object", m_context_site);
 	m_context_site->addAction(acDelSite);
 	m_context_site->addAction(acFlipSpin);
 	m_context_site->addSeparator();
 	m_context_site->addAction(acCentre);
+	m_context_site->addAction(acCentreOnObject);
 
+	// context menu for terms
 	m_context_term = new QMenu(this);
 	QAction *acDelTerm = new QAction("Delete Coupling", m_context_term);
 	m_context_term->addAction(acDelTerm);
 	m_context_term->addSeparator();
 	m_context_term->addAction(acCentre);
+	m_context_term->addAction(acCentreOnObject);
 
 	auto grid = new QGridLayout(this);
 	grid->setSpacing(4);
@@ -100,12 +109,10 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	connect(acFlipSpin, &QAction::triggered, this, &StructPlotDlg::FlipSpin);
 	connect(acDelSite, &QAction::triggered, this, &StructPlotDlg::DeleteItem);
 	connect(acDelTerm, &QAction::triggered, this, &StructPlotDlg::DeleteItem);
+	connect(acCentreOnObject, &QAction::triggered, this, &StructPlotDlg::CentreCameraOnObject);
 	connect(acCentre, &QAction::triggered, this, &StructPlotDlg::CentreCamera);
 	connect(m_coordcross, &QCheckBox::toggled, this, &StructPlotDlg::ShowCoordCross);
 	connect(m_labels, &QCheckBox::toggled, this, &StructPlotDlg::ShowLabels);
-
-	ShowCoordCross(m_coordcross->isChecked());
-	ShowLabels(m_labels->isChecked());
 
 	if(m_sett && m_sett->contains("struct_view/geo"))
 		restoreGeometry(m_sett->value("struct_view/geo").toByteArray());
@@ -227,13 +234,25 @@ void StructPlotDlg::ShowLabels(bool show)
 /**
  * centre camera on currently selected object
  */
-void StructPlotDlg::CentreCamera()
+void StructPlotDlg::CentreCameraOnObject()
 {
 	if(!m_cur_obj)
 		return;
 
 	const t_mat_gl& mat = m_structplot->GetRenderer()->GetObjectMatrix(*m_cur_obj);
 	m_structplot->GetRenderer()->GetCamera().Centre(mat);
+	m_structplot->GetRenderer()->GetCamera().UpdateTransformation();
+}
+
+
+
+/**
+ * centre camera on central position
+ */
+void StructPlotDlg::CentreCamera()
+{
+	t_mat_gl matCentre = tl2::hom_translation<t_mat_gl>(m_centre[0], m_centre[1], m_centre[2]);
+	m_structplot->GetRenderer()->GetCamera().Centre(matCentre);
 	m_structplot->GetRenderer()->GetCamera().UpdateTransformation();
 }
 
@@ -247,7 +266,7 @@ void StructPlotDlg::MouseClick(
 	[[maybe_unused]] bool mid,
 	[[maybe_unused]] bool right)
 {
-	if(right && m_cur_obj)
+	if(right)
 	{
 		const QPointF& _pt = m_structplot->GetRenderer()->GetMousePosition();
 		QPoint pt = m_structplot->mapToGlobal(_pt.toPoint());
@@ -256,6 +275,8 @@ void StructPlotDlg::MouseClick(
 			m_context_site->popup(pt);
 		else if(m_cur_term)
 			m_context_term->popup(pt);
+		else
+			m_context->popup(pt);
 	}
 }
 
@@ -300,17 +321,17 @@ void StructPlotDlg::AfterGLInitialisation()
 
 	// reference sphere for linked objects
 	m_sphere = m_structplot->GetRenderer()->AddSphere(
-		0.05, 0.,0.,0., 1.,1.,1.,1.);
+		g_structplot_site_rad, 0.,0.,0., 1.,1.,1.,1.);
 	m_structplot->GetRenderer()->SetObjectVisible(m_sphere, false);
 
 	// reference arrow for linked objects
 	m_arrow = m_structplot->GetRenderer()->AddArrow(
-		0.015, 0.25, 0.,0.,0.5,  1.,1.,1.,1.);
+		g_structplot_dmi_rad, g_structplot_dmi_len, 0.,0.,0.5,  1.,1.,1.,1.);
 	m_structplot->GetRenderer()->SetObjectVisible(m_arrow, false);
 
 	// reference cylinder for linked objects
 	m_cyl = m_structplot->GetRenderer()->AddCylinder(
-		0.01, 1., 0.,0.,0.5,  1.,1.,1.,1.);
+		g_structplot_term_rad, 1., 0.,0.,0.5,  1.,1.,1.,1.);
 	m_structplot->GetRenderer()->SetObjectVisible(m_cyl, false);
 
 	// GL device info
@@ -328,6 +349,9 @@ void StructPlotDlg::AfterGLInitialisation()
 		m_info_dlg->SetGlInfo(3,
 			QString("GL Device: %1.").arg(strGlRenderer.c_str()));
 	}
+
+	ShowCoordCross(m_coordcross->isChecked());
+	ShowLabels(m_labels->isChecked());
 
 	Sync();
 }
@@ -351,24 +375,19 @@ void StructPlotDlg::Sync()
 	const auto& rotaxis = m_dyn->GetRotationAxis();
 	const bool is_incommensurate = m_dyn->IsIncommensurate();
 
-
 	// clear old magnetic sites
 	for(const auto& [site_idx, site] : m_sites)
 		m_structplot->GetRenderer()->RemoveObject(site_idx);
-
 	m_sites.clear();
-
 
 	// clear old terms
 	for(const auto& [term_idx, term] : m_terms)
 		m_structplot->GetRenderer()->RemoveObject(term_idx);
-
 	m_terms.clear();
 
 
 	// hashes of already seen magnetic sites
 	std::unordered_set<std::size_t> site_hashes;
-
 
 	// calculate the hash of a magnetic site
 	auto get_site_hash = [](const t_magdyn::MagneticSite& site,
@@ -511,10 +530,15 @@ void StructPlotDlg::Sync()
 
 
 	// iterate and add unit cell magnetic sites
+	m_centre = tl2::zero<t_vec_gl>(3);
+
 	for(std::size_t site_idx = 0; site_idx < sites.size(); ++site_idx)
 	{
 		add_site(site_idx, sites[site_idx], field, 0, 0, 0);
+		m_centre += tl2::convert<t_vec_gl>(sites[site_idx].pos_calc);
 	}
+
+	m_centre /= t_real_gl(sites.size());
 
 
 	// iterate and add exchange terms
@@ -632,5 +656,6 @@ void StructPlotDlg::Sync()
 		}
 	} // terms
 
+	CentreCamera();
 	m_structplot->update();
 }

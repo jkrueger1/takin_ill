@@ -78,6 +78,12 @@ int g_use_native_dialogs = 0;
 
 // plot colour
 std::string g_colPlot = "#ff0000";
+
+// structure plotter settings
+t_real g_structplot_site_rad = 0.05;
+t_real g_structplot_term_rad = 0.01;
+t_real g_structplot_dmi_rad = 0.015;
+t_real g_structplot_dmi_len = 0.25;
 // ----------------------------------------------------------------------------
 
 
