@@ -34,8 +34,9 @@ save_dispersion        = False  # write dispersion to file
 print_dispersion       = False  # write dispersion to console
 plot_dispersion        = True   # show dispersion plot
 only_positive_energies = True   # ignore magnon annihilation?
-use_threadpool         = False  # parallelise calculation
-max_threads            = 4      # number of worker threads
+use_procpool           = True   # parallelise calculation
+max_procs              = 4      # number of worker processes
+threads_instead        = True   # multi-threading instead of multi-processing?
 num_Q_points           = 256    # number of Qs to calculate on a dispersion direction
 S_scale                = 64.    # weight scaling and clamp factors
 S_clamp_min            = 1.     #
@@ -50,6 +51,8 @@ hkl_end                = numpy.array([ 1., 1., 0.5 ])
 # -----------------------------------------------------------------------------
 
 
+# -----------------------------------------------------------------------------
+# load the magnetic model
 # -----------------------------------------------------------------------------
 # create the magdyn object
 mag = magdyn.MagDyn()
@@ -80,7 +83,8 @@ if save_dispersion:
 
 
 # -----------------------------------------------------------------------------
-# manually calculate the same dispersion
+# manually calculate the dispersion
+# -----------------------------------------------------------------------------
 print("\nManually calculating dispersion...")
 if print_dispersion:
 	print("{:>15} {:>15} {:>15} {:>15} {:>15}".format("h", "k", "l", "E", "S(Q,E)"))
@@ -112,8 +116,8 @@ def append_data(h, k, l, E, S):
 	data_S.append(weight)
 
 
-if use_threadpool:
-	print(f"Using {max_threads} threads.")
+if use_procpool:
+	print(f"Using {max_procs} processes.")
 	import concurrent.futures as fut
 
 	#
@@ -129,7 +133,12 @@ if use_threadpool:
 		return Es
 
 
-	with fut.ProcessPoolExecutor(max_workers = max_threads) as exe:
+	if threads_instead:
+		executor = fut.ThreadPoolExecutor
+	else:
+		executor = fut.ProcessPoolExecutor
+
+	with executor(max_workers = max_procs) as exe:
 		Es_futures = []
 
 		# submit tasks
@@ -148,7 +157,7 @@ if use_threadpool:
 					print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(
 						h, k, l, E, weight))
 
-else:  # no thread pool
+else:  # no proc pool
 	for hkl in numpy.linspace(hkl_start, hkl_end, num_Q_points):
 		for S in mag.CalcEnergies(hkl[0], hkl[1], hkl[2], False):
 			if only_positive_energies and S.E < 0.:
@@ -164,6 +173,7 @@ else:  # no thread pool
 
 # -----------------------------------------------------------------------------
 # plot the results
+# -----------------------------------------------------------------------------
 if plot_dispersion:
 	import matplotlib.pyplot as plot
 	print("Plotting dispersion...")

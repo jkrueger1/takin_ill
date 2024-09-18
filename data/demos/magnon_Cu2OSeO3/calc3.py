@@ -29,10 +29,12 @@ import magdyn
 
 # -----------------------------------------------------------------------------
 # options
+# -----------------------------------------------------------------------------
 print_dispersion       = False  # write dispersion to console
 only_positive_energies = True   # ignore magnon annihilation?
-use_threadpool         = False  # parallelise calculation
-max_threads            = 8      # number of worker threads
+use_procpool           = True   # parallelise calculation
+max_procs              = 4      # number of worker processes
+threads_instead        = True   # multi-threading instead of multi-processing?
 num_Q_points           = 256    # number of Qs on a dispersion branch
 S_scale                = 64.    # weight scaling and clamp factors
 S_clamp_min            = 1.     #
@@ -46,12 +48,15 @@ dispersion = [                  # dispersion branches to plot
 	numpy.array([ 1., 1., 0.5 ]),
 	numpy.array([ 1., 0.5, 1. ]),
 ]
+
+num_branches = len(dispersion) - 1  # number of dispersion braches
 # -----------------------------------------------------------------------------
 
 
 # -----------------------------------------------------------------------------
-# create the magdyn object
-mag = magdyn.MagDyn()
+# load the magnetic model
+# -----------------------------------------------------------------------------
+mag = None
 
 
 #
@@ -67,175 +72,194 @@ def calc_Es(h, k, l):
 	return Es
 
 
-# load the model file
-print("Loading {}...".format(modelfile))
-if not mag.Load(modelfile):
-	print("Failed loading {}.".format(modelfile))
-	exit(-1)
+def setup_struct():
+	# create the magdyn object:
+	global mag
+	mag = magdyn.MagDyn()
 
+	# load the model file
+	print("Loading {}...".format(modelfile))
+	if not mag.Load(modelfile):
+		print("Failed loading {}.".format(modelfile))
+		exit(-1)
 
-# minimum energy
-print("Energy minimum at Q = (000): {:.4f} meV".format(mag.CalcMinimumEnergy()))
-print("Ground state energy: {:.4f} meV".format(mag.CalcGroundStateEnergy()))
+	# minimum energy
+	print("Energy minimum at Q = (000): {:.4f} meV".format(mag.CalcMinimumEnergy()))
+	print("Ground state energy: {:.4f} meV".format(mag.CalcGroundStateEnergy()))
 # -----------------------------------------------------------------------------
 
 
 # -----------------------------------------------------------------------------
-# number of dispersion braches
-num_branches = len(dispersion) - 1
-
-# Q components to use for plotting branches
-dispersion_plot_indices = []
-
 # calculate the dispersion branches
-print("\nCalculating %d dispersion branches..." % num_branches)
-if print_dispersion:
-	print("{:>15} {:>15} {:>15} {:>15} {:>15}".format("h", "k", "l", "E", "S(Q,E)"))
+# -----------------------------------------------------------------------------
+def calc_disp():
+	# calculate the dispersion branches
+	print("\nCalculating %d dispersion branches..." % num_branches)
+	if print_dispersion:
+		print("{:>15} {:>15} {:>15} {:>15} {:>15}".format("h", "k", "l", "E", "S(Q,E)"))
 
-# data for all branches
-data = []
+	dispersion_plot_indices = []  # Q components to use for plotting branches
+	data = []                     # data for all branches
 
-for branch_idx in range(num_branches):
-	hkl_start = dispersion[branch_idx]
-	hkl_end = dispersion[branch_idx + 1]
+	for branch_idx in range(num_branches):
+		hkl_start = dispersion[branch_idx]
+		hkl_end = dispersion[branch_idx + 1]
 
-	print("[%d/%d] Calculating %s  ->  %s branch..." %
-	   (branch_idx + 1, num_branches, hkl_start, hkl_end))
+		print("[%d/%d] Calculating %s  ->  %s branch..." %
+		   (branch_idx + 1, num_branches, hkl_start, hkl_end))
 
-	# find scan axis
-	Q_diff = [
-		numpy.abs(hkl_start[0] - hkl_end[0]),
-		numpy.abs(hkl_start[1] - hkl_end[1]),
-		numpy.abs(hkl_start[2] - hkl_end[2]) ]
+		# find scan axis
+		Q_diff = [
+			numpy.abs(hkl_start[0] - hkl_end[0]),
+			numpy.abs(hkl_start[1] - hkl_end[1]),
+			numpy.abs(hkl_start[2] - hkl_end[2]) ]
 
-	axis_idx = 0
-	if Q_diff[1] > Q_diff[axis_idx]:
-		axis_idx = 1
-	elif Q_diff[2] > Q_diff[axis_idx]:
-		axis_idx = 2
-	dispersion_plot_indices.append(axis_idx)
-
-
-	data_h = []
-	data_k = []
-	data_l = []
-	data_E = []
-	data_S = []
-
-	#
-	# add a data point
-	#
-	def append_data(h, k, l, E, S):
-		weight = S * S_scale
-
-		if weight < S_filter_min:
-			return
-
-		if weight < S_clamp_min:
-			weight = S_clamp_min
-		elif weight > S_clamp_max:
-			weight = S_clamp_max
-
-		data_h.append(h)
-		data_k.append(k)
-		data_l.append(l)
-		data_E.append(E)
-		data_S.append(weight)
+		axis_idx = 0
+		if Q_diff[1] > Q_diff[axis_idx]:
+			axis_idx = 1
+		elif Q_diff[2] > Q_diff[axis_idx]:
+			axis_idx = 2
+		dispersion_plot_indices.append(axis_idx)
 
 
-	if use_threadpool:
-		print(f"Using {max_threads} threads.")
-		import concurrent.futures as fut
+		data_h = []
+		data_k = []
+		data_l = []
+		data_E = []
+		data_S = []
 
-		# calculate a branch
-		with fut.ProcessPoolExecutor(max_workers = max_threads) as exe:
-			# submit tasks
-			Es_futures = []
+		#
+		# add a data point
+		#
+		def append_data(h, k, l, E, S):
+			#print(f"S(Q = ({h} {k} {l}) rlu, E = {E} meV) = {S}")
+			weight = S * S_scale
+
+			if weight < S_filter_min:
+				return
+
+			if weight < S_clamp_min:
+				weight = S_clamp_min
+			elif weight > S_clamp_max:
+				weight = S_clamp_max
+
+			data_h.append(h)
+			data_k.append(k)
+			data_l.append(l)
+			data_E.append(E)
+			data_S.append(weight)
+
+
+		if use_procpool:
+			print(f"Using {max_procs} processes.")
+			import concurrent.futures as fut
+
+			if threads_instead:
+				executor = fut.ThreadPoolExecutor
+			else:
+				executor = fut.ProcessPoolExecutor
+
+			# calculate a branch
+			with executor(max_workers = max_procs) as exe:
+				Es_futures = []
+
+				# submit tasks
+				for hkl in numpy.linspace(hkl_start, hkl_end, num_Q_points):
+					Es_futures.append(
+						exe.submit(calc_Es, hkl[0], hkl[1], hkl[2]))
+
+				# get results from tasks
+				for Es_future in Es_futures:
+					for (h, k, l, E, weight) in Es_future.result():
+						if only_positive_energies and E < 0.:
+							continue
+
+						append_data(h, k, l, E, weight)
+
+						if print_dispersion:
+							print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(
+								h, k, l, E, weight))
+
+		else:  # no proc pool
 			for hkl in numpy.linspace(hkl_start, hkl_end, num_Q_points):
-				Es_futures.append(exe.submit(calc_Es, hkl[0], hkl[1], hkl[2]))
-
-			# get results from tasks
-			for Es_future in Es_futures:
-				for (h, k, l, E, weight) in Es_future.result():
-					if only_positive_energies and E < 0.:
+				for S in mag.CalcEnergies(hkl[0], hkl[1], hkl[2], False):
+					if only_positive_energies and S.E < 0.:
 						continue
 
-					append_data(h, k, l, E, weight)
+					append_data(hkl[0], hkl[1], hkl[2], S.E, S.weight)
 
 					if print_dispersion:
 						print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(
-							h, k, l, E, weight))
+							hkl[0], hkl[1], hkl[2], S.E, S.weight))
 
-	else:  # no thread pool
-		for hkl in numpy.linspace(hkl_start, hkl_end, num_Q_points):
-			for S in mag.CalcEnergies(hkl[0], hkl[1], hkl[2], False):
-				if only_positive_energies and S.E < 0.:
-					continue
+		data.append([ branch_idx, data_h, data_k, data_l, data_E, data_S ])
 
-				append_data(hkl[0], hkl[1], hkl[2], S.E, S.weight)
-
-				if print_dispersion:
-					print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(
-						hkl[0], hkl[1], hkl[2], S.E, S.weight))
-
-	data.append([ branch_idx, data_h, data_k, data_l, data_E, data_S ])
+	return (data, dispersion_plot_indices)
 # -----------------------------------------------------------------------------
 
 
 # -----------------------------------------------------------------------------
 # plot the results
-import matplotlib.pyplot as plot
-print("\nPlotting dispersion branches...")
-
-(plt, axes) = plot.subplots(nrows = 1, ncols = num_branches, sharey = True)
-
-for [ branch_idx, data_h, data_k, data_l, data_E, data_S ] in data:
-	# dispersion branch start and end points
-	b1 = dispersion[branch_idx]
-	b2 = dispersion[branch_idx + 1]
-
-	plot_idx = dispersion_plot_indices[branch_idx]
-	if plot_idx == 0:
-		data_x = data_h
-		detailed_label = "(h %.4g %.4g) -> (h %.4g %.4g)" % (b1[1], b1[2], b2[1], b2[2])
-		label_x = "h (rlu)"
-	elif plot_idx == 1:
-		data_x = data_k
-		detailed_label = "(%.4g k %.4g) -> (%.4g k %.4g)" % (b1[0], b1[2], b2[0], b2[2])
-		label_x = "k (rlu)"
-	elif plot_idx == 2:
-		data_x = data_l
-		detailed_label = "(%.4g %.4g l) -> (%.4g %.4g l)" % (b1[0], b1[1], b2[0], b2[1])
-		label_x = "l (rlu)"
-
-	# ticks and labels
-	axes[branch_idx].set_xlim(data_x[0], data_x[-1])
-	if branch_idx == 0:
-		axes[branch_idx].set_ylabel("E (meV)")
-		tick_labels = [
-			"(%.4g %.4g %.4g)" % (b1[0], b1[1], b1[2]),
-			"(%.4g %.4g %.4g)" % (b2[0], b2[1], b2[2])]
-	else:
-		tick_labels = ["", "(%.4g %.4g %.4g)" % (b2[0], b2[1], b2[2])]
-	axes[branch_idx].set_xticks([data_x[0], data_x[-1]], labels = tick_labels)
-
-	if branch_idx == num_branches / 2 - 1:
-		axes[branch_idx].set_xlabel("Q (rlu)")
-
-	# detailed label
-	#axes[branch_idx].set_xlabel(detailed_label + ", " + label_x)
-
-	# plot the dispersion branch
-	axes[branch_idx].scatter(data_x, data_E, marker = '.', s = data_S)
-
-	# flip x axis
-	#if b2[plot_idx] < b1[plot_idx]:
-	#	axes[branch_idx].invert_xaxis()
-
-plt.tight_layout()
-plt.subplots_adjust(wspace = 0)
-
-if plotfile != "":
-	plot.savefig(plotfile)
-plot.show()
 # -----------------------------------------------------------------------------
+def plot_disp(data, dispersion_plot_indices):
+	import matplotlib.pyplot as plot
+	print("\nPlotting dispersion branches...")
+
+	(plt, axes) = plot.subplots(nrows = 1, ncols = num_branches, sharey = True)
+
+	for ( branch_idx, data_h, data_k, data_l, data_E, data_S ) in data:
+		# dispersion branch start and end points
+		b1 = dispersion[branch_idx]
+		b2 = dispersion[branch_idx + 1]
+
+		plot_idx = dispersion_plot_indices[branch_idx]
+		if plot_idx == 0:
+			data_x = data_h
+			detailed_label = "(h %.4g %.4g) -> (h %.4g %.4g)" % (b1[1], b1[2], b2[1], b2[2])
+			label_x = "h (rlu)"
+		elif plot_idx == 1:
+			data_x = data_k
+			detailed_label = "(%.4g k %.4g) -> (%.4g k %.4g)" % (b1[0], b1[2], b2[0], b2[2])
+			label_x = "k (rlu)"
+		elif plot_idx == 2:
+			data_x = data_l
+			detailed_label = "(%.4g %.4g l) -> (%.4g %.4g l)" % (b1[0], b1[1], b2[0], b2[1])
+			label_x = "l (rlu)"
+
+		# ticks and labels
+		axes[branch_idx].set_xlim(data_x[0], data_x[-1])
+		if branch_idx == 0:
+			axes[branch_idx].set_ylabel("E (meV)")
+			tick_labels = [
+				"(%.4g %.4g %.4g)" % (b1[0], b1[1], b1[2]),
+				"(%.4g %.4g %.4g)" % (b2[0], b2[1], b2[2])]
+		else:
+			tick_labels = ["", "(%.4g %.4g %.4g)" % (b2[0], b2[1], b2[2])]
+		axes[branch_idx].set_xticks([data_x[0], data_x[-1]], labels = tick_labels)
+
+		if branch_idx == num_branches / 2 - 1:
+			axes[branch_idx].set_xlabel("Q (rlu)")
+
+		# detailed label
+		#axes[branch_idx].set_xlabel(detailed_label + ", " + label_x)
+
+		# plot the dispersion branch
+		axes[branch_idx].scatter(data_x, data_E, marker = '.', s = data_S)
+
+		# flip x axis
+		#if b2[plot_idx] < b1[plot_idx]:
+		#	axes[branch_idx].invert_xaxis()
+
+	plt.tight_layout()
+	plt.subplots_adjust(wspace = 0)
+
+	if plotfile != "":
+		plot.savefig(plotfile)
+	plot.show()
+# -----------------------------------------------------------------------------
+
+
+if __name__ == "__main__":
+	setup_struct()
+	(data, dispersion_plot_indices) = calc_disp()
+	plot_disp(data, dispersion_plot_indices)
