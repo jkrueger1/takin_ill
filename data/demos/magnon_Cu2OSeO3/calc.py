@@ -35,9 +35,8 @@ save_dispersion        = False  # write dispersion to file
 print_dispersion       = False  # write dispersion to console
 plot_dispersion        = True   # show dispersion plot
 only_positive_energies = True   # ignore magnon annihilation?
-use_procpool           = True   # parallelise calculation
-max_procs              = 4      # number of worker processes
-threads_instead        = True   # multi-threading instead of multi-processing?
+use_threadpool         = True   # parallelise calculation
+max_threads            = 4      # number of worker threads
 num_Q_points           = 256    # number of Qs to calculate on a dispersion direction
 S_scale                = 64.    # weight scaling and clamp factors
 S_clamp_min            = 1.     #
@@ -169,9 +168,12 @@ def append_data(h, k, l, E, S):
 	data_S.append(weight)
 
 
-if use_procpool:
-	print(f"Using {max_procs} processes.")
+if use_threadpool:
 	import concurrent.futures as fut
+	executor = fut.ThreadPoolExecutor # fut.ProcessPoolExecutor
+
+	print(f"Using {max_threads} threads.")
+
 
 	#
 	# calculate the energies and weights for a Q point
@@ -186,12 +188,7 @@ if use_procpool:
 		return Es
 
 
-	if threads_instead:
-		executor = fut.ThreadPoolExecutor
-	else:
-		executor = fut.ProcessPoolExecutor
-
-	with executor(max_workers = max_procs) as exe:
+	with executor(max_workers = max_threads) as exe:
 		Es_futures = []
 
 		# submit tasks
@@ -210,7 +207,7 @@ if use_procpool:
 					print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(
 						h, k, l, E, weight))
 
-else:  # no proc pool
+else:  # no thread pool
 	for hkl in numpy.linspace(hkl_start, hkl_end, num_Q_points):
 		for S in mag.CalcEnergies(hkl[0], hkl[1], hkl[2], False):
 			if only_positive_energies and S.E < 0.:

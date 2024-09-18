@@ -151,8 +151,8 @@ def calc_disp():
 
 
 		if use_procpool:
-			print(f"Using {max_procs} processes.")
 			import concurrent.futures as fut
+			print(f"Using {max_procs} processes.")
 
 			if threads_instead:
 				executor = fut.ThreadPoolExecutor
