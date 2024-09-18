@@ -27,12 +27,15 @@ import numpy
 import magdyn
 
 
+# -----------------------------------------------------------------------------
 # options
+# -----------------------------------------------------------------------------
 save_config_file       = False  # save magdyn file
 save_dispersion        = False  # write dispersion to file
 print_dispersion       = False  # write dispersion to console
 plot_dispersion        = True   # show dispersion plot
 only_positive_energies = True   # ignore magnon annihilation?
+use_threadpool         = True   # parallelise calculation
 
 # dispersion plotting range
 hkl_start = numpy.array([ 0., 0., 0.5 ])
@@ -41,23 +44,26 @@ hkl_end   = numpy.array([ 1., 1., 0.5 ])
 # number of Qs to calculate on a dispersion direction
 num_Q_points = 256
 
+# number of worker threads
+max_threads = 4
+
 # weight scaling and clamp factors
-S_scale = 64.
-S_min   = 1.
-S_max   = 500.
-
-
-# create the magdyn object
-mag = magdyn.MagDyn()
+S_scale      = 64.
+S_clamp_min  = 1.
+S_clamp_max  = 500.
+S_filter_min = -1.    # don't filter
+# -----------------------------------------------------------------------------
 
 
 # -----------------------------------------------------------------------------
-#
 # Create the magnetic model
 # The given magnetic model and its parameters are from this paper:
 #     https://doi.org/10.1103/PhysRevB.101.144411
 #     (which is also available here: https://arxiv.org/abs/2002.06283).
 #
+
+# create the magdyn object
+mag = magdyn.MagDyn()
 
 #
 # add variables
@@ -103,13 +109,14 @@ magdyn.symmetrise_couplings(mag, "P 21 3")
 # -----------------------------------------------------------------------------
 
 
+# -----------------------------------------------------------------------------
 # calculate sites and couplings
 print("Calculating sites and couplings...")
 magdyn.calc(mag)
 
 
 # minimum energy
-print("\nEnergy minimum at Q=(000): {:.4f} meV".format(mag.CalcMinimumEnergy()))
+print("\nEnergy minimum at Q = (000): {:.4f} meV".format(mag.CalcMinimumEnergy()))
 print("Ground state energy: {:.4f} meV".format(mag.CalcGroundStateEnergy()))
 
 
@@ -133,35 +140,87 @@ if save_dispersion:
 print("\nManually calculating dispersion...")
 if print_dispersion:
 	print("{:>15} {:>15} {:>15} {:>15} {:>15}".format("h", "k", "l", "E", "S(Q,E)"))
+# -----------------------------------------------------------------------------
 
+
+# -----------------------------------------------------------------------------
 data_h = []
 data_k = []
 data_l = []
 data_E = []
 data_S = []
 
-for hkl in numpy.linspace(hkl_start, hkl_end, num_Q_points):
-	for S in mag.CalcEnergies(hkl[0], hkl[1], hkl[2], False):
-		if only_positive_energies and S.E < 0.:
-			continue
 
-		weight = S.weight * S_scale
-		if weight < S_min:
-			weight = S_min
-		elif weight > S_max:
-			weight = S_max
+#
+# add a data point
+#
+def append_data(h, k, l, E, S):
+	weight = S * S_scale
 
-		data_h.append(hkl[0])
-		data_k.append(hkl[1])
-		data_l.append(hkl[2])
-		data_E.append(S.E)
+	if weight > S_filter_min:
+		if weight < S_clamp_min:
+			weight = S_clamp_min
+		elif weight > S_clamp_max:
+			weight = S_clamp_max
+
+		data_h.append(h)
+		data_k.append(k)
+		data_l.append(l)
+		data_E.append(E)
 		data_S.append(weight)
 
-		if print_dispersion:
-			print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(
-				hkl[0], hkl[1], hkl[2], S.E, S.weight))
+
+if use_threadpool:
+	print(f"Using {max_threads} threads.")
+	import concurrent.futures as fut
+
+	#
+	# calculate the energies and weights for a Q point
+	#
+	def calc_Es(h, k, l):
+		Es_dicts = mag.CalcEnergies(h, k, l, False)
+
+		Es = []
+		for Es_dict in Es_dicts:
+			Es.append(( h, k, l, Es_dict.E, Es_dict.weight ))
+
+		return Es
 
 
+	with fut.ProcessPoolExecutor(max_workers = max_threads) as exe:
+		Es_futures = []
+
+		# submit tasks
+		for hkl in numpy.linspace(hkl_start, hkl_end, num_Q_points):
+			Es_futures.append(exe.submit(calc_Es, hkl[0], hkl[1], hkl[2]))
+
+		# get results from tasks
+		for Es_future in Es_futures:
+			for (h, k, l, E, weight) in Es_future.result():
+				if only_positive_energies and E < 0.:
+					continue
+
+				append_data(h, k, l, E, weight)
+
+				if print_dispersion:
+					print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(
+						h, k, l, E, weight))
+
+else:  # no thread pool
+	for hkl in numpy.linspace(hkl_start, hkl_end, num_Q_points):
+		for S in mag.CalcEnergies(hkl[0], hkl[1], hkl[2], False):
+			if only_positive_energies and S.E < 0.:
+				continue
+
+			append_data(hkl[0], hkl[1], hkl[2], S.E, S.weight)
+
+			if print_dispersion:
+				print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(
+					hkl[0], hkl[1], hkl[2], S.E, S.weight))
+# -----------------------------------------------------------------------------
+
+
+# -----------------------------------------------------------------------------
 # plot the results
 if plot_dispersion:
 	print("Plotting dispersion...")
@@ -177,3 +236,4 @@ if plot_dispersion:
 
 	plot.tight_layout()
 	plot.show()
+# -----------------------------------------------------------------------------

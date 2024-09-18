@@ -175,6 +175,7 @@ if(USE_QT)
 		${Lapacke_LIBRARIES}
 		${HDF5_CXX_LIBRARIES}
 		${Minuit2_LIBRARIES}
+#		/usr/local/lib/liblapack.a /usr/local/lib/libblas.a libgfortran.so    # for static lapack(e)
 #		ws2_32  # for mingw
 	)
 else()
