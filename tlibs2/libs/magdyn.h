@@ -1249,7 +1249,7 @@ public:
 		for(t_size y_idx = 0; y_idx < y_size; ++y_idx)
 		for(t_size z_idx = 0; z_idx < z_size; ++z_idx)
 		{
-			// original sites
+			// ignore sites in original cell
 			if(x_idx == 0 && y_idx == 0 && z_idx == 0)
 				continue;
 
@@ -1263,7 +1263,8 @@ public:
 				MagneticSite newsite = GetMagneticSite(site_idx);
 
 				newsite.name += ext_id;
-				newsite.pos_calc += tl2::create<t_vec_real>({x_idx, y_idx, z_idx});
+				newsite.pos_calc += tl2::create<t_vec_real>({
+					t_real(x_idx), t_real(y_idx), t_real(z_idx) });
 				newsite.pos[0] = tl2::var_to_str(newsite.pos_calc[0], m_prec);
 				newsite.pos[1] = tl2::var_to_str(newsite.pos_calc[1], m_prec);
 				newsite.pos[2] = tl2::var_to_str(newsite.pos_calc[2], m_prec);

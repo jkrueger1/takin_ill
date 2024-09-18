@@ -1,5 +1,5 @@
 #
-# magdyn py interface demo
+# magdyn py interface demo -- loading the model from a file
 # @author Tobias Weber <tweber@ill.fr>
 # @date 12-oct-2023
 # @license GPLv3, see 'LICENSE' file

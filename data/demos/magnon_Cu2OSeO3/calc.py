@@ -1,5 +1,5 @@
 #
-# magdyn py interface demo
+# magdyn py interface demo -- creating and plotting a model
 # @author Tobias Weber <tweber@ill.fr>
 # @date march-2024
 # @license GPLv3, see 'LICENSE' file
