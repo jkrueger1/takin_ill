@@ -266,6 +266,18 @@ struct t_EnergyAndWeight
 
 
 
+template<class t_mat, class t_real, class t_cplx = typename t_mat::value_type>
+#ifndef SWIG  // TODO: remove this as soon as swig understands concepts
+requires tl2::is_mat<t_mat>
+#endif
+struct t_SofQE
+{
+	t_real h, k, l;
+	std::vector<t_EnergyAndWeight<t_mat, t_real, t_cplx>> E_and_S;
+};
+
+
+
 /**
  * variables for the expression parser
  */
@@ -312,6 +324,9 @@ public:
 
 	using EnergyAndWeight = t_EnergyAndWeight<t_mat, t_real, t_cplx>;
 	using EnergiesAndWeights = std::vector<EnergyAndWeight>;
+
+	using SofQE = t_SofQE<t_mat, t_real, t_cplx>;
+	using SofQEs = std::vector<SofQE>;
 
 	using t_indices = std::pair<t_size, t_size>;
 	using t_Jmap = std::unordered_map<t_indices, t_mat, boost::hash<t_indices>>;
@@ -2508,6 +2523,66 @@ public:
 
 
 	/**
+	 * generates the dispersion plot along the given q path
+	 */
+	SofQEs CalcDispersion(t_real h_start, t_real k_start, t_real l_start,
+		t_real h_end, t_real k_end, t_real l_end,
+		t_size num_qs = 128, t_size num_threads = 4) const
+	{
+		// thread pool and tasks
+		using t_pool = boost::asio::thread_pool;
+		using t_task = std::packaged_task<SofQE()>;
+		using t_taskptr = std::shared_ptr<t_task>;
+
+		t_pool pool{num_threads};
+		std::vector<t_taskptr> tasks;
+		tasks.reserve(num_qs);
+
+		// calculate dispersion
+		for(t_size i = 0; i < num_qs; ++i)
+		{
+			auto task = [this, i, num_qs,
+				h_start, k_start, l_start,
+				h_end, k_end, l_end]() -> SofQE
+			{
+				// get Q
+				const t_real h = std::lerp(h_start, h_end, t_real(i) / t_real(num_qs - 1));
+				const t_real k = std::lerp(k_start, k_end, t_real(i) / t_real(num_qs - 1));
+				const t_real l = std::lerp(l_start, l_end, t_real(i) / t_real(num_qs - 1));
+
+				// get E and S(Q, E) for this Q
+				EnergiesAndWeights E_and_S = CalcEnergies(h, k, l, false);
+
+				SofQE result
+				{
+					.h = h, .k = k, .l = l,
+					.E_and_S = E_and_S
+				};
+
+				return result;
+			};
+
+			t_taskptr taskptr = std::make_shared<t_task>(task);
+			tasks.push_back(taskptr);
+			boost::asio::post(pool, [taskptr]() { (*taskptr)(); });
+		}
+
+		// collect results
+		SofQEs results;
+		results.reserve(tasks.size());
+
+		for(auto& task : tasks)
+		{
+			const SofQE& result = task->get_future().get();
+			results.push_back(result);
+		}
+
+		return results;
+	}
+
+
+
+	/**
 	 * get the energy minimum
 	 * @note a first version for a simplified ferromagnetic dispersion was based on (Heinsdorf 2021)
 	 */
@@ -2740,55 +2815,12 @@ public:
 			<< std::setw(m_prec*2) << std::left << "S_zz"
 			<< std::endl;
 
-		struct t_result
-		{
-			t_real h, k, l;
-			EnergiesAndWeights E_and_S;
-		};
-
-		// thread pool and tasks
-		using t_pool = boost::asio::thread_pool;
-		using t_task = std::packaged_task<t_result()>;
-		using t_taskptr = std::shared_ptr<t_task>;
-
-		t_pool pool{num_threads};
-		std::vector<t_taskptr> tasks;
-		tasks.reserve(num_qs);
-
-		// calculate dispersion
-		for(t_size i = 0; i < num_qs; ++i)
-		{
-			auto task = [this, i, num_qs,
-				h_start, k_start, l_start,
-				h_end, k_end, l_end]() -> t_result
-			{
-				// get Q
-				const t_real h = std::lerp(h_start, h_end, t_real(i)/t_real(num_qs-1));
-				const t_real k = std::lerp(k_start, k_end, t_real(i)/t_real(num_qs-1));
-				const t_real l = std::lerp(l_start, l_end, t_real(i)/t_real(num_qs-1));
-
-				// get E and S(Q, E) for this Q
-				EnergiesAndWeights E_and_S = CalcEnergies(h, k, l, false);
-
-				t_result result
-				{
-					.h = h, .k = k, .l = l,
-					.E_and_S = E_and_S
-				};
-
-				return result;
-			};
-
-			t_taskptr taskptr = std::make_shared<t_task>(task);
-			tasks.push_back(taskptr);
-			boost::asio::post(pool, [taskptr]() { (*taskptr)(); });
-		}
+		SofQEs results = CalcDispersion(h_start, k_start, l_start,
+			h_end, k_end, l_end, num_qs, num_threads);
 
 		// print results
-		for(auto& task : tasks)
+		for(const auto& result : results)
 		{
-			const t_result& result = task->get_future().get();
-
 			for(const EnergyAndWeight& E_and_S : result.E_and_S)
 			{
 				ostr	<< std::setw(m_prec*2) << std::left << result.h
