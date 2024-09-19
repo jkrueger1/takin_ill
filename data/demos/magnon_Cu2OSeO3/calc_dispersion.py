@@ -23,6 +23,7 @@
 # ----------------------------------------------------------------------------
 #
 
+import time
 import numpy
 import magdyn
 
@@ -33,8 +34,9 @@ import magdyn
 print_dispersion       = False  # write dispersion to console
 only_positive_energies = True   # ignore magnon annihilation?
 use_procpool           = True   # parallelise calculation
-max_procs              = 4      # number of worker processes
 threads_instead        = True   # multi-threading instead of multi-processing?
+print_progress         = False  # show progress of calculation
+max_procs              = 4      # number of worker processes
 num_Q_points           = 256    # number of Qs on a dispersion branch
 S_scale                = 64.    # weight scaling and clamp factors
 S_clamp_min            = 1.     #
@@ -152,7 +154,8 @@ def calc_disp():
 
 		if use_procpool:
 			import concurrent.futures as fut
-			print(f"Using {max_procs} processes.")
+			if print_progress:
+				print(f"Using {max_procs} processes.")
 
 			if threads_instead:
 				executor = fut.ThreadPoolExecutor
@@ -167,6 +170,20 @@ def calc_disp():
 				for hkl in numpy.linspace(hkl_start, hkl_end, num_Q_points):
 					Es_futures.append(
 						exe.submit(calc_Es, hkl[0], hkl[1], hkl[2]))
+
+				# print progress
+				last_num_finished = -1
+				while print_progress:
+					num_futures = len(Es_futures)
+					num_finished = len([future for future in Es_futures if future.done()])
+
+					if last_num_finished != num_finished:
+						print(f"{num_finished}/{num_futures} finished.")
+						last_num_finished = num_finished
+
+					if num_futures == num_finished:
+						break
+					time.sleep(0.01)
 
 				# get results from tasks
 				for Es_future in Es_futures:
@@ -261,5 +278,10 @@ def plot_disp(data, dispersion_plot_indices):
 
 if __name__ == "__main__":
 	setup_struct()
+
+	tick = time.time()
 	(data, dispersion_plot_indices) = calc_disp()
+	time_needed = time.time() - tick
+	print("Calculation took %.4g s." % time_needed)
+
 	plot_disp(data, dispersion_plot_indices)
