@@ -156,6 +156,9 @@ def calc_disp():
 			num_Q_points, max_threads)
 		for data_Q in data_disp:
 			for data_EandS in data_Q.E_and_S:
+				if only_positive_energies and data_EandS.E < 0.:
+					continue
+
 				append_data(data_Q.h, data_Q.k, data_Q.l,
 					data_EandS.E, data_EandS.weight)
 
