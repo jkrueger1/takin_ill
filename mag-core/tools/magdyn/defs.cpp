@@ -41,7 +41,7 @@
 // ----------------------------------------------------------------------------
 // number of threads for calculation
 unsigned int g_num_threads = std::max<unsigned int>(
-	1, std::thread::hardware_concurrency()/2);;
+	1, std::thread::hardware_concurrency()/2);
 
 // maximum number of recent files
 unsigned int g_maxnum_recents = 16;

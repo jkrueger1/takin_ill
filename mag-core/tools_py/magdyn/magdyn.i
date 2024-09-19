@@ -125,6 +125,15 @@
 		double, std::complex<double>>
 	>;
 
+%template(SofQE) tl2_mag::t_SofQE<
+	tl2::mat<std::complex<double>>,
+	double, std::complex<double>>;
+%template(VecSofQE) std::vector<
+	tl2_mag::t_SofQE<
+		tl2::mat<std::complex<double>>,
+		double, std::complex<double>>
+	>;
+
 %template(Variable) tl2_mag::t_Variable<
 	std::complex<double>>;
 %template(VecVariable) std::vector<

@@ -50,6 +50,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <thread>
 #include <cstdint>
 
 #include <boost/asio.hpp>
@@ -2529,6 +2530,10 @@ public:
 		t_real h_end, t_real k_end, t_real l_end,
 		t_size num_qs = 128, t_size num_threads = 4) const
 	{
+		// determine number of threads
+		if(num_threads == 0)
+			num_threads = std::max<t_size>(1, std::thread::hardware_concurrency() / 2);
+
 		// thread pool and tasks
 		using t_pool = boost::asio::thread_pool;
 		using t_task = std::packaged_task<SofQE()>;

@@ -1,5 +1,6 @@
 #
 # magdyn py interface demo -- plotting multiple dispersion branches
+#                             and query the dispersion point by point
 # @author Tobias Weber <tweber@ill.fr>
 # @date 18-sep-2024
 # @license GPLv3, see 'LICENSE' file
@@ -23,6 +24,7 @@
 # ----------------------------------------------------------------------------
 #
 
+import os
 import time
 import numpy
 import magdyn
@@ -33,7 +35,10 @@ import magdyn
 # -----------------------------------------------------------------------------
 print_dispersion       = False  # write dispersion to console
 only_positive_energies = True   # ignore magnon annihilation?
-max_threads            = 0      # number of worker threads, 0: automatic determination
+use_procpool           = True   # parallelise calculation
+threads_instead        = True   # multi-threading instead of multi-processing?
+print_progress         = False  # show progress of calculation
+max_procs              = 4      # number of worker processes, 0: automatic determination
 num_Q_points           = 256    # number of Qs on a dispersion branch
 S_scale                = 64.    # weight scaling and clamp factors
 S_clamp_min            = 1.     #
@@ -49,6 +54,12 @@ dispersion = [                  # dispersion branches to plot
 ]
 
 num_branches = len(dispersion) - 1  # number of dispersion braches
+
+# determine number of processes to use
+if max_procs == 0:
+	max_procs = os.cpu_count() / 2
+if max_procs < 1:
+	max_procs = 1
 # -----------------------------------------------------------------------------
 
 
@@ -149,20 +160,63 @@ def calc_disp():
 			data_S.append(weight)
 
 
-		# calculate the dispersion
-		data_disp = mag.CalcDispersion(
-			hkl_start[0], hkl_start[1], hkl_start[2],
-			hkl_end[0], hkl_end[1], hkl_end[2],
-			num_Q_points, max_threads)
-		for data_Q in data_disp:
-			for data_EandS in data_Q.E_and_S:
-				append_data(data_Q.h, data_Q.k, data_Q.l,
-					data_EandS.E, data_EandS.weight)
+		if use_procpool:
+			import concurrent.futures as fut
 
-				if print_dispersion:
-					print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(
-						data_Q.h, data_Q.k, data_Q.l,
-						data_EandS.E, data_EandS.weight))
+			if print_progress:
+				print(f"Using {max_procs} processes.")
+
+			if threads_instead:
+				executor = fut.ThreadPoolExecutor
+			else:
+				executor = fut.ProcessPoolExecutor
+
+			# calculate a branch
+			with executor(max_workers = max_procs) as exe:
+				Es_futures = []
+
+				# submit tasks
+				for hkl in numpy.linspace(hkl_start, hkl_end, num_Q_points):
+					Es_futures.append(
+						exe.submit(calc_Es, hkl[0], hkl[1], hkl[2]))
+
+				# print progress
+				last_num_finished = -1
+				while print_progress:
+					num_futures = len(Es_futures)
+					num_finished = len([future for future in Es_futures if future.done()])
+
+					if last_num_finished != num_finished:
+						print(f"{num_finished}/{num_futures} finished.")
+						last_num_finished = num_finished
+
+					if num_futures == num_finished:
+						break
+					time.sleep(0.01)
+
+				# get results from tasks
+				for Es_future in Es_futures:
+					for (h, k, l, E, weight) in Es_future.result():
+						if only_positive_energies and E < 0.:
+							continue
+
+						append_data(h, k, l, E, weight)
+
+						if print_dispersion:
+							print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(
+								h, k, l, E, weight))
+
+		else:  # no proc pool
+			for hkl in numpy.linspace(hkl_start, hkl_end, num_Q_points):
+				for S in mag.CalcEnergies(hkl[0], hkl[1], hkl[2], False):
+					if only_positive_energies and S.E < 0.:
+						continue
+
+					append_data(hkl[0], hkl[1], hkl[2], S.E, S.weight)
+
+					if print_dispersion:
+						print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(
+							hkl[0], hkl[1], hkl[2], S.E, S.weight))
 
 		data.append([ branch_idx, data_h, data_k, data_l, data_E, data_S ])
 
@@ -187,10 +241,16 @@ def plot_disp(data, dispersion_plot_indices):
 		plot_idx = dispersion_plot_indices[branch_idx]
 		if plot_idx == 0:
 			data_x = data_h
+			detailed_label = "(h %.4g %.4g) -> (h %.4g %.4g)" % (b1[1], b1[2], b2[1], b2[2])
+			label_x = "h (rlu)"
 		elif plot_idx == 1:
 			data_x = data_k
+			detailed_label = "(%.4g k %.4g) -> (%.4g k %.4g)" % (b1[0], b1[2], b2[0], b2[2])
+			label_x = "k (rlu)"
 		elif plot_idx == 2:
 			data_x = data_l
+			detailed_label = "(%.4g %.4g l) -> (%.4g %.4g l)" % (b1[0], b1[1], b2[0], b2[1])
+			label_x = "l (rlu)"
 
 		# ticks and labels
 		axes[branch_idx].set_xlim(data_x[0], data_x[-1])
@@ -206,8 +266,15 @@ def plot_disp(data, dispersion_plot_indices):
 		if branch_idx == num_branches / 2 - 1:
 			axes[branch_idx].set_xlabel("Q (rlu)")
 
+		# detailed label
+		#axes[branch_idx].set_xlabel(detailed_label + ", " + label_x)
+
 		# plot the dispersion branch
 		axes[branch_idx].scatter(data_x, data_E, marker = '.', s = data_S)
+
+		# flip x axis
+		#if b2[plot_idx] < b1[plot_idx]:
+		#	axes[branch_idx].invert_xaxis()
 
 	plt.tight_layout()
 	plt.subplots_adjust(wspace = 0)

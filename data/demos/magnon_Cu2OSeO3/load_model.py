@@ -34,8 +34,7 @@ save_dispersion        = False  # write dispersion to file
 print_dispersion       = False  # write dispersion to console
 plot_dispersion        = True   # show dispersion plot
 only_positive_energies = True   # ignore magnon annihilation?
-use_threadpool         = True   # parallelise calculation
-max_threads            = 4      # number of worker threads
+max_threads            = 0      # number of worker threads, 0: automatic determination
 num_Q_points           = 256    # number of Qs to calculate on a dispersion direction
 S_scale                = 64.    # weight scaling and clamp factors
 S_clamp_min            = 1.     #
@@ -115,56 +114,20 @@ def append_data(h, k, l, E, S):
 	data_S.append(weight)
 
 
-if use_threadpool:
-	import concurrent.futures as fut
-	executor = fut.ThreadPoolExecutor # fut.ProcessPoolExecutor
+# calculate the dispersion
+data_disp = mag.CalcDispersion(
+	hkl_start[0], hkl_start[1], hkl_start[2],
+	hkl_end[0], hkl_end[1], hkl_end[2],
+	num_Q_points, max_threads)
+for data_Q in data_disp:
+	for data_EandS in data_Q.E_and_S:
+		append_data(data_Q.h, data_Q.k, data_Q.l,
+			data_EandS.E, data_EandS.weight)
 
-	print(f"Using {max_threads} threads.")
-
-
-	#
-	# calculate the energies and weights for a Q point
-	#
-	def calc_Es(h, k, l):
-		Es_dicts = mag.CalcEnergies(h, k, l, False)
-
-		Es = []
-		for Es_dict in Es_dicts:
-			Es.append(( h, k, l, Es_dict.E, Es_dict.weight ))
-
-		return Es
-
-
-	with executor(max_workers = max_threads) as exe:
-		Es_futures = []
-
-		# submit tasks
-		for hkl in numpy.linspace(hkl_start, hkl_end, num_Q_points):
-			Es_futures.append(exe.submit(calc_Es, hkl[0], hkl[1], hkl[2]))
-
-		# get results from tasks
-		for Es_future in Es_futures:
-			for (h, k, l, E, weight) in Es_future.result():
-				if only_positive_energies and E < 0.:
-					continue
-
-				append_data(h, k, l, E, weight)
-
-				if print_dispersion:
-					print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(
-						h, k, l, E, weight))
-
-else:  # no thread pool
-	for hkl in numpy.linspace(hkl_start, hkl_end, num_Q_points):
-		for S in mag.CalcEnergies(hkl[0], hkl[1], hkl[2], False):
-			if only_positive_energies and S.E < 0.:
-				continue
-
-			append_data(hkl[0], hkl[1], hkl[2], S.E, S.weight)
-
-			if print_dispersion:
-				print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(
-					hkl[0], hkl[1], hkl[2], S.E, S.weight))
+		if print_dispersion:
+			print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(
+				data_Q.h, data_Q.k, data_Q.l,
+				data_EandS.E, data_EandS.weight))
 # -----------------------------------------------------------------------------
 
 
