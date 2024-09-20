@@ -149,7 +149,7 @@ public:
 	static constexpr bool m_isthreaded = false;
 	static constexpr bool m_usetimer = false;
 
-	QPointF GlToScreenCoords(const t_vec_gl& vec, bool *pVisible=nullptr) const;
+	QPointF GlToScreenCoords(const t_vec_gl& vec, bool *pVisible = nullptr) const;
 
 	const t_cam& GetCamera() const { return m_cam; }
 	t_cam& GetCamera() { return m_cam; }
@@ -201,6 +201,7 @@ public:
 	void SetObjectVisible(std::size_t idx, bool visible);
 	void SetObjectHighlight(std::size_t idx, bool highlight);
 	void SetObjectPriority(std::size_t idx, int prio);
+	void SetObjectsHighlight(bool highlight);
 
 	const t_mat_gl& GetObjectMatrix(std::size_t idx) const;
 	const std::string& GetObjectLabel(std::size_t idx) const;
@@ -294,8 +295,8 @@ private:
 
 	std::unique_ptr<GlPlotRenderer> m_renderer{};
 	std::unique_ptr<QThread> m_thread_impl{};
-	bool m_mouseMovedBetweenDownAndUp = 0;
-	bool m_mouseDown[3] = {0,0,0};
+	bool m_mouseMovedBetweenDownAndUp = false;
+	bool m_mouseDown[3] = { false, false, false };
 
 
 public:

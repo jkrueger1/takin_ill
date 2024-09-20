@@ -145,6 +145,8 @@ void StructPlotDlg::PickerIntersection(
 	m_cur_site = std::nullopt;
 	m_cur_term = std::nullopt;
 
+	m_structplot->GetRenderer()->SetObjectsHighlight(false);
+
 	if(!pos)
 		return;
 
@@ -155,6 +157,7 @@ void StructPlotDlg::PickerIntersection(
 		iter_sites != m_sites.end())
 	{
 		m_cur_site = iter_sites->second.name;
+		HighlightSite(*m_cur_site);
 		m_status->setText(("Site: " + *m_cur_site).c_str());
 	}
 
@@ -163,6 +166,7 @@ void StructPlotDlg::PickerIntersection(
 		iter_terms != m_terms.end())
 	{
 		m_cur_term = iter_terms->second.name;
+		HighlightTerm(*m_cur_term);
 
 		std::ostringstream ostr;
 		ostr.precision(g_prec_gui);
@@ -172,6 +176,46 @@ void StructPlotDlg::PickerIntersection(
 
 		m_status->setText(ostr.str().c_str());
 	}
+}
+
+
+
+void StructPlotDlg::HighlightSite(const std::string& name)
+{
+	bool highlighted = false;
+
+	// highlight all gl objects that are part of this site
+	for(const auto& pair : m_sites)
+	{
+		if(pair.second.name == name)
+		{
+			m_structplot->GetRenderer()->SetObjectHighlight(pair.first, true);
+			highlighted = true;
+		}
+	}
+
+	if(highlighted)
+		m_structplot->update();
+}
+
+
+
+void StructPlotDlg::HighlightTerm(const std::string& name)
+{
+	bool highlighted = false;
+
+	// highlight all gl objects that are part of this term
+	for(const auto& pair : m_terms)
+	{
+		if(pair.second.name == name)
+		{
+			m_structplot->GetRenderer()->SetObjectHighlight(pair.first, true);
+			highlighted = true;
+		}
+	}
+
+	if(highlighted)
+		m_structplot->update();
 }
 
 
@@ -466,6 +510,7 @@ void StructPlotDlg::Sync()
 		{
 			MagneticSiteInfo siteinfo;
 			siteinfo.name = site.name;
+
 			m_sites.emplace(std::make_pair(obj, siteinfo));
 			m_sites.emplace(std::make_pair(arrow, std::move(siteinfo)));
 		}
@@ -579,6 +624,7 @@ void StructPlotDlg::Sync()
 			ExchangeTermInfo terminfo;
 			terminfo.name = term.name;
 			terminfo.length = term.length_calc;
+
 			m_terms.emplace(std::make_pair(obj, std::move(terminfo)));
 		}
 
@@ -638,6 +684,7 @@ void StructPlotDlg::Sync()
 				ExchangeTermInfo terminfo;
 				terminfo.name = term.name;
 				terminfo.length = term.length_calc;
+
 				m_terms.emplace(std::make_pair(
 					objDmi, std::move(terminfo)));
 			}

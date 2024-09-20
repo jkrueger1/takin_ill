@@ -123,7 +123,8 @@ GlPlotObj GlPlotRenderer::CreateLineObject(
 
 void GlPlotRenderer::SetObjectMatrix(std::size_t idx, const t_mat_gl& mat)
 {
-	if(idx >= m_objs.size()) return;
+	if(idx >= m_objs.size())
+		return;
 	m_objs[idx].m_mat = mat;
 }
 
@@ -141,21 +142,24 @@ const t_mat_gl& GlPlotRenderer::GetObjectMatrix(std::size_t idx) const
 void GlPlotRenderer::SetObjectCol(std::size_t idx,
 	t_real_gl r, t_real_gl g, t_real_gl b, t_real_gl a)
 {
-	if(idx >= m_objs.size()) return;
-	m_objs[idx].m_colour = tl2::create<t_vec_gl>({r,g,b,a});
+	if(idx >= m_objs.size())
+		return;
+	m_objs[idx].m_colour = tl2::create<t_vec_gl>({ r, g, b, a });
 }
 
 
 void GlPlotRenderer::SetObjectLabel(std::size_t idx, const std::string& label)
 {
-	if(idx >= m_objs.size()) return;
+	if(idx >= m_objs.size())
+		return;
 	m_objs[idx].m_label = label;
 }
 
 const std::string& GlPlotRenderer::GetObjectLabel(std::size_t idx) const
 {
 	static const std::string empty{};
-	if(idx >= m_objs.size()) return empty;
+	if(idx >= m_objs.size())
+		return empty;
 
 	return m_objs[idx].m_label;
 }
@@ -163,14 +167,16 @@ const std::string& GlPlotRenderer::GetObjectLabel(std::size_t idx) const
 
 void GlPlotRenderer::SetObjectDataString(std::size_t idx, const std::string& data)
 {
-	if(idx >= m_objs.size()) return;
+	if(idx >= m_objs.size())
+		return;
 	m_objs[idx].m_datastr = data;
 }
 
 const std::string& GlPlotRenderer::GetObjectDataString(std::size_t idx) const
 {
 	static const std::string empty{};
-	if(idx >= m_objs.size()) return empty;
+	if(idx >= m_objs.size())
+		return empty;
 
 	return m_objs[idx].m_datastr;
 }
@@ -178,35 +184,50 @@ const std::string& GlPlotRenderer::GetObjectDataString(std::size_t idx) const
 
 void GlPlotRenderer::SetObjectVisible(std::size_t idx, bool visible)
 {
-	if(idx >= m_objs.size()) return;
+	if(idx >= m_objs.size())
+		return;
 	m_objs[idx].m_visible = visible;
 }
 
 
 bool GlPlotRenderer::GetObjectVisible(std::size_t idx) const
 {
-	if(idx >= m_objs.size()) return 0;
+	if(idx >= m_objs.size())
+		return false;
 	return m_objs[idx].m_visible;
 }
 
 
 void GlPlotRenderer::SetObjectHighlight(std::size_t idx, bool highlight)
 {
-	if(idx >= m_objs.size()) return;
+	if(idx >= m_objs.size())
+		return;
 	m_objs[idx].m_highlighted = highlight;
+}
+
+
+/**
+ * set highlight flag for all objects
+ */
+void GlPlotRenderer::SetObjectsHighlight(bool highlight)
+{
+	for(std::size_t idx = 0; idx < m_objs.size(); ++idx)
+		m_objs[idx].m_highlighted = highlight;
 }
 
 
 void GlPlotRenderer::SetObjectPriority(std::size_t idx, int prio)
 {
-	if(idx >= m_objs.size()) return;
+	if(idx >= m_objs.size())
+		return;
 	m_objs[idx].m_priority = prio;
 }
 
 
 bool GlPlotRenderer::GetObjectHighlight(std::size_t idx) const
 {
-	if(idx >= m_objs.size()) return 0;
+	if(idx >= m_objs.size())
+		return false;
 	return m_objs[idx].m_highlighted;
 }
 
@@ -238,7 +259,7 @@ std::size_t GlPlotRenderer::AddLinkedObject(std::size_t linkTo,
 	QMutexLocker _locker{&m_mutexObj};
 	m_objs.emplace_back(std::move(obj));
 
-	return m_objs.size()-1;		// object handle
+	return m_objs.size() - 1;		// object handle
 }
 
 
@@ -265,7 +286,7 @@ std::size_t GlPlotRenderer::AddSphere(
 	//obj.m_boundingSphereRad = rad;
 	m_objs.emplace_back(std::move(obj));
 
-	return m_objs.size()-1;		// object handle
+	return m_objs.size() - 1;		// object handle
 }
 
 
@@ -287,7 +308,7 @@ std::size_t GlPlotRenderer::AddCylinder(t_real_gl rad, t_real_gl h,
 	obj.m_boundingSphereRad = boundingSphereRad;
 	m_objs.emplace_back(std::move(obj));
 
-	return m_objs.size()-1;		// object handle
+	return m_objs.size() - 1;		// object handle
 }
 
 
@@ -309,7 +330,7 @@ std::size_t GlPlotRenderer::AddCone(t_real_gl rad, t_real_gl h,
 	obj.m_boundingSphereRad = boundingSphereRad;
 	m_objs.emplace_back(std::move(obj));
 
-	return m_objs.size()-1;		// object handle
+	return m_objs.size() - 1;		// object handle
 }
 
 
@@ -337,7 +358,7 @@ std::size_t GlPlotRenderer::AddArrow(t_real_gl rad, t_real_gl h,
 	obj.m_labelPos = tl2::create<t_vec3_gl>({0., 0., 0.75});
 	m_objs.emplace_back(std::move(obj));
 
-	return m_objs.size()-1;		// object handle
+	return m_objs.size() - 1;		// object handle
 }
 
 
@@ -363,7 +384,7 @@ std::size_t GlPlotRenderer::AddPlane(
 	obj.m_boundingSphereRad = boundingSphereRad;
 	m_objs.emplace_back(std::move(obj));
 
-	return m_objs.size()-1;		// object handle
+	return m_objs.size() - 1;		// object handle
 }
 
 
@@ -384,7 +405,7 @@ std::size_t GlPlotRenderer::AddTriangleObject(const std::vector<t_vec3_gl>& tria
 	obj.m_labelPos = tl2::create<t_vec3_gl>({0., 0., 0.75});
 	m_objs.emplace_back(std::move(obj));
 
-	return m_objs.size()-1;		// object handle
+	return m_objs.size() - 1;		// object handle
 }
 
 
@@ -404,7 +425,7 @@ std::size_t GlPlotRenderer::AddCoordinateCross(t_real_gl min, t_real_gl max)
 	obj.m_invariant = true;
 	m_objs.emplace_back(std::move(obj));
 
-	return m_objs.size()-1;		// object handle
+	return m_objs.size() - 1;		// object handle
 }
 
 
@@ -569,9 +590,9 @@ uniform mat4 cam = mat4(1.);
 uniform mat4 cam_inv = mat4(1.);
 uniform mat4 obj = mat4(1.);
 uniform mat4 trafoA = mat4(1.);
-uniform mat4 trafoB = mat4(1.);		// B = 2 pi / A
+uniform mat4 trafoB = mat4(1.);  // B = 2 pi / A
 
-uniform int coordsys = 0;			// 0: crystal system, 1: lab system
+uniform int coordsys = 0;        // 0: crystal system, 1: lab system
 // ----------------------------------------------------------------------------
 
 
@@ -613,7 +634,8 @@ void main()
 
 	// GL functions
 	auto *pGl = GetGlFunctions();
-	if(!pGl) return;
+	if(!pGl)
+		return;
 
 	m_strGlVer = (char*)pGl->glGetString(GL_VERSION);
 	m_strGlShaderVer = (char*)pGl->glGetString(GL_SHADING_LANGUAGE_VERSION);
@@ -636,8 +658,6 @@ void main()
 			std::string strLog = m_pShaders->log().toStdString();
 			if(strLog.size())
 				std::cerr << "Shader log: " << strLog << std::endl;
-
-			std::exit(-1);
 		};
 
 		// compile & link shaders
@@ -645,13 +665,22 @@ void main()
 
 		if(!m_pShaders->addShaderFromSourceCode(
 			QOpenGLShader::Fragment, strFragShader.c_str()))
+		{
 			shader_err("Cannot compile fragment shader.");
+			return;
+		}
 		if(!m_pShaders->addShaderFromSourceCode(
 			QOpenGLShader::Vertex, strVertexShader.c_str()))
+		{
 			shader_err("Cannot compile vertex shader.");
+			return;
+		}
 
 		if(!m_pShaders->link())
+		{
 			shader_err("Cannot link shaders.");
+			return;
+		}
 
 		m_uniMatrixCam = m_pShaders->uniformLocation("cam");
 		m_uniMatrixCamInv = m_pShaders->uniformLocation("cam_inv");
@@ -699,7 +728,8 @@ void GlPlotRenderer::SetScreenDims(int w, int h)
 
 void GlPlotRenderer::resizeGL()
 {
-	if(!m_bPlatformSupported || !m_bInitialised) return;
+	if(!m_bPlatformSupported || !m_bInitialised)
+		return;
 
 	const auto [w, h] = m_cam.GetScreenDimensions();
 	const auto [z_near, z_far] = m_cam.GetDepthRange();
@@ -848,7 +878,8 @@ void GlPlotRenderer::EnablePicker(bool b)
 
 void GlPlotRenderer::UpdatePicker()
 {
-	if(!m_bInitialised || !m_bPlatformSupported || !m_bPickerEnabled) return;
+	if(!m_bInitialised || !m_bPlatformSupported || !m_bPickerEnabled)
+		return;
 
 	// picker ray
 	auto [org3, dir3] = m_cam.GetPickerRay(m_posMouse.x(), m_posMouse.y());
@@ -902,7 +933,7 @@ void GlPlotRenderer::UpdatePicker()
 
 	QMutexLocker _locker{&m_mutexObj};
 
-	for(std::size_t curObj=0; curObj<m_objs.size(); ++curObj)
+	for(std::size_t curObj = 0; curObj < m_objs.size(); ++curObj)
 	{
 		const auto& obj = m_objs[curObj];
 		const GlPlotObj *linkedObj = &obj;
@@ -1147,7 +1178,8 @@ void GlPlotRenderer::DoPaintGL(qgl_funcs *pGl)
 			m_pShaders->setUniformValue(m_uniConstCol, colOverride);
 		}
 
-		if(!obj.m_visible || !obj.m_valid) continue;
+		if(!obj.m_visible || !obj.m_valid)
+			continue;
 
 
 		m_pShaders->setUniformValue(m_uniMatrixObj, obj.m_mat);
@@ -1245,21 +1277,24 @@ void GlPlotRenderer::DoPaintNonGL(QPainter &painter)
 				if(m_iCoordSys == 1 && !obj.m_invariant) coordTrafo = &m_matA;
 
 				t_vec3_gl posLabel3d = (*coordTrafo) * obj.m_mat * obj.m_labelPos;
-				auto posLabel2d = GlToScreenCoords(tl2::create<t_vec_gl>({posLabel3d[0], posLabel3d[1], posLabel3d[2], 1.}));
+				auto posLabel2d = GlToScreenCoords(tl2::create<t_vec_gl>(
+					{posLabel3d[0], posLabel3d[1], posLabel3d[2], 1.}));
 
 				QFont fontLabel = fontOrig;
 				QPen penLabel = penOrig;
 
-				fontLabel.setStyleStrategy(QFont::StyleStrategy(/*QFont::OpenGLCompatible |*/ QFont::PreferAntialias | QFont::PreferQuality));
+				fontLabel.setStyleStrategy(QFont::StyleStrategy(
+					QFont::PreferAntialias | QFont::PreferQuality));
 				fontLabel.setWeight(QFont::Medium);
-				//penLabel.setColor(QColor(int((1.-obj.m_colour[0])*255.), int((1.-obj.m_colour[1])*255.), int((1.-obj.m_colour[2])*255.), int(obj.m_colour[3]*255.)));
 				penLabel.setColor(QColor(0,0,0,255));
 				painter.setFont(fontLabel);
 				painter.setPen(penLabel);
 				painter.drawText(posLabel2d, obj.m_label.c_str());
 
 				fontLabel.setWeight(QFont::Normal);
-				penLabel.setColor(QColor(int(obj.m_colour[0]*255.), int(obj.m_colour[1]*255.), int(obj.m_colour[2]*255.), int(obj.m_colour[3]*255.)));
+				penLabel.setColor(QColor(
+					int(obj.m_colour[0]*255.), int(obj.m_colour[1]*255.),
+					int(obj.m_colour[2]*255.), int(obj.m_colour[3]*255.)));
 				painter.setFont(fontLabel);
 				painter.setPen(penLabel);
 				painter.drawText(posLabel2d, obj.m_label.c_str());
@@ -1276,12 +1311,14 @@ void GlPlotRenderer::DoPaintNonGL(QPainter &painter)
 
 void GlPlotRenderer::paintGL()
 {
-	if(!m_bPlatformSupported) return;
+	if(!m_bPlatformSupported)
+		return;
 	QMutexLocker _locker{&m_mutexObj};
 
 	if constexpr(!m_isthreaded)
 	{
-		if(auto *pContext = m_pPlot->context(); !pContext) return;
+		if(auto *pContext = m_pPlot->context(); !pContext)
+			return;
 		QPainter painter(m_pPlot);
 		painter.setRenderHint(QPainter::Antialiasing);
 
@@ -1305,7 +1342,8 @@ void GlPlotRenderer::paintGL()
 		if(!pThisThread->isRunning() || pThisThread->isInterruptionRequested())
 			return;
 
-		if(auto *pContext = m_pPlot->context(); !pContext) return;
+		if(auto *pContext = m_pPlot->context(); !pContext)
+			return;
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
 		QMetaObject::invokeMethod(m_pPlot,
@@ -1441,18 +1479,21 @@ void GlPlot::mouseMoveEvent(QMouseEvent *pEvt)
 #endif
 
 	m_renderer->mouseMoveEvent(pos);
-	m_mouseMovedBetweenDownAndUp = 1;
+	m_mouseMovedBetweenDownAndUp = true;
 	pEvt->accept();
 }
 
 
 void GlPlot::mousePressEvent(QMouseEvent *pEvt)
 {
-	m_mouseMovedBetweenDownAndUp = 0;
+	m_mouseMovedBetweenDownAndUp = false;
 
-	if(pEvt->buttons() & Qt::LeftButton) m_mouseDown[0] = 1;
-	if(pEvt->buttons() & Qt::MiddleButton) m_mouseDown[1] = 1;
-	if(pEvt->buttons() & Qt::RightButton) m_mouseDown[2] = 1;
+	if(pEvt->buttons() & Qt::LeftButton)
+		m_mouseDown[0] = true;
+	if(pEvt->buttons() & Qt::MiddleButton)
+		m_mouseDown[1] = true;
+	if(pEvt->buttons() & Qt::RightButton)
+		m_mouseDown[2] = true;
 
 	if(m_mouseDown[1])
 		m_renderer->ResetZoom();
@@ -1468,9 +1509,12 @@ void GlPlot::mouseReleaseEvent(QMouseEvent *pEvt)
 {
 	bool mouseDownOld[] = { m_mouseDown[0], m_mouseDown[1], m_mouseDown[2] };
 
-	if((pEvt->buttons() & Qt::LeftButton) == 0) m_mouseDown[0] = 0;
-	if((pEvt->buttons() & Qt::MiddleButton) == 0) m_mouseDown[1] = 0;
-	if((pEvt->buttons() & Qt::RightButton) == 0) m_mouseDown[2] = 0;
+	if((pEvt->buttons() & Qt::LeftButton) == 0)
+		m_mouseDown[0] = false;
+	if((pEvt->buttons() & Qt::MiddleButton) == 0)
+		m_mouseDown[1] = false;
+	if((pEvt->buttons() & Qt::RightButton) == 0)
+		m_mouseDown[2] = false;
 
 	if(!m_mouseDown[2])
 		m_renderer->EndRotation();
@@ -1526,7 +1570,8 @@ bool GlPlot::IsContextInThread() const
 	if constexpr(m_isthreaded)
 	{
 		auto *pContext = context();
-		if(!pContext) return false;
+		if(!pContext)
+			return false;
 
 		return pContext->thread() == m_thread_impl.get();
 	}
@@ -1543,9 +1588,7 @@ bool GlPlot::IsContextInThread() const
 void GlPlot::beforeComposing()
 {
 	if constexpr(m_isthreaded)
-	{
 		m_mutex.lock();
-	}
 }
 
 
@@ -1574,9 +1617,7 @@ void GlPlot::afterComposing()
 void GlPlot::beforeResizing()
 {
 	if constexpr(m_isthreaded)
-	{
 		m_mutex.lock();
-	}
 }
 
 
