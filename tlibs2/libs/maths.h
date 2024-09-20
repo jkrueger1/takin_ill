@@ -1849,7 +1849,8 @@ t_cont<t_obj> remove_duplicates(const t_cont<t_obj>& objs,
  * set submatrix to unit
  */
 template<class t_mat>
-void unit(t_mat& mat, std::size_t rows_begin, std::size_t cols_begin, std::size_t rows_end, std::size_t cols_end)
+void unit(t_mat& mat, std::size_t rows_begin, std::size_t cols_begin,
+	std::size_t rows_end, std::size_t cols_end)
 requires is_basic_mat<t_mat>
 {
 	for(std::size_t i=rows_begin; i<rows_end; ++i)
@@ -1878,10 +1879,10 @@ requires is_basic_mat<t_mat>
  * unit matrix
  */
 template<class t_mat>
-t_mat unit(std::size_t N=0)
+t_mat unit(std::size_t N = 0)
 requires is_basic_mat<t_mat>
 {
-	return unit<t_mat>(N,N);
+	return unit<t_mat>(N, N);
 }
 
 

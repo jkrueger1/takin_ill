@@ -833,7 +833,8 @@ public:
 			m_scatteringplane[1] = tl2::create<t_vec_real>({ bh, bk, bl });
 			m_scatteringplane[2] = tl2::cross(m_xtalB, m_scatteringplane[0], m_scatteringplane[1]);
 
-			m_xtalUB = tl2::UB_matrix(m_xtalB, m_scatteringplane[0], m_scatteringplane[1], m_scatteringplane[2]);
+			m_xtalUB = tl2::UB_matrix(m_xtalB,
+				m_scatteringplane[0], m_scatteringplane[1], m_scatteringplane[2]);
 			bool inv_ok = false;
 			std::tie(m_xtalUBinv, inv_ok) = tl2::inv(m_xtalUB);
 
@@ -1102,7 +1103,8 @@ public:
 
 				if(!sc1_ok || !sc2_ok)
 				{
-					std::cerr << "Magdyn error: Could not find supercell for position generated from symop "
+					std::cerr << "Magdyn error: Could not find supercell"
+						<< " for position generated from symop "
 						<< op_idx << "." << std::endl;
 				}
 
@@ -1120,7 +1122,8 @@ public:
 				{
 					newterm.dmi[idx1] = tl2::var_to_str(newdmis[op_idx][idx1], m_prec);
 					for(std::uint8_t idx2 = 0; idx2 < 3; ++idx2)
-						newterm.Jgen[idx1][idx2] = tl2::var_to_str(newJgens[op_idx](idx1, idx2), m_prec);
+						newterm.Jgen[idx1][idx2] = tl2::var_to_str(
+							newJgens[op_idx](idx1, idx2), m_prec);
 				}
 				newterm.name += "_" + tl2::var_to_str(op_idx + 1, m_prec);
 
@@ -1489,8 +1492,10 @@ public:
 		for(t_size idx = 0; idx < std::min(sites1_sc.size(), sites2_sc.size()); ++idx)
 		{
 			// get position of the site in the supercell
-			const auto [sc1_ok, site1_sc_idx, sc1] = tl2::get_supercell(sites1_sc[idx], sites_uc, 3, m_eps);
-			const auto [sc2_ok, site2_sc_idx, sc2] = tl2::get_supercell(sites2_sc[idx], sites_uc, 3, m_eps);
+			const auto [sc1_ok, site1_sc_idx, sc1] = tl2::get_supercell(
+				sites1_sc[idx], sites_uc, 3, m_eps);
+			const auto [sc2_ok, site2_sc_idx, sc2] = tl2::get_supercell(
+				sites2_sc[idx], sites_uc, 3, m_eps);
 			if(!sc1_ok || !sc2_ok)
 				continue;
 
@@ -1687,7 +1692,8 @@ public:
 					if(parser.parse_noexcept(site.spin_ortho[idx]))
 					{
 						site.trafo_plane_calc[idx] = parser.eval_noexcept();
-						site.trafo_plane_conj_calc[idx] = std::conj(site.trafo_plane_calc[idx]);
+						site.trafo_plane_conj_calc[idx] =
+							std::conj(site.trafo_plane_calc[idx]);
 					}
 					else
 					{
@@ -1726,10 +1732,14 @@ public:
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
 				std::cout << "Site " << site.name << " u = "
-					<< site.trafo_plane_calc[0] << " " << site.trafo_plane_calc[1] << " " << site.trafo_plane_calc[2]
+					<< site.trafo_plane_calc[0] << " "
+					<< site.trafo_plane_calc[1] << " "
+					<< site.trafo_plane_calc[2]
 					<< std::endl;
 				std::cout << "Site " << site.name << " v = "
-					<< site.trafo_z_calc[0] << " " << site.trafo_z_calc[1] << " " << site.trafo_z_calc[2]
+					<< site.trafo_z_calc[0] << " "
+					<< site.trafo_z_calc[1] << " "
+					<< site.trafo_z_calc[2]
 					<< std::endl;
 #endif
 			}
@@ -2052,9 +2062,9 @@ public:
 
 				if(J_Q33)
 				{
+					// equation (26) from (Toth 2015)
 					const t_real S_mag = 0.5 * std::sqrt(s_i.spin_mag_calc * s_j.spin_mag_calc);
 
-					// equation (26) from (Toth 2015)
 					H00(i, j)     += S_mag * tl2::inner_noconj<t_vec>(u_i,  (*J_Q33) * uc_j);
 					H00c_mQ(i, j) += S_mag * tl2::inner_noconj<t_vec>(uc_i, (*J_Q33) * u_j);
 					H0N(i, j)     += S_mag * tl2::inner_noconj<t_vec>(u_i,  (*J_Q33) * u_j);
@@ -2064,6 +2074,7 @@ public:
 				{
 					// equation (26) from (Toth 2015)
 					t_cplx c = s_j.spin_mag_calc * tl2::inner_noconj<t_vec>(v_i, (*J_Q033) * v_j);
+
 					H00(i, i)     -= c;
 					H00c_mQ(i, i) -= c;
 				}
@@ -2086,11 +2097,10 @@ public:
 		}  // end of iteration over i sites
 
 		// equation (25) from (Toth 2015)
-		t_mat H = tl2::create<t_mat>(N*2, N*2);
-		tl2::set_submat(H, H00,            0, 0);
-		tl2::set_submat(H, H0N,            0, N);
-		tl2::set_submat(H, tl2::herm(H0N), N, 0);
-		tl2::set_submat(H, H00c_mQ,        N, N);
+		const t_mat HN0 = tl2::herm(H0N);
+		t_mat H = tl2::create<t_mat>(2*N, 2*N);
+		tl2::set_submat(H, H00, 0, 0); tl2::set_submat(H, H0N,     0, N);
+		tl2::set_submat(H, HN0, N, 0); tl2::set_submat(H, H00c_mQ, N, N);
 
 		return H;
 	}
@@ -2111,12 +2121,12 @@ public:
 			return {};
 
 		// equation (30) from (Toth 2015)
-		t_mat g_sign = tl2::unit<t_mat>(N*2, N*2);
-		for(t_size i = N; i < 2*N; ++i)
+		t_mat g_sign = tl2::unit<t_mat>(2*N);
+		for(t_size i = N; i < g_sign.size1(); ++i)
 			g_sign(i, i) = -1.;
 
 		// equation (31) from (Toth 2015)
-		t_mat C_mat;
+		t_mat chol_mat;
 		t_size chol_try = 0;
 		for(; chol_try < m_tries_chol; ++chol_try)
 		{
@@ -2124,21 +2134,21 @@ public:
 
 			if(chol_ok)
 			{
-				C_mat = std::move(_C);
+				chol_mat = std::move(_C);
 				break;
 			}
 			else
 			{
 				if(chol_try >= m_tries_chol - 1)
 				{
-					std::cerr << "Magdyn warning: Cholesky decomposition failed at Q = "
-						<< Qvec << "." << std::endl;
-					C_mat = std::move(_C);
+					std::cerr << "Magdyn warning: Cholesky decomposition failed"
+						<< " at Q = " << Qvec << "." << std::endl;
+					chol_mat = std::move(_C);
 					break;
 				}
 
 				// try forcing the hamilton to be positive definite
-				for(t_size i = 0; i < 2*N; ++i)
+				for(t_size i = 0; i < _H.size1(); ++i)
 					_H(i, i) += m_delta_chol;
 			}
 		}
@@ -2146,25 +2156,25 @@ public:
 		if(m_perform_checks && chol_try > 0)
 		{
 			std::cerr << "Magdyn warning: Needed " << chol_try
-				<< " correction(s) for Cholesky decomposition at Q = "
-				<< Qvec << "." << std::endl;
+				<< " correction(s) for Cholesky decomposition"
+				<< " at Q = " << Qvec << "." << std::endl;
 		}
 
-		if(C_mat.size1() == 0 || C_mat.size2() == 0)
+		if(chol_mat.size1() == 0 || chol_mat.size2() == 0)
 		{
-			std::cerr << "Magdyn error: Invalid Cholesky decomposition at Q = "
-				<< Qvec << "." << std::endl;
+			std::cerr << "Magdyn error: Invalid Cholesky decomposition"
+				<< " at Q = " << Qvec << "." << std::endl;
 			return {};
 		}
 
 		// see p. 5 in (Toth 2015)
-		const t_mat H_mat = C_mat * g_sign * tl2::herm<t_mat>(C_mat);
+		t_mat H_mat = chol_mat * g_sign * tl2::herm<t_mat>(chol_mat);
 
 		const bool is_herm = tl2::is_symm_or_herm<t_mat, t_real>(H_mat, m_eps);
 		if(m_perform_checks && !is_herm)
 		{
-			std::cerr << "Magdyn warning: Hamiltonian is not hermitian at Q = "
-				<< Qvec << "." << std::endl;
+			std::cerr << "Magdyn warning: Hamiltonian is not hermitian"
+				<< " at Q = " << Qvec << "." << std::endl;
 		}
 
 		// eigenvalues of the hamiltonian correspond to the energies
@@ -2174,8 +2184,8 @@ public:
 				H_mat, only_energies, is_herm, true);
 		if(!evecs_ok)
 		{
-			std::cerr << "Magdyn warning: Eigensystem calculation failed at Q = "
-				<< Qvec << "." << std::endl;
+			std::cerr << "Magdyn warning: Eigensystem calculation failed"
+				<< " at Q = " << Qvec << "." << std::endl;
 		}
 
 
@@ -2193,7 +2203,7 @@ public:
 		if(!only_energies)
 		{
 			CalcCorrelationsFromHamiltonian(energies_and_correlations,
-				H_mat, C_mat, g_sign, Qvec, evecs);
+				H_mat, chol_mat, g_sign, Qvec, evecs);
 		}
 
 		return energies_and_correlations;
@@ -2206,7 +2216,7 @@ public:
 	 * @note implements the formalism given by (Toth 2015)
 	 */
 	void CalcCorrelationsFromHamiltonian(EnergiesAndWeights& energies_and_correlations,
-		const t_mat& H_mat, const t_mat& C_mat, const t_mat& g_sign,
+		const t_mat& H_mat, const t_mat& chol_mat, const t_mat& g_sign,
 		const t_vec_real& Qvec, const std::vector<t_vec>& evecs) const
 	{
 		const t_size N = GetMagneticSitesCount();
@@ -2226,18 +2236,18 @@ public:
 		const t_mat evec_mat_herm = tl2::herm(evec_mat);
 
 		// equation (32) from (Toth 2015)
-		const t_mat L_mat = evec_mat_herm * H_mat * evec_mat;  // energies
-		t_mat E_sqrt = g_sign * L_mat;                         // abs. energies
+		const t_mat energy_mat = evec_mat_herm * H_mat * evec_mat;  // energies
+		t_mat E_sqrt = g_sign * energy_mat;                         // abs. energies
 		for(t_size i = 0; i < E_sqrt.size1(); ++i)
-			E_sqrt(i, i) = std::sqrt(E_sqrt(i, i));            // sqrt. of abs. energies
+			E_sqrt(i, i) = std::sqrt(E_sqrt(i, i));             // sqrt. of abs. energies
 
 		// re-create energies, to be consistent with the weights
 		energies_and_correlations.clear();
-		for(t_size i = 0; i < L_mat.size1(); ++i)
+		for(t_size i = 0; i < energy_mat.size1(); ++i)
 		{
 			const EnergyAndWeight EandS
 			{
-				.E = L_mat(i, i).real(),
+				.E = energy_mat(i, i).real(),
 				.S = tl2::zero<t_mat>(3, 3),
 				.S_perp = tl2::zero<t_mat>(3, 3),
 			};
@@ -2245,16 +2255,16 @@ public:
 			energies_and_correlations.emplace_back(std::move(EandS));
 		}
 
-		const auto [C_inv, inv_ok] = tl2::inv(C_mat);
+		const auto [chol_inv, inv_ok] = tl2::inv(chol_mat);
 		if(!inv_ok)
 		{
 			using namespace tl2_ops;
-			std::cerr << "Magdyn warning: Inversion failed at Q = "
-				<< Qvec << "." << std::endl;
+			std::cerr << "Magdyn warning: Inversion failed"
+				<< " at Q = " << Qvec << "." << std::endl;
 		}
 
 		// equation (34) from (Toth 2015)
-		const t_mat trafo = C_inv * evec_mat * E_sqrt;
+		const t_mat trafo = chol_inv * evec_mat * E_sqrt;
 		const t_mat trafo_herm = tl2::herm(trafo);
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
@@ -2264,7 +2274,7 @@ public:
 		std::cout << "\nE = \n";
 		tl2::niceprint(std::cout, E_sqrt, 1e-4, 4);
 		std::cout << "\nL = \n";
-		tl2::niceprint(std::cout, L_mat, 1e-4, 4);
+		tl2::niceprint(std::cout, energy_mat, 1e-4, 4);
 		std::cout << std::endl;
 #endif
 
@@ -2273,10 +2283,10 @@ public:
 		for(std::uint8_t y_idx = 0; y_idx < 3; ++y_idx)
 		{
 			// equations (44) from (Toth 2015)
-			t_mat M0N = tl2::create<t_mat>(N, N);
 			t_mat M00 = tl2::create<t_mat>(N, N);
-			t_mat MNN = tl2::create<t_mat>(N, N);
+			t_mat M0N = tl2::create<t_mat>(N, N);
 			t_mat MN0 = tl2::create<t_mat>(N, N);
+			t_mat MNN = tl2::create<t_mat>(N, N);
 
 			for(t_size i = 0; i < N; ++i)
 			for(t_size j = 0; j < N; ++j)
@@ -2297,18 +2307,16 @@ public:
 					tl2::inner<t_vec_real>(s_j.pos_calc - s_i.pos_calc, Qvec));
 
 				// matrix elements of equation (44) from (Toth 2015)
-				M0N(i, j) = phase * S_mag * u_i[x_idx]  * u_j[y_idx];
 				M00(i, j) = phase * S_mag * u_i[x_idx]  * uc_j[y_idx];
-				MNN(i, j) = phase * S_mag * uc_i[x_idx] * u_j[y_idx];
+				M0N(i, j) = phase * S_mag * u_i[x_idx]  * u_j[y_idx];
 				MN0(i, j) = phase * S_mag * uc_i[x_idx] * uc_j[y_idx];
+				MNN(i, j) = phase * S_mag * uc_i[x_idx] * u_j[y_idx];
 			} // end of iteration over sites
 
 			// equation (47) from (Toth 2015)
-			t_mat M = tl2::create<t_mat>(N*2, N*2);
-			tl2::set_submat(M, M0N, 0, N);
-			tl2::set_submat(M, M00, 0, 0);
-			tl2::set_submat(M, MNN, N, N);
-			tl2::set_submat(M, MN0, N, 0);
+			t_mat M = tl2::create<t_mat>(2*N, 2*N);
+			tl2::set_submat(M, M00, 0, 0); tl2::set_submat(M, M0N, 0, N);
+			tl2::set_submat(M, MN0, N, 0); tl2::set_submat(M, MNN, N, N);
 
 			const t_mat M_trafo = trafo_herm * M * trafo;
 
@@ -2321,7 +2329,7 @@ public:
 			for(t_size i = 0; i < energies_and_correlations.size(); ++i)
 			{
 				(energies_and_correlations[i].S)(x_idx, y_idx) +=
-					M_trafo(i, i) / t_real(2*N);
+					M_trafo(i, i) / t_real(M.size1());
 			}
 		} // end of coordinate iteration
 	}
@@ -3037,8 +3045,8 @@ public:
 					else
 					{
 						std::cerr << "Magdyn error: Site 1 name \"" << *name1 << "\" "
-							<< "was not found in coupling \"" << exchange_term.name << "\"."
-							<< std::endl;
+							<< "was not found in coupling \"" << exchange_term.name
+							<< "\"." << std::endl;
 					}
 				}
 				else
@@ -3054,8 +3062,8 @@ public:
 					else
 					{
 						std::cerr << "Magdyn error: Site 2 name \"" << *name2 << "\" "
-							<< "was not found in coupling \"" << exchange_term.name << "\"."
-							<< std::endl;
+							<< "was not found in coupling \"" << exchange_term.name
+							<< "\"." << std::endl;
 					}
 				}
 				else
