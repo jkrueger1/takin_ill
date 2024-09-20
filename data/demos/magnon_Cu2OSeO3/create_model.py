@@ -1,7 +1,7 @@
 #
-# magdyn py interface demo -- loading the model from a file
+# magdyn py interface demo -- creating and plotting a model
 # @author Tobias Weber <tweber@ill.fr>
-# @date 12-oct-2023
+# @date march-2024
 # @license GPLv3, see 'LICENSE' file
 #
 # ----------------------------------------------------------------------------
@@ -30,17 +30,17 @@ import magdyn
 # -----------------------------------------------------------------------------
 # options
 # -----------------------------------------------------------------------------
+save_config_file       = False  # save magdyn file
 save_dispersion        = False  # write dispersion to file
 print_dispersion       = False  # write dispersion to console
 plot_dispersion        = True   # show dispersion plot
 only_positive_energies = True   # ignore magnon annihilation?
+max_threads            = 4      # number of worker threads, 0: automatic determination
 num_Q_points           = 256    # number of Qs to calculate on a dispersion direction
-max_threads            = 0      # number of worker threads, 0: automatic determination
 S_scale                = 64.    # weight scaling and clamp factors
 S_clamp_min            = 1.     #
 S_clamp_max            = 500.   #
 S_filter_min           = -1.    # don't filter
-modelfile              = "model.magdyn"
 dispfile               = "disp.dat"
 
 # dispersion plotting range
@@ -50,24 +50,77 @@ hkl_end                = numpy.array([ 1., 1., 0.5 ])
 
 
 # -----------------------------------------------------------------------------
-# load the magnetic model
+# Create the magnetic model
 # -----------------------------------------------------------------------------
+# The given magnetic model and its parameters are from this paper:
+#     https://doi.org/10.1103/PhysRevB.101.144411
+#     (which is also available here: https://arxiv.org/abs/2002.06283).
+#
+
 # create the magdyn object
 mag = magdyn.MagDyn()
 
+#
+# add variables
+#
+magdyn.add_variable(mag, "J1", -0.58)
+magdyn.add_variable(mag, "J2", -0.93)
 
-# load the model file
-print("Loading {}...".format(modelfile))
-if mag.Load(modelfile):
-	print("Loaded {}.".format(modelfile))
-else:
-	print("Failed loading {}.".format(modelfile))
-	exit(-1)
+magdyn.add_variable(mag, "D1x", +0.15)
+magdyn.add_variable(mag, "D1y", -0.24)
+magdyn.add_variable(mag, "D1z", -0.05)
+
+magdyn.add_variable(mag, "D2x", +0.16)
+magdyn.add_variable(mag, "D2y", +0.1)
+magdyn.add_variable(mag, "D2z", +0.36)
+
+
+#
+# set the sample environment
+#
+magdyn.set_temperature(mag, 50)
+magdyn.set_field(mag,  0, 0, 1,  1,  False)
+
+
+#
+# add magnetic sites
+#                      name     x    y    z  sx sy sz   S
+magdyn.add_site(mag, "Cu 1",  0.5,   0, 0.5,  0, 0, 1,  1)
+magdyn.add_site(mag, "Cu 2",    0, 0.5, 0.5,  0, 0, 1,  1)
+magdyn.add_site(mag, "Cu 3",  0.5, 0.5,   0,  0, 0, 1,  1)
+magdyn.add_site(mag, "Cu 4",    0,   0,   0,  0, 0, 1,  1)
+
+
+#
+# add couplings between sites
+#                                name   site 1  site 2    dx   dy   dz      J    dmix   dmiy   dmiz
+magdyn.add_coupling(mag, "Coupling A",  "Cu 2", "Cu 1",  "0", "0", "0",  "J1",  "D1x", "D1y", "D1z")
+magdyn.add_coupling(mag, "Coupling B",  "Cu 4", "Cu 1",  "0", "0", "0",  "J2",  "D2x", "D2y", "D2z")
+
+
+# calculate the rest of the couplings by symmetry
+print("Calculating symmetry-equivalent couplings...")
+magdyn.symmetrise_couplings(mag, "P 21 3")
+# -----------------------------------------------------------------------------
+
+
+# -----------------------------------------------------------------------------
+# calculate sites and couplings
+# -----------------------------------------------------------------------------
+print("Calculating sites and couplings...")
+magdyn.calc(mag)
 
 
 # minimum energy
-print("Energy minimum at Q=(000): {:.4f} meV".format(mag.CalcMinimumEnergy()))
+print("\nEnergy minimum at Q = (000): {:.4f} meV".format(mag.CalcMinimumEnergy()))
 print("Ground state energy: {:.4f} meV".format(mag.CalcGroundStateEnergy()))
+
+
+if save_config_file:
+	# save the magdyn configuration file for use in the gui program or the convolution fitter
+	print("\nSaving configuration to {}...".format("model.magdyn"))
+	if not mag.Save("model.magdyn"):
+		print("Error saving configuration.")
 
 
 if save_dispersion:
@@ -102,6 +155,7 @@ def append_data(h, k, l, E, S):
 
 	if weight < S_filter_min:
 		return
+
 	if weight < S_clamp_min:
 		weight = S_clamp_min
 	elif weight > S_clamp_max:
