@@ -73,6 +73,12 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	m_perspective->setToolTip("Switch between perspective and parallel projection.");
 	m_perspective->setChecked(true);
 
+	m_coordsys = new QComboBox(this);
+	m_coordsys->addItem("Fractional Units (rlu)");
+	m_coordsys->addItem("Lab Units (\xe2\x84\xab)");
+	m_coordsys->setCurrentIndex(0);
+	m_coordsys->setEnabled(false);
+
 	m_status = new QLabel(this);
 
 	// general context menu
@@ -99,14 +105,17 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	m_context_term->addAction(acCentre);
 	m_context_term->addAction(acCentreOnObject);
 
+	int y = 0;
 	auto grid = new QGridLayout(this);
 	grid->setSpacing(4);
 	grid->setContentsMargins(6, 6, 6, 6);
-	grid->addWidget(m_structplot, 0,0,1,3);
-	grid->addWidget(m_coordcross, 1,0,1,1);
-	grid->addWidget(m_labels, 1,1,1,1);
-	grid->addWidget(m_perspective, 1,2,1,1);
-	grid->addWidget(m_status, 2,0,1,3);
+	grid->addWidget(m_structplot, y++,0,1,3);
+	grid->addWidget(m_coordcross, y,0,1,1);
+	grid->addWidget(m_labels, y,1,1,1);
+	grid->addWidget(m_perspective, y++,2,1,1);
+	grid->addWidget(new QLabel("Coordinate System:", this), y,0,1,1);
+	grid->addWidget(m_coordsys, y++,1,1,2);
+	grid->addWidget(m_status, y++,0,1,3);
 
 	connect(m_structplot, &tl2::GlPlot::AfterGLInitialisation,
 		this, &StructPlotDlg::AfterGLInitialisation);
@@ -123,6 +132,8 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	connect(m_coordcross, &QCheckBox::toggled, this, &StructPlotDlg::ShowCoordCross);
 	connect(m_labels, &QCheckBox::toggled, this, &StructPlotDlg::ShowLabels);
 	connect(m_perspective, &QCheckBox::toggled, this, &StructPlotDlg::SetPerspectiveProjection);
+	connect(m_coordsys, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+		this, &StructPlotDlg::SetCoordinateSystem);
 
 	if(m_sett && m_sett->contains("struct_view/geo"))
 		restoreGeometry(m_sett->value("struct_view/geo").toByteArray());
@@ -299,6 +310,16 @@ void StructPlotDlg::SetPerspectiveProjection(bool proj)
 
 
 /**
+ * switch between crystal and lab coordinates
+ */
+void StructPlotDlg::SetCoordinateSystem(int which)
+{
+	m_structplot->GetRenderer()->SetCoordSys(which);
+}
+
+
+
+/**
  * centre camera on currently selected object
  */
 void StructPlotDlg::CentreCameraOnObject()
@@ -422,6 +443,7 @@ void StructPlotDlg::AfterGLInitialisation()
 	ShowCoordCross(m_coordcross->isChecked());
 	ShowLabels(m_labels->isChecked());
 	SetPerspectiveProjection(m_perspective->isChecked());
+	SetCoordinateSystem(m_coordsys->currentIndex());
 
 	Sync();
 }
@@ -454,6 +476,13 @@ void StructPlotDlg::Sync()
 	for(const auto& [term_idx, term] : m_terms)
 		m_structplot->GetRenderer()->RemoveObject(term_idx);
 	m_terms.clear();
+
+
+	// crystal matrix
+	t_mat_gl matA = tl2::convert<t_mat_gl>(m_dyn->GetCrystalATrafo());
+	t_mat_gl matB = tl2::convert<t_mat_gl>(m_dyn->GetCrystalBTrafo());
+
+	m_structplot->GetRenderer()->SetBTrafo(matB, &matA);
 
 
 	// hashes of already seen magnetic sites
@@ -672,16 +701,14 @@ void StructPlotDlg::Sync()
 
 		t_vec_gl dir_vec = pos2_vec - pos1_vec;
 		t_real_gl dir_len = tl2::norm<t_vec_gl>(dir_vec);
+		t_vec_gl zero_vec = tl2::create<t_vec_gl>({ 0, 0, 0 });
+		t_vec_gl z_vec = tl2::create<t_vec_gl>({ 0, 0, 1 });
 
 		// coupling bond
 		m_structplot->GetRenderer()->SetObjectMatrix(obj,
 			tl2::get_arrow_matrix<t_vec_gl, t_mat_gl, t_real_gl>(
-				dir_vec,                            // to
-				1,                                  // post-scale
-				tl2::create<t_vec_gl>({ 0, 0, 0 }), // post-translate
-				tl2::create<t_vec_gl>({ 0, 0, 1 }), // from
-				scale,                              // pre-scale
-				pos1_vec)                           // pre-translate
+				dir_vec, 1, zero_vec,    // to, post-scale and post-translate
+				z_vec, scale, pos1_vec)  // from, pre-scale and pre-translate
 			* tl2::hom_translation<t_mat_gl>(
 				t_real_gl(0), t_real_gl(0), dir_len*t_real_gl(0.5))
 			* tl2::hom_scaling<t_mat_gl>(
@@ -717,12 +744,9 @@ void StructPlotDlg::Sync()
 
 			m_structplot->GetRenderer()->SetObjectMatrix(objDmi,
 				tl2::get_arrow_matrix<t_vec_gl, t_mat_gl, t_real_gl>(
-					dmi_vec,                           // to
-					1,                                 // post-scale
-					tl2::create<t_vec_gl>({0, 0, 0}),  // post-translate
-					tl2::create<t_vec_gl>({0, 0, 1}),  // from
-					scale_dmi,                         // pre-scale
-					(pos1_vec+pos2_vec)/t_real_gl(2))  // pre-translate
+					dmi_vec, 1, zero_vec,                // to, post-scale and post-translate
+					z_vec, scale_dmi,                    // from and pre-scale
+					(pos1_vec + pos2_vec)/t_real_gl(2))  // pre-translate
 				);
 
 			//m_structplot->GetRenderer()->SetObjectLabel(objDmi, term.name);

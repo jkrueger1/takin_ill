@@ -72,11 +72,16 @@ void StructFactDlg::ShowStructPlot()
 		grid->addWidget(comboCoordSys, 1,1,1,1);
 		grid->addWidget(m_status3D, 2,0,1,2);
 
-		connect(m_plot.get(), &tl2::GlPlot::AfterGLInitialisation, this, &StructFactDlg::AfterGLInitialisation);
-		connect(m_plot->GetRenderer(), &tl2::GlPlotRenderer::PickerIntersection, this, &StructFactDlg::PickerIntersection);
-		connect(m_plot.get(), &tl2::GlPlot::MouseDown, this, &StructFactDlg::PlotMouseDown);
-		connect(m_plot.get(), &tl2::GlPlot::MouseUp, this, &StructFactDlg::PlotMouseUp);
-		connect(comboCoordSys, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this](int val)
+		connect(m_plot.get(), &tl2::GlPlot::AfterGLInitialisation,
+			this, &StructFactDlg::AfterGLInitialisation);
+		connect(m_plot->GetRenderer(), &tl2::GlPlotRenderer::PickerIntersection,
+			this, &StructFactDlg::PickerIntersection);
+		connect(m_plot.get(), &tl2::GlPlot::MouseDown,
+			this, &StructFactDlg::PlotMouseDown);
+		connect(m_plot.get(), &tl2::GlPlot::MouseUp,
+			this, &StructFactDlg::PlotMouseUp);
+		connect(comboCoordSys, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+			[this](int val)
 		{
 			if(this->m_plot)
 				this->m_plot->GetRenderer()->SetCoordSys(val);
@@ -100,7 +105,8 @@ void StructFactDlg::ShowStructPlot()
  */
 void StructFactDlg::Add3DItem(int row)
 {
-	if(!m_plot) return;
+	if(!m_plot)
+		return;
 
 	// add all items
 	if(row < 0)
@@ -131,8 +137,9 @@ void StructFactDlg::Add3DItem(int row)
 	col.getRgbF(&r, &g, &b);
 
 	auto obj = m_plot->GetRenderer()->AddLinkedObject(m_sphere, 0,0,0, r,g,b,1);
-	//auto obj = m_plot->GetRenderer()->AddSphere(0.05, 0,0,0, r,g,b,1);
-	m_plot->GetRenderer()->SetObjectMatrix(obj, tl2::hom_translation<t_mat_gl>(posx, posy, posz)*tl2::hom_scaling<t_mat_gl>(scale,scale,scale));
+	m_plot->GetRenderer()->SetObjectMatrix(obj,
+		tl2::hom_translation<t_mat_gl>(posx, posy, posz) *
+		tl2::hom_scaling<t_mat_gl>(scale, scale, scale));
 	m_plot->GetRenderer()->SetObjectLabel(obj, itemName->text().toStdString());
 	m_plot->update();
 
@@ -157,9 +164,10 @@ void StructFactDlg::PickerIntersection(
 	if(m_curPickedObj > 0)
 	{
 		// find corresponding nucleus in table
-		for(int row=0; row<m_nuclei->rowCount(); ++row)
+		for(int row = 0; row < m_nuclei->rowCount(); ++row)
 		{
-			if(std::size_t obj = m_nuclei->item(row, COL_NAME)->data(Qt::UserRole).toUInt(); long(obj)==m_curPickedObj)
+			if(std::size_t obj = m_nuclei->item(row, COL_NAME)->
+				data(Qt::UserRole).toUInt(); long(obj) == m_curPickedObj)
 			{
 				auto *itemname = m_nuclei->item(row, COL_NAME);
 				auto *itemX = m_nuclei->item(row, COL_X);
@@ -211,7 +219,8 @@ void StructFactDlg::PlotMouseDown(
 		// find corresponding nucleus in table
 		for(int row=0; row<m_nuclei->rowCount(); ++row)
 		{
-			if(std::size_t obj = m_nuclei->item(row, COL_NAME)->data(Qt::UserRole).toUInt(); long(obj)==m_curPickedObj)
+			if(std::size_t obj = m_nuclei->item(row, COL_NAME)->
+				data(Qt::UserRole).toUInt(); long(obj)==m_curPickedObj)
 			{
 				m_nuclei->setCurrentCell(row, 0);
 				break;
@@ -234,7 +243,8 @@ void StructFactDlg::PlotMouseUp(
 
 void StructFactDlg::AfterGLInitialisation()
 {
-	if(!m_plot) return;
+	if(!m_plot)
+		return;
 
 	// reference sphere for linked objects
 	m_sphere = m_plot->GetRenderer()->AddSphere(0.05, 0.,0.,0., 1.,1.,1.,1.);
@@ -249,8 +259,12 @@ void StructFactDlg::AfterGLInitialisation()
 	// GL device info
 	auto [strGlVer, strGlShaderVer, strGlVendor, strGlRenderer]
 		= m_plot->GetRenderer()->GetGlDescr();
-	m_labelGlInfos[0]->setText(QString("GL Version: ") + strGlVer.c_str() + QString("."));
-	m_labelGlInfos[1]->setText(QString("GL Shader Version: ") + strGlShaderVer.c_str() + QString("."));
-	m_labelGlInfos[2]->setText(QString("GL Vendor: ") + strGlVendor.c_str() + QString("."));
-	m_labelGlInfos[3]->setText(QString("GL Device: ") + strGlRenderer.c_str() + QString("."));
+	m_labelGlInfos[0]->setText(QString("GL Version: ") +
+		strGlVer.c_str() + QString("."));
+	m_labelGlInfos[1]->setText(QString("GL Shader Version: ") +
+		strGlShaderVer.c_str() + QString("."));
+	m_labelGlInfos[2]->setText(QString("GL Vendor: ") +
+		strGlVendor.c_str() + QString("."));
+	m_labelGlInfos[3]->setText(QString("GL Device: ") +
+		strGlRenderer.c_str() + QString("."));
 }

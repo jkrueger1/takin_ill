@@ -43,7 +43,8 @@ using namespace tl2_ops;
  */
 void MagStructFactDlg::Add3DItem(int row)
 {
-	if(!m_plot) return;
+	if(!m_plot)
+		return;
 
 	// add all items
 	if(row < 0)
@@ -54,13 +55,15 @@ void MagStructFactDlg::Add3DItem(int row)
 	}
 
 	auto objSphere = m_plot->GetRenderer()->AddLinkedObject(m_sphere, 0,0,0, 1,1,1,1);
-	//auto obj = m_plot->GetRenderer()->AddSphere(0.05, 0,0,0, 1,1,1,1);
 	auto objArrowRe = m_plot->GetRenderer()->AddLinkedObject(m_arrow, 0,0,0, 1,1,1,1);
 	auto objArrowIm = m_plot->GetRenderer()->AddLinkedObject(m_arrow, 0,0,0, 1,1,1,1);
 
-	m_nuclei->item(row, COL_NAME)->setData(Qt::UserRole+0, unsigned(objSphere));	// atomic position
-	m_nuclei->item(row, COL_NAME)->setData(Qt::UserRole+1, unsigned(objArrowRe));	// real part of Fourier comp
-	m_nuclei->item(row, COL_NAME)->setData(Qt::UserRole+2, unsigned(objArrowIm));	// imag part of Fourier comp
+	m_nuclei->item(row, COL_NAME)->setData(Qt::UserRole + 0,
+		unsigned(objSphere));	// atomic position
+	m_nuclei->item(row, COL_NAME)->setData(Qt::UserRole + 1,
+		unsigned(objArrowRe));	// real part of Fourier comp
+	m_nuclei->item(row, COL_NAME)->setData(Qt::UserRole + 2,
+		unsigned(objArrowIm));	// imag part of Fourier comp
 
 	Sync3DItem(row);
 }
@@ -71,7 +74,8 @@ void MagStructFactDlg::Add3DItem(int row)
  */
 void MagStructFactDlg::Sync3DItem(int row)
 {
-	if(!m_plot) return;
+	if(!m_plot)
+		return;
 
 	// sync all items
 	if(row < 0)
@@ -81,9 +85,12 @@ void MagStructFactDlg::Sync3DItem(int row)
 		return;
 	}
 
-	std::size_t objSphere = m_nuclei->item(row, COL_NAME)->data(Qt::UserRole+0).toUInt();
-	std::size_t objArrowRe = m_nuclei->item(row, COL_NAME)->data(Qt::UserRole+1).toUInt();
-	std::size_t objArrowIm = m_nuclei->item(row, COL_NAME)->data(Qt::UserRole+2).toUInt();
+	std::size_t objSphere = m_nuclei->item(row, COL_NAME)->
+		data(Qt::UserRole + 0).toUInt();
+	std::size_t objArrowRe = m_nuclei->item(row, COL_NAME)->
+		data(Qt::UserRole + 1).toUInt();
+	std::size_t objArrowIm = m_nuclei->item(row, COL_NAME)->
+		data(Qt::UserRole + 2).toUInt();
 	if(!objSphere || !objArrowRe || !objArrowIm)
 		return;
 
@@ -154,8 +161,10 @@ void MagStructFactDlg::Sync3DItem(int row)
 	m_plot->GetRenderer()->SetObjectCol(objSphere, r, g, b, 1);
 	m_plot->GetRenderer()->SetObjectCol(objArrowRe, r, g, b, 1);
 	m_plot->GetRenderer()->SetObjectCol(objArrowIm, 1.-r, 1.-g, 1.-b, 1);
-	m_plot->GetRenderer()->SetObjectVisible(objArrowRe, !tl2::equals<t_real_gl>(normReM, 0, g_eps));
-	m_plot->GetRenderer()->SetObjectVisible(objArrowIm, !tl2::equals<t_real_gl>(normImM, 0, g_eps));
+	m_plot->GetRenderer()->SetObjectVisible(objArrowRe,
+		!tl2::equals<t_real_gl>(normReM, 0, g_eps));
+	m_plot->GetRenderer()->SetObjectVisible(objArrowIm,
+		!tl2::equals<t_real_gl>(normImM, 0, g_eps));
 	m_plot->update();
 }
 
@@ -164,7 +173,8 @@ void MagStructFactDlg::Sync3DItem(int row)
 /**
  * mouse hovers over 3d object in unit cell view
  */
-void MagStructFactDlg::PickerIntersection(const t_vec3_gl* pos, std::size_t objIdx, const t_vec3_gl* /*posSphere*/)
+void MagStructFactDlg::PickerIntersection(const t_vec3_gl* pos,
+	std::size_t objIdx, const t_vec3_gl* /*posSphere*/)
 {
 	if(pos && m_plot)
 		m_curPickedObj = long(objIdx);
@@ -174,13 +184,17 @@ void MagStructFactDlg::PickerIntersection(const t_vec3_gl* pos, std::size_t objI
 	if(m_curPickedObj > 0)
 	{
 		// find corresponding nucleus in table
-		for(int row=0; row<m_nuclei->rowCount(); ++row)
+		for(int row = 0; row < m_nuclei->rowCount(); ++row)
 		{
-			std::size_t objSphere = m_nuclei->item(row, COL_NAME)->data(Qt::UserRole+0).toUInt();
-			std::size_t objArrowRe = m_nuclei->item(row, COL_NAME)->data(Qt::UserRole+1).toUInt();
-			std::size_t objArrowIm = m_nuclei->item(row, COL_NAME)->data(Qt::UserRole+2).toUInt();
+			std::size_t objSphere = m_nuclei->item(row, COL_NAME)->
+				data(Qt::UserRole + 0).toUInt();
+			std::size_t objArrowRe = m_nuclei->item(row, COL_NAME)->
+				data(Qt::UserRole + 1).toUInt();
+			std::size_t objArrowIm = m_nuclei->item(row, COL_NAME)->
+				data(Qt::UserRole + 2).toUInt();
 
-			if(long(objSphere)==m_curPickedObj || long(objArrowRe)==m_curPickedObj || long(objArrowIm)==m_curPickedObj)
+			if(long(objSphere)==m_curPickedObj || long(objArrowRe)==m_curPickedObj
+				|| long(objArrowIm)==m_curPickedObj)
 			{
 				auto *itemname = m_nuclei->item(row, COL_NAME);
 				auto *itemX = m_nuclei->item(row, COL_X);
@@ -211,7 +225,8 @@ void MagStructFactDlg::PickerIntersection(const t_vec3_gl* pos, std::size_t objI
 /**
  * mouse hovers over 3d object in super cell view
  */
-void MagStructFactDlg::PickerIntersectionSC(const t_vec3_gl* pos, std::size_t objIdx, const t_vec3_gl* /*posSphere*/)
+void MagStructFactDlg::PickerIntersectionSC(const t_vec3_gl* pos,
+	std::size_t objIdx, const t_vec3_gl* /*posSphere*/)
 {
 	if(pos && m_plotSC)
 	{
@@ -231,13 +246,17 @@ void MagStructFactDlg::PlotMouseDown(bool left, bool /*mid*/, bool /*right*/)
 	if(left && m_curPickedObj > 0)
 	{
 		// find corresponding nucleus in table
-		for(int row=0; row<m_nuclei->rowCount(); ++row)
+		for(int row = 0; row < m_nuclei->rowCount(); ++row)
 		{
-			std::size_t objSphere = m_nuclei->item(row, COL_NAME)->data(Qt::UserRole+0).toUInt();
-			std::size_t objArrowRe = m_nuclei->item(row, COL_NAME)->data(Qt::UserRole+1).toUInt();
-			std::size_t objArrowIm = m_nuclei->item(row, COL_NAME)->data(Qt::UserRole+2).toUInt();
+			std::size_t objSphere = m_nuclei->item(row, COL_NAME)->
+				data(Qt::UserRole + 0).toUInt();
+			std::size_t objArrowRe = m_nuclei->item(row, COL_NAME)->
+				data(Qt::UserRole + 1).toUInt();
+			std::size_t objArrowIm = m_nuclei->item(row, COL_NAME)->
+				data(Qt::UserRole + 2).toUInt();
 
-			if(long(objSphere)==m_curPickedObj || long(objArrowRe)==m_curPickedObj || long(objArrowIm)==m_curPickedObj)
+			if(long(objSphere)==m_curPickedObj || long(objArrowRe)==m_curPickedObj
+				|| long(objArrowIm)==m_curPickedObj)
 			{
 				m_nuclei->setCurrentCell(row, 0);
 				break;
@@ -255,7 +274,8 @@ void MagStructFactDlg::PlotMouseDown(bool left, bool /*mid*/, bool /*right*/)
  */
 void MagStructFactDlg::AfterGLInitialisation()
 {
-	if(!m_plot) return;
+	if(!m_plot)
+		return;
 	SetGLInfos();
 
 	// reference sphere and arrow for linked objects
@@ -277,7 +297,8 @@ void MagStructFactDlg::AfterGLInitialisation()
  */
 void MagStructFactDlg::AfterGLInitialisationSC()
 {
-	if(!m_plotSC) return;
+	if(!m_plotSC)
+		return;
 	SetGLInfos();
 
 	// reference sphere and arrow for linked objects
@@ -299,21 +320,27 @@ void MagStructFactDlg::AfterGLInitialisationSC()
  */
 void MagStructFactDlg::SetGLInfos()
 {
-	static bool already_set = 0;
-	if(already_set) return;
+	static bool already_set = false;
+	if(already_set)
+		return;
 
 	// try whichever gl plotter is available first
 	for(auto* plot : { m_plot.get(), m_plotSC.get() })
 	{
 		if(!plot) continue;
 
-		auto [strGlVer, strGlShaderVer, strGlVendor, strGlRenderer] = plot->GetRenderer()->GetGlDescr();
-		m_labelGlInfos[0]->setText(QString("GL Version: ") + strGlVer.c_str() + QString("."));
-		m_labelGlInfos[1]->setText(QString("GL Shader Version: ") + strGlShaderVer.c_str() + QString("."));
-		m_labelGlInfos[2]->setText(QString("GL Vendor: ") + strGlVendor.c_str() + QString("."));
-		m_labelGlInfos[3]->setText(QString("GL Device: ") + strGlRenderer.c_str() + QString("."));
+		auto [strGlVer, strGlShaderVer, strGlVendor, strGlRenderer] =
+			plot->GetRenderer()->GetGlDescr();
+		m_labelGlInfos[0]->setText(QString("GL Version: ") +
+			strGlVer.c_str() + QString("."));
+		m_labelGlInfos[1]->setText(QString("GL Shader Version: ") +
+			strGlShaderVer.c_str() + QString("."));
+		m_labelGlInfos[2]->setText(QString("GL Vendor: ") +
+			strGlVendor.c_str() + QString("."));
+		m_labelGlInfos[3]->setText(QString("GL Device: ") +
+			strGlRenderer.c_str() + QString("."));
 
-		already_set = 1;
+		already_set = true;
 		break;
 	}
 }

@@ -447,6 +447,9 @@ public:
 
 	const std::string& GetMagneticFormFactor() const { return m_magffact_formula; }
 
+	const t_mat_real& GetCrystalATrafo() const { return m_xtalA; }
+	const t_mat_real& GetCrystalBTrafo() const { return m_xtalB; }
+	const t_mat_real& GetCrystalUBTrafo() const { return m_xtalUB; }
 
 
 	const MagneticSite& GetMagneticSite(t_size idx) const

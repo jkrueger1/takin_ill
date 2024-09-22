@@ -197,35 +197,55 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 
 		// table CustomContextMenu
 		QMenu *pTabContextMenu = new QMenu(m_nuclei);
-		pTabContextMenu->addAction("Add Fourier Component Before", this, [this]() { this->AddTabItem(-2); });
-		pTabContextMenu->addAction("Add Fourier Component After", this, [this]() { this->AddTabItem(-3); });
-		pTabContextMenu->addAction("Clone Fourier Component", this, [this]() { this->AddTabItem(-4); });
-		pTabContextMenu->addAction("Delete Fourier Component", this, [this]() { this->DelTabItem(); });
+		pTabContextMenu->addAction("Add Fourier Component Before",
+			[this]() { this->AddTabItem(-2); });
+		pTabContextMenu->addAction("Add Fourier Component After",
+			[this]() { this->AddTabItem(-3); });
+		pTabContextMenu->addAction("Clone Fourier Component",
+			[this]() { this->AddTabItem(-4); });
+		pTabContextMenu->addAction("Delete Fourier Component",
+			[this]() { this->DelTabItem(); });
 
 
 		// table CustomContextMenu in case nothing is selected
 		QMenu *pTabContextMenuNoItem = new QMenu(m_nuclei);
-		pTabContextMenuNoItem->addAction("Add Fourier Component", this, [this]() { this->AddTabItem(); });
-		pTabContextMenuNoItem->addAction("Delete Fourier Component", this, [this]() { this->DelTabItem(); });
-		//pTabContextMenuNoItem->addSeparator();
+		pTabContextMenuNoItem->addAction("Add Fourier Component",
+			[this]() { this->AddTabItem(); });
+		pTabContextMenuNoItem->addAction("Delete Fourier Component",
+			[this]() { this->DelTabItem(); });
 
 
 		// signals
-		for(auto* edit : std::vector<QLineEdit*>{{ m_editA, m_editB, m_editC, m_editAlpha, m_editBeta, m_editGamma }})
-			connect(edit, &QLineEdit::textEdited, this, [this]() { this->CalcB(); });
+		for(auto* edit : std::vector<QLineEdit*>{{ m_editA, m_editB, m_editC,
+			m_editAlpha, m_editBeta, m_editGamma }})
+		{
+			connect(edit, &QLineEdit::textEdited,
+				[this]() { this->CalcB(); });
+		}
 
-		connect(pTabBtnAdd, &QToolButton::clicked, this, [this]() { this->AddTabItem(-1); });
-		connect(pTabBtnDel, &QToolButton::clicked, this, [this]() { this->DelTabItem(); });
-		connect(pTabBtnUp, &QToolButton::clicked, this, [this]() { this->MoveTabItemUp(m_nuclei); });
-		connect(pTabBtnDown, &QToolButton::clicked, this, [this]() { this->MoveTabItemDown(m_nuclei); });
-		connect(pTabBtnSG, &QToolButton::clicked, this, &MagStructFactDlg::GenerateFromSG);
+		connect(pTabBtnAdd, &QToolButton::clicked,
+			[this]() { this->AddTabItem(-1); });
+		connect(pTabBtnDel, &QToolButton::clicked,
+			[this]() { this->DelTabItem(); });
+		connect(pTabBtnUp, &QToolButton::clicked,
+			[this]() { this->MoveTabItemUp(m_nuclei); });
+		connect(pTabBtnDown, &QToolButton::clicked,
+			[this]() { this->MoveTabItemDown(m_nuclei); });
+		connect(pTabBtnSG, &QToolButton::clicked,
+			this, &MagStructFactDlg::GenerateFromSG);
 
-		connect(m_nuclei, &QTableWidget::currentCellChanged, this, &MagStructFactDlg::TableCurCellChanged);
-		connect(m_nuclei, &QTableWidget::entered, this, &MagStructFactDlg::TableCellEntered);
-		connect(m_nuclei, &QTableWidget::itemChanged, this, &MagStructFactDlg::TableItemChanged);
-		connect(m_nuclei, &QTableWidget::customContextMenuRequested, this,
+		connect(m_nuclei, &QTableWidget::currentCellChanged,
+			this, &MagStructFactDlg::TableCurCellChanged);
+		connect(m_nuclei, &QTableWidget::entered,
+			this, &MagStructFactDlg::TableCellEntered);
+		connect(m_nuclei, &QTableWidget::itemChanged,
+			this, &MagStructFactDlg::TableItemChanged);
+		connect(m_nuclei, &QTableWidget::customContextMenuRequested,
 			[this, pTabContextMenu, pTabContextMenuNoItem](const QPoint& pt)
-			{ this->ShowTableContextMenu(m_nuclei, pTabContextMenu, pTabContextMenuNoItem, pt); });
+		{
+			this->ShowTableContextMenu(m_nuclei,
+				pTabContextMenu, pTabContextMenuNoItem, pt);
+		});
 
 		tabs->addTab(m_nucleipanel, "Fourier Components");
 	}
@@ -288,30 +308,42 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 
 		// table CustomContextMenu
 		QMenu *pPropContextMenu = new QMenu(m_propvecs);
-		pPropContextMenu->addAction("Add Vector Before", this, [this]() { this->AddPropItem(-2); });
-		pPropContextMenu->addAction("Add Vector After", this, [this]() { this->AddPropItem(-3); });
-		pPropContextMenu->addAction("Clone Vector", this, [this]() { this->AddPropItem(-4); });
-		pPropContextMenu->addAction("Delete Vector", this, [this]() { this->DelPropItem(); });
+		pPropContextMenu->addAction("Add Vector Before",
+			[this]() { this->AddPropItem(-2); });
+		pPropContextMenu->addAction("Add Vector After",
+			[this]() { this->AddPropItem(-3); });
+		pPropContextMenu->addAction("Clone Vector",
+			[this]() { this->AddPropItem(-4); });
+		pPropContextMenu->addAction("Delete Vector",
+			[this]() { this->DelPropItem(); });
 
 
 		// table CustomContextMenu in case nothing is selected
 		QMenu *pPropContextMenuNoItem = new QMenu(m_propvecs);
-		pPropContextMenuNoItem->addAction("Add Vector", this, [this]() { this->AddPropItem(); });
-		pPropContextMenuNoItem->addAction("Delete Vector", this, [this]() { this->DelPropItem(); });
+		pPropContextMenuNoItem->addAction("Add Vector",
+			[this]() { this->AddPropItem(); });
+		pPropContextMenuNoItem->addAction("Delete Vector",
+			[this]() { this->DelPropItem(); });
 
 
 
-		connect(pTabBtnAdd, &QToolButton::clicked, this, [this]() { this->AddPropItem(-1); });
-		connect(pTabBtnDel, &QToolButton::clicked, this, [this]() { this->DelPropItem(); });
-		connect(pTabBtnUp, &QToolButton::clicked, this,  [this]() { this->MoveTabItemUp(m_propvecs); });
-		connect(pTabBtnDown, &QToolButton::clicked, this,  [this]() { this->MoveTabItemUp(m_propvecs); });
+		connect(pTabBtnAdd, &QToolButton::clicked,
+			[this]() { this->AddPropItem(-1); });
+		connect(pTabBtnDel, &QToolButton::clicked,
+			[this]() { this->DelPropItem(); });
+		connect(pTabBtnUp, &QToolButton::clicked,
+			[this]() { this->MoveTabItemUp(m_propvecs); });
+		connect(pTabBtnDown, &QToolButton::clicked,
+			[this]() { this->MoveTabItemUp(m_propvecs); });
 
-		//connect(m_propvecs, &QTableWidget::currentCellChanged, this, &MagStructFactDlg::PropCurCellChanged);
-		//connect(m_propvecs, &QTableWidget::entered, this, &MagStructFactDlg::PropCellEntered);
-		connect(m_propvecs, &QTableWidget::itemChanged, this, &MagStructFactDlg::PropItemChanged);
+		connect(m_propvecs, &QTableWidget::itemChanged,
+			this, &MagStructFactDlg::PropItemChanged);
 		connect(m_propvecs, &QTableWidget::customContextMenuRequested, this,
 			[this, pPropContextMenu, pPropContextMenuNoItem](const QPoint& pt)
-			{ this->ShowTableContextMenu(m_propvecs, pPropContextMenu, pPropContextMenuNoItem, pt); });
+		{
+			this->ShowTableContextMenu(m_propvecs,
+				pPropContextMenu, pPropContextMenuNoItem, pt);
+		});
 
 		tabs->addTab(m_propvecpanel, "Propagation Vectors");
 	}
@@ -344,8 +376,10 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 
 
 		// signals
-		connect(m_maxBZ, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, [this]() { this->Calc(); });
-		connect(m_RemoveZeroes, static_cast<void (QCheckBox::*)(int)>(&QCheckBox::stateChanged), this, [this]() { this->Calc(); });
+		connect(m_maxBZ, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+			[this]() { this->Calc(); });
+		connect(m_RemoveZeroes, static_cast<void (QCheckBox::*)(int)>(&QCheckBox::stateChanged),
+			[this]() { this->Calc(); });
 
 		tabs->addTab(sfactpanel, "Structure Factors");
 	}
@@ -400,7 +434,10 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 
 		// signals
 		for(auto* spin : m_maxSC)
-			connect(spin, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, [this]() { this->Calc(); });
+		{
+			connect(spin, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+				[this]() { this->Calc(); });
+		}
 
 		tabs->addTab(mmpanel, "Magnetic Moments");
 	}
@@ -413,10 +450,11 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 		pGrid->setContentsMargins(6, 6, 6, 6);
 
 		// table grid
-		for(int i=0; i<4; ++i)
+		for(int i = 0; i < 4; ++i)
 		{
 			m_labelGlInfos[i] = new QLabel("", infopanel);
-			m_labelGlInfos[i]->setSizePolicy(QSizePolicy::Ignored, m_labelGlInfos[i]->sizePolicy().verticalPolicy());
+			m_labelGlInfos[i]->setSizePolicy(QSizePolicy::Ignored,
+				m_labelGlInfos[i]->sizePolicy().verticalPolicy());
 		}
 
 		auto sep1 = new QFrame(infopanel); sep1->setFrameStyle(QFrame::HLine);
@@ -442,18 +480,25 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 		pGrid->addWidget(labelTitle, y++,0, 1,1);
 		pGrid->addWidget(labelAuthor, y++,0, 1,1);
 		pGrid->addWidget(labelDate, y++,0, 1,1);
-		pGrid->addItem(new QSpacerItem(16,16, QSizePolicy::Minimum, QSizePolicy::Fixed), y++,0, 1,1);
+		pGrid->addItem(new QSpacerItem(16,16,
+			QSizePolicy::Minimum, QSizePolicy::Fixed), y++,0, 1,1);
 		pGrid->addWidget(sep1, y++,0, 1,1);
-		pGrid->addWidget(new QLabel(QString("Compiler: ") + QString(BOOST_COMPILER) + ".", infopanel), y++,0, 1,1);
-		pGrid->addWidget(new QLabel(QString("C++ Library: ") + QString(BOOST_STDLIB) + ".", infopanel), y++,0, 1,1);
-		pGrid->addWidget(new QLabel(QString("Build Date: ") + QString(__DATE__) + ", " + QString(__TIME__) + ".", infopanel), y++,0, 1,1);
+		pGrid->addWidget(new QLabel(QString("Compiler: ")
+			+ QString(BOOST_COMPILER) + ".", infopanel), y++,0, 1,1);
+		pGrid->addWidget(new QLabel(QString("C++ Library: ")
+			+ QString(BOOST_STDLIB) + ".", infopanel), y++,0, 1,1);
+		pGrid->addWidget(new QLabel(QString("Build Date: ")
+			+ QString(__DATE__) + ", " + QString(__TIME__) + ".", infopanel), y++,0, 1,1);
 		pGrid->addWidget(sep2, y++,0, 1,1);
-		pGrid->addWidget(new QLabel(QString("Qt Version: ") + QString(QT_VERSION_STR) + ".", infopanel), y++,0, 1,1);
-		pGrid->addWidget(new QLabel(QString("Boost Version: ") + strBoost.c_str() + ".", infopanel), y++,0, 1,1);
+		pGrid->addWidget(new QLabel(QString("Qt Version: ")
+			+ QString(QT_VERSION_STR) + ".", infopanel), y++,0, 1,1);
+		pGrid->addWidget(new QLabel(QString("Boost Version: ")
+			+ strBoost.c_str() + ".", infopanel), y++,0, 1,1);
 		pGrid->addWidget(sep3, y++,0, 1,1);
 		for(int i=0; i<4; ++i)
 			pGrid->addWidget(m_labelGlInfos[i], y++,0, 1,1);
-		pGrid->addItem(new QSpacerItem(16,16, QSizePolicy::Minimum, QSizePolicy::Expanding), y++,0, 1,1);
+		pGrid->addItem(new QSpacerItem(16,16, QSizePolicy::Minimum,
+			QSizePolicy::Expanding), y++,0, 1,1);
 
 		tabs->addTab(infopanel, "Infos");
 	}
@@ -518,10 +563,14 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 			m_editBeta->setText("90");
 			m_editGamma->setText("90");
 		});
-		connect(acLoad, &QAction::triggered, this, static_cast<void(MagStructFactDlg::*)()>(&MagStructFactDlg::Load));
-		connect(acSave, &QAction::triggered, this, static_cast<void(MagStructFactDlg::*)()>(&MagStructFactDlg::Save));
-		connect(acImportCIF, &QAction::triggered, this, &MagStructFactDlg::ImportCIF);
-		connect(acExit, &QAction::triggered, this, &QDialog::close);
+		connect(acLoad, &QAction::triggered,
+			this, static_cast<void(MagStructFactDlg::*)()>(&MagStructFactDlg::Load));
+		connect(acSave, &QAction::triggered,
+			this, static_cast<void(MagStructFactDlg::*)()>(&MagStructFactDlg::Save));
+		connect(acImportCIF, &QAction::triggered,
+			this, &MagStructFactDlg::ImportCIF);
+		connect(acExit, &QAction::triggered,
+			this, &QDialog::close);
 
 
 		// unit cell view
@@ -552,8 +601,10 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 				comboCoordSys->addItem("Lab Units (\xe2\x84\xab)");
 
 
-				m_plot->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
-				labCoordSys->setSizePolicy(QSizePolicy{QSizePolicy::Fixed, QSizePolicy::Fixed});
+				m_plot->setSizePolicy(QSizePolicy{
+					QSizePolicy::Expanding, QSizePolicy::Expanding});
+				labCoordSys->setSizePolicy(QSizePolicy{
+					QSizePolicy::Fixed, QSizePolicy::Fixed});
 
 				auto grid = new QGridLayout(m_dlgPlot);
 				grid->setSpacing(4);
@@ -564,11 +615,14 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 				grid->addWidget(m_status3D, 2,0,1,2);
 
 
-				connect(m_plot.get(), &tl2::GlPlot::AfterGLInitialisation, this, &MagStructFactDlg::AfterGLInitialisation);
-				connect(m_plot->GetRenderer(), &tl2::GlPlotRenderer::PickerIntersection, this, &MagStructFactDlg::PickerIntersection);
-				connect(m_plot.get(), &tl2::GlPlot::MouseDown, this, &MagStructFactDlg::PlotMouseDown);
-				//connect(m_plot.get(), &tl2::GlPlot::MouseUp, this, [this](bool left, bool mid, bool right) {});
-				connect(comboCoordSys, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this](int val)
+				connect(m_plot.get(), &tl2::GlPlot::AfterGLInitialisation,
+					this, &MagStructFactDlg::AfterGLInitialisation);
+				connect(m_plot->GetRenderer(), &tl2::GlPlotRenderer::PickerIntersection,
+					this, &MagStructFactDlg::PickerIntersection);
+				connect(m_plot.get(), &tl2::GlPlot::MouseDown,
+					this, &MagStructFactDlg::PlotMouseDown);
+				connect(comboCoordSys, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+					[this](int val)
 				{
 					if(this->m_plot)
 						this->m_plot->GetRenderer()->SetCoordSys(val);
@@ -615,8 +669,10 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 				comboCoordSys->addItem("Lab Units (\xe2\x84\xab)");
 
 
-				m_plotSC->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
-				labCoordSys->setSizePolicy(QSizePolicy{QSizePolicy::Fixed, QSizePolicy::Fixed});
+				m_plotSC->setSizePolicy(QSizePolicy{
+					QSizePolicy::Expanding, QSizePolicy::Expanding});
+				labCoordSys->setSizePolicy(QSizePolicy{
+					QSizePolicy::Fixed, QSizePolicy::Fixed});
 
 				auto grid = new QGridLayout(m_dlgPlotSC);
 				grid->setSpacing(4);
@@ -627,11 +683,12 @@ MagStructFactDlg::MagStructFactDlg(QWidget* pParent) : QDialog{pParent},
 				grid->addWidget(m_status3DSC, 2,0,1,2);
 
 
-				connect(m_plotSC.get(), &tl2::GlPlot::AfterGLInitialisation, this, &MagStructFactDlg::AfterGLInitialisationSC);
-				connect(m_plotSC->GetRenderer(), &tl2::GlPlotRenderer::PickerIntersection, this, &MagStructFactDlg::PickerIntersectionSC);
-				//connect(m_plotSC.get(), &tl2::GlPlot::MouseDown, this, [this](bool left, bool mid, bool right) {});
-				//connect(m_plotSC.get(), &tl2::GlPlot::MouseUp, this, [this](bool left, bool mid, bool right) {});
-				connect(comboCoordSys, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this](int val)
+				connect(m_plotSC.get(), &tl2::GlPlot::AfterGLInitialisation,
+					this, &MagStructFactDlg::AfterGLInitialisationSC);
+				connect(m_plotSC->GetRenderer(), &tl2::GlPlotRenderer::PickerIntersection,
+					this, &MagStructFactDlg::PickerIntersectionSC);
+				connect(comboCoordSys, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+					[this](int val)
 				{
 					if(this->m_plotSC)
 						this->m_plotSC->GetRenderer()->SetCoordSys(val);

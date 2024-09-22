@@ -30,6 +30,8 @@
 #include <QtCore/QSettings>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QCheckBox>
+#include <QtWidgets/QComboBox>
 #include <QtWidgets/QTableWidget>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QLabel>
@@ -100,6 +102,7 @@ protected:
 	void ShowCoordCross(bool show);
 	void ShowLabels(bool show);
 	void SetPerspectiveProjection(bool proj);
+	void SetCoordinateSystem(int which);
 
 	void CentreCamera();
 	void CentreCameraOnObject();
@@ -120,6 +123,7 @@ private:
 
 	QLabel *m_status{};
 	QCheckBox *m_coordcross{}, *m_labels{}, *m_perspective{};
+	QComboBox *m_coordsys{};
 	QMenu *m_context{}, *m_context_site{}, *m_context_term{};
 
 	tl2::GlPlot *m_structplot{};

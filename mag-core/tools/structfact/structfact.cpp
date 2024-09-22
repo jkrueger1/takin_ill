@@ -197,33 +197,52 @@ StructFactDlg::StructFactDlg(QWidget* pParent) : QDialog{pParent},
 
 		// table CustomContextMenu
 		m_pTabContextMenu = new QMenu(m_nuclei);
-		m_pTabContextMenu->addAction("Add Nucleus Before", this, [this]() { this->AddTabItem(-2); });
-		m_pTabContextMenu->addAction("Add Nucleus After", this, [this]() { this->AddTabItem(-3); });
-		m_pTabContextMenu->addAction("Clone Nucleus", this, [this]() { this->AddTabItem(-4); });
-		m_pTabContextMenu->addAction("Delete Nucleus", this, [this]() { StructFactDlg::DelTabItem(); });
+		m_pTabContextMenu->addAction("Add Nucleus Before",
+			[this]() { this->AddTabItem(-2); });
+		m_pTabContextMenu->addAction("Add Nucleus After",
+			[this]() { this->AddTabItem(-3); });
+		m_pTabContextMenu->addAction("Clone Nucleus",
+			[this]() { this->AddTabItem(-4); });
+		m_pTabContextMenu->addAction("Delete Nucleus",
+			[this]() { StructFactDlg::DelTabItem(); });
 
 
 		// table CustomContextMenu in case nothing is selected
 		m_pTabContextMenuNoItem = new QMenu(m_nuclei);
-		m_pTabContextMenuNoItem->addAction("Add Nucleus", this, [this]() { this->AddTabItem(); });
-		m_pTabContextMenuNoItem->addAction("Delete Nucleus", this, [this]() { StructFactDlg::DelTabItem(); });
+		m_pTabContextMenuNoItem->addAction("Add Nucleus",
+			[this]() { this->AddTabItem(); });
+		m_pTabContextMenuNoItem->addAction("Delete Nucleus",
+			[this]() { StructFactDlg::DelTabItem(); });
 		//m_pTabContextMenuNoItem->addSeparator();
 
 
 		// signals
-		for(auto* edit : std::vector<QLineEdit*>{{ m_editA, m_editB, m_editC, m_editAlpha, m_editBeta, m_editGamma }})
-			connect(edit, &QLineEdit::textEdited, this, [this]() { this->CalcB(); });
+		for(auto* edit : std::vector<QLineEdit*>{{ m_editA, m_editB, m_editC,
+			m_editAlpha, m_editBeta, m_editGamma }})
+		{
+			connect(edit, &QLineEdit::textEdited,
+				[this]() { this->CalcB(); });
+		}
 
-		connect(pTabBtnAdd, &QToolButton::clicked, this, [this]() { this->AddTabItem(-1); });
-		connect(pTabBtnDel, &QToolButton::clicked, this, [this]() { StructFactDlg::DelTabItem(); });
-		connect(pTabBtnUp, &QToolButton::clicked, this, &StructFactDlg::MoveTabItemUp);
-		connect(pTabBtnDown, &QToolButton::clicked, this, &StructFactDlg::MoveTabItemDown);
-		connect(pTabBtnSG, &QToolButton::clicked, this, &StructFactDlg::GenerateFromSG);
+		connect(pTabBtnAdd, &QToolButton::clicked,
+			[this]() { this->AddTabItem(-1); });
+		connect(pTabBtnDel, &QToolButton::clicked,
+			[this]() { StructFactDlg::DelTabItem(); });
+		connect(pTabBtnUp, &QToolButton::clicked,
+			this, &StructFactDlg::MoveTabItemUp);
+		connect(pTabBtnDown, &QToolButton::clicked,
+			this, &StructFactDlg::MoveTabItemDown);
+		connect(pTabBtnSG, &QToolButton::clicked,
+			this, &StructFactDlg::GenerateFromSG);
 
-		connect(m_nuclei, &QTableWidget::currentCellChanged, this, &StructFactDlg::TableCurCellChanged);
-		connect(m_nuclei, &QTableWidget::entered, this, &StructFactDlg::TableCellEntered);
-		connect(m_nuclei, &QTableWidget::itemChanged, this, &StructFactDlg::TableItemChanged);
-		connect(m_nuclei, &QTableWidget::customContextMenuRequested, this, &StructFactDlg::ShowTableContextMenu);
+		connect(m_nuclei, &QTableWidget::currentCellChanged,
+			this, &StructFactDlg::TableCurCellChanged);
+		connect(m_nuclei, &QTableWidget::entered,
+			this, &StructFactDlg::TableCellEntered);
+		connect(m_nuclei, &QTableWidget::itemChanged,
+			this, &StructFactDlg::TableItemChanged);
+		connect(m_nuclei, &QTableWidget::customContextMenuRequested,
+			this, &StructFactDlg::ShowTableContextMenu);
 
 		tabs->addTab(nucleipanel, "Nuclei");
 	}
@@ -255,8 +274,10 @@ StructFactDlg::StructFactDlg(QWidget* pParent) : QDialog{pParent},
 
 
 		// signals
-		connect(m_maxBZ, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, [this]() { this->Calc(); });
-		connect(m_RemoveZeroes, static_cast<void (QCheckBox::*)(int)>(&QCheckBox::stateChanged), this, [this]() { this->Calc(); });
+		connect(m_maxBZ, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+			[this]() { this->Calc(); });
+		connect(m_RemoveZeroes, static_cast<void (QCheckBox::*)(int)>(&QCheckBox::stateChanged),
+			[this]() { this->Calc(); });
 
 		tabs->addTab(sfactpanel, "Structure Factors");
 	}
@@ -313,12 +334,18 @@ StructFactDlg::StructFactDlg(QWidget* pParent) : QDialog{pParent},
 		QToolButton *pTabBtnDown = new QToolButton(findsgpanel);
 		QToolButton *pBtnCalc = new QToolButton(findsgpanel);
 
-		m_nuclei_FindSG->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
-		pTabBtnAdd->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
-		pTabBtnDel->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
-		pTabBtnUp->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
-		pTabBtnDown->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
-		pBtnCalc->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
+		m_nuclei_FindSG->setSizePolicy(QSizePolicy{
+			QSizePolicy::Expanding, QSizePolicy::Expanding});
+		pTabBtnAdd->setSizePolicy(QSizePolicy{
+			QSizePolicy::Expanding, QSizePolicy::Fixed});
+		pTabBtnDel->setSizePolicy(QSizePolicy{
+			QSizePolicy::Expanding, QSizePolicy::Fixed});
+		pTabBtnUp->setSizePolicy(QSizePolicy{
+			QSizePolicy::Expanding, QSizePolicy::Fixed});
+		pTabBtnDown->setSizePolicy(QSizePolicy{
+			QSizePolicy::Expanding, QSizePolicy::Fixed});
+		pBtnCalc->setSizePolicy(QSizePolicy{
+			QSizePolicy::Expanding, QSizePolicy::Fixed});
 
 		pTabBtnAdd->setText("Add Nucleus");
 		pTabBtnDel->setText("Delete Nuclei");
@@ -342,27 +369,40 @@ StructFactDlg::StructFactDlg(QWidget* pParent) : QDialog{pParent},
 
 		// table CustomContextMenu
 		m_pTabContextMenu_FindSG = new QMenu(m_nuclei_FindSG);
-		m_pTabContextMenu_FindSG->addAction("Add Nucleus Before", this, [this]() { this->AddTabItem_FindSG(-2); });
-		m_pTabContextMenu_FindSG->addAction("Add Nucleus After", this, [this]() { this->AddTabItem_FindSG(-3); });
-		m_pTabContextMenu_FindSG->addAction("Clone Nucleus", this, [this]() { this->AddTabItem_FindSG(-4); });
-		m_pTabContextMenu_FindSG->addAction("Delete Nucleus", this, [this]() { StructFactDlg::DelTabItem_FindSG(); });
+		m_pTabContextMenu_FindSG->addAction("Add Nucleus Before",
+			[this]() { this->AddTabItem_FindSG(-2); });
+		m_pTabContextMenu_FindSG->addAction("Add Nucleus After",
+			[this]() { this->AddTabItem_FindSG(-3); });
+		m_pTabContextMenu_FindSG->addAction("Clone Nucleus",
+			[this]() { this->AddTabItem_FindSG(-4); });
+		m_pTabContextMenu_FindSG->addAction("Delete Nucleus",
+			[this]() { StructFactDlg::DelTabItem_FindSG(); });
 
 
 		// table CustomContextMenu in case nothing is selected
 		m_pTabContextMenuNoItem_FindSG = new QMenu(m_nuclei_FindSG);
-		m_pTabContextMenuNoItem_FindSG->addAction("Add Nucleus", this, [this]() { this->AddTabItem_FindSG(); });
-		m_pTabContextMenuNoItem_FindSG->addAction("Delete Nucleus", this, [this]() { StructFactDlg::DelTabItem_FindSG(); });
+		m_pTabContextMenuNoItem_FindSG->addAction("Add Nucleus",
+			[this]() { this->AddTabItem_FindSG(); });
+		m_pTabContextMenuNoItem_FindSG->addAction("Delete Nucleus",
+			[this]() { StructFactDlg::DelTabItem_FindSG(); });
 
 
 		// signals
-		connect(pTabBtnAdd, &QToolButton::clicked, this, [this]() { this->AddTabItem_FindSG(-1); });
-		connect(pTabBtnDel, &QToolButton::clicked, this, [this]() { StructFactDlg::DelTabItem_FindSG(); });
-		connect(pTabBtnUp, &QToolButton::clicked, this, &StructFactDlg::MoveTabItemUp_FindSG);
-		connect(pTabBtnDown, &QToolButton::clicked, this, &StructFactDlg::MoveTabItemDown_FindSG);
-		connect(pBtnCalc, &QToolButton::clicked, this, &StructFactDlg::FindSG);
+		connect(pTabBtnAdd, &QToolButton::clicked,
+			[this]() { this->AddTabItem_FindSG(-1); });
+		connect(pTabBtnDel, &QToolButton::clicked,
+			[this]() { StructFactDlg::DelTabItem_FindSG(); });
+		connect(pTabBtnUp, &QToolButton::clicked,
+			this, &StructFactDlg::MoveTabItemUp_FindSG);
+		connect(pTabBtnDown, &QToolButton::clicked,
+			this, &StructFactDlg::MoveTabItemDown_FindSG);
+		connect(pBtnCalc, &QToolButton::clicked,
+			this, &StructFactDlg::FindSG);
 
-		connect(m_nuclei_FindSG, &QTableWidget::itemChanged, this, &StructFactDlg::TableItemChanged_FindSG);
-		connect(m_nuclei_FindSG, &QTableWidget::customContextMenuRequested, this, &StructFactDlg::ShowTableContextMenu_FindSG);
+		connect(m_nuclei_FindSG, &QTableWidget::itemChanged,
+			this, &StructFactDlg::TableItemChanged_FindSG);
+		connect(m_nuclei_FindSG, &QTableWidget::customContextMenuRequested,
+			this, &StructFactDlg::ShowTableContextMenu_FindSG);
 
 		tabs->addTab(findsgpanel, "Match Space Group");
 	}
@@ -378,7 +418,9 @@ StructFactDlg::StructFactDlg(QWidget* pParent) : QDialog{pParent},
 		for(int i=0; i<4; ++i)
 		{
 			m_labelGlInfos[i] = new QLabel("", infopanel);
-			m_labelGlInfos[i]->setSizePolicy(QSizePolicy::Ignored, m_labelGlInfos[i]->sizePolicy().verticalPolicy());
+			m_labelGlInfos[i]->setSizePolicy(
+				QSizePolicy::Ignored,
+				m_labelGlInfos[i]->sizePolicy().verticalPolicy());
 		}
 
 		auto sep1 = new QFrame(infopanel); sep1->setFrameStyle(QFrame::HLine);
@@ -404,18 +446,25 @@ StructFactDlg::StructFactDlg(QWidget* pParent) : QDialog{pParent},
 		pGrid->addWidget(labelTitle, y++,0, 1,1);
 		pGrid->addWidget(labelAuthor, y++,0, 1,1);
 		pGrid->addWidget(labelDate, y++,0, 1,1);
-		pGrid->addItem(new QSpacerItem(16,16, QSizePolicy::Minimum, QSizePolicy::Fixed), y++,0, 1,1);
+		pGrid->addItem(new QSpacerItem(16,16,
+			QSizePolicy::Minimum, QSizePolicy::Fixed), y++,0, 1,1);
 		pGrid->addWidget(sep1, y++,0, 1,1);
-		pGrid->addWidget(new QLabel(QString("Compiler: ") + QString(BOOST_COMPILER) + ".", infopanel), y++,0, 1,1);
-		pGrid->addWidget(new QLabel(QString("C++ Library: ") + QString(BOOST_STDLIB) + ".", infopanel), y++,0, 1,1);
-		pGrid->addWidget(new QLabel(QString("Build Date: ") + QString(__DATE__) + ", " + QString(__TIME__) + ".", infopanel), y++,0, 1,1);
+		pGrid->addWidget(new QLabel(QString("Compiler: ") +
+			QString(BOOST_COMPILER) + ".", infopanel), y++,0, 1,1);
+		pGrid->addWidget(new QLabel(QString("C++ Library: ") +
+			QString(BOOST_STDLIB) + ".", infopanel), y++,0, 1,1);
+		pGrid->addWidget(new QLabel(QString("Build Date: ") +
+			QString(__DATE__) + ", " + QString(__TIME__) + ".", infopanel), y++,0, 1,1);
 		pGrid->addWidget(sep2, y++,0, 1,1);
-		pGrid->addWidget(new QLabel(QString("Qt Version: ") + QString(QT_VERSION_STR) + ".", infopanel), y++,0, 1,1);
-		pGrid->addWidget(new QLabel(QString("Boost Version: ") + strBoost.c_str() + ".", infopanel), y++,0, 1,1);
+		pGrid->addWidget(new QLabel(QString("Qt Version: ") +
+			QString(QT_VERSION_STR) + ".", infopanel), y++,0, 1,1);
+		pGrid->addWidget(new QLabel(QString("Boost Version: ") +
+			strBoost.c_str() + ".", infopanel), y++,0, 1,1);
 		pGrid->addWidget(sep3, y++,0, 1,1);
 		for(int i=0; i<4; ++i)
 			pGrid->addWidget(m_labelGlInfos[i], y++,0, 1,1);
-		pGrid->addItem(new QSpacerItem(16,16, QSizePolicy::Minimum, QSizePolicy::Expanding), y++,0, 1,1);
+		pGrid->addItem(new QSpacerItem(16,16,
+			QSizePolicy::Minimum, QSizePolicy::Expanding), y++,0, 1,1);
 
 		tabs->addTab(infopanel, "Infos");
 	}
@@ -479,8 +528,10 @@ StructFactDlg::StructFactDlg(QWidget* pParent) : QDialog{pParent},
 			m_editBeta->setText("90");
 			m_editGamma->setText("90");
 		});
-		connect(acLoad, &QAction::triggered, this, static_cast<void(StructFactDlg::*)()>(&StructFactDlg::Load));
-		connect(acSave, &QAction::triggered, this, static_cast<void(StructFactDlg::*)()>(&StructFactDlg::Save));
+		connect(acLoad, &QAction::triggered,
+			this, static_cast<void(StructFactDlg::*)()>(&StructFactDlg::Load));
+		connect(acSave, &QAction::triggered,
+			this, static_cast<void(StructFactDlg::*)()>(&StructFactDlg::Save));
 		connect(acImportCIF, &QAction::triggered, this, &StructFactDlg::ImportCIF);
 		connect(acImportTAZ, &QAction::triggered, this, &StructFactDlg::ImportTAZ);
 		connect(acExportTAZ, &QAction::triggered, this, &StructFactDlg::ExportTAZ);
@@ -545,5 +596,3 @@ void StructFactDlg::closeEvent(QCloseEvent *)
 			m_sett->setValue("geo_3dview", m_dlgPlot->saveGeometry());
 	}
 }
-
-
