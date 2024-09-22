@@ -105,6 +105,7 @@ extern t_real g_structplot_site_rad;
 extern t_real g_structplot_term_rad;
 extern t_real g_structplot_dmi_rad;
 extern t_real g_structplot_dmi_len;
+extern t_real g_structplot_fov;
 
 
 #ifndef DONT_USE_QT
@@ -123,7 +124,7 @@ extern t_real g_structplot_dmi_len;
 // ----------------------------------------------------------------------------
 #include "settings.h"
 
-constexpr std::array<SettingsVariable, 15> g_settingsvariables
+constexpr std::array<SettingsVariable, 16> g_settingsvariables
 {{
 	// threads
 	{
@@ -200,6 +201,11 @@ constexpr std::array<SettingsVariable, 15> g_settingsvariables
 		.description = "DMI vector length in 3d structure plotter.",
 		.key = "structplot_dmi_length",
 		.value = &g_structplot_dmi_len,
+	},
+	{
+		.description = "Camera field-of-view in 3d structure plotter.",
+		.key = "structplot_fov",
+		.value = &g_structplot_fov,
 	},
 
 	// optional features

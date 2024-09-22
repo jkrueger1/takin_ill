@@ -54,16 +54,24 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	m_structplot->GetRenderer()->SetLight(
 		1, tl2::create<t_vec3_gl>({ -5, -5, -5 }));
 	m_structplot->GetRenderer()->SetCoordMax(1.);
+	m_structplot->GetRenderer()->GetCamera().SetFOV(
+		g_structplot_fov / t_real(180) * tl2::pi<t_real>);
 	m_structplot->GetRenderer()->GetCamera().SetDist(1.5);
 	m_structplot->GetRenderer()->GetCamera().UpdateTransformation();
 	m_structplot->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Expanding});
 
 	m_coordcross = new QCheckBox("Show Coordinates", this);
+	m_coordcross->setToolTip("Show the coordinate system cross.");
 	m_coordcross->setChecked(false);
 
 	m_labels = new QCheckBox("Show Labels", this);
+	m_labels->setToolTip("Show magnetic site and coupling labels.");
 	m_labels->setChecked(false);
+
+	m_perspective = new QCheckBox("Perspective Projection", this);
+	m_perspective->setToolTip("Switch between perspective and parallel projection.");
+	m_perspective->setChecked(true);
 
 	m_status = new QLabel(this);
 
@@ -94,10 +102,11 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	auto grid = new QGridLayout(this);
 	grid->setSpacing(4);
 	grid->setContentsMargins(6, 6, 6, 6);
-	grid->addWidget(m_structplot, 0,0,1,2);
+	grid->addWidget(m_structplot, 0,0,1,3);
 	grid->addWidget(m_coordcross, 1,0,1,1);
 	grid->addWidget(m_labels, 1,1,1,1);
-	grid->addWidget(m_status, 2,0,1,2);
+	grid->addWidget(m_perspective, 1,2,1,1);
+	grid->addWidget(m_status, 2,0,1,3);
 
 	connect(m_structplot, &tl2::GlPlot::AfterGLInitialisation,
 		this, &StructPlotDlg::AfterGLInitialisation);
@@ -113,11 +122,12 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	connect(acCentre, &QAction::triggered, this, &StructPlotDlg::CentreCamera);
 	connect(m_coordcross, &QCheckBox::toggled, this, &StructPlotDlg::ShowCoordCross);
 	connect(m_labels, &QCheckBox::toggled, this, &StructPlotDlg::ShowLabels);
+	connect(m_perspective, &QCheckBox::toggled, this, &StructPlotDlg::SetPerspectiveProjection);
 
 	if(m_sett && m_sett->contains("struct_view/geo"))
 		restoreGeometry(m_sett->value("struct_view/geo").toByteArray());
 	else
-		resize(500, 500);
+		resize(800, 800);
 }
 
 
@@ -276,6 +286,19 @@ void StructPlotDlg::ShowLabels(bool show)
 
 
 /**
+ * choose between perspective or parallel projection
+ */
+void StructPlotDlg::SetPerspectiveProjection(bool proj)
+{
+	m_structplot->GetRenderer()->GetCamera().SetPerspectiveProjection(proj);
+	m_structplot->GetRenderer()->RequestViewportUpdate();
+	m_structplot->GetRenderer()->GetCamera().UpdateTransformation();
+	m_structplot->update();
+}
+
+
+
+/**
  * centre camera on currently selected object
  */
 void StructPlotDlg::CentreCameraOnObject()
@@ -398,6 +421,7 @@ void StructPlotDlg::AfterGLInitialisation()
 
 	ShowCoordCross(m_coordcross->isChecked());
 	ShowLabels(m_labels->isChecked());
+	SetPerspectiveProjection(m_perspective->isChecked());
 
 	Sync();
 }

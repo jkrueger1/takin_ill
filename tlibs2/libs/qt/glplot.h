@@ -97,17 +97,16 @@ protected:
 	t_mat_gl m_matB = tl2::unit<t_mat_gl>();
 	t_real_gl m_CoordMax = 2.5;		// extent of coordinate axes
 
-	std::atomic<bool> m_bPlatformSupported = true;
-	std::atomic<bool> m_bInitialised = false;
-	std::atomic<bool> m_bWantsResize = false;
-	std::atomic<bool> m_bPickerEnabled = true;
-	std::atomic<bool> m_bPickerNeedsUpdate = false;
-	std::atomic<bool> m_bLightsNeedUpdate = false;
-	std::atomic<bool> m_bBTrafoNeedsUpdate = false;
-	std::atomic<bool> m_bCull = true;
-	std::atomic<bool> m_bBlend = false;
-	std::atomic<int> m_iCoordSys = 0;
-	std::atomic<int> m_iScreenDims[2] = { 800, 600 };
+	std::atomic<bool> m_platform_supported = true;
+	std::atomic<bool> m_initialised = false;
+	std::atomic<bool> m_viewport_needs_update = false;
+	std::atomic<bool> m_picker_enabled = true;
+	std::atomic<bool> m_picker_needs_update = false;
+	std::atomic<bool> m_lights_need_update = false;
+	std::atomic<bool> m_Btrafo_needs_update = false;
+	std::atomic<bool> m_cull = true;
+	std::atomic<bool> m_blend = false;
+	std::atomic<int> m_coordsys = 0;
 	t_real_gl m_pickerSphereRadius = 1;
 	bool m_showLabels = true;
 
@@ -117,7 +116,7 @@ protected:
 
 	QPointF m_posMouse{};
 	QPointF m_posMouseRotationStart{}, m_posMouseRotationEnd{};
-	bool m_bInRotation = false;
+	bool m_in_rotation = false;
 	bool m_restrict_cam_theta = true;
 
 	QTimer m_timer{};
@@ -214,18 +213,21 @@ public:
 
 	void SetLight(std::size_t idx, const t_vec3_gl& pos);
 
-	void SetCull(bool b) { m_bCull = b; }
-	void SetBlend(bool b) { m_bBlend = b; }
+	void SetCull(bool b) { m_cull = b; }
+	void SetBlend(bool b) { m_blend = b; }
 	void SetRestrictCamTheta(bool b) { m_restrict_cam_theta = b; }
 
 	void SetBTrafo(const t_mat_gl& matB, const t_mat_gl* matA = nullptr);
 	void SetCoordSys(int iSys);
 
-	bool IsInitialised() const { return m_bInitialised; }
+	bool IsInitialised() const { return m_initialised; }
 	const QPointF& GetMousePosition() const { return m_posMouse; };
 
 	void SetLabelsVisible(bool show) { m_showLabels = show; }
 	std::optional<std::size_t> GetCoordCross() const { return m_coordCross; }
+
+	void RequestViewportUpdate();
+	void UpdateViewport();
 
 
 public slots:
@@ -235,7 +237,6 @@ public slots:
 	void stoppedThread();
 
 	void initialiseGL();
-	void resizeGL();
 
 	void mouseMoveEvent(const QPointF& pos);
 	void zoom(t_real_gl val);

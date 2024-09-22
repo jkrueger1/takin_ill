@@ -99,6 +99,8 @@ protected:
 
 	void ShowCoordCross(bool show);
 	void ShowLabels(bool show);
+	void SetPerspectiveProjection(bool proj);
+
 	void CentreCamera();
 	void CentreCameraOnObject();
 
@@ -117,8 +119,7 @@ private:
 	QTableWidget *m_sitestab{}, *m_termstab{};
 
 	QLabel *m_status{};
-	QCheckBox *m_coordcross{};
-	QCheckBox *m_labels{};
+	QCheckBox *m_coordcross{}, *m_labels{}, *m_perspective{};
 	QMenu *m_context{}, *m_context_site{}, *m_context_term{};
 
 	tl2::GlPlot *m_structplot{};

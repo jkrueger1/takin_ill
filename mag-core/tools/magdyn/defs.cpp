@@ -84,6 +84,7 @@ t_real g_structplot_site_rad = 0.05;
 t_real g_structplot_term_rad = 0.01;
 t_real g_structplot_dmi_rad = 0.015;
 t_real g_structplot_dmi_len = 0.25;
+t_real g_structplot_fov = 90.;
 // ----------------------------------------------------------------------------
 
 

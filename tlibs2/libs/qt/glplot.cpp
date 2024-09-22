@@ -703,7 +703,7 @@ void main()
 	m_coordCross = AddCoordinateCross(-m_CoordMax, m_CoordMax);
 
 
-	m_bInitialised = true;
+	m_initialised = true;
 
 	// check threading compatibility
 	if constexpr(m_isthreaded)
@@ -711,7 +711,7 @@ void main()
 		if(auto *pContext = ((QOpenGLWidget*)m_pPlot)->context();
 			pContext && !pContext->supportsThreadedOpenGL())
 		{
-			m_bPlatformSupported = false;
+			m_platform_supported = false;
 			std::cerr << "Threaded GL is not supported on this platform."
 				<< std::endl;
 		}
@@ -722,13 +722,13 @@ void main()
 void GlPlotRenderer::SetScreenDims(int w, int h)
 {
 	m_cam.SetScreenDimensions(w, h);
-	m_bWantsResize = true;
+	m_viewport_needs_update = true;
 }
 
 
-void GlPlotRenderer::resizeGL()
+void GlPlotRenderer::UpdateViewport()
 {
-	if(!m_bPlatformSupported || !m_bInitialised)
+	if(!m_platform_supported || !m_initialised)
 		return;
 
 	const auto [w, h] = m_cam.GetScreenDimensions();
@@ -757,7 +757,16 @@ void GlPlotRenderer::resizeGL()
 	m_pShaders->setUniformValue(m_uniMatrixProj, m_cam.GetPerspective());
 	LOGGLERR(pGl);
 
-	m_bWantsResize = false;
+	m_viewport_needs_update = false;
+}
+
+
+void GlPlotRenderer::RequestViewportUpdate()
+{
+	if constexpr(!m_isthreaded)
+		UpdateViewport();
+	else
+		m_viewport_needs_update = true;
 }
 
 
@@ -789,14 +798,14 @@ void GlPlotRenderer::SetBTrafo(const t_mat_gl& matB, const t_mat_gl* matA)
 		}
 	}
 
-	m_bBTrafoNeedsUpdate = true;
+	m_Btrafo_needs_update = true;
 	RequestPlotUpdate();
 }
 
 
 void GlPlotRenderer::SetCoordSys(int iSys)
 {
-	m_iCoordSys = iSys;
+	m_coordsys = iSys;
 	RequestPlotUpdate();
 }
 
@@ -809,7 +818,7 @@ void GlPlotRenderer::UpdateBTrafo()
 	m_pShaders->setUniformValue(m_uniMatrixA, m_matA);
 	m_pShaders->setUniformValue(m_uniMatrixB, m_matB);
 
-	m_bBTrafoNeedsUpdate = false;
+	m_Btrafo_needs_update = false;
 }
 
 
@@ -817,7 +826,7 @@ void GlPlotRenderer::UpdateCam()
 {
 	m_cam.UpdateTransformation();
 
-	m_bPickerNeedsUpdate = true;
+	m_picker_needs_update = true;
 	RequestPlotUpdate();
 }
 
@@ -845,7 +854,7 @@ void GlPlotRenderer::SetLight(std::size_t idx, const t_vec3_gl& pos)
 		m_lights.resize(idx+1);
 
 	m_lights[idx] = pos;
-	m_bLightsNeedUpdate = true;
+	m_lights_need_update = true;
 }
 
 
@@ -854,31 +863,31 @@ void GlPlotRenderer::UpdateLights()
 	constexpr int MAX_LIGHTS = 4;	// max. number allowed in shader
 
 	int num_lights = std::min(MAX_LIGHTS, static_cast<int>(m_lights.size()));
-	t_real_gl pos[num_lights * 3];
+	auto pos = std::make_unique<t_real_gl[]>(num_lights * 3);
 
-	for(int i=0; i<num_lights; ++i)
+	for(int i = 0; i < num_lights; ++i)
 	{
 		pos[i*3 + 0] = m_lights[i][0];
 		pos[i*3 + 1] = m_lights[i][1];
 		pos[i*3 + 2] = m_lights[i][2];
 	}
 
-	m_pShaders->setUniformValueArray(m_uniLightPos, pos, num_lights, 3);
+	m_pShaders->setUniformValueArray(m_uniLightPos, pos.get(), num_lights, 3);
 	m_pShaders->setUniformValue(m_uniNumActiveLights, num_lights);
 
-	m_bLightsNeedUpdate = false;
+	m_lights_need_update = false;
 }
 
 
 void GlPlotRenderer::EnablePicker(bool b)
 {
-	m_bPickerEnabled = b;
+	m_picker_enabled = b;
 }
 
 
 void GlPlotRenderer::UpdatePicker()
 {
-	if(!m_bInitialised || !m_bPlatformSupported || !m_bPickerEnabled)
+	if(!m_initialised || !m_platform_supported || !m_picker_enabled)
 		return;
 
 	// picker ray
@@ -917,7 +926,7 @@ void GlPlotRenderer::UpdatePicker()
 	const t_mat_gl matUnit = tl2::unit<t_mat_gl>();
 	const t_mat_gl *coordTrafo = &matUnit;
 	t_mat_gl coordTrafoInv = matUnit;
-	if(m_iCoordSys == 1)
+	if(m_coordsys == 1)
 	{
 		coordTrafo = &m_matA;
 		coordTrafoInv = m_matB / (t_real_gl(2)*tl2::pi<t_real_gl>);
@@ -1010,7 +1019,7 @@ void GlPlotRenderer::UpdatePicker()
 		}
 	}
 
-	m_bPickerNeedsUpdate = false;
+	m_picker_needs_update = false;
 	t_vec3_gl vecClosestInters3 = tl2::create<t_vec3_gl>(
 		{vecClosestInters[0], vecClosestInters[1], vecClosestInters[2]});
 	t_vec3_gl vecClosestSphereInters3 = tl2::create<t_vec3_gl>(
@@ -1024,7 +1033,7 @@ void GlPlotRenderer::mouseMoveEvent(const QPointF& pos)
 {
 	m_posMouse = pos;
 
-	if(m_bInRotation)
+	if(m_in_rotation)
 	{
 		auto diff = m_posMouse - m_posMouseRotationStart;
 
@@ -1037,7 +1046,7 @@ void GlPlotRenderer::mouseMoveEvent(const QPointF& pos)
 	else
 	{
 		// also automatically done in UpdateCam
-		m_bPickerNeedsUpdate = true;
+		m_picker_needs_update = true;
 		RequestPlotUpdate();
 	}
 }
@@ -1045,7 +1054,7 @@ void GlPlotRenderer::mouseMoveEvent(const QPointF& pos)
 
 void GlPlotRenderer::zoom(t_real_gl val)
 {
-	m_cam.Zoom(val/64.);
+	m_cam.Zoom(val / 64.);
 	UpdateCam();
 }
 
@@ -1059,20 +1068,20 @@ void GlPlotRenderer::ResetZoom()
 
 void GlPlotRenderer::BeginRotation()
 {
-	if(!m_bInRotation)
+	if(!m_in_rotation)
 	{
 		m_posMouseRotationStart = m_posMouse;
-		m_bInRotation = true;
+		m_in_rotation = true;
 	}
 }
 
 
 void GlPlotRenderer::EndRotation()
 {
-	if(m_bInRotation)
+	if(m_in_rotation)
 	{
 		m_cam.SaveRotation();
-		m_bInRotation = false;
+		m_in_rotation = false;
 	}
 }
 
@@ -1096,18 +1105,18 @@ void GlPlotRenderer::tick(
  */
 void GlPlotRenderer::DoPaintGL(qgl_funcs *pGl)
 {
-	if(!m_bInitialised || !pGl || thread() != QThread::currentThread())
+	if(!m_initialised || !pGl || thread() != QThread::currentThread())
 		return;
 
 	// options
 	pGl->glCullFace(GL_BACK);
 	pGl->glFrontFace(GL_CCW);
-	if(m_bCull)
+	if(m_cull)
 		pGl->glEnable(GL_CULL_FACE);
 	else
 		pGl->glDisable(GL_CULL_FACE);
 
-	if(m_bBlend)
+	if(m_blend)
 	{
 		pGl->glEnable(GL_BLEND);
 		pGl->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1135,8 +1144,8 @@ void GlPlotRenderer::DoPaintGL(qgl_funcs *pGl)
 	BOOST_SCOPE_EXIT(m_pShaders) { m_pShaders->release(); } BOOST_SCOPE_EXIT_END
 	LOGGLERR(pGl);
 
-	if(m_bLightsNeedUpdate) UpdateLights();
-	if(m_bBTrafoNeedsUpdate) UpdateBTrafo();
+	if(m_lights_need_update) UpdateLights();
+	if(m_Btrafo_needs_update) UpdateBTrafo();
 
 	// set cam matrix
 	m_pShaders->setUniformValue(m_uniMatrixCam, m_cam.GetTransformation());
@@ -1186,7 +1195,7 @@ void GlPlotRenderer::DoPaintGL(qgl_funcs *pGl)
 
 		// set to untransformed coordinate system if the object is invariant
 		m_pShaders->setUniformValue(m_uniCoordSys,
-			linkedObj->m_invariant ? 0 : m_iCoordSys.load());
+			linkedObj->m_invariant ? 0 : m_coordsys.load());
 
 
 		// main vertex array object
@@ -1274,7 +1283,7 @@ void GlPlotRenderer::DoPaintNonGL(QPainter &painter)
 			if(obj.m_label != "")
 			{
 				const t_mat_gl *coordTrafo = &matUnit;
-				if(m_iCoordSys == 1 && !obj.m_invariant) coordTrafo = &m_matA;
+				if(m_coordsys == 1 && !obj.m_invariant) coordTrafo = &m_matA;
 
 				t_vec3_gl posLabel3d = (*coordTrafo) * obj.m_mat * obj.m_labelPos;
 				auto posLabel2d = GlToScreenCoords(tl2::create<t_vec_gl>(
@@ -1311,7 +1320,7 @@ void GlPlotRenderer::DoPaintNonGL(QPainter &painter)
 
 void GlPlotRenderer::paintGL()
 {
-	if(!m_bPlatformSupported)
+	if(!m_platform_supported)
 		return;
 	QMutexLocker _locker{&m_mutexObj};
 
@@ -1326,7 +1335,7 @@ void GlPlotRenderer::paintGL()
 		{
 			BOOST_SCOPE_EXIT(&painter) { painter.endNativePainting(); } BOOST_SCOPE_EXIT_END
 
-			if(m_bPickerNeedsUpdate) UpdatePicker();
+			if(m_picker_needs_update) UpdatePicker();
 
 			auto *pGl = GetGlFunctions();
 			painter.beginNativePainting();
@@ -1374,15 +1383,18 @@ void GlPlotRenderer::paintGL()
 		}
 		BOOST_SCOPE_EXIT_END
 
-		if(!m_bInitialised) initialiseGL();
-		if(!m_bInitialised)
+		if(!m_initialised)
+			initialiseGL();
+		if(!m_initialised)
 		{
 			std::cerr << "Cannot initialise GL." << std::endl;
 			return;
 		}
 
-		if(m_bWantsResize) resizeGL();
-		if(m_bPickerNeedsUpdate) UpdatePicker();
+		if(m_viewport_needs_update)
+			UpdateViewport();
+		if(m_picker_needs_update)
+			UpdatePicker();
 
 		DoPaintGL(GetGlFunctions());
 	}
@@ -1456,7 +1468,7 @@ void GlPlot::resizeGL(int w, int h)
 	if constexpr(!m_isthreaded)
 	{
 		m_renderer->SetScreenDims(w, h);
-		m_renderer->resizeGL();
+		m_renderer->UpdateViewport();
 	}
 }
 
@@ -1539,6 +1551,9 @@ void GlPlot::wheelEvent(QWheelEvent *pEvt)
 	const t_real_gl degrees = pEvt->angleDelta().y() / 8.;
 	m_renderer->zoom(degrees);
 
+	if(!m_renderer->GetCamera().GetPerspectiveProjection())
+		m_renderer->RequestViewportUpdate();
+
 	pEvt->accept();
 }
 
@@ -1548,6 +1563,7 @@ void GlPlot::paintEvent(QPaintEvent* pEvt)
 	if constexpr(!m_isthreaded)
 		QOpenGLWidget::paintEvent(pEvt);
 }
+
 
 /**
  * move the GL context to the associated thread

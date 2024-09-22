@@ -158,6 +158,40 @@ public:
 
 
 	/**
+	 * set the left-right range for parallel projection
+	 */
+	void SetParalellRangeLR(t_real range)
+	{
+		m_parallel_range_lr = range;
+		if(!GetPerspectiveProjection())
+			m_persp_needs_update = true;
+	}
+
+
+	/**
+	 * set the top-bottom range for parallel projection
+	 */
+	void SetParalellRangeTB(t_real range)
+	{
+		m_parallel_range_tb = range;
+		if(!GetPerspectiveProjection())
+			m_persp_needs_update = true;
+	}
+
+
+	t_real GetParalellRangeLR() const
+	{
+		return m_parallel_range_lr;
+	}
+
+
+	t_real GetParalellRangeTB() const
+	{
+		return m_parallel_range_tb;
+	}
+
+
+	/**
 	 * set the camera position
 	 */
 	void SetPosition(const t_vec3& pos)
@@ -282,12 +316,23 @@ public:
 
 
 	/**
-	 * zoom
+	 * zoom disginguising between perspective or parallel projection
 	 */
 	void Zoom(t_real zoom)
 	{
-		m_zoom *= std::pow(t_real(2), zoom);
-		m_trafo_needs_update = true;
+		const t_real factor = std::pow(t_real(2), zoom);
+
+		if(GetPerspectiveProjection())
+		{
+			SetZoom(GetZoom() * factor);
+			m_trafo_needs_update = true;
+		}
+		else
+		{
+			SetParalellRangeLR(GetParalellRangeLR() / factor);
+			SetParalellRangeTB(GetParalellRangeTB() / factor);
+			m_persp_needs_update = true;
+		}
 	}
 
 
@@ -600,8 +645,8 @@ public:
 	{
 		const t_vec3 vecCamDir[2] =
 		{
-			tl2::create<t_vec3>({1., 0., 0.}),
-			tl2::create<t_vec3>({0. ,0., 1.})
+			tl2::create<t_vec3>({ 1., 0., 0. }),
+			tl2::create<t_vec3>({ 0. ,0., 1. })
 		};
 
 		m_matRot = tl2::hom_rotation<t_mat, t_vec3>(
@@ -609,7 +654,8 @@ public:
 		m_matRot *= tl2::hom_rotation<t_mat, t_vec3>(
 			vecCamDir[1], m_phi, 0);
 
-		t_mat matDist = hom_translation<t_mat, t_real>(0., 0., -m_dist / m_zoom);
+		t_real zoom = GetPerspectiveProjection() ? m_zoom : 0.5;
+		t_mat matDist = hom_translation<t_mat, t_real>(0., 0., -m_dist / zoom);
 		m_mat = matDist * m_matRot * m_matTrans;
 		std::tie(m_mat_inv, std::ignore) = tl2::inv<t_mat>(m_mat);
 
@@ -631,7 +677,7 @@ public:
 		else
 		{
 			m_matPerspective = tl2::hom_ortho_sym<t_mat, t_real>(
-				m_nearPlane, m_farPlane, 20., 20.);
+				m_nearPlane, m_farPlane, m_parallel_range_lr, m_parallel_range_tb);
 		}
 
 		std::tie(m_matPerspective_inv, std::ignore) =
@@ -673,6 +719,10 @@ private:
 	t_real m_nearPlane = 0.1;
 	t_real m_farPlane = 1000.;
 
+	// ranges for parallel projection
+	t_real m_parallel_range_lr = 20.;
+	t_real m_parallel_range_tb = 20.;
+
 	// camera rotation
 	t_real m_phi = pi<t_real>*t_real(0.25);
 	t_real m_theta = -pi<t_real>*(0.25);
@@ -703,7 +753,7 @@ private:
 	t_real m_z_near{0}, m_z_far{1};
 
 	// screen dimensions
-	std::array<int, 2> m_screenDims = {800, 600};
+	std::array<int, 2> m_screenDims = { 800, 600 };
 
 	// does the transformation matrix need an update?
 	bool m_trafo_needs_update = true;
