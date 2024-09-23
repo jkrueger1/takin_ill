@@ -128,3 +128,15 @@ target_link_libraries(takin_scanbrowser
 	${Minuit2_LIBRARIES} Threads::Threads #OpenMP::OpenMP_CXX
 	-ldl
 )
+
+
+# -----------------------------------------------------------------------------
+# rpath
+# -----------------------------------------------------------------------------
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+	add_custom_command(TARGET takin_scanbrowser POST_BUILD
+		COMMAND install_name_tool -add_rpath /usr/local/lib $<TARGET_FILE:takin_scanbrowser>
+		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+	)
+endif()
+# -----------------------------------------------------------------------------
