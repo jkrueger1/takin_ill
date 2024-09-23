@@ -158,36 +158,19 @@ public:
 
 
 	/**
-	 * set the left-right range for parallel projection
+	 * set the range for parallel projection
 	 */
-	void SetParalellRangeLR(t_real range)
+	void SetParalellRange(t_real range)
 	{
-		m_parallel_range_lr = range;
+		m_parallel_range = range;
 		if(!GetPerspectiveProjection())
 			m_persp_needs_update = true;
 	}
 
 
-	/**
-	 * set the top-bottom range for parallel projection
-	 */
-	void SetParalellRangeTB(t_real range)
+	t_real GetParalellRange() const
 	{
-		m_parallel_range_tb = range;
-		if(!GetPerspectiveProjection())
-			m_persp_needs_update = true;
-	}
-
-
-	t_real GetParalellRangeLR() const
-	{
-		return m_parallel_range_lr;
-	}
-
-
-	t_real GetParalellRangeTB() const
-	{
-		return m_parallel_range_tb;
+		return m_parallel_range;
 	}
 
 
@@ -329,8 +312,7 @@ public:
 		}
 		else
 		{
-			SetParalellRangeLR(GetParalellRangeLR() / factor);
-			SetParalellRangeTB(GetParalellRangeTB() / factor);
+			SetParalellRange(GetParalellRange() / factor);
 			m_persp_needs_update = true;
 		}
 	}
@@ -410,7 +392,7 @@ public:
 
 
 	/**
-	 * sets scree aspect ratio, height/width
+	 * sets scree aspect ratio, height / width
 	 */
 	void SetAspectRatio(t_real aspect)
 	{
@@ -429,7 +411,7 @@ public:
 
 		m_viewport_needs_update = true;
 
-		SetAspectRatio(t_real(h)/t_real(w));
+		SetAspectRatio(t_real(h) / t_real(w));
 	}
 
 
@@ -677,7 +659,8 @@ public:
 		else
 		{
 			m_matPerspective = tl2::hom_ortho_sym<t_mat, t_real>(
-				m_nearPlane, m_farPlane, m_parallel_range_lr, m_parallel_range_tb);
+				m_nearPlane, m_farPlane,
+				m_parallel_range, m_parallel_range * m_aspect);
 		}
 
 		std::tie(m_matPerspective_inv, std::ignore) =
@@ -719,9 +702,8 @@ private:
 	t_real m_nearPlane = 0.1;
 	t_real m_farPlane = 1000.;
 
-	// ranges for parallel projection
-	t_real m_parallel_range_lr = 20.;
-	t_real m_parallel_range_tb = 20.;
+	// range for parallel projection
+	t_real m_parallel_range = 20.;
 
 	// camera rotation
 	t_real m_phi = pi<t_real>*t_real(0.25);
