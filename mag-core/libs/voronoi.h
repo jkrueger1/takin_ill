@@ -38,7 +38,7 @@
 #ifndef __GEO_ALGOS_VORONOI_SIMPLIFIED_H__
 #define __GEO_ALGOS_VORONOI_SIMPLIFIED_H__
 
-#warning("Paths library not found, please install TAS-Paths (https://doi.org/10.5281/zenodo.4625649). Using simplified replacement functions.")
+//#warning("Paths library not found, please install TAS-Paths (https://doi.org/10.5281/zenodo.4625649). Using simplified replacement functions.")
 
 
 #include <libqhullcpp/Qhull.h>
