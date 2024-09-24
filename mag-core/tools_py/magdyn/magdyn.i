@@ -67,6 +67,17 @@
 
 
 %include "../../tlibs2/libs/magdyn.h"
+%include "../../tlibs2/libs/magdyn/magdyn.h"
+%include "../../tlibs2/libs/magdyn/structs.h"
+%include "../../tlibs2/libs/magdyn/helpers.h"
+%include "../../tlibs2/libs/magdyn/getters.h"
+%include "../../tlibs2/libs/magdyn/gen.h"
+%include "../../tlibs2/libs/magdyn/file.h"
+%include "../../tlibs2/libs/magdyn/groundstate.h"
+%include "../../tlibs2/libs/magdyn/precalc.h"
+%include "../../tlibs2/libs/magdyn/hamilton.h"
+%include "../../tlibs2/libs/magdyn/correlation.h"
+%include "../../tlibs2/libs/magdyn/dispersion.h"
 
 
 // ----------------------------------------------------------------------------

@@ -26,14 +26,6 @@
 %module instr
 %{
 	#include "../../tlibs2/libs/instr.h"
-	#include "../../tlibs2/libs/instr/base.h"
-	#include "../../tlibs2/libs/instr/base_loader.h"
-	#include "../../tlibs2/libs/instr/frm.h"
-	#include "../../tlibs2/libs/instr/psi.h"
-	#include "../../tlibs2/libs/instr/macs.h"
-	#include "../../tlibs2/libs/instr/tax.h"
-	#include "../../tlibs2/libs/instr/trisp.h"
-	#include "../../tlibs2/libs/instr/raw.h"
 %}
 
 %include "std_vector.i"
