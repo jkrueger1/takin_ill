@@ -42,6 +42,10 @@
 #include <limits>
 #include <random>
 
+#ifdef __TLIBS2_USE_NUMBERS__
+	#include <numbers>
+#endif
+
 #include "../str.h"
 #include "../algos.h"
 #include "../traits.h"

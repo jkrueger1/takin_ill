@@ -71,7 +71,7 @@ requires is_complex<typename t_vec_cplx::value_type> && is_vec<t_vec_cplx> && is
 	auto iterRe = vecRe.begin();
 	auto iterIm = vecIm.begin();
 
-	for(; iter!=vec.end(); )
+	for(; iter != vec.end(); )
 	{
 		*iterRe = t_real{iter->real()};
 		*iterIm = t_real{iter->imag()};
@@ -95,9 +95,9 @@ requires is_complex<typename t_mat_cplx::value_type> && is_mat<t_mat_cplx> && is
 	t_mat_real matRe = zero<t_mat_real>(mat.size1(), mat.size2());
 	t_mat_real matIm = zero<t_mat_real>(mat.size1(), mat.size2());
 
-	for(std::size_t i=0; i<mat.size1(); ++i)
+	for(std::size_t i = 0; i < mat.size1(); ++i)
 	{
-		for(std::size_t j=0; j<mat.size2(); ++j)
+		for(std::size_t j = 0; j < mat.size2(); ++j)
 		{
 			matRe(i,j) = mat(i,j).real();
 			matIm(i,j) = mat(i,j).imag();
@@ -122,7 +122,7 @@ requires is_complex<typename t_vec_cplx::value_type> && is_vec<t_vec_cplx> && is
 	auto iterRe = vecReal.begin();
 	auto iterIm = std::next(vecReal.begin(), vec.size());
 
-	for(; iter!=vec.end(); )
+	for(; iter != vec.end(); )
 	{
 		*iterRe = t_real{iter->real()};
 		*iterIm = t_real{iter->imag()};
@@ -145,9 +145,9 @@ requires is_complex<typename t_mat_cplx::value_type> && is_mat<t_mat_cplx> && is
 {
 	t_mat_real matRe = zero<t_mat_real>(mat.size1()*2, mat.size2()*2);
 
-	for(std::size_t i=0; i<mat.size1(); ++i)
+	for(std::size_t i = 0; i < mat.size1(); ++i)
 	{
-		for(std::size_t j=0; j<mat.size2(); ++j)
+		for(std::size_t j = 0; j < mat.size2(); ++j)
 		{
 			matRe(i,j) = mat(i,j).real();
 			matRe(i + mat.size1(), j + mat.size2()) = mat(i,j).imag();
@@ -172,7 +172,7 @@ requires is_complex<typename t_vec_cplx::value_type> && is_vec<t_vec_cplx> && is
 	auto iterRe = vecRe.begin();
 	auto iterIm = vecIm.begin();
 
-	for(; iterRe!=vecRe.end(); )
+	for(; iterRe != vecRe.end(); )
 	{
 		(*iter).real(*iterRe);
 		(*iter).imag(*iterIm);
@@ -198,9 +198,9 @@ requires is_complex<typename t_mat_cplx::value_type> && is_mat<t_mat_cplx> && is
 
 	t_mat_cplx mat = zero<t_mat_cplx>(matRe.size1(), matRe.size2());
 
-	for(std::size_t i=0; i<matRe.size1(); ++i)
+	for(std::size_t i = 0; i < matRe.size1(); ++i)
 	{
-		for(std::size_t j=0; j<matRe.size2(); ++j)
+		for(std::size_t j = 0; j < matRe.size2(); ++j)
 		{
 			mat(i, j).real(matRe(i, j));
 			mat(i, j).imag(matIm(i, j));
@@ -247,9 +247,9 @@ requires is_complex<typename t_mat_cplx::value_type> && is_mat<t_mat_cplx> && is
 {
 	t_mat_cplx mat = zero<t_mat_cplx>(matReIm.size1()/2, matReIm.size2()/2);
 
-	for(std::size_t i=0; i<mat.size1(); ++i)
+	for(std::size_t i = 0; i < mat.size1(); ++i)
 	{
-		for(std::size_t j=0; j<mat.size2(); ++j)
+		for(std::size_t j = 0; j < mat.size2(); ++j)
 		{
 			mat(i, j).real(matReIm(i, j));
 			mat(i, j).imag(matReIm(i+mat.size1(), j+mat.size2()));
@@ -269,9 +269,9 @@ const t_mat& su2_matrix(std::size_t which)
 requires is_mat<t_mat> && is_complex<typename t_mat::value_type>
 {
 	using t_cplx = typename t_mat::value_type;
-	constexpr t_cplx c0(0,0);
-	constexpr t_cplx c1(1,0);
-	constexpr t_cplx cI(0,1);
+	constexpr t_cplx c0(0, 0);
+	constexpr t_cplx c1(1, 0);
+	constexpr t_cplx cI(0, 1);
 
 	static const t_mat mat[] =
 	{
@@ -333,7 +333,7 @@ const t_mat& su2_ladder(std::size_t which)
 requires is_mat<t_mat> && is_complex<typename t_mat::value_type>
 {
 	using t_cplx = typename t_mat::value_type;
-	constexpr t_cplx cI(0,1);
+	constexpr t_cplx cI(0, 1);
 	constexpr t_cplx c05(0.5, 0);
 
 	static const t_mat mat[] =
@@ -356,10 +356,10 @@ requires is_mat<t_mat> && is_complex<typename t_mat::value_type>
 {
 	using t_cplx = typename t_mat::value_type;
 	using t_real = typename t_cplx::value_type;
-	constexpr t_cplx c0(0,0);
-	constexpr t_cplx c1(1,0);
-	constexpr t_cplx c2(2,0);
-	constexpr t_cplx cI(0,1);
+	constexpr t_cplx c0(0, 0);
+	constexpr t_cplx c1(1, 0);
+	constexpr t_cplx c2(2, 0);
+	constexpr t_cplx cI(0, 1);
 	constexpr t_real s3 = std::sqrt(3.);
 
 	static const t_mat mat[] =
@@ -388,12 +388,12 @@ requires is_basic_vec<t_vec>
 	const std::size_t N = vec.size();
 	t_vec vecConj = zero<t_vec>(N);
 
-	for(std::size_t iComp=0; iComp<N; ++iComp)
+	for(std::size_t comp = 0; comp < N; ++comp)
 	{
 		if constexpr(is_complex<typename t_vec::value_type>)
-			vecConj[iComp] = std::conj(vec[iComp]);
+			vecConj[comp] = std::conj(vec[comp]);
 		else	// simply copy non-complex vector
-			vecConj[iComp] = vec[iComp];
+			vecConj[comp] = vec[comp];
 	}
 
 	return vecConj;
@@ -411,9 +411,9 @@ requires is_basic_mat<t_mat>
 	if constexpr(is_dyn_mat<t_mat>)
 		mat2 = t_mat(mat.size2(), mat.size1());
 
-	for(std::size_t i=0; i<mat.size1(); ++i)
+	for(std::size_t i = 0; i < mat.size1(); ++i)
 	{
-		for(std::size_t j=0; j<mat.size2(); ++j)
+		for(std::size_t j = 0; j < mat.size2(); ++j)
 		{
 			if constexpr(is_complex<typename t_mat::value_type>)
 				mat2(i,j) = std::conj(mat(i,j));
@@ -437,9 +437,9 @@ requires is_basic_mat<t_mat>
 	if constexpr(is_dyn_mat<t_mat>)
 		mat2 = t_mat(mat.size2(), mat.size1());
 
-	for(std::size_t i=0; i<mat.size1(); ++i)
+	for(std::size_t i = 0; i < mat.size1(); ++i)
 	{
-		for(std::size_t j=0; j<mat.size2(); ++j)
+		for(std::size_t j = 0; j < mat.size2(); ++j)
 		{
 			if constexpr(is_complex<typename t_mat::value_type>)
 				mat2(j,i) = std::conj(mat(i,j));

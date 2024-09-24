@@ -42,11 +42,6 @@
 #include <vector>
 #include <limits>
 
-#if __has_include(<numbers>)
-	#include <numbers>
-	#define __TLIBS2_USE_NUMBERS__
-#endif
-
 #include "../str.h"
 #include "../algos.h"
 #include "../traits.h"

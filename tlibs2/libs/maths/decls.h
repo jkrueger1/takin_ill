@@ -43,6 +43,11 @@
 #include "../traits.h"
 
 
+#if __has_include(<numbers>)
+	#define __TLIBS2_USE_NUMBERS__
+#endif
+
+
 #if __has_include(<lapacke.h>) && USE_LAPACK
 	#define __TLIBS2_USE_LAPACK__
 

@@ -96,11 +96,19 @@ public:
 
 	static constexpr size_t size() { return N; }
 
-	T& operator[](size_t i) { return base_type::operator()(i,0); }
-	const T operator[](size_t i) const { return base_type::operator()(i,0); }
+	T& operator[](size_t i)
+	{
+		return base_type::operator()(i,0);
+	}
+
+	const T operator[](size_t i) const
+	{
+		return base_type::operator()(i,0);
+	}
 };
 
-template<typename size_t, size_t ROWS, size_t COLS, typename T, template<size_t, size_t, class...> class t_mat_base>
+template<typename size_t, size_t ROWS, size_t COLS, typename T,
+	template<size_t, size_t, class...> class t_mat_base>
 class qmat_adapter : public t_mat_base<COLS, ROWS, T>
 {
 public:
@@ -133,8 +141,15 @@ public:
 
 	static constexpr size_t size() { return N; }
 
-	T& operator[](size_t i) { return static_cast<base_type&>(*this)[i]; }
-	const T operator[](size_t i) const { return static_cast<const base_type&>(*this)[i]; }
+	T& operator[](size_t i)
+	{
+		return static_cast<base_type&>(*this)[i];
+	}
+
+	const T operator[](size_t i) const
+	{
+		return static_cast<const base_type&>(*this)[i];
+	}
 };
 
 template<typename size_t, size_t ROWS, size_t COLS, typename T, class t_mat_base>
@@ -154,12 +169,16 @@ public:
 	template<class t_matOther> qmatNN_adapter(const t_matOther& matOther)
 		requires is_basic_mat<t_matOther>
 	{
-		const std::size_t minRows = std::min(static_cast<std::size_t>(size1()), static_cast<std::size_t>(matOther.size1()));
-		const std::size_t minCols = std::min(static_cast<std::size_t>(size2()), static_cast<std::size_t>(matOther.size2()));
+		const std::size_t minRows = std::min(
+			static_cast<std::size_t>(size1()),
+			static_cast<std::size_t>(matOther.size1()));
+		const std::size_t minCols = std::min(
+			static_cast<std::size_t>(size2()),
+			static_cast<std::size_t>(matOther.size2()));
 
-		for(std::size_t i=0; i<minRows; ++i)
-			for(std::size_t j=0; j<minCols; ++j)
-				(*this)(i,j) = static_cast<value_type>(matOther(i,j));
+		for(std::size_t i = 0; i < minRows; ++i)
+			for(std::size_t j = 0; j < minCols; ++j)
+				(*this)(i, j) = static_cast<value_type>(matOther(i, j));
 	}
 
 	static constexpr size_t size1() { return ROWS; }
@@ -240,8 +259,15 @@ public:
 	}
 
 
-	const value_type& operator()(std::size_t i) const { return this->operator[](i); }
-	value_type& operator()(std::size_t i) { return this->operator[](i); }
+	const value_type& operator()(std::size_t i) const
+	{
+		return this->operator[](i);
+	}
+
+	value_type& operator()(std::size_t i)
+	{
+		return this->operator[](i);
+	}
 
 
 	void from_array(const T* arr)
@@ -328,23 +354,30 @@ public:
 
 
 	// element access
-	const T& operator()(std::size_t row, std::size_t col) const { return m_data[row*m_colsize + col]; }
-	T& operator()(std::size_t row, std::size_t col) { return m_data[row*m_colsize + col]; }
+	const T& operator()(std::size_t row, std::size_t col) const
+	{
+		return m_data[row*m_colsize + col];
+	}
+
+	T& operator()(std::size_t row, std::size_t col)
+	{
+		return m_data[row*m_colsize + col];
+	}
 
 
 	void from_array(const T* arr)
 	{
 		// initialise from given array data
-		for(std::size_t i=0; i<m_rowsize; ++i)
-			for(std::size_t j=0; j<m_colsize; ++j)
-				this->operator()(i,j) = arr[i*m_colsize + j];
+		for(std::size_t i = 0; i < m_rowsize; ++i)
+			for(std::size_t j = 0; j < m_colsize; ++j)
+				this->operator()(i, j) = arr[i*m_colsize + j];
 	}
 
 	void to_array(T* arr) const
 	{
 		// write elements to array
-		for(std::size_t i=0; i<m_rowsize; ++i)
-			for(std::size_t j=0; j<m_colsize; ++j)
+		for(std::size_t i = 0; i < m_rowsize; ++i)
+			for(std::size_t j = 0; j < m_colsize; ++j)
 				arr[i*m_colsize + j] = this->operator()(i,j);
 	}
 
