@@ -34,8 +34,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef __TLIBS2_CXX20_MATH_ALGOS_PEAKS_H__
-#define __TLIBS2_CXX20_MATH_ALGOS_PEAKS_H__
+#ifndef __TLIBS2_MATHS_PEAKS_H__
+#define __TLIBS2_MATHS_PEAKS_H__
 
 #include <cmath>
 #include <complex>

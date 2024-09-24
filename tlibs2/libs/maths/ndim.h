@@ -34,8 +34,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef __TLIBS2_CXX20_MATH_ALGOS_NDIM_H__
-#define __TLIBS2_CXX20_MATH_ALGOS_NDIM_H__
+#ifndef __TLIBS2_MATHS_NDIM_H__
+#define __TLIBS2_MATHS_NDIM_H__
 
 #include <cmath>
 #include <complex>

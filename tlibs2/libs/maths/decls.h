@@ -34,8 +34,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef __TLIBS2_CXX20_MATH_ALGOS_DECLS_H__
-#define __TLIBS2_CXX20_MATH_ALGOS_DECLS_H__
+#ifndef __TLIBS2_MATHS_DECLS_H__
+#define __TLIBS2_MATHS_DECLS_H__
 
 #include <tuple>
 #include <vector>

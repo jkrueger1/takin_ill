@@ -34,8 +34,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef __TLIBS2_CXX20_MATH_ALGOS_POLY_H__
-#define __TLIBS2_CXX20_MATH_ALGOS_POLY_H__
+#ifndef __TLIBS2_MATHS_POLY_H__
+#define __TLIBS2_MATHS_POLY_H__
 
 #include <cmath>
 #include <tuple>

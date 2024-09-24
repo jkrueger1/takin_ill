@@ -34,8 +34,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef __TLIBS2_CXX20_MATH_ALGOS_TENSOR_H__
-#define __TLIBS2_CXX20_MATH_ALGOS_TENSOR_H__
+#ifndef __TLIBS2_MATHS_TENSOR_H__
+#define __TLIBS2_MATHS_TENSOR_H__
 
 #include <cmath>
 #include <vector>

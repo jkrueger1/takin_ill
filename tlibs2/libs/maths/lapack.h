@@ -34,8 +34,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef __TLIBS2_CXX20_MATH_ALGOS_LAPACKE__H__
-#define __TLIBS2_CXX20_MATH_ALGOS_LAPACKE__H__
+#ifndef __TLIBS2_MATHS_LAPACKE__H__
+#define __TLIBS2_MATHS_LAPACKE__H__
 
 #include <cmath>
 #include <complex>

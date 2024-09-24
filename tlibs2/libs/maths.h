@@ -34,8 +34,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef __TLIBS2_CXX20_MATH_ALGOS_H__
-#define __TLIBS2_CXX20_MATH_ALGOS_H__
+#ifndef __TLIBS2_MATHS_H__
+#define __TLIBS2_MATHS_H__
 
 //#define USE_LAPACK 1
 #define __TLIBS2_QR_METHOD__ 0
@@ -59,6 +59,7 @@
 #include "maths/statistics.h"
 #include "maths/coordtrafos.h"
 #include "maths/diff.h"
+#include "maths/interp.h"
 #include "maths/lapack.h"
 #include "maths/qhull.h"
 
