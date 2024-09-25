@@ -25,6 +25,7 @@
 
 import time
 import numpy
+import numpy.linalg
 import magdyn
 
 
@@ -56,6 +57,7 @@ pt_R  = numpy.array([ 0.5, 0.5, 0.5 ])
 # dispersion branches to plot
 dispersion = [ pt_G, pt_X1, pt_M1, pt_R ]
 
+width_ratios = []                   # lengths from one dispersion point to the nexts
 num_branches = len(dispersion) - 1  # number of dispersion braches
 # -----------------------------------------------------------------------------
 
@@ -111,6 +113,8 @@ def calc_disp():
 	for branch_idx in range(num_branches):
 		hkl_start = dispersion[branch_idx]
 		hkl_end = dispersion[branch_idx + 1]
+
+		width_ratios.append(numpy.linalg.norm(hkl_end - hkl_start))
 
 		print("[%d/%d] Calculating %s  ->  %s branch..." %
 		   (branch_idx + 1, num_branches, hkl_start, hkl_end))
@@ -188,7 +192,8 @@ def plot_disp(data, dispersion_plot_indices):
 	import matplotlib.pyplot as plot
 	print("\nPlotting dispersion branches...")
 
-	(plt, axes) = plot.subplots(nrows = 1, ncols = num_branches, sharey = True)
+	(plt, axes) = plot.subplots(nrows = 1, ncols = num_branches,
+		width_ratios = width_ratios, sharey = True)
 
 	for ( branch_idx, data_h, data_k, data_l, data_E, data_S ) in data:
 		# dispersion branch start and end points
