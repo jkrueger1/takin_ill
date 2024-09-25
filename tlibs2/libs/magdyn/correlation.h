@@ -104,6 +104,7 @@ void MAGDYN_INST::CalcCorrelationsFromHamiltonian(
 		using namespace tl2_ops;
 		std::cerr << "Magdyn warning: Inversion failed"
 			<< " at Q = " << Qvec << "." << std::endl;
+		return;
 	}
 
 	// equation (34) from (Toth 2015)

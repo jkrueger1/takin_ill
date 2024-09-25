@@ -35,6 +35,7 @@ print_dispersion       = False  # write dispersion to console
 only_positive_energies = True   # ignore magnon annihilation?
 max_threads            = 0      # number of worker threads, 0: automatic determination
 num_Q_points           = 256    # number of Qs on a dispersion branch
+show_dividers          = True   # show vertical bars between dispersion branches
 S_scale                = 64.    # weight scaling and clamp factors
 S_clamp_min            = 1.     #
 S_clamp_max            = 500.   #
@@ -42,11 +43,18 @@ S_filter_min           = -1.    # don't filter
 modelfile              = "model.magdyn"
 plotfile               = ""     # file to save plot to
 
-dispersion = [                  # dispersion branches to plot
-	numpy.array([ 0., 0., 0.5 ]),
-	numpy.array([ 1., 1., 0.5 ]),
-	numpy.array([ 1., 0.5, 1. ]),
-]
+# cubic high-symmetry points
+pt_G  = numpy.array([ 0.0, 0.0, 0.0 ])
+pt_X1 = numpy.array([ 0.5, 0.0, 0.0 ])
+pt_X2 = numpy.array([ 0.0, 0.5, 0.0 ])
+pt_X3 = numpy.array([ 0.0, 0.0, 0.5 ])
+pt_M1 = numpy.array([ 0.5, 0.5, 0.0 ])
+pt_M2 = numpy.array([ 0.5, 0.0, 0.5 ])
+pt_M3 = numpy.array([ 0.0, 0.5, 0.5 ])
+pt_R  = numpy.array([ 0.5, 0.5, 0.5 ])
+
+# dispersion branches to plot
+dispersion = [ pt_G, pt_X1, pt_M1, pt_R ]
 
 num_branches = len(dispersion) - 1  # number of dispersion braches
 # -----------------------------------------------------------------------------
@@ -199,11 +207,20 @@ def plot_disp(data, dispersion_plot_indices):
 		axes[branch_idx].set_xlim(data_x[0], data_x[-1])
 		if branch_idx == 0:
 			axes[branch_idx].set_ylabel("E (meV)")
+
 			tick_labels = [
 				"(%.4g %.4g %.4g)" % (b1[0], b1[1], b1[2]),
 				"(%.4g %.4g %.4g)" % (b2[0], b2[1], b2[2])]
 		else:
+			axes[branch_idx].get_yaxis().set_visible(False)
+			if not show_dividers:
+				axes[branch_idx].spines["left"].set_visible(False)
+
 			tick_labels = ["", "(%.4g %.4g %.4g)" % (b2[0], b2[1], b2[2])]
+
+		if not show_dividers and branch_idx != num_branches - 1:
+			axes[branch_idx].spines["right"].set_visible(False)
+
 		axes[branch_idx].set_xticks([data_x[0], data_x[-1]], labels = tick_labels)
 
 		if branch_idx == num_branches / 2 - 1:

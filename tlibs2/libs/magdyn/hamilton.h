@@ -258,8 +258,7 @@ t_mat MAGDYN_INST::CalcHamiltonian(const t_vec_real& Qvec) const
  */
 MAGDYN_TEMPL
 MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
-	t_mat _H, const t_vec_real& Qvec,
-	bool only_energies) const
+	t_mat _H, const t_vec_real& Qvec, bool only_energies) const
 {
 	using namespace tl2_ops;
 	const t_size N = GetMagneticSitesCount();
@@ -274,6 +273,7 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 	// equation (31) from (Toth 2015)
 	t_mat chol_mat;
 	t_size chol_try = 0;
+	bool chol_failed = false;
 	for(; chol_try < m_tries_chol; ++chol_try)
 	{
 		const auto [chol_ok, _C] = tl2_la::chol<t_mat>(_H);
@@ -290,6 +290,7 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 				std::cerr << "Magdyn warning: Cholesky decomposition failed"
 					<< " at Q = " << Qvec << "." << std::endl;
 				chol_mat = std::move(_C);
+				chol_failed = true;
 				break;
 			}
 
@@ -306,7 +307,7 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 			<< " at Q = " << Qvec << "." << std::endl;
 	}
 
-	if(chol_mat.size1() == 0 || chol_mat.size2() == 0)
+	if(chol_failed || chol_mat.size1() == 0 || chol_mat.size2() == 0)
 	{
 		std::cerr << "Magdyn error: Invalid Cholesky decomposition"
 			<< " at Q = " << Qvec << "." << std::endl;
@@ -332,8 +333,8 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 	{
 		std::cerr << "Magdyn warning: Eigensystem calculation failed"
 			<< " at Q = " << Qvec << "." << std::endl;
+		return EnergiesAndWeights{};
 	}
-
 
 	EnergiesAndWeights energies_and_correlations{};
 	energies_and_correlations.reserve(evals.size());
