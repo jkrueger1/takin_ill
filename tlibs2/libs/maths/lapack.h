@@ -42,7 +42,6 @@
 #include <tuple>
 #include <vector>
 
-#include "../str.h"
 #include "../algos.h"
 #include "../traits.h"
 

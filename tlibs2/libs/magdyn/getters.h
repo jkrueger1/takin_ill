@@ -38,19 +38,13 @@
 #ifndef __TLIBS2_MAGDYN_GETTERS_H__
 #define __TLIBS2_MAGDYN_GETTERS_H__
 
-#include <algorithm>
-#include <numeric>
 #include <vector>
 #include <tuple>
 #include <string>
 #include <iostream>
 #include <iomanip>
-#include <cstdint>
 
 #include "../maths.h"
-#include "../units.h"
-#include "../phys.h"
-#include "../algos.h"
 #include "../expr.h"
 
 

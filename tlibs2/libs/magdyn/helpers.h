@@ -38,15 +38,9 @@
 #ifndef __TLIBS2_MAGDYN_HELPERS_H__
 #define __TLIBS2_MAGDYN_HELPERS_H__
 
-#include <algorithm>
-#include <numeric>
 #include <string>
-#include <cstdint>
 
 #include "../maths.h"
-#include "../units.h"
-#include "../phys.h"
-#include "../algos.h"
 
 
 

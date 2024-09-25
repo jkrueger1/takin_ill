@@ -42,9 +42,6 @@
 #include <vector>
 #include <initializer_list>
 
-#include <boost/algorithm/string.hpp>
-
-#include "../str.h"
 #include "../algos.h"
 #include "../traits.h"
 

@@ -42,7 +42,6 @@
 #include <vector>
 #include <limits>
 
-#include "../str.h"
 #include "../algos.h"
 #include "../traits.h"
 

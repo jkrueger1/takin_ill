@@ -38,17 +38,11 @@
 #ifndef __TLIBS2_MAGDYN_STRUCTS_H__
 #define __TLIBS2_MAGDYN_STRUCTS_H__
 
-#include <algorithm>
-#include <numeric>
 #include <vector>
 #include <array>
 #include <string>
-#include <cstdint>
 
 #include "../maths.h"
-#include "../units.h"
-#include "../phys.h"
-#include "../algos.h"
 
 
 

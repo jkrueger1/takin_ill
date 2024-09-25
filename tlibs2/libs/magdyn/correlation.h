@@ -38,31 +38,12 @@
 #ifndef __TLIBS2_MAGDYN_CORREL_H__
 #define __TLIBS2_MAGDYN_CORREL_H__
 
-#include <algorithm>
-#include <numeric>
 #include <vector>
-#include <array>
-#include <tuple>
-#include <unordered_set>
-#include <unordered_map>
-#include <string>
-#include <string_view>
 #include <iostream>
-#include <fstream>
 #include <iomanip>
-#include <thread>
-#include <cstdint>
-
-#include <boost/asio.hpp>
-#include <boost/container_hash/hash.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
 
 #include "../maths.h"
-#include "../units.h"
 #include "../phys.h"
-#include "../algos.h"
-#include "../expr.h"
 
 #include "magdyn.h"
 
@@ -239,24 +220,7 @@ void MAGDYN_INST::CalcIntensities(const t_vec_real& Q_rlu,
 		E_and_S.weight_full = std::abs(E_and_S.S_sum.real());
 		E_and_S.weight      = std::abs(E_and_S.S_perp_sum.real());
 
-		// TODO: polarisation via blume-maleev equation
-		/*static const t_vec_real h_rlu = tl2::create<t_vec_real>({ 1., 0., 0. });
-		static const t_vec_real l_rlu = tl2::create<t_vec_real>({ 0., 0., 1. });
-		t_vec_real h_lab = m_xtalUB * h_rlu;
-		t_vec_real l_lab = m_xtalUB * l_rlu;
-		t_vec_real Q_lab = m_xtalUB * Q_rlu;
-		t_mat_real rotQ = tl2::rotation<t_mat_real>(h_lab, Q_lab, &l_lab, m_eps, true);
-		t_mat_real rotQ_hkl = m_xtalUBinv * rotQ * m_xtalUB;
-		const auto [rotQ_hkl_inv, rotQ_hkl_inv_ok] = tl2::inv(rotQ_hkl);
-		if(!rotQ_hkl_inv_ok)
-			std::cerr << "Magdyn error: Cannot invert Q rotation matrix."
-				<< std::endl;
-
-		t_mat rotQ_hkl_cplx = tl2::convert<t_mat, t_mat_real>(rotQ_hkl);
-		t_mat rotQ_hkl_inv_cplx = tl2::convert<t_mat, t_mat_real>(rotQ_hkl_inv);
-
-		t_mat S_perp_pol = rotQ_hkl_cplx * E_and_S.S_perp * rotQ_hkl_inv_cplx;
-		t_mat S_pol = rotQ_hkl_cplx * E_and_S.S * rotQ_hkl_inv_cplx;*/
+		CalcPolarisation(Q_rlu, E_and_S);
 	}
 }
 // --------------------------------------------------------------------

@@ -38,8 +38,6 @@
 #ifndef __TLIBS2_MAGDYN_DECL_H__
 #define __TLIBS2_MAGDYN_DECL_H__
 
-#include <algorithm>
-#include <numeric>
 #include <vector>
 #include <array>
 #include <tuple>
@@ -47,20 +45,16 @@
 #include <unordered_map>
 #include <string>
 #include <string_view>
-#include <cstdint>
 
 #include <boost/container_hash/hash.hpp>
 #include <boost/property_tree/ptree.hpp>
 
 #include "../maths.h"
-#include "../units.h"
-#include "../phys.h"
-#include "../algos.h"
 #include "../expr.h"
-
 
 #include "structs.h"
 #include "helpers.h"
+
 
 
 #ifndef SWIG  // TODO: remove this as soon as swig understands concepts
@@ -71,13 +65,13 @@
 		class t_cplx, class t_real, class t_size>           \
 	requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> &&        \
 		tl2::is_mat<t_mat_real> && tl2::is_vec<t_vec_real>
-#else
+#else  // SWIG
 #define MAGDYN_TEMPL                                          \
 	template<                                             \
 		class t_mat, class t_vec,                     \
 		class t_mat_real, class t_vec_real,           \
 		class t_cplx, class t_real, class t_size>
-#endif
+#endif  // SWIG
 
 #define MAGDYN_INST                                           \
 	tl2_mag::MagDyn<t_mat, t_vec, t_mat_real, t_vec_real, \
@@ -434,8 +428,12 @@ public:
 	 * applies projectors, form and weight factors to get neutron intensities
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	void CalcIntensities(const t_vec_real& Q_rlu, EnergiesAndWeights&
-		energies_and_correlations) const;
+	void CalcIntensities(const t_vec_real& Q_rlu, EnergiesAndWeights& E_and_S) const;
+
+	/**
+	 * calculates the polarisation matrix
+	 */
+	void CalcPolarisation(const t_vec_real& Q_rlu, EnergyAndWeight& E_and_S) const;
 
 	/**
 	 * unite degenerate energies and their corresponding eigenstates

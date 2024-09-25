@@ -41,7 +41,6 @@
 #include <vector>
 #include <initializer_list>
 
-#include "../str.h"
 #include "../algos.h"
 #include "../traits.h"
 

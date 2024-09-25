@@ -59,6 +59,7 @@
 #include "magdyn/precalc.h"
 #include "magdyn/hamilton.h"
 #include "magdyn/correlation.h"
+#include "magdyn/polarisation.h"
 #include "magdyn/dispersion.h"
 
 

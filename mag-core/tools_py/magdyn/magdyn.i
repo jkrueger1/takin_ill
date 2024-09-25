@@ -77,6 +77,7 @@
 %include "../../tlibs2/libs/magdyn/precalc.h"
 %include "../../tlibs2/libs/magdyn/hamilton.h"
 %include "../../tlibs2/libs/magdyn/correlation.h"
+%include "../../tlibs2/libs/magdyn/polarisation.h"
 %include "../../tlibs2/libs/magdyn/dispersion.h"
 
 

@@ -38,18 +38,13 @@
 #ifndef __TLIBS2_MAGDYN_HAM_H__
 #define __TLIBS2_MAGDYN_HAM_H__
 
-#include <algorithm>
-#include <numeric>
 #include <tuple>
 #include <string>
 #include <iostream>
 #include <iomanip>
-#include <cstdint>
 
 #include "../maths.h"
 #include "../units.h"
-#include "../phys.h"
-#include "../algos.h"
 
 #include "magdyn.h"
 

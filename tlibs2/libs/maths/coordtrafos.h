@@ -40,7 +40,6 @@
 #include <cmath>
 #include <tuple>
 
-#include "../str.h"
 #include "../algos.h"
 #include "../traits.h"
 

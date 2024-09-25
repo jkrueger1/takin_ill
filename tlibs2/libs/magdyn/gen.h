@@ -38,18 +38,12 @@
 #ifndef __TLIBS2_MAGDYN_GEN_H__
 #define __TLIBS2_MAGDYN_GEN_H__
 
-#include <algorithm>
-#include <numeric>
 #include <vector>
 #include <string>
 #include <iostream>
 #include <iomanip>
-#include <cstdint>
 
 #include "../maths.h"
-#include "../units.h"
-#include "../phys.h"
-#include "../algos.h"
 #include "../expr.h"
 
 #include "magdyn.h"

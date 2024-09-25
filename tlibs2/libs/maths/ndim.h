@@ -44,7 +44,6 @@
 #include <initializer_list>
 #include <limits>
 
-#include "../str.h"
 #include "../algos.h"
 #include "../traits.h"
 

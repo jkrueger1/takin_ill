@@ -46,7 +46,6 @@
 	#include <numbers>
 #endif
 
-#include "../str.h"
 #include "../algos.h"
 #include "../traits.h"
 
@@ -141,7 +140,7 @@ requires is_basic_vec<t_vec>
 	t_real len1 = t_real(0);
 	t_real len2 = t_real(0);
 
-	for(std::size_t i=0; i<q1.size(); ++i)
+	for(std::size_t i = 0; i < q1.size(); ++i)
 	{
 		dot += q1[i]*q2[i];
 
@@ -195,7 +194,7 @@ t_vec<T> linspace(const T& tmin, const T& tmax, std::size_t iNum)
 
 template<typename T=double, typename REAL=double,
 template<class...> class t_vec = std::vector>
-t_vec<T> logspace(const T& tmin, const T& tmax, std::size_t iNum, T tBase=T(10))
+t_vec<T> logspace(const T& tmin, const T& tmax, std::size_t iNum, T tBase = T(10))
 {
 	t_vec<T> vec = linspace<T, REAL>(tmin, tmax, iNum);
 
@@ -210,8 +209,10 @@ bool is_in_range(T val, T centre, T pm)
 {
 	pm = std::abs(pm);
 
-	if(val < centre-pm) return false;
-	if(val > centre+pm) return false;
+	if(val < centre-pm)
+		return false;
+	if(val > centre+pm)
+		return false;
 	return true;
 }
 
@@ -262,7 +263,7 @@ bool is_in_angular_range(T dStart, T dRange, T dAngle)
  * get a random number in the given range
  */
 template<class t_num>
-t_num get_rand(t_num min=1, t_num max=-1)
+t_num get_rand(t_num min = 1, t_num max = -1)
 {
 	static std::mt19937 rng{std::random_device{}()};
 

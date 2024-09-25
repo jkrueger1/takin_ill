@@ -43,7 +43,6 @@
 #include <boost/math/special_functions/factorials.hpp>
 #include <boost/math/special_functions/spherical_harmonic.hpp>
 
-#include "../str.h"
 #include "../algos.h"
 #include "../traits.h"
 

@@ -38,22 +38,17 @@
 #ifndef __TLIBS2_MAGDYN_FILE_H__
 #define __TLIBS2_MAGDYN_FILE_H__
 
-#include <algorithm>
-#include <numeric>
 #include <unordered_set>
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include <cstdint>
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
 #include "../maths.h"
-#include "../units.h"
-#include "../phys.h"
-#include "../algos.h"
+#include "../str.h"
 
 #include "magdyn.h"
 
