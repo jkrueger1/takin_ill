@@ -1,5 +1,5 @@
 /**
- * tlibs2 -- (container-agnostic) math library
+ * tlibs2 maths library -- containers and adapters
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
  * @date 2015 - 2024
  * @license GPLv3, see 'LICENSE' file
@@ -48,6 +48,7 @@
 #include "operators.h"
 
 
+
 namespace tl2 {
 // ----------------------------------------------------------------------------
 // adapters
@@ -81,7 +82,11 @@ private:
 };
 
 
-template<typename size_t, size_t N, typename T, template<size_t, size_t, class...> class t_mat_base>
+/**
+ * adapter for a qvector
+ */
+template<typename size_t, size_t N, typename T,
+	template<size_t, size_t, class...> class t_mat_base>
 class qvec_adapter : public t_mat_base<1, N, T>
 {
 public:
@@ -107,6 +112,10 @@ public:
 	}
 };
 
+
+/**
+ * adapter for a qmatrix
+ */
 template<typename size_t, size_t ROWS, size_t COLS, typename T,
 	template<size_t, size_t, class...> class t_mat_base>
 class qmat_adapter : public t_mat_base<COLS, ROWS, T>
@@ -126,6 +135,9 @@ public:
 };
 
 
+/**
+ * adapter for a qvector
+ */
 template<typename size_t, size_t N, typename T, class t_vec_base>
 class qvecN_adapter : public t_vec_base
 {
@@ -152,6 +164,10 @@ public:
 	}
 };
 
+
+/**
+ * adapter for a qmatrix
+ */
 template<typename size_t, size_t ROWS, size_t COLS, typename T, class t_mat_base>
 class qmatNN_adapter : public t_mat_base
 {
@@ -192,6 +208,9 @@ public:
 // vector and matrix containers
 // ----------------------------------------------------------------------------
 
+/**
+ * generic vector container
+ */
 template<class T = double, template<class...> class t_cont = std::vector>
 requires is_basic_vec<t_cont<T>> && is_dyn_vec<t_cont<T>>
 class vec : public t_cont<T>
@@ -273,14 +292,14 @@ public:
 	void from_array(const T* arr)
 	{
 		// initialise from given array data
-		for(std::size_t i=0; i<size(); ++i)
+		for(std::size_t i = 0; i < size(); ++i)
 			this->operator[](i) = arr[i];
 	}
 
 	void to_array(T* arr) const
 	{
 		// write elements to array
-		for(std::size_t i=0; i<size(); ++i)
+		for(std::size_t i = 0; i < size(); ++i)
 			arr[i] = this->operator[](i);
 	}
 
@@ -301,6 +320,10 @@ public:
 };
 
 
+
+/**
+ * generic matrix container
+ */
 template<class T=double, template<class...> class t_cont = std::vector>
 requires is_basic_vec<t_cont<T>> && is_dyn_vec<t_cont<T>>
 class mat

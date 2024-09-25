@@ -1,5 +1,5 @@
 /**
- * tlibs2 -- interpolation library
+ * tlibs2 maths library -- interpolation
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
  * @date 2012-2024
  * @note Forked on 7-Nov-2018 from my privately and TUM-PhD-developed "tlibs" project (https://github.com/t-weber/tlibs).
@@ -38,6 +38,7 @@
 #include "decls.h"
 
 
+
 namespace tl2 {
 
 // ----------------------------------------------------------------------------
@@ -58,7 +59,7 @@ template<typename T> T bernstein(int i, int n, T t)
 /**
  * @see http://mathworld.wolfram.com/BezierCurve.html
  */
-template<class t_vec, typename T=typename t_vec::value_type>
+template<class t_vec, typename T = typename t_vec::value_type>
 t_vec bezier(const t_vec* P, std::size_t N, T t)
 {
 	if(N == 0)
@@ -106,7 +107,7 @@ T bspline_base(int i, int j, T t, const std::vector<T>& knots)
 /**
  * @see http://mathworld.wolfram.com/B-Spline.html
  */
-template<class t_vec, typename T=typename t_vec::value_type>
+template<class t_vec, typename T = typename t_vec::value_type>
 t_vec bspline(const t_vec* P, std::size_t N, T t, const std::vector<T>& knots)
 {
 	if(N == 0)

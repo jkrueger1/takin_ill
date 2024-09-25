@@ -1,5 +1,5 @@
 /**
- * tlibs2 -- (container-agnostic) math library
+ * tlibs2 maths library
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
  * @date 2015 - 2024
  * @license GPLv3, see 'LICENSE' file
@@ -36,6 +36,7 @@
 
 #ifndef __TLIBS2_MATHS_H__
 #define __TLIBS2_MATHS_H__
+
 
 //#define USE_LAPACK 1
 #define __TLIBS2_QR_METHOD__ 0

@@ -1,5 +1,5 @@
 /**
- * tlibs2 -- (container-agnostic) math library
+ * tlibs2 maths library -- qhull interface
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
  * @date 2015 - 2024
  * @license GPLv3, see 'LICENSE' file
@@ -46,6 +46,7 @@
 #include "../traits.h"
 
 #include "decls.h"
+#include "operators.h"
 
 
 #ifdef __TLIBS2_USE_QHULL__
@@ -55,6 +56,7 @@
 #else
 	//#pragma message("tlibs2: Disabling QHull library (not found).")
 #endif
+
 
 
 #ifdef __TLIBS2_USE_QHULL__
@@ -133,7 +135,7 @@ requires tl2::is_vec<t_vec>
 		orgQhull::QhullHyperplane plane = iter->hyperplane();
 		const t_real_qh* planenorm = plane.coordinates();
 		const t_real_qh planedist = plane.offset();
-		for(int i=0; i<dim; ++i)
+		for(int i = 0; i < dim; ++i)
 			vecNormal[i] = t_real(planenorm[i]);
 
 		vecPolys.emplace_back(std::move(vecPoly));
@@ -150,7 +152,7 @@ requires tl2::is_vec<t_vec>
 
 
 }
-#endif
+#endif  // __TLIBS2_USE_QHULL__
 
 
 // ----------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 /**
- * tlibs2 -- (container-agnostic) math library
+ * tlibs2 maths library -- Fourier transform
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
  * @date 2015 - 2024
  * @license GPLv3, see 'LICENSE' file
@@ -48,6 +48,7 @@
 #include "decls.h"
 
 
+
 namespace tl2 {
 // ----------------------------------------------------------------------------
 // Fourier transform
@@ -70,7 +71,7 @@ t_cplx dft_coeff(int k, const t_cont<t_cplx>& invec, bool bInv = false)
 
 	for(std::size_t j=0; j<N; ++j)
 	{
-		T dv = T(-2)*pi<T>*T(j)*T(k)/T(N);
+		T dv = T(-2)*pi < T>*T(j)*T(k)/T(N);
 		if(bInv) dv = -dv;
 		f += invec[j] * (std::cos(dv) + imag*std::sin(dv));
 	}
@@ -115,8 +116,8 @@ t_cplx fft_factor(T N, T k, bool bInv = false)
 {
 	T ph = bInv ? -1 : 1.;
 
-	T c = std::cos(T(2)*pi<T>*k/N * ph);
-	T s = std::sin(T(2)*pi<T>*k/N * ph);
+	T c = std::cos(T(2)*pi < T>*k/N * ph);
+	T s = std::sin(T(2)*pi < T>*k/N * ph);
 
 	return t_cplx{c, -s};
 }
@@ -137,7 +138,7 @@ t_cont<t_cplx> fft_reorder(const t_cont<t_cplx>& vecIn)
 	t_cont<t_cplx> vecInRev;
 	vecInRev.reserve(vecIn.size());
 
-	for(std::size_t i=0; i<vecIn.size(); ++i)
+	for(std::size_t i = 0; i < vecIn.size(); ++i)
 		vecInRev.push_back(vecIn[vecIdx[i]]);
 
 	return vecInRev;
@@ -168,7 +169,7 @@ t_cont<t_cplx> fft_merge(const t_cont<t_cplx>& vecIn, bool bInv = false)
 		vec1.reserve(N/2);
 		vec2.reserve(N/2);
 
-		for(std::size_t i=0; i<N/2; ++i)
+		for(std::size_t i = 0; i < N/2; ++i)
 		{
 			vec1.push_back(vec[i]);
 			vec2.push_back(vec[N/2 + i]);
@@ -184,7 +185,7 @@ t_cont<t_cplx> fft_merge(const t_cont<t_cplx>& vecIn, bool bInv = false)
 	t_cont<t_cplx> vecOut;
 	vecOut.resize(N);
 
-	for(std::size_t i=0; i<N2; ++i)
+	for(std::size_t i = 0; i < N2; ++i)
 	{
 		vecOut[i] = vec1[i] + vec2[i]*fft_factor<T, t_cplx>(N, i, bInv);
 		vecOut[N2+i] = vec1[i] + vec2[i]*fft_factor<T, t_cplx>(N, N2+i, bInv);

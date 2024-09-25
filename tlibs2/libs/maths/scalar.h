@@ -1,5 +1,5 @@
 /**
- * tlibs2 -- (container-agnostic) math library
+ * tlibs2 maths library -- scalar algorithms
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
  * @date 2015 - 2024
  * @license GPLv3, see 'LICENSE' file
@@ -49,7 +49,7 @@
 
 namespace tl2 {
 // ----------------------------------------------------------------------------
-// scalar algos
+// scalar algorithms
 // ----------------------------------------------------------------------------
 
 /**

@@ -1,5 +1,5 @@
 /**
- * tlibs2 -- (container-agnostic) math library
+ * tlibs2 -- maths library -- 3-dim algos
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
  * @date 2015 - 2024
  * @license GPLv3, see 'LICENSE' file
@@ -48,6 +48,7 @@
 
 #include "decls.h"
 #include "projectors.h"
+
 
 
 namespace tl2 {
@@ -401,333 +402,51 @@ requires is_vec<t_vec> && is_mat<t_mat>
 
 
 /**
- * extracts lines from polygon object, takes input from e.g. create_cube()
- * @returns [point pairs]
+ * transforms vertices and normals using a matrix
  */
-template<class t_vec, template<class...> class t_cont = std::vector>
-t_cont<t_vec> create_lines(const t_cont<t_vec>& vertices, const t_cont<t_cont<std::size_t>>& faces)
-requires is_vec<t_vec>
+template<class t_mat, class t_vec, template<class...> class t_cont = std::vector>
+void transform_obj(t_cont<t_vec>& verts, t_cont<t_vec>& norms, const t_mat& mat, bool is_3dhom = false)
+requires is_vec<t_vec> && is_mat<t_mat>
 {
-	t_cont<t_vec> lineverts;
+	using size_t = decltype(mat.size1());
 
-	auto line_already_seen = [&lineverts](const t_vec& vec1, const t_vec& vec2) -> bool
+	// make sure a 3-vector and a 4-matrix are handled correctly in homogeneous coordinates
+	if(is_3dhom && mat.size1() == 4)
 	{
-		auto iter = lineverts.begin();
-
-		while(1)
+		t_mat mat3 = mat;
+		for(size_t i = 0; i < 3; ++i)
 		{
-			const t_vec& linevec1 = *iter;
-			std::advance(iter, 1); if(iter == lineverts.end()) break;
-			const t_vec& linevec2 = *iter;
-
-			if(equals<t_vec>(vec1, linevec1) && equals<t_vec>(vec2, linevec2))
-				return true;
-			if(equals<t_vec>(vec1, linevec2) && equals<t_vec>(vec2, linevec1))
-				return true;
-
-			std::advance(iter, 1); if(iter == lineverts.end()) break;
+			mat3(3,i) = 0;
+			mat3(i,3) = 0;
 		}
+		mat3(3,3) = 1;
 
-		return false;
-	};
-
-	for(const auto& face : faces)
-	{
-		// iterator to last point
-		auto iter1 = face.begin();
-		std::advance(iter1, face.size()-1);
-
-		for(auto iter2 = face.begin(); iter2 != face.end(); std::advance(iter2, 1))
+		for(auto& vert : verts)
 		{
-			const t_vec& vec1 = vertices[*iter1];
-			const t_vec& vec2 = vertices[*iter2];
+			vert = mat3 * vert;
 
-			//if(!line_already_seen(vec1, vec2))
+			// add translation and normalise
+			for(size_t i = 0; i < 3; ++i)
 			{
-				lineverts.push_back(vec1);
-				lineverts.push_back(vec2);
+				vert[i] += mat(i,3);
+				vert[i] /= mat(3,3);
 			}
-
-			iter1 = iter2;
 		}
+
+		for(auto& norm : norms)
+			norm = mat3 * norm;
 	}
 
-	return lineverts;
-}
-
-
-/**
- * triangulates polygon object, takes input from e.g. create_cube()
- * @returns [triangles, face normals, vertex uvs]
- */
-template<class t_vec, template<class...> class t_cont = std::vector>
-std::tuple<t_cont<t_vec>, t_cont<t_vec>, t_cont<t_vec>>
-create_triangles(const std::tuple<t_cont<t_vec>, t_cont<t_cont<std::size_t>>,
-	t_cont<t_vec>, t_cont<t_cont<t_vec>>>& tup)
-requires is_vec<t_vec>
-{
-	const t_cont<t_vec>& vertices = std::get<0>(tup);
-	const t_cont<t_cont<std::size_t>>& faces = std::get<1>(tup);
-	const t_cont<t_vec>& normals = std::get<2>(tup);
-	const t_cont<t_cont<t_vec>>& uvs = std::get<3>(tup);
-
-	t_cont<t_vec> triangles;
-	t_cont<t_vec> triag_normals;
-	t_cont<t_vec> vert_uvs;
-
-	auto iterFaces = faces.begin();
-	auto iterNorms = normals.begin();
-	auto iterUVs = uvs.begin();
-
-	// iterate over faces
-	while(iterFaces != faces.end())
+	// standard case: just multiply
+	else
 	{
-		// triangulate faces
-		auto iterFaceVertIdx = iterFaces->begin();
-		std::size_t vert1Idx = *iterFaceVertIdx;
-		std::advance(iterFaceVertIdx, 1);
-		std::size_t vert2Idx = *iterFaceVertIdx;
+		for(auto& vert : verts)
+			vert = mat * vert;
 
-		const t_vec *puv1 = nullptr;
-		const t_vec *puv2 = nullptr;
-		const t_vec *puv3 = nullptr;
-
-		typename t_cont<t_vec>::const_iterator iterFaceUVIdx;
-		if(iterUVs != uvs.end() && iterFaceUVIdx != iterUVs->end())
-		{
-			iterFaceUVIdx = iterUVs->begin();
-
-			puv1 = &(*iterFaceUVIdx);
-			std::advance(iterFaceUVIdx, 1);
-			puv2 = &(*iterFaceUVIdx);
-		}
-
-		// iterate over face vertices
-		while(1)
-		{
-			std::advance(iterFaceVertIdx, 1);
-			if(iterFaceVertIdx == iterFaces->end())
-				break;
-			std::size_t vert3Idx = *iterFaceVertIdx;
-
-			if(iterUVs != uvs.end() && iterFaceUVIdx != iterUVs->end())
-			{
-				std::advance(iterFaceUVIdx, 1);
-				puv3 = &(*iterFaceUVIdx);
-			}
-
-			// create triangle
-			triangles.push_back(vertices[vert1Idx]);
-			triangles.push_back(vertices[vert2Idx]);
-			triangles.push_back(vertices[vert3Idx]);
-
-			// triangle normal
-			triag_normals.push_back(*iterNorms);
-			//triag_normals.push_back(*iterNorms);
-			//triag_normals.push_back(*iterNorms);
-
-			// triangle vertex uvs
-			if(puv1 && puv2 && puv3)
-			{
-				vert_uvs.push_back(*puv1);
-				vert_uvs.push_back(*puv2);
-				vert_uvs.push_back(*puv3);
-			}
-
-
-			// next vertex
-			vert2Idx = vert3Idx;
-			puv2 = puv3;
-		}
-
-
-		std::advance(iterFaces, 1);
-		if(iterNorms != normals.end()) std::advance(iterNorms, 1);
-		if(iterUVs != uvs.end()) std::advance(iterUVs, 1);
+		for(auto& norm : norms)
+			norm = mat * norm;
 	}
-
-	return std::make_tuple(triangles, triag_normals, vert_uvs);
 }
-
-
-/**
- * subdivides triangles
- * input: [triangle vertices, normals, uvs]
- * @returns [triangles, face normals, vertex uvs]
- */
-template<class t_vec, template<class...> class t_cont = std::vector>
-std::tuple<t_cont<t_vec>, t_cont<t_vec>, t_cont<t_vec>>
-subdivide_triangles(const std::tuple<t_cont<t_vec>, t_cont<t_vec>, t_cont<t_vec>>& tup)
-requires is_vec<t_vec>
-{
-	const t_cont<t_vec>& vertices = std::get<0>(tup);
-	const t_cont<t_vec>& normals = std::get<1>(tup);
-	const t_cont<t_vec>& uvs = std::get<2>(tup);
-
-	t_cont<t_vec> vertices_new;
-	t_cont<t_vec> normals_new;
-	t_cont<t_vec> uvs_new;
-
-
-	// iterate over triplets forming triangles
-	auto itervert = vertices.begin();
-	auto iternorm = normals.begin();
-	auto iteruv = uvs.begin();
-
-	while(itervert != vertices.end())
-	{
-		const t_vec& vec1 = *itervert;
-		std::advance(itervert, 1); if(itervert == vertices.end()) break;
-		const t_vec& vec2 = *itervert;
-		std::advance(itervert, 1); if(itervert == vertices.end()) break;
-		const t_vec& vec3 = *itervert;
-		std::advance(itervert, 1);
-
-		const t_vec vec12mid = mean<t_vec>({ vec1, vec2 });
-		const t_vec vec23mid = mean<t_vec>({ vec2, vec3 });
-		const t_vec vec31mid = mean<t_vec>({ vec3, vec1 });
-
-		// triangle 1
-		vertices_new.push_back(vec1);
-		vertices_new.push_back(vec12mid);
-		vertices_new.push_back(vec31mid);
-
-		// triangle 2
-		vertices_new.push_back(vec12mid);
-		vertices_new.push_back(vec2);
-		vertices_new.push_back(vec23mid);
-
-		// triangle 3
-		vertices_new.push_back(vec31mid);
-		vertices_new.push_back(vec23mid);
-		vertices_new.push_back(vec3);
-
-		// triangle 4
-		vertices_new.push_back(vec12mid);
-		vertices_new.push_back(vec23mid);
-		vertices_new.push_back(vec31mid);
-
-
-		// duplicate normals for the four sub-triangles
-		if(iternorm != normals.end())
-		{
-			normals_new.push_back(*iternorm);
-			normals_new.push_back(*iternorm);
-			normals_new.push_back(*iternorm);
-			normals_new.push_back(*iternorm);
-
-			std::advance(iternorm, 1);
-		}
-
-
-		// uv coords
-		if(iteruv != uvs.end())
-		{
-			// uv coords at vertices
-			const t_vec& uv1 = *iteruv;
-			std::advance(iteruv, 1); if(iteruv == uvs.end()) break;
-			const t_vec& uv2 = *iteruv;
-			std::advance(iteruv, 1); if(iteruv == uvs.end()) break;
-			const t_vec& uv3 = *iteruv;
-			std::advance(iteruv, 1);
-
-			const t_vec uv12mid = mean<t_vec>({ uv1, uv2 });
-			const t_vec uv23mid = mean<t_vec>({ uv2, uv3 });
-			const t_vec uv31mid = mean<t_vec>({ uv3, uv1 });
-
-			// uvs of triangle 1
-			uvs_new.push_back(uv1);
-			uvs_new.push_back(uv12mid);
-			uvs_new.push_back(uv31mid);
-
-			// uvs of triangle 2
-			uvs_new.push_back(uv12mid);
-			uvs_new.push_back(uv2);
-			uvs_new.push_back(uv23mid);
-
-			// uvs of triangle 3
-			uvs_new.push_back(uv31mid);
-			uvs_new.push_back(uv23mid);
-			uvs_new.push_back(uv3);
-
-			// uvs of triangle 4
-			uvs_new.push_back(uv12mid);
-			uvs_new.push_back(uv23mid);
-			uvs_new.push_back(uv31mid);
-		}
-	}
-
-	return std::make_tuple(vertices_new, normals_new, uvs_new);
-}
-
-
-/**
- * subdivides triangles (with specified number of iterations)
- * input: [triangle vertices, normals, uvs]
- * @returns [triangles, face normals, vertex uvs]
- */
-template<class t_vec, template<class...> class t_cont = std::vector>
-std::tuple<t_cont<t_vec>, t_cont<t_vec>, t_cont<t_vec>>
-subdivide_triangles(const std::tuple<t_cont<t_vec>, t_cont<t_vec>, t_cont<t_vec>>& tup, std::size_t iters)
-requires is_vec<t_vec>
-{
-	auto tupDiv = tup;
-	for(std::size_t i=0; i<iters; ++i)
-		tupDiv = tl2::subdivide_triangles<t_vec, t_cont>(tupDiv);
-	return tupDiv;
-}
-
-
-/**
- * create the faces of a sphere
- * input: [triangle vertices, normals, uvs] (like subdivide_triangles)
- * @returns [triangles, face normals, vertex uvs]
- */
-template<class t_vec, template<class...> class t_cont = std::vector>
-std::tuple<t_cont<t_vec>, t_cont<t_vec>, t_cont<t_vec>>
-spherify(const std::tuple<t_cont<t_vec>, t_cont<t_vec>, t_cont<t_vec>>& tup,
-	typename t_vec::value_type rad = 1)
-requires is_vec<t_vec>
-{
-	const t_cont<t_vec>& vertices = std::get<0>(tup);
-	//const t_cont<t_vec>& normals = std::get<1>(tup);
-	const t_cont<t_vec>& uvs = std::get<2>(tup);
-
-	t_cont<t_vec> vertices_new;
-	t_cont<t_vec> normals_new;
-	vertices_new.reserve(vertices.size());
-	normals_new.reserve(vertices.size());
-
-
-	// vertices
-	for(t_vec vec : vertices)
-	{
-		vec /= tl2::norm<t_vec>(vec);
-		vec *= rad;
-		vertices_new.emplace_back(std::move(vec));
-	}
-
-
-	// face normals
-	auto itervert = vertices.begin();
-	// iterate over triplets forming triangles
-	while(itervert != vertices.end())
-	{
-		const t_vec& vec1 = *itervert;
-		std::advance(itervert, 1); if(itervert == vertices.end()) break;
-		const t_vec& vec2 = *itervert;
-		std::advance(itervert, 1); if(itervert == vertices.end()) break;
-		const t_vec& vec3 = *itervert;
-		std::advance(itervert, 1);
-
-		t_vec vecmid = mean<t_vec>({ vec1, vec2, vec3 });
-		vecmid /= tl2::norm<t_vec>(vecmid);
-		normals_new.emplace_back(std::move(vecmid));
-	}
-
-	return std::make_tuple(vertices_new, normals_new, uvs);
-}
-
 // ----------------------------------------------------------------------------
 
 

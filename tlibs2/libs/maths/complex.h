@@ -1,5 +1,5 @@
 /**
- * tlibs2 -- (container-agnostic) math library
+ * tlibs2 maths library -- complex algorithms
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
  * @date 2015 - 2024
  * @license GPLv3, see 'LICENSE' file
@@ -50,9 +50,10 @@
 #include "ndim.h"
 
 
+
 namespace tl2 {
 // ----------------------------------------------------------------------------
-// complex algos
+// complex algorithms
 // ----------------------------------------------------------------------------
 
 /**
@@ -245,7 +246,7 @@ template<class t_mat_cplx, class t_mat_real>
 t_mat_cplx unite_cplx_real(const t_mat_real& matReIm)
 requires is_complex<typename t_mat_cplx::value_type> && is_mat<t_mat_cplx> && is_mat<t_mat_real>
 {
-	t_mat_cplx mat = zero<t_mat_cplx>(matReIm.size1()/2, matReIm.size2()/2);
+	t_mat_cplx mat = zero<t_mat_cplx>(matReIm.size1() / 2, matReIm.size2() / 2);
 
 	for(std::size_t i = 0; i < mat.size1(); ++i)
 	{
@@ -275,9 +276,9 @@ requires is_mat<t_mat> && is_complex<typename t_mat::value_type>
 
 	static const t_mat mat[] =
 	{
-		create<t_mat>({{c0, c1}, { c1,  c0}}),	// x
-		create<t_mat>({{c0, cI}, {-cI,  c0}}),	// y
-		create<t_mat>({{c1, c0}, { c0, -c1}}),	// z
+		create<t_mat>({{c0, c1}, { c1,  c0}}),  // x
+		create<t_mat>({{c0, cI}, {-cI,  c0}}),  // y
+		create<t_mat>({{c1, c0}, { c0, -c1}}),  // z
 	};
 
 	return mat[which];
@@ -338,8 +339,8 @@ requires is_mat<t_mat> && is_complex<typename t_mat::value_type>
 
 	static const t_mat mat[] =
 	{
-		c05*su2_matrix<t_mat>(0) + c05*cI*su2_matrix<t_mat>(1),	// up
-		c05*su2_matrix<t_mat>(0) - c05*cI*su2_matrix<t_mat>(1),	// down
+		c05*su2_matrix<t_mat>(0) + c05*cI*su2_matrix<t_mat>(1),  // up
+		c05*su2_matrix<t_mat>(0) - c05*cI*su2_matrix<t_mat>(1),  // down
 	};
 
 	return mat[which];
@@ -364,14 +365,14 @@ requires is_mat<t_mat> && is_complex<typename t_mat::value_type>
 
 	static const t_mat mat[] =
 	{
-		create<t_mat>({{c0,c1,c0}, {c1,c0,c0}, {c0,c0,c0}}),			// 1
-		create<t_mat>({{c0,cI,c0}, {-cI,c0,c0}, {c0,c0,c0}}),			// 2
-		create<t_mat>({{c1,c0,c0}, {c0,-c1,c0}, {c0,c0,c0}}),			// 3
-		create<t_mat>({{c0,c0,c1}, {c0,c0,c0}, {c1,c0,c0}}),			// 4
-		create<t_mat>({{c0,c0,cI}, {c0,c0,c0}, {-cI,c0,c0}}),			// 5
-		create<t_mat>({{c0,c0,c0}, {c0,c0,c1}, {c0,c1,c0}}),			// 6
-		create<t_mat>({{c0,c0,c0}, {c0,c0,cI}, {c0,-cI,c0}}),			// 7
-		create<t_mat>({{c1/s3,c0,c0}, {c0,c1/s3,c0}, {c0,c0,-c2/s3*c1}}),	// 8
+		create<t_mat>({{c0,c1,c0}, {c1,c0,c0}, {c0,c0,c0}}),               // 1
+		create<t_mat>({{c0,cI,c0}, {-cI,c0,c0}, {c0,c0,c0}}),              // 2
+		create<t_mat>({{c1,c0,c0}, {c0,-c1,c0}, {c0,c0,c0}}),              // 3
+		create<t_mat>({{c0,c0,c1}, {c0,c0,c0}, {c1,c0,c0}}),               // 4
+		create<t_mat>({{c0,c0,cI}, {c0,c0,c0}, {-cI,c0,c0}}),              // 5
+		create<t_mat>({{c0,c0,c0}, {c0,c0,c1}, {c0,c1,c0}}),               // 6
+		create<t_mat>({{c0,c0,c0}, {c0,c0,cI}, {c0,-cI,c0}}),              // 7
+		create<t_mat>({{c1/s3,c0,c0}, {c0,c1/s3,c0}, {c0,c0,-c2/s3*c1}}),  // 8
 	};
 
 	return mat[which];

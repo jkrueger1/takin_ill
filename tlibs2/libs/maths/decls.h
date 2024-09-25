@@ -1,5 +1,5 @@
 /**
- * tlibs2 -- (container-agnostic) math library
+ * tlibs2 maths library -- (forward) declarations
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
  * @date 2015 - 2024
  * @license GPLv3, see 'LICENSE' file
@@ -43,11 +43,14 @@
 #include "../traits.h"
 
 
+// numbers
 #if __has_include(<numbers>)
 	#define __TLIBS2_USE_NUMBERS__
 #endif
 
 
+
+// lapack(e)
 #if __has_include(<lapacke.h>) && USE_LAPACK
 	#define __TLIBS2_USE_LAPACK__
 
@@ -134,6 +137,8 @@ namespace tl2_la {
 #endif
 
 
+
+// fadeeva
 #if __has_include(<Faddeeva.hh>)
 	#define __TLIBS2_USE_FADDEEVA__
 #else
@@ -141,11 +146,14 @@ namespace tl2_la {
 #endif
 
 
+
+// qhull
 #if __has_include(<Qhull.h>)
 	#define __TLIBS2_USE_QHULL__
 #else
 	//#pragma message("tlibs2: Disabling QHull library (not found).")
 #endif
+
 
 
 // separator tokens

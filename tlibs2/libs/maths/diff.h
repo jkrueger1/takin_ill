@@ -1,5 +1,5 @@
 /**
- * tlibs2 -- (container-agnostic) math library
+ * tlibs2 maths library -- numerical differentiation and integration
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
  * @date 2015 - 2024
  * @license GPLv3, see 'LICENSE' file
@@ -48,6 +48,7 @@
 #include "decls.h"
 
 
+
 namespace tl2 {
 // ----------------------------------------------------------------------------
 // numerical differentiation and integration
@@ -64,7 +65,7 @@ t_cont_out diff(const t_cont_in& xs, const t_cont_in& ys)
 	t_cont_out new_ys{};
 	new_ys.reserve(N);
 
-	for(std::size_t i=0; i<N-1; ++i)
+	for(std::size_t i = 0; i < N-1; ++i)
 	{
 		t_real diff_val = (ys[i+1]-ys[i]) / (xs[i+1]-xs[i]);
 		new_ys.push_back(diff_val);
@@ -99,7 +100,7 @@ R numint_trapN(const std::function<R(A)>& fkt,
 	const A xstep = A(x1-x0)/A(N);
 
 	R xsum = fkt(x0) + fkt(x1);
-	for(std::size_t i=1; i<N; ++i)
+	for(std::size_t i = 1; i < N; ++i)
 		xsum += R(2)*fkt(x0 + A(i)*xstep);
 
 	xsum *= R(0.5)*R(xstep);
@@ -118,7 +119,7 @@ R numint_rect(const std::function<R(A)>& fkt,
 	const A xstep = (x1-x0)/A(N);
 
 	R xsum = R(0);
-	for(std::size_t i=0; i<N; ++i)
+	for(std::size_t i = 0; i < N; ++i)
 		xsum += fkt(x0 + A(i)*xstep);
 
 	xsum *= R(xstep);
@@ -147,7 +148,7 @@ R numint_simpN(const std::function<R(A)>& fkt, A x0, A x1, std::size_t N)
 	const A xstep = (x1-x0)/A(N);
 	R xsum = fkt(x0) + fkt(x1);
 
-	for(std::size_t i=1; i<=N/2; ++i)
+	for(std::size_t i = 1; i <= N/2; ++i)
 	{
 		xsum += R(2) * fkt(x0 + A(2*i)*xstep);
 		xsum += R(4) * fkt(x0 + A(2*i-1)*xstep);
@@ -193,7 +194,7 @@ cont_type convolute_discrete(const cont_type& f, const cont_type& g)
 	cont_type conv;
 	conv.reserve(M+N-1);
 
-	for(std::size_t n=0; n<M+N-1; ++n)
+	for(std::size_t n = 0; n < M+N-1; ++n)
 	{
 		typename cont_type::value_type val = 0.;
 
@@ -217,7 +218,7 @@ T newton(const std::function<T(T)>& fkt, const std::function<T(T)>& diff,
 	T x, std::size_t imax = 128, T eps = std::numeric_limits<T>::epsilon())
 {
 	T xnew = x;
-	for(std::size_t i=0; i<imax; ++i)
+	for(std::size_t i = 0; i < imax; ++i)
 	{
 		xnew = x - fkt(x)/diff(x);
 

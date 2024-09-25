@@ -1,5 +1,5 @@
 /**
- * tlibs2 -- (container-agnostic) math library
+ * tlibs2 maths library -- 3-dim solids
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
  * @date 2015 - 2024
  * @license GPLv3, see 'LICENSE' file
@@ -55,50 +55,53 @@ namespace tl2 {
 // ----------------------------------------------------------------------------
 
 /**
- * transforms vertices and normals using a matrix
+ * create the faces of a sphere
+ * input: [triangle vertices, normals, uvs] (like subdivide_triangles)
+ * @returns [triangles, face normals, vertex uvs]
  */
-template<class t_mat, class t_vec, template<class...> class t_cont = std::vector>
-void transform_obj(t_cont<t_vec>& verts, t_cont<t_vec>& norms, const t_mat& mat, bool is_3dhom=false)
-requires is_vec<t_vec> && is_mat<t_mat>
+template<class t_vec, template<class...> class t_cont = std::vector>
+std::tuple<t_cont<t_vec>, t_cont<t_vec>, t_cont<t_vec>>
+spherify(const std::tuple<t_cont<t_vec>, t_cont<t_vec>, t_cont<t_vec>>& tup,
+	typename t_vec::value_type rad = 1)
+requires is_vec<t_vec>
 {
-	using size_t = decltype(mat.size1());
+	const t_cont<t_vec>& vertices = std::get<0>(tup);
+	//const t_cont<t_vec>& normals = std::get<1>(tup);
+	const t_cont<t_vec>& uvs = std::get<2>(tup);
 
-	// make sure a 3-vector and a 4-matrix are handled correctly in homogeneous coordinates
-	if(is_3dhom && mat.size1()==4)
+	t_cont<t_vec> vertices_new;
+	t_cont<t_vec> normals_new;
+	vertices_new.reserve(vertices.size());
+	normals_new.reserve(vertices.size());
+
+
+	// vertices
+	for(t_vec vec : vertices)
 	{
-		t_mat mat3 = mat;
-		for(size_t i=0; i<3; ++i)
-		{
-			mat3(3,i) = 0;
-			mat3(i,3) = 0;
-		}
-		mat3(3,3) = 1;
-
-		for(auto& vert : verts)
-		{
-			vert = mat3 * vert;
-
-			// add translation and normalise
-			for(size_t i=0; i<3; ++i)
-			{
-				vert[i] += mat(i,3);
-				vert[i] /= mat(3,3);
-			}
-		}
-
-		for(auto& norm : norms)
-			norm = mat3 * norm;
+		vec /= tl2::norm<t_vec>(vec);
+		vec *= rad;
+		vertices_new.emplace_back(std::move(vec));
 	}
 
-	// standard case: just multiply
-	else
-	{
-		for(auto& vert : verts)
-			vert = mat * vert;
 
-		for(auto& norm : norms)
-			norm = mat * norm;
+	// face normals
+	auto itervert = vertices.begin();
+	// iterate over triplets forming triangles
+	while(itervert != vertices.end())
+	{
+		const t_vec& vec1 = *itervert;
+		std::advance(itervert, 1); if(itervert == vertices.end()) break;
+		const t_vec& vec2 = *itervert;
+		std::advance(itervert, 1); if(itervert == vertices.end()) break;
+		const t_vec& vec3 = *itervert;
+		std::advance(itervert, 1);
+
+		t_vec vecmid = mean<t_vec>({ vec1, vec2, vec3 });
+		vecmid /= tl2::norm<t_vec>(vecmid);
+		normals_new.emplace_back(std::move(vecmid));
 	}
+
+	return std::make_tuple(vertices_new, normals_new, uvs);
 }
 
 

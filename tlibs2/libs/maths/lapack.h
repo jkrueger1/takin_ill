@@ -1,5 +1,5 @@
 /**
- * tlibs2 -- (container-agnostic) math library
+ * tlibs2 maths library -- lapack(e) interface
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
  * @date 2015 - 2024
  * @license GPLv3, see 'LICENSE' file
@@ -51,21 +51,6 @@
 #include "ndim.h"
 
 
-/*#ifdef __TLIBS2_USE_LAPACK__
-extern "C"
-{
-	#define lapack_complex_double std::complex<double>
-	#define lapack_complex_double_real(z) (z.real())
-	#define lapack_complex_double_imag(z) (z.imag())
-
-	#define lapack_complex_float std::complex<float>
-	#define lapack_complex_float_real(z) (z.real())
-	#define lapack_complex_float_imag(z) (z.imag())
-
-	#include <lapacke.h>
-}
-#endif*/
-
 
 // ----------------------------------------------------------------------------
 // lapack wrappers
@@ -96,8 +81,8 @@ requires tl2::is_mat<t_mat>
 	t_vec<t_scalar> outmat(rows*cols);
 	t_vec<lapack_int> outpivots(minor);
 
-	for(std::size_t i=0; i<rows; ++i)
-		for(std::size_t j=0; j<cols; ++j)
+	for(std::size_t i = 0; i < rows; ++i)
+		for(std::size_t j = 0; j < cols; ++j)
 			outmat[i*cols + j] = mat(i, j);
 
 	int err = -1;
@@ -167,9 +152,9 @@ requires tl2::is_mat<t_mat>
 	t_mat U = tl2::unit<t_mat>(rows, cols);
 
 	// L and U
-	for(std::size_t i=0; i<rows; ++i)
+	for(std::size_t i = 0; i < rows; ++i)
 	{
-		for(std::size_t j=0; j<cols; ++j)
+		for(std::size_t j = 0; j < cols; ++j)
 		{
 			if(j>=i)
 				U(i, j) = lumat[i*cols + j];
@@ -179,7 +164,7 @@ requires tl2::is_mat<t_mat>
 	}
 
 	// permutation matrix P
-	for(std::size_t i=0; i<pivots.size(); ++i)
+	for(std::size_t i = 0; i < pivots.size(); ++i)
 		P = tl2::prod<t_mat>(P, tl2::perm<t_mat>(rows, cols, i, pivots[i]-1));
 
 	return std::make_tuple(ok, P, L, U);
@@ -258,8 +243,8 @@ requires tl2::is_mat<t_mat>
 	}
 
 
-	for(std::size_t i=0; i<rows; ++i)
-		for(std::size_t j=0; j<cols; ++j)
+	for(std::size_t i = 0; i < rows; ++i)
+		for(std::size_t j = 0; j < cols; ++j)
 			I(i, j) = lumat[i*cols + j];
 
 	return std::make_tuple(I, err == 0);
@@ -290,8 +275,8 @@ requires tl2::is_mat<t_mat>
 
 	t_vec outmat(rows*cols), outvec(minor);
 
-	for(std::size_t i=0; i<rows; ++i)
-		for(std::size_t j=0; j<cols; ++j)
+	for(std::size_t i = 0; i < rows; ++i)
+		for(std::size_t j = 0; j < cols; ++j)
 			outmat[i*cols + j] = mat(i, j);
 
 	int err = -1;
@@ -334,20 +319,20 @@ requires tl2::is_mat<t_mat>
 		}
 	}
 
-	for(std::size_t i=0; i<rows; ++i)
-		for(std::size_t j=0; j<cols; ++j)
+	for(std::size_t i = 0; i < rows; ++i)
+		for(std::size_t j = 0; j < cols; ++j)
 			R(i, j) = (j>=i ? outmat[i*cols + j] : t_real{0});
 
 
 	t_vec v = tl2::zero<t_vec>(minor);
 
-	for(std::size_t k=1; k<=minor; ++k)
+	for(std::size_t k=1; k<= minor; ++k)
 	{
-		for(std::size_t i=1; i<=k-1; ++i)
+		for(std::size_t i=1; i <= k-1; ++i)
 			v[i-1] = t_real{0};
 		v[k-1] = t_real{1};
 
-		for(std::size_t i=k+1; i<=minor; ++i)
+		for(std::size_t i=k+1; i <= minor; ++i)
 			v[i-1] = outmat[(i-1)*cols + (k-1)];
 
 		Q = Q * (I - outvec[k-1]*tl2::outer<t_mat, t_vec>(v, v));
@@ -382,8 +367,8 @@ requires tl2::is_mat<t_mat>
 
 	std::vector<t_scalar> outmat(N*N);
 
-	for(std::size_t i=0; i<N; ++i)
-		for(std::size_t j=0; j<N; ++j)
+	for(std::size_t i = 0; i < N; ++i)
+		for(std::size_t j = 0; j < N; ++j)
 			outmat[i*N + j] = (j >= i ? mat(i, j) : 0.);
 
 	if constexpr(tl2::is_complex<t_scalar>)
@@ -439,8 +424,8 @@ requires tl2::is_mat<t_mat>
 
 	t_mat C = tl2::create<t_mat>(N, N);
 
-	for(std::size_t i=0; i<N; ++i)
-		for(std::size_t j=0; j<N; ++j)
+	for(std::size_t i = 0; i < N; ++i)
+		for(std::size_t j = 0; j < N; ++j)
 			C(i, j) = outmat[i*N + j];
 
 	return std::make_tuple(err == 0, C);
@@ -471,8 +456,8 @@ requires tl2::is_mat<t_mat>
 	std::vector<int> pivot(N, 0);
 	int steps = 0;
 
-	for(std::size_t i=0; i<N; ++i)
-		for(std::size_t j=0; j<N; ++j)
+	for(std::size_t i = 0; i < N; ++i)
+		for(std::size_t j = 0; j < N; ++j)
 			outmat[i*N + j] = (j >= i ? mat(i, j) : 0.);
 
 	if constexpr(tl2::is_complex<t_scalar>)
@@ -513,9 +498,9 @@ requires tl2::is_mat<t_mat>
 	t_mat C = tl2::create<t_mat>(N, N);
 	t_mat P = tl2::zero<t_mat>(N, N);    // pivot matrix
 
-	for(std::size_t i=0; i<N; ++i)
+	for(std::size_t i = 0; i < N; ++i)
 	{
-		for(std::size_t j=0; j<N; ++j)
+		for(std::size_t j = 0; j < N; ++j)
 			C(i, j) = outmat[i*N + j];
 
 		P(pivot[i]-1, i) = 1.;
@@ -551,8 +536,8 @@ requires tl2::is_mat<t_mat>
 	std::vector<int> outvec(N);
 
 	std::size_t lin_idx = 0;
-	for(std::size_t i=0; i<N; ++i)
-		for(std::size_t j=0; j<=i; ++j)
+	for(std::size_t i = 0; i < N; ++i)
+		for(std::size_t j = 0; j <= i; ++j)
 			outmat[lin_idx++] = mat(i, j);
 
 	if constexpr(tl2::is_complex<t_scalar>)
@@ -594,9 +579,9 @@ requires tl2::is_mat<t_mat>
 	t_mat D = tl2::unit<t_mat>(N);
 
 	lin_idx = 0;
-	for(std::size_t i=0; i<N; ++i)
+	for(std::size_t i = 0; i < N; ++i)
 	{
-		for(std::size_t j=0; j<=i; ++j)
+		for(std::size_t j = 0; j <= i; ++j)
 		{
 			if(i == j)
 				D(i, j) = outmat[lin_idx++];
@@ -647,9 +632,9 @@ eigenvec(const t_mat_cplx& mat,
 	std::vector<t_cplx> inmat(N*N, t_cplx{0,0}),
 		outevecs(only_evals ? 0 : N*N, t_cplx{0,0});
 
-	for(std::size_t i=0; i<N; ++i)
+	for(std::size_t i = 0; i < N; ++i)
 	{
-		for(std::size_t j=0; j<N; ++j)
+		for(std::size_t j = 0; j < N; ++j)
 		{
 			if(is_hermitian)
 				inmat[i*N + j] = (j>=i ? mat(j,i) : t_real{0});
@@ -751,7 +736,7 @@ eigenvec(const t_mat_cplx& mat,
 		}
 
 		// copy to complex output vector
-		for(std::size_t i=0; i<evals.size(); ++i)
+		for(std::size_t i = 0; i < evals.size(); ++i)
 			evals[i] = outevals_real[i];
 	}
 	else
@@ -779,10 +764,10 @@ eigenvec(const t_mat_cplx& mat,
 
 	if(!only_evals)
 	{
-		for(std::size_t i=0; i<evecs.size(); ++i)
+		for(std::size_t i = 0; i < evecs.size(); ++i)
 		{
 			// hermitian algo overwrites original matrix!
-			for(std::size_t j=0; j<N; ++j)
+			for(std::size_t j = 0; j < N; ++j)
 				evecs[i][j] = (is_hermitian && !use_selective_func)
 					? inmat[i*N + j] : outevecs[i*N + j];
 
@@ -834,9 +819,9 @@ eigenvec(const t_mat& mat, bool only_evals, bool is_symmetric, bool normalise,
 	std::vector<t_real> inmat(N*N, t_real{0}),
 		outevecs(only_evals ? 0 : N*N, t_real{0});
 
-	for(std::size_t i=0; i<N; ++i)
+	for(std::size_t i = 0; i < N; ++i)
 	{
-		for(std::size_t j=0; j<N; ++j)
+		for(std::size_t j = 0; j < N; ++j)
 		{
 			if(is_symmetric)
 				inmat[i*N + j] = (j>=i ? mat(j,i) : t_real{0});
@@ -966,20 +951,20 @@ eigenvec(const t_mat& mat, bool only_evals, bool is_symmetric, bool normalise,
 	{
 		if((is_symmetric && !use_selective_func))
 		{
-			for(std::size_t i=0; i<evals_re.size(); ++i)
+			for(std::size_t i = 0; i < evals_re.size(); ++i)
 			{
 				// symmetric algo overwrites original matrix!
-				for(std::size_t j=0; j<N; ++j)
+				for(std::size_t j = 0; j < N; ++j)
 					evecs_re[i][j] = inmat[i*N + j];
 			}
 		}
 		else
 		{
-			for(std::size_t i=0; i<evals_re.size(); ++i)
+			for(std::size_t i = 0; i < evals_re.size(); ++i)
 			{
 				if(tl2::equals<t_real>(evals_im[i], 0))
 				{
-					for(std::size_t j=0; j<N; ++j)
+					for(std::size_t j = 0; j < N; ++j)
 					{
 						evecs_re[i][j] = outevecs[i*N + j];
 						evecs_im[i][j] = 0;
@@ -987,25 +972,25 @@ eigenvec(const t_mat& mat, bool only_evals, bool is_symmetric, bool normalise,
 				}
 				else
 				{
-					for(std::size_t j=0; j<N; ++j)
+					for(std::size_t j = 0; j < N; ++j)
 					{
 						evecs_re[i][j] = outevecs[i*N + j];
-						evecs_im[i][j] = outevecs[(i+1)*N + j];	// imag part of evec follows next in array
+						evecs_im[i][j] = outevecs[(i+1)*N + j]; // imag part of evec follows next in array
 
-						evecs_re[i+1][j] = evecs_re[i][j];		// next evec is the conjugated one
+						evecs_re[i+1][j] = evecs_re[i][j];      // next evec is the conjugated one
 						evecs_im[i+1][j] = -evecs_im[i][j];
 					}
-					++i;	// already used two values in array
+					++i;  // already used two values in array
 				}
 			}
 		}
 
 		if(normalise && (err == 0))
 		{
-			for(std::size_t i=0; i<evecs_re.size(); ++i)
+			for(std::size_t i = 0; i < evecs_re.size(); ++i)
 			{
 				t_real sum{0};
-				for(std::size_t j=0; j<N; ++j)
+				for(std::size_t j = 0; j < N; ++j)
 					sum += std::norm(
 						std::complex(evecs_re[i][j],
 							evecs_im[i][j]));
@@ -1043,8 +1028,8 @@ requires tl2::is_mat<t_mat>
 	std::vector<t_real> vals(Nmin);
 	std::vector<t_real> _tmp(Nmax * Nmax * 2);
 
-	for(std::size_t i=0; i<rows; ++i)
-		for(std::size_t j=0; j<cols; ++j)
+	for(std::size_t i = 0; i < rows; ++i)
+		for(std::size_t j = 0; j < cols; ++j)
 			inmat[i*cols + j] = mat(i,j);
 
 	int err = -1;
@@ -1099,12 +1084,12 @@ requires tl2::is_mat<t_mat>
 	t_mat U = tl2::unit<t_mat>(rows);
 	t_mat Vh = tl2::unit<t_mat>(cols);
 
-	for(std::size_t i=0; i<Nmax; ++i)
+	for(std::size_t i = 0; i < Nmax; ++i)
 	{
-		for(std::size_t j=0; j<Nmax; ++j)
+		for(std::size_t j = 0; j < Nmax; ++j)
 		{
-			if(i<U.size1() && j<U.size2()) U(i,j) = outU[i*cols + j];
-			if(i<Vh.size1() && j<Vh.size2()) Vh(i,j) = outVh[i*cols + j];
+			if(i < U.size1() && j < U.size2()) U(i,j) = outU[i*cols + j];
+			if(i < Vh.size1() && j < Vh.size2()) Vh(i,j) = outVh[i*cols + j];
 		}
 	}
 
@@ -1177,7 +1162,7 @@ requires (tl2::is_mat<t_mat> && tl2::is_vec<t_vec>)
 	const t_vec norm = basis_inv * f0;
 
 	t_vec f = tl2::zero<t_vec>(cols);
-	for(std::size_t i=0; i<cols; ++i)
+	for(std::size_t i = 0; i < cols; ++i)
 		f += norm[i] * evecs[i] * std::exp(evals[i]*(x-x0));
 
 	return std::make_tuple(true, f);
@@ -1208,7 +1193,7 @@ requires (tl2::is_mat<t_mat> && tl2::is_vec<t_vec>)
 	const t_vec norm = basis_inv * f0;
 
 	t_vec f = tl2::zero<t_vec>(cols);
-	for(std::size_t i=0; i<cols; ++i)
+	for(std::size_t i = 0; i < cols; ++i)
 		f += norm[i] * evecs[i] * std::pow(evals[i], n-n0);
 
 	return std::make_tuple(true, f);

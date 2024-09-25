@@ -1,5 +1,5 @@
 /**
- * tlibs2 -- (container-agnostic) math library
+ * tlibs2 maths library -- n-dimensional algorithms
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
  * @date 2015 - 2024
  * @license GPLv3, see 'LICENSE' file
@@ -51,9 +51,10 @@
 #include "decls.h"
 
 
+
 namespace tl2 {
 // ----------------------------------------------------------------------------
-// n-dim algos
+// n-dim algorithms
 // ----------------------------------------------------------------------------
 
 /**
@@ -74,7 +75,7 @@ requires is_basic_vec<t_vec>
 		maxSize = std::min(std::size_t(_maxSize), maxSize);
 
 	// check each element
-	for(std::size_t i=0; i<maxSize; ++i)
+	for(std::size_t i = 0; i < maxSize; ++i)
 	{
 		if constexpr(tl2::is_complex<t_num>)
 		{
@@ -114,18 +115,18 @@ requires is_mat<t_mat>
 		maxSize2 = std::min(std::size_t(_maxSize), maxSize2);
 	}
 
-	for(std::size_t i=0; i<maxSize1; ++i)
+	for(std::size_t i = 0; i < maxSize1; ++i)
 	{
-		for(std::size_t j=0; j<maxSize2; ++j)
+		for(std::size_t j = 0; j < maxSize2; ++j)
 		{
 			if constexpr(is_complex<decltype(eps)>)
 			{
-				if(!tl2::equals<T>(mat1(i,j), mat2(i,j), eps.real()))
+				if(!tl2::equals<T>(mat1(i, j), mat2(i, j), eps.real()))
 					return false;
 			}
 			else
 			{
-				if(!tl2::equals<T>(mat1(i,j), mat2(i,j), eps))
+				if(!tl2::equals<T>(mat1(i, j), mat2(i, j), eps))
 					return false;
 			}
 		}
@@ -204,9 +205,9 @@ void unit(t_mat& mat, std::size_t rows_begin, std::size_t cols_begin,
 	std::size_t rows_end, std::size_t cols_end)
 requires is_basic_mat<t_mat>
 {
-	for(std::size_t i=rows_begin; i<rows_end; ++i)
-		for(std::size_t j=cols_begin; j<cols_end; ++j)
-			mat(i,j) = (i==j ? 1 : 0);
+	for(std::size_t i=rows_begin; i < rows_end; ++i)
+		for(std::size_t j=cols_begin; j < cols_end; ++j)
+			mat(i, j) = (i==j ? 1 : 0);
 }
 
 
@@ -245,9 +246,9 @@ bool is_unit(const t_mat& mat,
 	t_scalar eps = std::numeric_limits<t_scalar>::epsilon())
 requires is_mat<t_mat>
 {
-	for(std::size_t i=0; i<mat.size1(); ++i)
+	for(std::size_t i = 0; i < mat.size1(); ++i)
 	{
-		for(std::size_t j=0; j<mat.size2(); ++j)
+		for(std::size_t j = 0; j < mat.size2(); ++j)
 		{
 			if(i==j && !tl2::equals<t_scalar>(mat(i, j), t_scalar(1), eps))
 				return false;
@@ -273,9 +274,9 @@ requires is_basic_mat<t_mat>
 	if constexpr(is_dyn_mat<t_mat>)
 		mat = t_mat(N1, N2);
 
-	for(size_t i=0; i<mat.size1(); ++i)
-		for(size_t j=0; j<mat.size2(); ++j)
-			mat(i,j) = 0;
+	for(size_t i = 0; i < mat.size1(); ++i)
+		for(size_t j = 0; j < mat.size2(); ++j)
+			mat(i, j) = 0;
 
 	return mat;
 }
@@ -300,9 +301,9 @@ bool is_zero(const t_mat& mat,
 	t_scalar eps = std::numeric_limits<t_scalar>::epsilon())
 requires is_mat<t_mat>
 {
-	for(std::size_t i=0; i<mat.size1(); ++i)
+	for(std::size_t i = 0; i < mat.size1(); ++i)
 	{
-		for(std::size_t j=0; j<mat.size2(); ++j)
+		for(std::size_t j = 0; j < mat.size2(); ++j)
 		{
 			if(!tl2::equals<t_scalar>(mat(i, j), t_scalar(0), eps))
 				return false;
@@ -326,7 +327,7 @@ requires is_basic_vec<t_vec>
 	if constexpr(is_dyn_vec<t_vec>)
 		vec = t_vec(N);
 
-	for(size_t i=0; i<vec.size(); ++i)
+	for(size_t i = 0; i < vec.size(); ++i)
 		vec[i] = 0;
 
 	return vec;
@@ -341,7 +342,7 @@ bool is_zero(const t_vec& vec,
 	t_scalar eps = std::numeric_limits<t_scalar>::epsilon())
 requires is_vec<t_vec>
 {
-	for(std::size_t i=0; i<vec.size(); ++i)
+	for(std::size_t i = 0; i < vec.size(); ++i)
 	{
 		if(!tl2::equals<t_scalar>(vec[i], t_scalar(0), eps))
 			return false;
@@ -387,7 +388,7 @@ requires is_basic_vec<t_vec>
 	if constexpr(is_dyn_vec<t_vec>)
 		vec = t_vec(N);
 
-	for(size_t i=0; i<vec.size(); ++i)
+	for(size_t i = 0; i < vec.size(); ++i)
 		vec[i] = rand<t_scalar>();
 
 	return vec;
@@ -408,9 +409,9 @@ requires is_basic_mat<t_mat>
 	if constexpr(is_dyn_mat<t_mat>)
 		mat = t_mat(N1, N2);
 
-	for(size_t i=0; i<mat.size1(); ++i)
-		for(size_t j=0; j<mat.size2(); ++j)
-			mat(i,j) = rand<t_scalar>();
+	for(size_t i = 0; i < mat.size1(); ++i)
+		for(size_t j = 0; j < mat.size2(); ++j)
+			mat(i, j) = rand<t_scalar>();
 
 	return mat;
 }
@@ -448,7 +449,7 @@ requires is_basic_mat<t_mat>
 	auto N = perm.size();
 	t_mat mat = zero<t_mat>(N, N);
 
-	for(decltype(N) i=0; i<perm.size(); ++i)
+	for(decltype(N) i = 0; i < perm.size(); ++i)
 		mat(i, perm[i]) = mat(perm[i], i) = 1;
 
 	return mat;
@@ -469,7 +470,7 @@ requires is_basic_mat<t_mat> && is_basic_vec<t_vec>
 	if constexpr(!tl2::is_dyn_mat<t_mat>)
 		assert(mat.size1() == mat.size1() && mat.size1() == N);
 
-	for(std::size_t i=0; i<std::min(mat.size1(), N); ++i)
+	for(std::size_t i = 0; i < std::min(mat.size1(), N); ++i)
 		mat(i,i) = vals[i];
 
 	return mat;
@@ -485,7 +486,7 @@ requires is_basic_mat<t_mat>
 {
 	t_mat mat = zero<t_mat>(N, N);
 
-	for(std::size_t i=0; i<N; ++i)
+	for(std::size_t i = 0; i < N; ++i)
 		mat(i, i) = val;
 
 	return mat;
@@ -502,7 +503,7 @@ requires is_vec<t_vec> && is_mat<t_mat>
 	std::size_t N = std::min(mat.size1(), mat.size2());
 
 	t_vec vec = zero<t_vec>(N);
-	for(std::size_t i=0; i<N; ++i)
+	for(std::size_t i = 0; i < N; ++i)
 		vec[i] = mat(i,i);
 
 	return vec;
@@ -568,20 +569,20 @@ requires is_mat<t_mat>
 	if(mat.size1() != mat.size2())
 		return false;
 
-	for(std::size_t i=0; i<mat.size1(); ++i)
+	for(std::size_t i = 0; i < mat.size1(); ++i)
 	{
-		for(std::size_t j=i+1; j<mat.size2(); ++j)
+		for(std::size_t j=i+1; j < mat.size2(); ++j)
 		{
 			if constexpr(is_complex<t_elem>)
 			{
 				// not hermitian?
-				if(!tl2::equals<t_elem>(mat(i,j), std::conj(mat(j,i)), eps))
+				if(!tl2::equals<t_elem>(mat(i, j), std::conj(mat(j,i)), eps))
 					return false;
 			}
 			else
 			{
 				// not symmetric?
-				if(!tl2::equals<t_elem>(mat(i,j), mat(j,i), eps))
+				if(!tl2::equals<t_elem>(mat(i, j), mat(j,i), eps))
 					return false;
 			}
 		}
@@ -604,20 +605,20 @@ requires is_mat<t_mat>
 	if(mat.size1() != mat.size2())
 		return false;
 
-	for(std::size_t i=0; i<mat.size1(); ++i)
+	for(std::size_t i = 0; i < mat.size1(); ++i)
 	{
-		for(std::size_t j=i+1; j<mat.size2(); ++j)
+		for(std::size_t j=i+1; j < mat.size2(); ++j)
 		{
 			if constexpr(is_complex<t_elem>)
 			{
 				// not hermitian?
-				if(!tl2::equals<t_elem>(mat(i,j), -std::conj(mat(j,i)), eps))
+				if(!tl2::equals<t_elem>(mat(i, j), -std::conj(mat(j,i)), eps))
 					return false;
 			}
 			else
 			{
 				// not skew-symmetric?
-				if(!tl2::equals<t_elem>(mat(i,j), -mat(j,i), eps))
+				if(!tl2::equals<t_elem>(mat(i, j), -mat(j,i), eps))
 					return false;
 			}
 		}
@@ -639,21 +640,21 @@ requires is_mat<t_mat>
 	if(mat.size1() != mat.size2())
 		return false;
 
-	for(std::size_t i=0; i<mat.size1(); ++i)
+	for(std::size_t i = 0; i < mat.size1(); ++i)
 	{
-		for(std::size_t j=0; j<mat.size2(); ++j)
+		for(std::size_t j = 0; j < mat.size2(); ++j)
 		{
 			if(i == j)
 				continue;
 
 			if constexpr(is_complex<t_elem>)
 			{
-				if(!tl2::equals<t_elem>(mat(i,j), t_elem(0, 0), eps))
+				if(!tl2::equals<t_elem>(mat(i, j), t_elem(0, 0), eps))
 					return false;
 			}
 			else
 			{
-				if(!tl2::equals<t_elem>(mat(i,j), t_elem(0.), eps))
+				if(!tl2::equals<t_elem>(mat(i, j), t_elem(0.), eps))
 					return false;
 			}
 		}
@@ -677,9 +678,9 @@ requires is_mat<t_mat>
 	if constexpr(is_dyn_mat<t_mat>)
 		mat2 = t_mat(mat.size2(), mat.size1());
 
-	for(t_idxtype i=0; i<mat.size1(); ++i)
-		for(t_idxtype j=0; j<mat.size2(); ++j)
-			mat2(j,i) = mat(i,j);
+	for(t_idxtype i = 0; i < mat.size1(); ++i)
+		for(t_idxtype j = 0; j < mat.size2(); ++j)
+			mat2(j,i) = mat(i, j);
 
 	return mat2;
 }
@@ -783,7 +784,7 @@ requires is_basic_mat<t_mat> && is_complex<t_val>
 {
 	for(std::size_t i = 0; i < mat.size1(); ++i)
 		for(std::size_t j = 0; j < mat.size2(); ++j)
-			set_eps_round<t_val, typename t_val::value_type>(mat(i,j), eps);
+			set_eps_round<t_val, typename t_val::value_type>(mat(i, j), eps);
 };
 
 
@@ -876,7 +877,7 @@ requires is_basic_mat<t_mat> && is_complex<t_val>
 {
 	for(std::size_t i = 0; i < mat.size1(); ++i)
 		for(std::size_t j = 0; j < mat.size2(); ++j)
-			set_eps_0<t_val, typename t_val::value_type>(mat(i,j), eps);
+			set_eps_0<t_val, typename t_val::value_type>(mat(i, j), eps);
 };
 
 
@@ -890,7 +891,7 @@ requires is_basic_mat<t_mat> && (!is_complex<t_val>)
 {
 	for(std::size_t i = 0; i < mat.size1(); ++i)
 		for(std::size_t j = 0; j < mat.size2(); ++j)
-			set_eps_0<t_val>(mat(i,j), eps);
+			set_eps_0<t_val>(mat(i, j), eps);
 };
 // -----------------------------------------------------------------------------
 
@@ -910,10 +911,10 @@ requires tl2::is_basic_mat<t_mat> /*&& tl2::is_dyn_mat<t_mat>*/
 	const std::size_t ROWS = mat.size1();
 	const std::size_t COLS = mat.size2();
 
-	for(std::size_t i=0; i<ROWS; ++i)
+	for(std::size_t i = 0; i < ROWS; ++i)
 	{
 		ostr << "(";
-		for(std::size_t j=0; j<COLS; ++j)
+		for(std::size_t j = 0; j < COLS; ++j)
 		{
 			t_elem elem = mat(i, j);
 			set_eps_0(elem, eps);
@@ -942,7 +943,7 @@ requires tl2::is_basic_vec<t_vec> /*&& tl2::is_dyn_vec<t_vec>*/
 
 	const std::size_t ROWS = vec.size();
 
-	for(std::size_t i=0; i<ROWS; ++i)
+	for(std::size_t i = 0; i < ROWS; ++i)
 	{
 		ostr << "(";
 		t_elem elem = vec[i];
@@ -1005,7 +1006,7 @@ requires is_basic_vec<t_vec>
 	auto iterLst = lst.begin();
 	auto size = vec.size();
 	using local_size_t = std::decay_t<decltype(size)>;
-	for(local_size_t i=0; i<size; ++i)
+	for(local_size_t i = 0; i < size; ++i)
 	{
 		if(iterLst != lst.end())
 		{
@@ -1184,7 +1185,7 @@ requires is_vec<t_vec_dst> && is_vec<t_vec_src>
 
 	t_vec_dst vecdst = create<t_vec_dst>(vec.size());
 
-	for(t_idx i=0; i<vec.size(); ++i)
+	for(t_idx i = 0; i < vec.size(); ++i)
 		vecdst[i] = T_dst(vec[i]);
 
 	return vecdst;
@@ -1219,7 +1220,7 @@ requires is_mat<t_mat> && is_basic_vec<t_vec>
 	if constexpr(is_dyn_vec<t_vec>)
 		vec = t_vec(mat.size1());
 
-	for(std::size_t i=0; i<mat.size1(); ++i)
+	for(std::size_t i = 0; i < mat.size1(); ++i)
 		vec[i] = mat(i, col);
 
 	return vec;
@@ -1238,7 +1239,7 @@ requires is_mat<t_mat> && is_basic_vec<t_vec>
 		vec = t_vec(mat.size2());
 
 	auto size = std::min(mat.size2(), vec.size());
-	for(std::size_t i=0; i<std::size_t(size); ++i)
+	for(std::size_t i = 0; i < std::size_t(size); ++i)
 		vec[i] = mat(row, i);
 
 	return vec;
@@ -1252,7 +1253,7 @@ template<class t_mat, class t_vec>
 void set_col(t_mat& mat, const t_vec& vec, std::size_t col)
 requires is_mat<t_mat> && is_basic_vec<t_vec>
 {
-	for(std::size_t i=0; i<std::min<std::size_t>(mat.size1(), vec.size()); ++i)
+	for(std::size_t i = 0; i < std::min<std::size_t>(mat.size1(), vec.size()); ++i)
 		mat(i, col) = vec[i];
 }
 
@@ -1264,7 +1265,7 @@ template<class t_mat, class t_vec>
 void set_row(t_mat& mat, const t_vec& vec, std::size_t row)
 requires is_mat<t_mat> && is_basic_vec<t_vec>
 {
-	for(std::size_t i=0; i<std::min<std::size_t>(mat.size1(), vec.size()); ++i)
+	for(std::size_t i = 0; i < std::min<std::size_t>(mat.size1(), vec.size()); ++i)
 		mat(row, i) = vec[i];
 }
 
@@ -1280,7 +1281,7 @@ requires is_basic_vec<t_vec>
 	auto size = vec1.size();
 	using local_size_t = std::decay_t<decltype(size)>;
 
-	for(local_size_t i=0; i<size; ++i)
+	for(local_size_t i = 0; i < size; ++i)
 	{
 		if constexpr(is_complex<typename t_vec::value_type>)
 			val += std::conj(vec1[i]) * vec2[i];
@@ -1303,7 +1304,7 @@ requires is_basic_vec<t_vec>
 	auto size = vec1.size();
 	using local_size_t = std::decay_t<decltype(size)>;
 
-	for(local_size_t i=0; i<size; ++i)
+	for(local_size_t i = 0; i < size; ++i)
 		val += vec1[i] * vec2[i];
 
 	return val;
@@ -1324,7 +1325,7 @@ requires is_basic_vec<t_vec1> && is_basic_vec<t_vec2>
 	auto val = vec1[0]*vec2[0];
 
 	// remaining elements
-	for(std::size_t i=1; i<std::min(vec1.size(), vec2.size()); ++i)
+	for(std::size_t i=1; i < std::min(vec1.size(), vec2.size()); ++i)
 	{
 		if constexpr(is_complex<typename t_vec1::value_type>)
 		{
@@ -1367,7 +1368,7 @@ requires tl2::is_basic_mat<t_mat> && tl2::is_dyn_mat<t_mat>
 		for(std::size_t col=0; col<matRet.size2(); ++col)
 		{
 			matRet(row, col) = 0;
-			for(std::size_t i=0; i<innersize; ++i)
+			for(std::size_t i = 0; i < innersize; ++i)
 				matRet(row, col) += mat1(row, i) * mat2(i, col);
 		}
 	}
@@ -1420,7 +1421,7 @@ typename t_vec::value_type norm(const t_vec& vec, t_real n)
 requires is_basic_vec<t_vec>
 {
 	t_real d = t_real{0};
-	for(std::size_t i=0; i<vec.size(); ++i)
+	for(std::size_t i = 0; i < vec.size(); ++i)
 		d += std::pow(std::abs(vec[i]), n);
 	return std::pow(d, t_real(1)/n);
 }
@@ -1719,7 +1720,7 @@ requires is_mat<t_mat>
  * gets reciprocal basis vectors |b_i> from real basis vectors |a_i> (and vice versa)
  * c: multiplicative constant (c=2*pi for physical lattices, c=1 for mathematics)
  *
- * Def.: <b_i | a_j> = c * delta(i,j)  =>
+ * Def.: <b_i | a_j> = c * delta(i, j)  =>
  *
  * e.g. 2d case:
  *                   ( a_1x  a_2x )
@@ -1829,7 +1830,7 @@ requires is_mat<t_mat> && is_vec<t_vec>
 	t_mat R = mat;
 	t_mat Q = unit<t_mat>(N, N);
 
-	for(std::size_t icol=0; icol<N-1; ++icol)
+	for(std::size_t icol = 0; icol < N-1; ++icol)
 	{
 		t_vec vecCol = col<t_mat, t_vec>(R, icol);
 		t_mat matMirror = ortho_mirror_zero_op<t_mat, t_vec>(vecCol, icol);
@@ -1841,7 +1842,7 @@ requires is_mat<t_mat> && is_vec<t_vec>
 #elif __TLIBS2_QR_METHOD__ == 1
 	std::vector<t_vec> sysM;
 	sysM.reserve(mat.size2());
-	for(std::size_t i=0; i<mat.size2(); ++i)
+	for(std::size_t i = 0; i < mat.size2(); ++i)
 		sysM.push_back(col<t_mat, t_vec>(mat, i));
 
 	std::vector<t_vec> Qsys = orthonorm_sys<t_vec, std::vector, std::vector>(sysM);
@@ -1891,9 +1892,9 @@ requires is_mat<t_mat>
 	if constexpr(is_dyn_mat<t_mat>)
 		matInv = t_mat(N, N);
 
-	for(std::size_t i=0; i<N; ++i)
+	for(std::size_t i = 0; i < N; ++i)
 	{
-		for(std::size_t j=0; j<N; ++j)
+		for(std::size_t j = 0; j < N; ++j)
 		{
 			const T sgn = ((i+j) % 2) == 0 ? T(1) : T(-1);
 			const t_vec subMat = tl2::flat_submat<t_vec>(matFlat, N, N, i, j);
@@ -1944,7 +1945,7 @@ requires is_mat<t_mat>
 			tl2_la::eigenvec<t_mat, t_vec, T>(mat, true, false, false);
 
 		std::complex<T> detval{1, 0};
-		for(std::size_t i=0; i<evalsRe.size(); ++i)
+		for(std::size_t i = 0; i < evalsRe.size(); ++i)
 			detval *= std::complex<T>{evalsRe[i], evalsIm[i]};
 
 		return detval.real();
@@ -1974,7 +1975,7 @@ requires is_mat<t_mat>
 	int ipow_pos = ipow<0 ? -ipow : ipow;
 
 	themat = unit<t_mat>(mat.size1());
-	for(int i=0; i<ipow_pos; ++i)
+	for(int i = 0; i < ipow_pos; ++i)
 		themat = themat*mat;
 
 	if(ipow < 0)
@@ -2017,9 +2018,9 @@ requires is_vec<t_vec> && is_dyn_mat<t_mat>
 	const std::size_t N = x.size();
 	t_mat X{N, order+1};
 
-	for(std::size_t j=0; j<=order; ++j)
-		for(std::size_t i=0; i<N; ++i)
-			X(i,j) = std::pow(x[i], static_cast<T>(j));
+	for(std::size_t j = 0; j <= order; ++j)
+		for(std::size_t i = 0; i < N; ++i)
+			X(i, j) = std::pow(x[i], static_cast<T>(j));
 
 
 	t_mat XtX;
