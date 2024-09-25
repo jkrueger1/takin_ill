@@ -104,10 +104,9 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::UniteEnergies(
  */
 MAGDYN_TEMPL
 MAGDYN_TYPE::EnergiesAndWeights
-MAGDYN_INST::CalcEnergies(const t_vec_real& Q_rlu,
-	bool only_energies) const
+MAGDYN_INST::CalcEnergies(const t_vec_real& Q_rlu, bool only_energies) const
 {
-	EnergiesAndWeights EandWs;
+	EnergiesAndWeights EandWs{};
 
 	if(m_calc_H)
 	{
@@ -128,7 +127,7 @@ MAGDYN_INST::CalcEnergies(const t_vec_real& Q_rlu,
 
 		const t_mat rot_incomm_conj = tl2::conj(rot_incomm);
 
-		EnergiesAndWeights EandWs_p, EandWs_m;
+		EnergiesAndWeights EandWs_p{}, EandWs_m{};
 
 		if(m_calc_Hp)
 		{
@@ -179,8 +178,7 @@ MAGDYN_INST::CalcEnergies(const t_vec_real& Q_rlu,
 
 MAGDYN_TEMPL
 MAGDYN_TYPE::EnergiesAndWeights
-MAGDYN_INST::CalcEnergies(t_real h, t_real k, t_real l,
-	bool only_energies) const
+MAGDYN_INST::CalcEnergies(t_real h, t_real k, t_real l, bool only_energies) const
 {
 	// momentum transfer
 	const t_vec_real Qvec = tl2::create<t_vec_real>({ h, k, l });

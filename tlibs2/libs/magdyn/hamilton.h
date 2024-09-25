@@ -263,7 +263,7 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 	using namespace tl2_ops;
 	const t_size N = GetMagneticSitesCount();
 	if(N == 0 || _H.size1() == 0 || _H.size2() == 0)
-		return {};
+		return EnergiesAndWeights{};
 
 	// equation (30) from (Toth 2015)
 	t_mat g_sign = tl2::unit<t_mat>(2*N);
@@ -287,7 +287,7 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 		{
 			if(chol_try >= m_tries_chol - 1)
 			{
-				std::cerr << "Magdyn warning: Cholesky decomposition failed"
+				std::cerr << "Magdyn error: Cholesky decomposition failed"
 					<< " at Q = " << Qvec << "." << std::endl;
 				chol_mat = std::move(_C);
 				chol_failed = true;
@@ -300,18 +300,18 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 		}
 	}
 
+	if(chol_failed || chol_mat.size1() == 0 || chol_mat.size2() == 0)
+	{
+		std::cerr << "Magdyn error: Invalid Cholesky decomposition"
+			<< " at Q = " << Qvec << "." << std::endl;
+		return EnergiesAndWeights{};
+	}
+
 	if(m_perform_checks && chol_try > 0)
 	{
 		std::cerr << "Magdyn warning: Needed " << chol_try
 			<< " correction(s) for Cholesky decomposition"
 			<< " at Q = " << Qvec << "." << std::endl;
-	}
-
-	if(chol_failed || chol_mat.size1() == 0 || chol_mat.size2() == 0)
-	{
-		std::cerr << "Magdyn error: Invalid Cholesky decomposition"
-			<< " at Q = " << Qvec << "." << std::endl;
-		return {};
 	}
 
 	// see p. 5 in (Toth 2015)
@@ -331,29 +331,33 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 			H_mat, only_energies, is_herm, true);
 	if(!evecs_ok)
 	{
-		std::cerr << "Magdyn warning: Eigensystem calculation failed"
+		std::cerr << "Magdyn error: Eigensystem calculation failed"
 			<< " at Q = " << Qvec << "." << std::endl;
 		return EnergiesAndWeights{};
 	}
 
-	EnergiesAndWeights energies_and_correlations{};
-	energies_and_correlations.reserve(evals.size());
+	EnergiesAndWeights Es_and_Ws{};
+	Es_and_Ws.reserve(evals.size());
 
 	// register energies
 	for(const auto& eval : evals)
 	{
 		const EnergyAndWeight EandS { .E = eval.real(), };
-		energies_and_correlations.emplace_back(std::move(EandS));
+		Es_and_Ws.emplace_back(std::move(EandS));
 	}
 
 	// weight factors
 	if(!only_energies)
 	{
-		CalcCorrelationsFromHamiltonian(energies_and_correlations,
-			H_mat, chol_mat, g_sign, Qvec, evecs);
+		if(!CalcCorrelationsFromHamiltonian(Es_and_Ws,
+			H_mat, chol_mat, g_sign, Qvec, evecs))
+		{
+			std::cerr << "Magdyn warning: Invalid correlations"
+				<< " at Q = " << Qvec << "." << std::endl;
+		}
 	}
 
-	return energies_and_correlations;
+	return Es_and_Ws;
 }
 
 

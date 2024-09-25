@@ -206,7 +206,8 @@
 		var.name = name;
 		var.value = val;
 
-		magdyn.AddVariable(std::move(var));
+		// set existing or add new variable
+		magdyn.SetVariable(std::move(var));
 	}
 
 

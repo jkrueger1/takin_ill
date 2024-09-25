@@ -420,7 +420,7 @@ public:
 	 * get the dynamical structure factor from a hamiltonian
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	void CalcCorrelationsFromHamiltonian(EnergiesAndWeights& energies_and_correlations,
+	bool CalcCorrelationsFromHamiltonian(EnergiesAndWeights& energies_and_correlations,
 		const t_mat& H_mat, const t_mat& chol_mat, const t_mat& g_sign,
 		const t_vec_real& Qvec, const std::vector<t_vec>& evecs) const;
 

@@ -57,22 +57,20 @@
  * @note implements the formalism given by (Toth 2015)
  */
 MAGDYN_TEMPL
-void MAGDYN_INST::CalcCorrelationsFromHamiltonian(
-	MAGDYN_TYPE::EnergiesAndWeights& energies_and_correlations,
+bool MAGDYN_INST::CalcCorrelationsFromHamiltonian(
+	MAGDYN_TYPE::EnergiesAndWeights& Es_and_Ws,
 	const t_mat& H_mat, const t_mat& chol_mat, const t_mat& g_sign,
 	const t_vec_real& Qvec, const std::vector<t_vec>& evecs) const
 {
 	const t_size N = GetMagneticSitesCount();
 	if(N == 0)
-		return;
+		return false;
 
 	// get the sorting of the energies
-	const std::vector<t_size> sorting = tl2::get_perm(
-		energies_and_correlations.size(),
-		[&energies_and_correlations](t_size idx1, t_size idx2) -> bool
+	const std::vector<t_size> sorting = tl2::get_perm(Es_and_Ws.size(),
+		[&Es_and_Ws](t_size idx1, t_size idx2) -> bool
 	{
-		return energies_and_correlations[idx1].E >=
-			energies_and_correlations[idx2].E;
+		return Es_and_Ws[idx1].E >= Es_and_Ws[idx2].E;
 	});
 
 	const t_mat evec_mat = tl2::create<t_mat>(tl2::reorder(evecs, sorting));
@@ -85,7 +83,7 @@ void MAGDYN_INST::CalcCorrelationsFromHamiltonian(
 		E_sqrt(i, i) = std::sqrt(E_sqrt(i, i));             // sqrt. of abs. energies
 
 	// re-create energies, to be consistent with the weights
-	energies_and_correlations.clear();
+	Es_and_Ws.clear();
 	for(t_size i = 0; i < energy_mat.size1(); ++i)
 	{
 		const EnergyAndWeight EandS
@@ -95,16 +93,16 @@ void MAGDYN_INST::CalcCorrelationsFromHamiltonian(
 			.S_perp = tl2::zero<t_mat>(3, 3),
 		};
 
-		energies_and_correlations.emplace_back(std::move(EandS));
+		Es_and_Ws.emplace_back(std::move(EandS));
 	}
 
 	const auto [chol_inv, inv_ok] = tl2::inv(chol_mat);
 	if(!inv_ok)
 	{
 		using namespace tl2_ops;
-		std::cerr << "Magdyn warning: Inversion failed"
+		std::cerr << "Magdyn error: Cholesky inversion failed"
 			<< " at Q = " << Qvec << "." << std::endl;
-		return;
+		return false;
 	}
 
 	// equation (34) from (Toth 2015)
@@ -170,12 +168,14 @@ void MAGDYN_INST::CalcCorrelationsFromHamiltonian(
 		std::cout << std::endl;
 #endif
 
-		for(t_size i = 0; i < energies_and_correlations.size(); ++i)
+		for(t_size i = 0; i < Es_and_Ws.size(); ++i)
 		{
-			(energies_and_correlations[i].S)(x_idx, y_idx) +=
+			Es_and_Ws[i].S(x_idx, y_idx) +=
 				M_trafo(i, i) / t_real(M.size1());
 		}
 	} // end of coordinate iteration
+
+	return true;
 }
 
 
@@ -186,12 +186,12 @@ void MAGDYN_INST::CalcCorrelationsFromHamiltonian(
  */
 MAGDYN_TEMPL
 void MAGDYN_INST::CalcIntensities(const t_vec_real& Q_rlu,
-	MAGDYN_TYPE::EnergiesAndWeights& energies_and_correlations) const
+	MAGDYN_TYPE::EnergiesAndWeights& Es_and_Ws) const
 {
 	using namespace tl2_ops;
 	tl2::ExprParser<t_cplx> magffact = m_magffact;
 
-	for(EnergyAndWeight& E_and_S : energies_and_correlations)
+	for(EnergyAndWeight& E_and_S : Es_and_Ws)
 	{
 		// apply bose factor
 		if(m_temperature >= 0.)
