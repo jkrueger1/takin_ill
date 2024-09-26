@@ -36,7 +36,9 @@ print_dispersion       = False  # write dispersion to console
 only_positive_energies = True   # ignore magnon annihilation?
 max_threads            = 0      # number of worker threads, 0: automatic determination
 num_Q_points           = 256    # number of Qs on a dispersion branch
-show_dividers          = True   # show vertical bars between dispersion branches
+show_dividers          = False  # show vertical bars between dispersion branches
+use_custom_labels      = True   # show custom dispersion labels (branch_labels)
+use_colours            = True   # use dispersion colours (branch_colours)
 S_scale                = 64.    # weight scaling and clamp factors
 S_clamp_min            = 1.     #
 S_clamp_max            = 500.   #
@@ -56,6 +58,9 @@ pt_R  = numpy.array([ 0.5, 0.5, 0.5 ])
 
 # dispersion branches to plot
 dispersion = [ pt_G, pt_X1, pt_M1, pt_R ]
+
+branch_labels = [ "Γ", "X", "M", "R" ]
+branch_colours = [ "#ffffff", "#eeeeee", "#ffffff" ]
 
 width_ratios = []                   # lengths from one dispersion point to the nexts
 num_branches = len(dispersion) - 1  # number of dispersion braches
@@ -190,6 +195,12 @@ def calc_disp():
 # -----------------------------------------------------------------------------
 def plot_disp(data, dispersion_plot_indices):
 	import matplotlib.pyplot as plot
+	plot.rcParams.update({
+		"font.sans-serif" : "DejaVu Sans",
+		"font.family" : "sans-serif",
+		"font.size" : 12,
+	})
+
 	print("\nPlotting dispersion branches...")
 
 	(plt, axes) = plot.subplots(nrows = 1, ncols = num_branches,
@@ -210,18 +221,27 @@ def plot_disp(data, dispersion_plot_indices):
 
 		# ticks and labels
 		axes[branch_idx].set_xlim(data_x[0], data_x[-1])
-		if branch_idx == 0:
-			axes[branch_idx].set_ylabel("E (meV)")
 
+		if use_colours:
+			axes[branch_idx].set_facecolor(branch_colours[branch_idx])
+
+		if use_custom_labels:
+			tick_labels = [
+				branch_labels[branch_idx],
+				branch_labels[branch_idx + 1] ]
+		else:
 			tick_labels = [
 				"(%.4g %.4g %.4g)" % (b1[0], b1[1], b1[2]),
-				"(%.4g %.4g %.4g)" % (b2[0], b2[1], b2[2])]
+				"(%.4g %.4g %.4g)" % (b2[0], b2[1], b2[2]) ]
+
+		if branch_idx == 0:
+			axes[branch_idx].set_ylabel("E (meV)")
 		else:
 			axes[branch_idx].get_yaxis().set_visible(False)
 			if not show_dividers:
 				axes[branch_idx].spines["left"].set_visible(False)
 
-			tick_labels = ["", "(%.4g %.4g %.4g)" % (b2[0], b2[1], b2[2])]
+			tick_labels[0] = ""
 
 		if not show_dividers and branch_idx != num_branches - 1:
 			axes[branch_idx].spines["right"].set_visible(False)
