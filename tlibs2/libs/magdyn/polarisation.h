@@ -54,8 +54,7 @@
 // --------------------------------------------------------------------
 
 /**
- * get the dynamical structure factor from a hamiltonian
- * @note implements the formalism given by (Toth 2015)
+ * TODO: implements the blume-maleev formalism
  */
 MAGDYN_TEMPL
 void MAGDYN_INST::CalcPolarisation(const t_vec_real& Q_rlu,
