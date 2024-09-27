@@ -79,6 +79,13 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	m_coordsys->setCurrentIndex(0);
 	m_coordsys->setEnabled(false);
 
+	QPushButton *btn_100 = new QPushButton("[100] View", this);
+	QPushButton *btn_010 = new QPushButton("[010] View", this);
+	QPushButton *btn_001 = new QPushButton("[001] View", this);
+	btn_100->setToolTip("View along [100] axis.");
+	btn_010->setToolTip("View along [010] axis.");
+	btn_001->setToolTip("View along [001] axis.");
+
 	m_status = new QLabel(this);
 
 	// general context menu
@@ -109,13 +116,16 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	auto grid = new QGridLayout(this);
 	grid->setSpacing(4);
 	grid->setContentsMargins(6, 6, 6, 6);
-	grid->addWidget(m_structplot, y++,0,1,3);
-	grid->addWidget(m_coordcross, y,0,1,1);
-	grid->addWidget(m_labels, y,1,1,1);
-	grid->addWidget(m_perspective, y++,2,1,1);
-	grid->addWidget(new QLabel("Coordinate System:", this), y,0,1,1);
-	grid->addWidget(m_coordsys, y++,1,1,2);
-	grid->addWidget(m_status, y++,0,1,3);
+	grid->addWidget(m_structplot, y++,0,1,6);
+	grid->addWidget(m_coordcross, y,0,1,2);
+	grid->addWidget(m_labels, y,2,1,2);
+	grid->addWidget(m_perspective, y++,4,1,2);
+	grid->addWidget(btn_100, y,0,1,2);
+	grid->addWidget(btn_010, y,2,1,2);
+	grid->addWidget(btn_001, y++,4,1,2);
+	grid->addWidget(new QLabel("Coordinate System:", this), y,0,1,2);
+	grid->addWidget(m_coordsys, y++,2,1,4);
+	grid->addWidget(m_status, y++,0,1,6);
 
 	connect(m_structplot, &tl2::GlPlot::AfterGLInitialisation,
 		this, &StructPlotDlg::AfterGLInitialisation);
@@ -134,6 +144,19 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	connect(m_perspective, &QCheckBox::toggled, this, &StructPlotDlg::SetPerspectiveProjection);
 	connect(m_coordsys, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
 		this, &StructPlotDlg::SetCoordinateSystem);
+	connect(btn_100, &QAbstractButton::clicked, [this]
+	{
+		this->SetCameraRotation(tl2::pi<t_real_gl> * t_real_gl(0.5),
+			 tl2::pi<t_real_gl> * t_real_gl(0.5));
+	});
+	connect(btn_010, &QAbstractButton::clicked, [this]
+	{
+		this->SetCameraRotation(0., tl2::pi<t_real_gl> * t_real_gl(0.5));
+	});
+	connect(btn_001, &QAbstractButton::clicked, [this]
+	{
+		this->SetCameraRotation(0., 0.);
+	});
 
 	if(m_sett && m_sett->contains("struct_view/geo"))
 		restoreGeometry(m_sett->value("struct_view/geo").toByteArray());
@@ -303,6 +326,15 @@ void StructPlotDlg::SetPerspectiveProjection(bool proj)
 {
 	m_structplot->GetRenderer()->GetCamera().SetPerspectiveProjection(proj);
 	m_structplot->GetRenderer()->RequestViewportUpdate();
+	m_structplot->GetRenderer()->GetCamera().UpdateTransformation();
+	m_structplot->update();
+}
+
+
+
+void StructPlotDlg::SetCameraRotation(t_real_gl phi, t_real_gl theta)
+{
+	m_structplot->GetRenderer()->GetCamera().SetRotation(phi, theta);
 	m_structplot->GetRenderer()->GetCamera().UpdateTransformation();
 	m_structplot->update();
 }

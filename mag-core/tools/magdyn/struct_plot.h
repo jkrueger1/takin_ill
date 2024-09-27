@@ -102,6 +102,7 @@ protected:
 	void ShowCoordCross(bool show);
 	void ShowLabels(bool show);
 	void SetPerspectiveProjection(bool proj);
+	void SetCameraRotation(t_real_gl phi, t_real_gl theta);
 	void SetCoordinateSystem(int which);
 
 	void CentreCamera();

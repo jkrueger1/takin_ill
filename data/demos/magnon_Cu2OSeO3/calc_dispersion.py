@@ -206,6 +206,10 @@ def plot_disp(data, dispersion_plot_indices):
 	(plt, axes) = plot.subplots(nrows = 1, ncols = num_branches,
 		width_ratios = width_ratios, sharey = True)
 
+	# in case there's only one sub-plot
+	if type(axes) != numpy.ndarray:
+		axes = [ axes ]
+
 	for ( branch_idx, data_h, data_k, data_l, data_E, data_S ) in data:
 		# dispersion branch start and end points
 		b1 = dispersion[branch_idx]
