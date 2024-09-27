@@ -112,7 +112,7 @@ void MAGDYN_INST::SaveDispersion(std::ostream& ostr,
 				<< std::setw(field_len) << E_and_S.weight << " "
 				<< std::setw(field_len) << E_and_S.S_perp(0, 0).real() << " "
 				<< std::setw(field_len) << E_and_S.S_perp(1, 1).real() << " "
-				<< std::setw(field_len) << E_and_S.S_perp(2, 2).real() << " "
+				<< std::setw(field_len) << E_and_S.S_perp(2, 2).real()
 				<< std::endl;
 		}
 	}
