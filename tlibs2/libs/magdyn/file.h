@@ -85,15 +85,16 @@ void MAGDYN_INST::SaveDispersion(std::ostream& ostr,
 	t_size num_qs, t_size num_threads) const
 {
 	ostr.precision(m_prec);
+	int field_len = m_prec * 2.5;
 
-	ostr	<< std::setw(m_prec*2) << std::left << "# h"
-		<< std::setw(m_prec*2) << std::left << "k"
-		<< std::setw(m_prec*2) << std::left << "l"
-		<< std::setw(m_prec*2) << std::left << "E"
-		<< std::setw(m_prec*2) << std::left << "w"
-		<< std::setw(m_prec*2) << std::left << "S_xx"
-		<< std::setw(m_prec*2) << std::left << "S_yy"
-		<< std::setw(m_prec*2) << std::left << "S_zz"
+	ostr	<< std::setw(field_len) << std::left << "# h" << " "
+		<< std::setw(field_len) << std::left << "k" << " "
+		<< std::setw(field_len) << std::left << "l" << " "
+		<< std::setw(field_len) << std::left << "E" << " "
+		<< std::setw(field_len) << std::left << "S(Q,E)" << " "
+		<< std::setw(field_len) << std::left << "S_xx" << " "
+		<< std::setw(field_len) << std::left << "S_yy" << " "
+		<< std::setw(field_len) << std::left << "S_zz"
 		<< std::endl;
 
 	SofQEs results = CalcDispersion(h_start, k_start, l_start,
@@ -104,14 +105,14 @@ void MAGDYN_INST::SaveDispersion(std::ostream& ostr,
 	{
 		for(const EnergyAndWeight& E_and_S : result.E_and_S)
 		{
-			ostr	<< std::setw(m_prec*2) << std::left << result.h
-				<< std::setw(m_prec*2) << std::left << result.k
-				<< std::setw(m_prec*2) << std::left << result.l
-				<< std::setw(m_prec*2) << E_and_S.E
-				<< std::setw(m_prec*2) << E_and_S.weight
-				<< std::setw(m_prec*2) << E_and_S.S_perp(0, 0).real()
-				<< std::setw(m_prec*2) << E_and_S.S_perp(1, 1).real()
-				<< std::setw(m_prec*2) << E_and_S.S_perp(2, 2).real()
+			ostr	<< std::setw(field_len) << std::left << result.h << " "
+				<< std::setw(field_len) << std::left << result.k << " "
+				<< std::setw(field_len) << std::left << result.l << " "
+				<< std::setw(field_len) << E_and_S.E << " "
+				<< std::setw(field_len) << E_and_S.weight << " "
+				<< std::setw(field_len) << E_and_S.S_perp(0, 0).real() << " "
+				<< std::setw(field_len) << E_and_S.S_perp(1, 1).real() << " "
+				<< std::setw(field_len) << E_and_S.S_perp(2, 2).real() << " "
 				<< std::endl;
 		}
 	}
