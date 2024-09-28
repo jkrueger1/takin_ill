@@ -16,7 +16,7 @@
 		<h_end>1</h_end>
 		<k_end>0</k_end>
 		<l_end>0</l_end>
-		<h>0.5</h>
+		<h>0.2</h>
 		<k>0</k>
 		<l>0</l>
 		<num_Q_points>512</num_Q_points>
@@ -194,8 +194,8 @@
 		<plane_bh>0</plane_bh>
 		<plane_bk>1</plane_bk>
 		<plane_bl>0</plane_bl>
-		<plane_ch>7.6946827748871665e-17</plane_ch>
-		<plane_ck>7.6946827748871653e-17</plane_ck>
-		<plane_cl>1.2566370614359179</plane_cl>
+		<plane_ch>0</plane_ch>
+		<plane_ck>0</plane_ck>
+		<plane_cl>1</plane_cl>
 	</xtal>
 </magdyn>

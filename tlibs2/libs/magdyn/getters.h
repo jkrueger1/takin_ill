@@ -670,6 +670,9 @@ void MAGDYN_INST::SetScatteringPlane(t_real ah, t_real ak, t_real al,
 		m_scatteringplane[1] = tl2::create<t_vec_real>({ bh, bk, bl });
 		m_scatteringplane[2] = tl2::cross(m_xtalB, m_scatteringplane[0], m_scatteringplane[1]);
 
+		for(std::uint8_t i = 0; i < 3; ++i)
+			m_scatteringplane[i] /= tl2::norm<t_vec_real>(m_scatteringplane[i]);
+
 		m_xtalUB = tl2::UB_matrix(m_xtalB,
 			m_scatteringplane[0], m_scatteringplane[1], m_scatteringplane[2]);
 		bool inv_ok = false;

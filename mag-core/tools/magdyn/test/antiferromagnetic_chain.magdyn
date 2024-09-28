@@ -15,7 +15,7 @@
 		<h_end>1</h_end>
 		<k_end>0</k_end>
 		<l_end>0</l_end>
-		<h>0.5</h>
+		<h>0.2</h>
 		<k>0</k>
 		<l>0</l>
 		<num_Q_points>512</num_Q_points>
