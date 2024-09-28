@@ -107,11 +107,7 @@ MAGDYN_TEMPL
 std::tuple<MAGDYN_TYPE::t_Jmap, MAGDYN_TYPE::t_Jmap>
 MAGDYN_INST::CalcReciprocalJs(const t_vec_real& Qvec) const
 {
-	t_Jmap J_Q, J_Q0;
-
-	// no (or not valid) exchange terms given
-	if(GetExchangeTermsCount() == 0)
-		return std::make_tuple(J_Q, J_Q0);
+	t_Jmap J_Q{}, J_Q0{};
 
 	// iterate couplings to pre-calculate corresponding J matrices
 	for(const ExchangeTerm& term : GetExchangeTerms())

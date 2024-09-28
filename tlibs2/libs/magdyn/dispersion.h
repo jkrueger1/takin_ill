@@ -106,13 +106,16 @@ MAGDYN_TEMPL
 MAGDYN_TYPE::EnergiesAndWeights
 MAGDYN_INST::CalcEnergies(const t_vec_real& Q_rlu, bool only_energies) const
 {
-	EnergiesAndWeights EandWs{};
-
-	if(m_calc_H)
+	auto calc_EandS = [only_energies, this](const t_vec_real& Q)
+		-> EnergiesAndWeights
 	{
-		const t_mat H = CalcHamiltonian(Q_rlu);
-		EandWs = CalcEnergiesFromHamiltonian(H, Q_rlu, only_energies);
-	}
+		const t_mat H = CalcHamiltonian(Q);
+		return CalcEnergiesFromHamiltonian(H, Q, only_energies);
+	};
+
+	EnergiesAndWeights EsandWs{};
+	if(m_calc_H)
+		EsandWs = calc_EandS(Q_rlu);
 
 	if(IsIncommensurate())
 	{
@@ -125,53 +128,43 @@ MAGDYN_INST::CalcEnergies(const t_vec_real& Q_rlu, bool only_energies) const
 		rot_incomm -= proj_norm;
 		rot_incomm *= 0.5;
 
-		const t_mat rot_incomm_conj = tl2::conj(rot_incomm);
-
-		EnergiesAndWeights EandWs_p{}, EandWs_m{};
-
+		EnergiesAndWeights EsandWs_p{}, EsandWs_m{};
 		if(m_calc_Hp)
-		{
-			const t_mat H_p = CalcHamiltonian(Q_rlu + m_ordering);
-			EandWs_p = CalcEnergiesFromHamiltonian(
-				H_p, Q_rlu + m_ordering, only_energies);
-		}
-
+			EsandWs_p = calc_EandS(Q_rlu + m_ordering);
 		if(m_calc_Hm)
-		{
-			const t_mat H_m = CalcHamiltonian(Q_rlu - m_ordering);
-			EandWs_m = CalcEnergiesFromHamiltonian(
-				H_m, Q_rlu - m_ordering, only_energies);
-		}
+			EsandWs_m = calc_EandS(Q_rlu - m_ordering);
 
 		if(!only_energies)
 		{
+			const t_mat rot_incomm_conj = tl2::conj(rot_incomm);
+
 			// formula 40 from (Toth 2015)
-			for(EnergyAndWeight& EandW : EandWs)
+			for(EnergyAndWeight& EandW : EsandWs)
 				EandW.S = EandW.S * proj_norm;
-			for(EnergyAndWeight& EandW : EandWs_p)
+			for(EnergyAndWeight& EandW : EsandWs_p)
 				EandW.S = EandW.S * rot_incomm;
-			for(EnergyAndWeight& EandW : EandWs_m)
+			for(EnergyAndWeight& EandW : EsandWs_m)
 				EandW.S = EandW.S * rot_incomm_conj;
 		}
 
 		// unite energies and weights
-		EandWs.reserve(EandWs.size() + EandWs_p.size() + EandWs_m.size());
-		for(EnergyAndWeight& EandW : EandWs_p)
-			EandWs.emplace_back(std::move(EandW));
-		for(EnergyAndWeight& EandW : EandWs_m)
-			EandWs.emplace_back(std::move(EandW));
+		EsandWs.reserve(EsandWs.size() + EsandWs_p.size() + EsandWs_m.size());
+		for(EnergyAndWeight& EandW : EsandWs_p)
+			EsandWs.emplace_back(std::move(EandW));
+		for(EnergyAndWeight& EandW : EsandWs_m)
+			EsandWs.emplace_back(std::move(EandW));
 	}
 
 	if(!only_energies)
-		CalcIntensities(Q_rlu, EandWs);
+		CalcIntensities(Q_rlu, EsandWs);
 
 	if(m_unite_degenerate_energies)
-		EandWs = UniteEnergies(EandWs);
+		EsandWs = UniteEnergies(EsandWs);
 
 	if(!only_energies)
-		CheckImagWeights(Q_rlu, EandWs);
+		CheckImagWeights(Q_rlu, EsandWs);
 
-	return EandWs;
+	return EsandWs;
 }
 
 

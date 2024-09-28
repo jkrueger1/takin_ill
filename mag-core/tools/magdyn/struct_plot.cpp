@@ -147,15 +147,15 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	connect(btn_100, &QAbstractButton::clicked, [this]
 	{
 		this->SetCameraRotation(tl2::pi<t_real_gl> * t_real_gl(0.5),
-			 tl2::pi<t_real_gl> * t_real_gl(0.5));
+			-tl2::pi<t_real_gl> * t_real_gl(0.5));
 	});
 	connect(btn_010, &QAbstractButton::clicked, [this]
 	{
-		this->SetCameraRotation(0., tl2::pi<t_real_gl> * t_real_gl(0.5));
+		this->SetCameraRotation(0., -tl2::pi<t_real_gl> * t_real_gl(0.5));
 	});
 	connect(btn_001, &QAbstractButton::clicked, [this]
 	{
-		this->SetCameraRotation(0., 0.);
+		this->SetCameraRotation(0., tl2::pi<t_real_gl>);
 	});
 
 	if(m_sett && m_sett->contains("struct_view/geo"))
