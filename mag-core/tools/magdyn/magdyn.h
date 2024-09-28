@@ -288,7 +288,7 @@ protected:
 		const std::string& gen_xx = "0", const std::string& gen_xy = "0", const std::string& gen_xz = "0",
 		const std::string& gen_yx = "0", const std::string& gen_yy = "0", const std::string& gen_yz = "0",
 		const std::string& gen_zx = "0", const std::string& gen_zy = "0", const std::string& gen_zz = "0",
-		const std::string& rgb = "#0x00bf00");
+		const std::string& rgb = "#00bf00");
 
 	void SyncSiteComboBoxes();
 	void SyncSiteComboBox(SitesComboBox* combo, const std::string& selected_site);

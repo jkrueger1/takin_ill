@@ -88,12 +88,16 @@ t_mat MAGDYN_INST::CalcRealJ(const MAGDYN_TYPE::ExchangeTerm& term) const
 			J = J * rot_UC;
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
-			std::cout << "Coupling rot_UC = " << term.name << ":\n";
+			std::cout << "Coupling " << term.name << ": rot_UC =\n";
 			tl2::niceprint(std::cout, rot_UC, 1e-4, 4);
 #endif
 		}
 	}
 
+#ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
+	std::cout << "Coupling " << term.name << ": J =\n";
+	tl2::niceprint(std::cout, J, 1e-4, 4);
+#endif
 	return J;
 }
 
@@ -143,6 +147,19 @@ MAGDYN_INST::CalcReciprocalJs(const t_vec_real& Qvec) const
 		insert_or_add(J_Q0, indices, J);
 		insert_or_add(J_Q0, indices_t, J_T);
 	}  // end of iteration over couplings
+
+#ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
+	for(const auto& pair : J_Q)
+	{
+		std::cout << "Coupling J_Q[" << pair.first.first << ", " << pair.first.second << "] =\n";
+		tl2::niceprint(std::cout, pair.second, 1e-4, 4);
+	}
+	for(const auto& pair : J_Q0)
+	{
+		std::cout << "Coupling J_Q0[" << pair.first.first << ", " << pair.first.second << "] =\n";
+		tl2::niceprint(std::cout, pair.second, 1e-4, 4);
+	}
+#endif
 
 	return std::make_tuple(J_Q, J_Q0);
 }

@@ -111,13 +111,12 @@ bool MAGDYN_INST::CalcCorrelationsFromHamiltonian(
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
 	t_mat D_mat = trafo_herm * H_mat * trafo;
-	std::cout << "D = \n";
+	std::cout << "D =\n";
 	tl2::niceprint(std::cout, D_mat, 1e-4, 4);
-	std::cout << "\nE = \n";
+	std::cout << "E_sqrt =\n";
 	tl2::niceprint(std::cout, E_sqrt, 1e-4, 4);
-	std::cout << "\nL = \n";
+	std::cout << "L_energy =\n";
 	tl2::niceprint(std::cout, energy_mat, 1e-4, 4);
-	std::cout << std::endl;
 #endif
 
 	// building the spin correlation functions of equation (47) from (Toth 2015)
@@ -163,9 +162,8 @@ bool MAGDYN_INST::CalcCorrelationsFromHamiltonian(
 		const t_mat M_trafo = trafo_herm * M * trafo;
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
-		std::cout << "M_trafo for x=" << x_idx << ", y=" << y_idx << ":\n";
+		std::cout << "M_trafo for x=" << int(x_idx) << ", y=" << int(y_idx) << ":\n";
 		tl2::niceprint(std::cout, M_trafo, 1e-4, 4);
-		std::cout << std::endl;
 #endif
 
 		for(t_size i = 0; i < Es_and_Ws.size(); ++i)
