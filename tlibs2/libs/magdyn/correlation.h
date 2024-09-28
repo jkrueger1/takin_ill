@@ -215,13 +215,13 @@ void MAGDYN_INST::CalcIntensities(const t_vec_real& Q_rlu,
 		t_mat proj_neutron = tl2::ortho_projector<t_mat, t_vec>(Q_rlu, false);
 		E_and_S.S_perp = proj_neutron * E_and_S.S * proj_neutron;
 
+		CalcPolarisation(Q_rlu, E_and_S);
+
 		// weights
 		E_and_S.S_sum       = tl2::trace<t_mat>(E_and_S.S);
 		E_and_S.S_perp_sum  = tl2::trace<t_mat>(E_and_S.S_perp);
 		E_and_S.weight_full = std::abs(E_and_S.S_sum.real());
 		E_and_S.weight      = std::abs(E_and_S.S_perp_sum.real());
-
-		CalcPolarisation(Q_rlu, E_and_S);
 	}
 }
 // --------------------------------------------------------------------

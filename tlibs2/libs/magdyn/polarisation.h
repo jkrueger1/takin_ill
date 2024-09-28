@@ -78,6 +78,19 @@ void MAGDYN_INST::CalcPolarisation(const t_vec_real& Q_rlu,
 	...
 	...
 	*/
+
+
+	// test for helix
+	/*for(std::uint8_t i = 0; i < 3; ++i)
+	{
+		t_mat pol = get_polarisation_incommensurate<t_mat>(i, false);
+		t_mat S = pol * E_and_S.S;
+		t_mat S_perp = pol * E_and_S.S_perp;
+
+		// TODO: set the other components to 0
+		E_and_S.S(i, i) = std::abs(tl2::trace<t_mat>(S).real());
+		E_and_S.S_perp(i, i) = std::abs(tl2::trace<t_mat>(S_perp).real());
+	}*/
 }
 
 // --------------------------------------------------------------------
