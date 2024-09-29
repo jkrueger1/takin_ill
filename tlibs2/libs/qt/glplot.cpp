@@ -828,6 +828,8 @@ void GlPlotRenderer::UpdateCam()
 
 	m_picker_needs_update = true;
 	RequestPlotUpdate();
+
+	emit CameraHasUpdated();
 }
 
 

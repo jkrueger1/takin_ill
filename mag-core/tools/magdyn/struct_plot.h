@@ -28,10 +28,9 @@
 #define __MAG_DYN_STRUCTPLOT_H__
 
 #include <QtCore/QSettings>
-#include <QtWidgets/QGridLayout>
-#include <QtWidgets/QPushButton>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
+#include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QTableWidget>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QLabel>
@@ -105,6 +104,7 @@ protected:
 	void SetCameraRotation(t_real_gl phi, t_real_gl theta);
 	void SetCoordinateSystem(int which);
 
+	void CameraHasUpdated();
 	void CentreCamera();
 	void CentreCameraOnObject();
 
@@ -125,6 +125,7 @@ private:
 	QLabel *m_status{};
 	QCheckBox *m_coordcross{}, *m_labels{}, *m_perspective{};
 	QComboBox *m_coordsys{};
+	QDoubleSpinBox *m_cam_phi{}, *m_cam_theta{};
 	QMenu *m_context{}, *m_context_site{}, *m_context_term{};
 
 	tl2::GlPlot *m_structplot{};

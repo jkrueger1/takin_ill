@@ -116,6 +116,18 @@ requires is_scalar<t_real>
 
 
 /**
+ * mod operation, keeping result in range [ -tomod/2, tomod/2 ]
+ */
+template<class t_real>
+t_real mod_posneg(t_real val, t_real tomod = t_real{2}*pi<t_real>)
+requires is_scalar<t_real>
+{
+	t_real halfrange = tomod/t_real{2};
+	return mod_pos<t_real>(val + halfrange, tomod) - halfrange;
+}
+
+
+/**
  * are two angles equal within an epsilon range?
  */
 template<class T>

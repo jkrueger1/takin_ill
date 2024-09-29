@@ -29,9 +29,14 @@
 #include "struct_plot.h"
 #include "helper.h"
 
+#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QPushButton>
+
 #include <unordered_set>
 #include <functional>
+
 #include <boost/functional/hash.hpp>
+#include <boost/scope_exit.hpp>
 
 using namespace tl2_ops;
 
@@ -49,10 +54,8 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	// create gl plotter
 	m_structplot = new tl2::GlPlot(this);
 	m_structplot->GetRenderer()->SetRestrictCamTheta(false);
-	m_structplot->GetRenderer()->SetLight(
-		0, tl2::create<t_vec3_gl>({ 5, 5, 5 }));
-	m_structplot->GetRenderer()->SetLight(
-		1, tl2::create<t_vec3_gl>({ -5, -5, -5 }));
+	m_structplot->GetRenderer()->SetLight(0, tl2::create<t_vec3_gl>({ 5, 5, 5 }));
+	m_structplot->GetRenderer()->SetLight(1, tl2::create<t_vec3_gl>({ -5, -5, -5 }));
 	m_structplot->GetRenderer()->SetCoordMax(1.);
 	m_structplot->GetRenderer()->GetCamera().SetFOV(
 		g_structplot_fov / t_real(180) * tl2::pi<t_real>);
@@ -73,11 +76,21 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	m_perspective->setToolTip("Switch between perspective and parallel projection.");
 	m_perspective->setChecked(true);
 
-	m_coordsys = new QComboBox(this);
-	m_coordsys->addItem("Fractional Units (rlu)");
-	m_coordsys->addItem("Lab Units (\xe2\x84\xab)");
-	m_coordsys->setCurrentIndex(0);
-	m_coordsys->setEnabled(false);
+	m_cam_phi = new QDoubleSpinBox(this);
+	m_cam_phi->setRange(0., 360.);
+	m_cam_phi->setSingleStep(1.);
+	m_cam_phi->setDecimals(std::max(g_prec_gui - 2, 2));
+	m_cam_phi->setPrefix("φ = ");
+	m_cam_phi->setSuffix("°");
+	m_cam_phi->setToolTip("Camera polar rotation angle φ.");
+
+	m_cam_theta = new QDoubleSpinBox(this);
+	m_cam_theta->setRange(-180., 180.);
+	m_cam_theta->setSingleStep(1.);
+	m_cam_theta->setDecimals(std::max(g_prec_gui - 2, 2));
+	m_cam_theta->setPrefix("θ = ");
+	m_cam_theta->setSuffix("°");
+	m_cam_theta->setToolTip("Camera azimuthal rotation angle θ.");
 
 	QPushButton *btn_100 = new QPushButton("[100] View", this);
 	QPushButton *btn_010 = new QPushButton("[010] View", this);
@@ -85,6 +98,12 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	btn_100->setToolTip("View along [100] axis.");
 	btn_010->setToolTip("View along [010] axis.");
 	btn_001->setToolTip("View along [001] axis.");
+
+	m_coordsys = new QComboBox(this);
+	m_coordsys->addItem("Fractional Units (rlu)");
+	m_coordsys->addItem("Lab Units (\xe2\x84\xab)");
+	m_coordsys->setCurrentIndex(0);
+	m_coordsys->setEnabled(false);
 
 	m_status = new QLabel(this);
 
@@ -116,21 +135,26 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	auto grid = new QGridLayout(this);
 	grid->setSpacing(4);
 	grid->setContentsMargins(6, 6, 6, 6);
-	grid->addWidget(m_structplot, y++,0,1,6);
-	grid->addWidget(m_coordcross, y,0,1,2);
-	grid->addWidget(m_labels, y,2,1,2);
-	grid->addWidget(m_perspective, y++,4,1,2);
-	grid->addWidget(btn_100, y,0,1,2);
-	grid->addWidget(btn_010, y,2,1,2);
-	grid->addWidget(btn_001, y++,4,1,2);
-	grid->addWidget(new QLabel("Coordinate System:", this), y,0,1,2);
-	grid->addWidget(m_coordsys, y++,2,1,4);
-	grid->addWidget(m_status, y++,0,1,6);
+	grid->addWidget(m_structplot, y++, 0, 1, 6);
+	grid->addWidget(m_coordcross, y, 0, 1, 2);
+	grid->addWidget(m_labels, y, 2, 1, 2);
+	grid->addWidget(m_perspective, y++, 4, 1, 2);
+	grid->addWidget(btn_100, y, 0, 1, 2);
+	grid->addWidget(btn_010, y, 2, 1, 2);
+	grid->addWidget(btn_001, y++, 4, 1, 2);
+	grid->addWidget(new QLabel("Camera Angles:", this), y, 0, 1, 2);
+	grid->addWidget(m_cam_phi, y, 2, 1, 2);
+	grid->addWidget(m_cam_theta, y++, 4, 1, 2);
+	grid->addWidget(new QLabel("Coordinate System:", this), y, 0, 1, 2);
+	grid->addWidget(m_coordsys, y++, 2, 1, 4);
+	grid->addWidget(m_status, y++, 0, 1, 6);
 
 	connect(m_structplot, &tl2::GlPlot::AfterGLInitialisation,
 		this, &StructPlotDlg::AfterGLInitialisation);
 	connect(m_structplot->GetRenderer(), &tl2::GlPlotRenderer::PickerIntersection,
 		this, &StructPlotDlg::PickerIntersection);
+	connect(m_structplot->GetRenderer(), &tl2::GlPlotRenderer::CameraHasUpdated,
+		this, &StructPlotDlg::CameraHasUpdated);
 	connect(m_structplot, &tl2::GlPlot::MouseClick, this, &StructPlotDlg::MouseClick);
 	connect(m_structplot, &tl2::GlPlot::MouseDown, this, &StructPlotDlg::MouseDown);
 	connect(m_structplot, &tl2::GlPlot::MouseUp, this, &StructPlotDlg::MouseUp);
@@ -146,16 +170,29 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 		this, &StructPlotDlg::SetCoordinateSystem);
 	connect(btn_100, &QAbstractButton::clicked, [this]
 	{
-		this->SetCameraRotation(tl2::pi<t_real_gl> * t_real_gl(0.5),
-			-tl2::pi<t_real_gl> * t_real_gl(0.5));
+		this->SetCameraRotation(t_real_gl(90.), -t_real_gl(90.));
 	});
 	connect(btn_010, &QAbstractButton::clicked, [this]
 	{
-		this->SetCameraRotation(0., -tl2::pi<t_real_gl> * t_real_gl(0.5));
+		this->SetCameraRotation(0., -t_real_gl(90.));
 	});
 	connect(btn_001, &QAbstractButton::clicked, [this]
 	{
-		this->SetCameraRotation(0., tl2::pi<t_real_gl>);
+		this->SetCameraRotation(0., t_real_gl(180.));
+	});
+
+	connect(m_cam_phi,
+		static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+		[this](t_real_gl phi) -> void
+	{
+		this->SetCameraRotation(phi, m_cam_theta->value());
+	});
+
+	connect(m_cam_theta,
+		static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+		[this](t_real_gl theta) -> void
+	{
+		this->SetCameraRotation(m_cam_phi->value(), theta);
 	});
 
 	if(m_sett && m_sett->contains("struct_view/geo"))
@@ -332,11 +369,42 @@ void StructPlotDlg::SetPerspectiveProjection(bool proj)
 
 
 
+/**
+ * sets the camera's rotation angles
+ */
 void StructPlotDlg::SetCameraRotation(t_real_gl phi, t_real_gl theta)
 {
+	phi *= tl2::pi<t_real_gl> / t_real_gl(180);
+	theta *= tl2::pi<t_real_gl> / t_real_gl(180);
+
 	m_structplot->GetRenderer()->GetCamera().SetRotation(phi, theta);
 	m_structplot->GetRenderer()->GetCamera().UpdateTransformation();
+	CameraHasUpdated();
 	m_structplot->update();
+}
+
+
+
+/**
+ * the camera's properties have been updated
+ */
+void StructPlotDlg::CameraHasUpdated()
+{
+	auto [phi, theta] = m_structplot->GetRenderer()->GetCamera().GetRotation();
+
+	phi /= tl2::pi<t_real_gl> / t_real_gl(180);
+	theta /= tl2::pi<t_real_gl> / t_real_gl(180);
+
+	BOOST_SCOPE_EXIT(this_)
+	{
+			this_->m_cam_phi->blockSignals(false);
+			this_->m_cam_theta->blockSignals(false);
+	} BOOST_SCOPE_EXIT_END
+	m_cam_phi->blockSignals(true);
+	m_cam_theta->blockSignals(true);
+
+	m_cam_phi->setValue(phi);
+	m_cam_theta->setValue(theta);
 }
 
 
@@ -476,6 +544,7 @@ void StructPlotDlg::AfterGLInitialisation()
 	ShowLabels(m_labels->isChecked());
 	SetPerspectiveProjection(m_perspective->isChecked());
 	SetCoordinateSystem(m_coordsys->currentIndex());
+	CameraHasUpdated();
 
 	Sync();
 }

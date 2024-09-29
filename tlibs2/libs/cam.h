@@ -258,20 +258,14 @@ public:
 		m_theta = dtheta + m_theta_saved;
 
 		// wrap around phi angle
-		m_phi = tl2::mod_pos<t_real>(
-			m_phi, t_real(2)*tl2::pi<t_real>);
+		m_phi = tl2::mod_pos<t_real>(m_phi, t_real(2)*tl2::pi<t_real>);
 
 		// wrap around theta angle
-		//m_theta = tl2::mod_pos<t_real>(
-		//	m_theta, t_real(2)*tl2::pi<t_real>);
-		m_theta = std::fmod(m_theta, t_real(2)*tl2::pi<t_real>);
+		m_theta = tl2::mod_posneg<t_real>(m_theta, t_real(2)*tl2::pi<t_real>);
 
 		// restrict theta angle
 		if(restrict_theta)
-		{
-			m_theta = std::clamp<t_real>(
-				m_theta, -t_real(0.5)*tl2::pi<t_real>, 0.);
-		}
+			m_theta = std::clamp<t_real>(m_theta, -t_real(0.5)*tl2::pi<t_real>, 0.);
 
 		m_trafo_needs_update = true;
 	}

@@ -127,10 +127,10 @@ protected:
 	qgl_funcs* GetGlFunctions() { return get_gl_functions((QOpenGLWidget*)m_pPlot); }
 
 	void UpdateCam();
-	void RequestPlotUpdate();
 	void UpdatePicker();
 	void UpdateLights();
 	void UpdateBTrafo();
+	void RequestPlotUpdate();
 
 	void DoPaintGL(qgl_funcs *pGL);
 	void DoPaintNonGL(QPainter &painter);
@@ -255,6 +255,7 @@ protected slots:
 signals:
 	void PickerIntersection(const t_vec3_gl* pos,
 		std::size_t objIdx, const t_vec3_gl* posSphere);
+	void CameraHasUpdated();
 };
 
 
