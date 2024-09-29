@@ -237,7 +237,11 @@ void MagDynDlg::EnableInput()
 	m_tabs_in->setEnabled(true);
 	m_tabs_out->setEnabled(true);
 	m_menu->setEnabled(true);
-	m_btnStart->setEnabled(true);
+
+	m_startEnabled = true;
+	m_btnStartStop->setText("Calculate");
+	m_btnStartStop->setToolTip("Start calculation.");
+	m_btnStartStop->setIcon(QIcon::fromTheme("media-playback-start"));
 }
 
 
@@ -250,5 +254,9 @@ void MagDynDlg::DisableInput()
 	m_menu->setEnabled(false);
 	m_tabs_out->setEnabled(false);
 	m_tabs_in->setEnabled(false);
-	m_btnStart->setEnabled(false);
+
+	m_startEnabled = false;
+	m_btnStartStop->setText("Stop");
+	m_btnStartStop->setToolTip("Stop calculation.");
+	m_btnStartStop->setIcon(QIcon::fromTheme("media-playback-stop"));
 }

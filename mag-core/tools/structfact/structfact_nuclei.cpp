@@ -452,9 +452,7 @@ void StructFactDlg::CalcB(bool bFullRecalc)
 	t_real gamma = tl2::stoval<t_real>(m_editGamma->text().toStdString());
 
 	m_crystB = tl2::B_matrix<t_mat>(a, b, c,
-		alpha/t_real(180.)*tl2::pi<t_real>,
-		beta/t_real(180.)*tl2::pi<t_real>,
-		gamma/t_real(180.)*tl2::pi<t_real>);
+		tl2::d2r<t_real>(alpha), tl2::d2r<t_real>(beta), tl2::d2r<t_real>(gamma));
 
 	bool ok = true;
 	std::tie(m_crystA, ok) = tl2::inv(m_crystB);

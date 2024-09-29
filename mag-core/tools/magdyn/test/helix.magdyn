@@ -23,7 +23,7 @@
 		<weight_scale>1</weight_scale>
 		<weight_min>0</weight_min>
 		<weight_max>50</weight_max>
-		<plot_channels>true</plot_channels>
+		<plot_channels>false</plot_channels>
 		<plot_weight_as_pointsize>true</plot_weight_as_pointsize>
 		<plot_weight_as_alpha>false</plot_weight_as_alpha>
 		<auto_calc>true</auto_calc>

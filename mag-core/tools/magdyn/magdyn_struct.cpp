@@ -89,7 +89,7 @@ void MagDynDlg::RotateField(bool ccw)
 		(t_real)m_field_dir[2]->value(),
 	});
 
-	t_real angle = m_rot_angle->value() / 180.*tl2::pi<t_real>;
+	t_real angle = tl2::d2r<t_real>(m_rot_angle->value());
 	if(!ccw)
 		angle = -angle;
 

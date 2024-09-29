@@ -57,8 +57,7 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	m_structplot->GetRenderer()->SetLight(0, tl2::create<t_vec3_gl>({ 5, 5, 5 }));
 	m_structplot->GetRenderer()->SetLight(1, tl2::create<t_vec3_gl>({ -5, -5, -5 }));
 	m_structplot->GetRenderer()->SetCoordMax(1.);
-	m_structplot->GetRenderer()->GetCamera().SetFOV(
-		g_structplot_fov / t_real(180) * tl2::pi<t_real>);
+	m_structplot->GetRenderer()->GetCamera().SetFOV(tl2::d2r<t_real>(g_structplot_fov));
 	m_structplot->GetRenderer()->GetCamera().SetDist(1.5);
 	m_structplot->GetRenderer()->GetCamera().UpdateTransformation();
 	m_structplot->setSizePolicy(QSizePolicy{
@@ -76,6 +75,13 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	m_perspective->setToolTip("Switch between perspective and parallel projection.");
 	m_perspective->setChecked(true);
 
+	QPushButton *btn_100 = new QPushButton("[100] View", this);
+	QPushButton *btn_010 = new QPushButton("[010] View", this);
+	QPushButton *btn_001 = new QPushButton("[001] View", this);
+	btn_100->setToolTip("View along [100] axis.");
+	btn_010->setToolTip("View along [010] axis.");
+	btn_001->setToolTip("View along [001] axis.");
+
 	m_cam_phi = new QDoubleSpinBox(this);
 	m_cam_phi->setRange(0., 360.);
 	m_cam_phi->setSingleStep(1.);
@@ -92,13 +98,6 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	m_cam_theta->setSuffix("°");
 	m_cam_theta->setToolTip("Camera azimuthal rotation angle θ.");
 
-	QPushButton *btn_100 = new QPushButton("[100] View", this);
-	QPushButton *btn_010 = new QPushButton("[010] View", this);
-	QPushButton *btn_001 = new QPushButton("[001] View", this);
-	btn_100->setToolTip("View along [100] axis.");
-	btn_010->setToolTip("View along [010] axis.");
-	btn_001->setToolTip("View along [001] axis.");
-
 	m_coordsys = new QComboBox(this);
 	m_coordsys->addItem("Fractional Units (rlu)");
 	m_coordsys->addItem("Lab Units (\xe2\x84\xab)");
@@ -106,6 +105,8 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	m_coordsys->setEnabled(false);
 
 	m_status = new QLabel(this);
+	m_status->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+	m_status->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
 	// general context menu
 	m_context = new QMenu(this);
@@ -374,8 +375,8 @@ void StructPlotDlg::SetPerspectiveProjection(bool proj)
  */
 void StructPlotDlg::SetCameraRotation(t_real_gl phi, t_real_gl theta)
 {
-	phi *= tl2::pi<t_real_gl> / t_real_gl(180);
-	theta *= tl2::pi<t_real_gl> / t_real_gl(180);
+	phi = tl2::d2r<t_real>(phi);
+	theta = tl2::d2r<t_real>(theta);
 
 	m_structplot->GetRenderer()->GetCamera().SetRotation(phi, theta);
 	m_structplot->GetRenderer()->GetCamera().UpdateTransformation();
@@ -392,8 +393,8 @@ void StructPlotDlg::CameraHasUpdated()
 {
 	auto [phi, theta] = m_structplot->GetRenderer()->GetCamera().GetRotation();
 
-	phi /= tl2::pi<t_real_gl> / t_real_gl(180);
-	theta /= tl2::pi<t_real_gl> / t_real_gl(180);
+	phi = tl2::r2d<t_real>(phi);
+	theta = tl2::r2d<t_real>(theta);
 
 	BOOST_SCOPE_EXIT(this_)
 	{

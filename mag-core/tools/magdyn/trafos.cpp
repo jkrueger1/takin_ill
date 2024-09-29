@@ -165,7 +165,7 @@ void TrafoCalculator::CalculateRotation()
 		(t_real)m_spinAxis[0]->value(),
 		(t_real)m_spinAxis[1]->value(),
 		(t_real)m_spinAxis[2]->value() });
-	t_real angle = m_spinAngle->value() / 180. * tl2::pi<t_real>;
+	t_real angle = tl2::d2r<t_real>(m_spinAngle->value());
 	t_vec_real vec = tl2::create<t_vec_real>({
 		(t_real)m_spinVecToRotate[0]->value(),
 		(t_real)m_spinVecToRotate[1]->value(),

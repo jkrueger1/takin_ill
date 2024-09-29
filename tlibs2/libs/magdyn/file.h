@@ -441,9 +441,9 @@ bool MAGDYN_INST::Load(const boost::property_tree::ptree& node)
 	t_real a = node.get<t_real>("xtal.a", 5.);
 	t_real b = node.get<t_real>("xtal.b", 5.);
 	t_real c = node.get<t_real>("xtal.c", 5.);
-	t_real alpha = node.get<t_real>("xtal.alpha", 90.) / 180. * tl2::pi<t_real>;
-	t_real beta = node.get<t_real>("xtal.beta", 90.) / 180. * tl2::pi<t_real>;
-	t_real gamma = node.get<t_real>("xtal.gamma", 90.) / 180. * tl2::pi<t_real>;
+	t_real alpha = tl2::d2r<t_real>(node.get<t_real>("xtal.alpha", 90.));
+	t_real beta = tl2::d2r<t_real>(node.get<t_real>("xtal.beta", 90.));
+	t_real gamma = tl2::d2r<t_real>(node.get<t_real>("xtal.gamma", 90.));
 	SetCrystalLattice(a, b, c, alpha, beta, gamma);
 
 	// scattering plane
@@ -591,9 +591,9 @@ bool MAGDYN_INST::Save(boost::property_tree::ptree& node) const
 	node.put<t_real>("xtal.a", m_xtallattice[0]);
 	node.put<t_real>("xtal.b", m_xtallattice[1]);
 	node.put<t_real>("xtal.c", m_xtallattice[2]);
-	node.put<t_real>("xtal.alpha", m_xtalangles[0] / tl2::pi<t_real> * 180.);
-	node.put<t_real>("xtal.beta", m_xtalangles[1] / tl2::pi<t_real> * 180.);
-	node.put<t_real>("xtal.gamma", m_xtalangles[2] / tl2::pi<t_real> * 180.);
+	node.put<t_real>("xtal.alpha", tl2::r2d<t_real>(m_xtalangles[0]));
+	node.put<t_real>("xtal.beta", tl2::r2d<t_real>(m_xtalangles[1]));
+	node.put<t_real>("xtal.gamma", tl2::r2d<t_real>(m_xtalangles[2]));
 
 	// scattering plane
 	// x vector

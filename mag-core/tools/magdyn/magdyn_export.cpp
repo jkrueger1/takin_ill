@@ -156,9 +156,9 @@ bool MagDynDlg::ExportToSunny(const QString& _filename)
 		<< xtal[0] << ", "
 		<< xtal[1] << ", "
 		<< xtal[2] << ", "
-		<< xtal[3] / tl2::pi<t_real> * t_real(180) << ", "
-		<< xtal[4] / tl2::pi<t_real> * t_real(180) << ", "
-		<< xtal[5] / tl2::pi<t_real> * t_real(180) << "),\n\t[\n";
+		<< tl2::r2d<t_real>(xtal[3]) << ", "
+		<< tl2::r2d<t_real>(xtal[4]) << ", "
+		<< tl2::r2d<t_real>(xtal[5]) << "),\n\t[\n";
 
 	ofstr << "\t\t# site list\n";
 	for(const t_site &site : m_dyn.GetMagneticSites())
@@ -457,9 +457,9 @@ bool MagDynDlg::ExportToSpinW(const QString& _filename)
 	ofstr << "sw_obj.genlattice("
 		<< "\"lat_const\", [ " << xtal[0] << " " << xtal[1] << " " << xtal[2] << " ], "
 		<< "\"angled\", [ "
-		<< xtal[3] / tl2::pi<t_real> * t_real(180) << " "
-		<< xtal[4] / tl2::pi<t_real> * t_real(180) << " "
-		<< xtal[5] / tl2::pi<t_real> * t_real(180) << " ], "
+		<< tl2::r2d<t_real>(xtal[3]) << " "
+		<< tl2::r2d<t_real>(xtal[4]) << " "
+		<< tl2::r2d<t_real>(xtal[5]) << " ], "
 		<< "\"sym\", symops);\n";
 
 	ofstr << "\n% magnetic sites\n";

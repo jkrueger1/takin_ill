@@ -246,9 +246,9 @@ void MagDynDlg::SyncToKernel()
 	// transfer crystal lattice
 	m_dyn.SetCrystalLattice(
 		m_xtallattice[0]->value(), m_xtallattice[1]->value(), m_xtallattice[2]->value(),
-		m_xtalangles[0]->value() / 180 * tl2::pi<t_real>,
-		m_xtalangles[1]->value() / 180 * tl2::pi<t_real>,
-		m_xtalangles[2]->value() / 180 * tl2::pi<t_real>);
+		tl2::d2r<t_real>(m_xtalangles[0]->value()),
+		tl2::d2r<t_real>(m_xtalangles[1]->value()),
+		tl2::d2r<t_real>(m_xtalangles[2]->value()));
 
 	// scattering plane
 	m_dyn.SetScatteringPlane(

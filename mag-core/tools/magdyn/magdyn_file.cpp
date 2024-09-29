@@ -381,9 +381,9 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 		m_xtallattice[0]->setValue(xtal[0]);
 		m_xtallattice[1]->setValue(xtal[1]);
 		m_xtallattice[2]->setValue(xtal[2]);
-		m_xtalangles[0]->setValue(xtal[3] / tl2::pi<t_real> * 180.);
-		m_xtalangles[1]->setValue(xtal[4] / tl2::pi<t_real> * 180.);
-		m_xtalangles[2]->setValue(xtal[5] / tl2::pi<t_real> * 180.);
+		m_xtalangles[0]->setValue(tl2::r2d<t_real>(xtal[3]));
+		m_xtalangles[1]->setValue(tl2::r2d<t_real>(xtal[4]));
+		m_xtalangles[2]->setValue(tl2::r2d<t_real>(xtal[5]));
 
 		// scattering plane
 		const auto* plane = m_dyn.GetScatteringPlane();

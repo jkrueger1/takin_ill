@@ -159,7 +159,7 @@ void calc(std::istream& istr)
 
 	//auto crystB = unit<t_mat>(3);
 	auto crystB = B_matrix<t_mat>(latt[0], latt[1], latt[2],
-		angle[0]/180.*pi<t_real>, angle[1]/180.*pi<t_real>, angle[2]/180.*pi<t_real>);
+		tl2::d2r<t_real>(angle[0]), tl2::d2r<t_real>(angle[1]), tl2::d2r<t_real>(angle[2]));
 
 
 	std::size_t prec = 6;

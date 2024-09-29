@@ -112,7 +112,7 @@ protected:
 	QSplitter *m_split_inout{};
 	QLabel *m_statusFixed{}, *m_status{};
 	QProgressBar *m_progress{};
-	QPushButton* m_btnStart{};
+	QPushButton* m_btnStartStop{};
 
 	QAction *m_autocalc{};
 	QAction *m_use_dmi{}, *m_use_genJ{};
@@ -396,19 +396,20 @@ public:
 
 
 private:
-	int m_sites_cursor_row = -1;
-	int m_terms_cursor_row = -1;
-	int m_variables_cursor_row = -1;
-	int m_fields_cursor_row = -1;
-	int m_coordinates_cursor_row = -1;
+	int m_sites_cursor_row { -1 };
+	int m_terms_cursor_row { -1 };
+	int m_variables_cursor_row { -1 };
+	int m_fields_cursor_row { -1 };
+	int m_coordinates_cursor_row { -1 };
 
-	bool m_ignoreCalc = false;
-	bool m_ignoreSitesCalc = false;
-	bool m_stopRequested = false;
+	bool m_ignoreCalc { false };
+	bool m_ignoreSitesCalc { false };
+	bool m_stopRequested { false };
+	bool m_startEnabled { true };     // "calc" behaves as start or stop button?
 
 	// optional features
-	bool m_allow_ortho_spin = false;
-	bool m_allow_general_J = false;
+	bool m_allow_ortho_spin { false };
+	bool m_allow_general_J { false };
 
 	// data for dispersion plot
 	QVector<qreal> m_qs_data{}, m_Es_data{}, m_ws_data{};

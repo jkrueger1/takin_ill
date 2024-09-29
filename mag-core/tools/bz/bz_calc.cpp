@@ -117,9 +117,7 @@ void BZDlg::CalcB(bool full_recalc)
 	}
 
 	t_mat crystB = tl2::B_matrix<t_mat>(a, b, c,
-		alpha/t_real(180.)*tl2::pi<t_real>,
-		beta/t_real(180.)*tl2::pi<t_real>,
-		gamma/t_real(180.)*tl2::pi<t_real>);
+		tl2::d2r<t_real>(alpha), tl2::d2r<t_real>(beta), tl2::d2r<t_real>(gamma));
 
 	bool ok = true;
 	t_mat crystA = tl2::unit<t_mat>(3);

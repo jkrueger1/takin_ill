@@ -687,7 +687,7 @@ protected:
 			t_value finalval = *value;
 
 			if(var.is_angle)
-				finalval = finalval / tl2::pi<t_real>*180;
+				finalval = tl2::r2d<t_real>(finalval);
 
 			if(var.editor == SettingsVariableEditor::YESNO)
 			{
@@ -882,7 +882,7 @@ protected:
 					(int)SettingsColumn::VALUE))->GetValue();
 
 				if(var.is_angle)
-					finalval = finalval / 180. * tl2::pi<t_real>;
+					finalval = tl2::d2r<t_real>(finalval);
 			}
 		}
 		else  // string values
