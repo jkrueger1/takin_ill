@@ -51,6 +51,12 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 	message("Debug building for ${CMAKE_SYSTEM_NAME} systems.")
 
+elseif(CMAKE_BUILD_TYPE STREQUAL "Profile")
+	add_compile_options(-g -ggdb3 -pg -O0)
+	set(CMAKE_VERBOSE_MAKEFILE TRUE)
+
+	message("Profile building for ${CMAKE_SYSTEM_NAME} systems.")
+
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
 	add_compile_options("-DNDEBUG")
 	add_compile_options("-Wno-#pragma-messages")
