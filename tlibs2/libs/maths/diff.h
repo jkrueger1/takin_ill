@@ -41,9 +41,6 @@
 #include <vector>
 #include <limits>
 
-#include "../algos.h"
-#include "../traits.h"
-
 #include "decls.h"
 
 
@@ -234,5 +231,4 @@ T newton(const std::function<T(T)>& fkt, const std::function<T(T)>& diff,
 
 }
 
-// ----------------------------------------------------------------------------
 #endif

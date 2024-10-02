@@ -43,10 +43,8 @@
 #include <boost/math/special_functions/factorials.hpp>
 #include <boost/math/special_functions/spherical_harmonic.hpp>
 
-#include "../algos.h"
-#include "../traits.h"
-
 #include "decls.h"
+#include "constants.h"
 
 
 #ifdef __TLIBS2_USE_FADDEEVA__
@@ -276,8 +274,6 @@ T CG_coeff(T S, T s1, T s2, T ms1, T ms2)
 }
 // -----------------------------------------------------------------------------
 
-
 }
 
-// ----------------------------------------------------------------------------
 #endif

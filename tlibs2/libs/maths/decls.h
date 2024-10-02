@@ -43,6 +43,7 @@
 #include "../traits.h"
 
 
+
 // numbers
 #if __has_include(<numbers>)
 	#define __TLIBS2_USE_NUMBERS__
@@ -206,5 +207,4 @@ requires is_basic_vec<t_cont<t_elem>>;
 
 }
 
-// ----------------------------------------------------------------------------
 #endif

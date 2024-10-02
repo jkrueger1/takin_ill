@@ -42,10 +42,8 @@
 #include <vector>
 #include <limits>
 
-#include "../algos.h"
-#include "../traits.h"
-
 #include "decls.h"
+#include "constants.h"
 #include "projectors.h"
 
 
@@ -1191,8 +1189,8 @@ requires is_mat<t_mat>
 	return newmatrices;
 }
 
+// ----------------------------------------------------------------------------
 
 }
 
-// ----------------------------------------------------------------------------
 #endif

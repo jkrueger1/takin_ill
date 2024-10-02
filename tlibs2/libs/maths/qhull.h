@@ -41,9 +41,6 @@
 #include <tuple>
 #include <vector>
 
-#include "../algos.h"
-#include "../traits.h"
-
 #include "decls.h"
 #include "operators.h"
 
@@ -154,5 +151,4 @@ requires tl2::is_vec<t_vec>
 #endif  // __TLIBS2_USE_QHULL__
 
 
-// ----------------------------------------------------------------------------
 #endif

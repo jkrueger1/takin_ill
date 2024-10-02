@@ -43,9 +43,6 @@
 #include <initializer_list>
 #include <limits>
 
-#include "../algos.h"
-#include "../traits.h"
-
 #include "decls.h"
 
 
@@ -848,5 +845,4 @@ requires is_vec<t_vec>
 
 }
 
-// ----------------------------------------------------------------------------
 #endif

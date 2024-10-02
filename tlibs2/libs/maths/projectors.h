@@ -42,9 +42,6 @@
 #include <vector>
 #include <initializer_list>
 
-#include "../algos.h"
-#include "../traits.h"
-
 #include "decls.h"
 
 
@@ -379,8 +376,6 @@ requires is_mat<t_mat> && is_vec<t_vec>
 }
 // ----------------------------------------------------------------------------
 
-
-
 }
-// ----------------------------------------------------------------------------
+
 #endif

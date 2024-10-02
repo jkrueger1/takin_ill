@@ -41,9 +41,6 @@
 #include <vector>
 #include <initializer_list>
 
-#include "../algos.h"
-#include "../traits.h"
-
 #include "decls.h"
 
 
@@ -247,8 +244,9 @@ requires is_basic_mat<t_mat> && is_basic_vec<t_vec>
 
 	return std::acos(c);
 }
-// ----------------------------------------------------------------------------
-}
 
 // ----------------------------------------------------------------------------
+
+}
+
 #endif

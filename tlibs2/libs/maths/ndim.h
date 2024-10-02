@@ -44,9 +44,6 @@
 #include <initializer_list>
 #include <limits>
 
-#include "../algos.h"
-#include "../traits.h"
-
 #include "decls.h"
 
 
@@ -2059,9 +2056,8 @@ requires is_vec<t_vec> && is_dyn_mat<t_mat>
 
 	return std::make_tuple(v, ok);
 }
-
+// ----------------------------------------------------------------------------
 
 }
 
-// ----------------------------------------------------------------------------
 #endif

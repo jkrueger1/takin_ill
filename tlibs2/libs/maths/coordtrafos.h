@@ -40,10 +40,8 @@
 #include <cmath>
 #include <tuple>
 
-#include "../algos.h"
-#include "../traits.h"
-
 #include "decls.h"
+#include "constants.h"
 
 
 
@@ -210,9 +208,7 @@ std::tuple<T, T> stereographic_proj(T twophi_crys, T twotheta_crys, T rad)
 
 	return std::make_tuple(x, y);
 }
-// -----------------------------------------------------------------------------
+
 }
 
-
-// ----------------------------------------------------------------------------
 #endif

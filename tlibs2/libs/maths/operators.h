@@ -45,8 +45,6 @@
 #include <boost/algorithm/string.hpp>
 
 #include "../str.h"
-#include "../algos.h"
-#include "../traits.h"
 
 #include "decls.h"
 

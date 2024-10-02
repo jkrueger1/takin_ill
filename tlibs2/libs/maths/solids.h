@@ -41,10 +41,8 @@
 #include <vector>
 #include <limits>
 
-#include "../algos.h"
-#include "../traits.h"
-
 #include "decls.h"
+#include "constants.h"
 
 
 
@@ -983,7 +981,7 @@ bool collide_bounding_boxes(
 	return true;
 }
 // ----------------------------------------------------------------------------
+
 }
 
-// ----------------------------------------------------------------------------
 #endif

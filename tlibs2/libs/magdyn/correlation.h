@@ -42,6 +42,7 @@
 #include <iostream>
 #include <iomanip>
 
+#include "../algos.h"
 #include "../maths.h"
 #include "../phys.h"
 

@@ -41,9 +41,6 @@
 #include <vector>
 #include <limits>
 
-#include "../algos.h"
-#include "../traits.h"
-
 #include "decls.h"
 
 
@@ -389,9 +386,8 @@ T chi2_nd(const t_func& func,
 
 	return tchi2;
 }
-
 // ----------------------------------------------------------------------------
+
 }
 
-// ----------------------------------------------------------------------------
 #endif

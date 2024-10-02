@@ -42,9 +42,6 @@
 #include <tuple>
 #include <vector>
 
-#include "../algos.h"
-#include "../traits.h"
-
 #include "decls.h"
 #include "complex.h"
 #include "ndim.h"
@@ -1204,5 +1201,4 @@ requires (tl2::is_mat<t_mat> && tl2::is_vec<t_vec>)
 #endif	// __TLIBS2_USE_LAPACK__
 
 
-// ----------------------------------------------------------------------------
 #endif

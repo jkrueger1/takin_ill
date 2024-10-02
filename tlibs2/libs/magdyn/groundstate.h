@@ -46,8 +46,10 @@
 
 #include "../maths.h"
 #include "../str.h"
+#include "../fit.h"
 
 #include "magdyn.h"
+
 
 
 // --------------------------------------------------------------------

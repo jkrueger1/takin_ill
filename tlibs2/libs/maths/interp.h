@@ -127,8 +127,8 @@ t_vec bspline(const t_vec* P, std::size_t N, T t, const std::vector<T>& knots)
 }
 
 
-
 // ----------------------------------------------------------------------------
+
 
 template<class t_vec, typename T = typename t_vec::value_type>
 class Bezier
@@ -458,8 +458,6 @@ void find_peaks(std::size_t num_pts, const T* _px, const T* _py, unsigned int sp
 		peaks_minima.push_back(is_minimum);
 	}
 }
-// ----------------------------------------------------------------------------
-
 
 }
 

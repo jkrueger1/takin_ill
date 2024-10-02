@@ -42,7 +42,6 @@
 #include <vector>
 
 #include "../algos.h"
-#include "../traits.h"
 
 #include "decls.h"
 
@@ -222,5 +221,4 @@ t_cont<t_cplx> fft(const t_cont<t_cplx>& vecIn,
 
 }
 
-// ----------------------------------------------------------------------------
 #endif

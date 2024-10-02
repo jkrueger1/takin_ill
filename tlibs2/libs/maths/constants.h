@@ -1,5 +1,5 @@
 /**
- * tlibs2 maths library
+ * tlibs2 maths library -- constants
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
  * @date 2015 - 2024
  * @license GPLv3, see 'LICENSE' file
@@ -34,35 +34,54 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef __TLIBS2_MATHS_H__
-#define __TLIBS2_MATHS_H__
+#ifndef __TLIBS2_MATHS_CONSTS_H__
+#define __TLIBS2_MATHS_CONSTS_H__
+
+#include <cmath>
+
+#ifdef __TLIBS2_USE_NUMBERS__
+	#include <numbers>
+#endif
+
+#include "decls.h"
 
 
-//#define USE_LAPACK 1
-#define __TLIBS2_QR_METHOD__ 0
 
+namespace tl2 {
+// ----------------------------------------------------------------------------
+// constants
+// ----------------------------------------------------------------------------
 
-#include "maths/decls.h"
-#include "maths/constants.h"
-#include "maths/operators.h"
-#include "maths/containers.h"
-#include "maths/funcs.h"
-#include "maths/scalar.h"
-#include "maths/ndim.h"
-#include "maths/threedim.h"
-#include "maths/projectors.h"
-#include "maths/tensor.h"
-#include "maths/solids.h"
-#include "maths/fourier.h"
-#include "maths/polygon.h"
-#include "maths/complex.h"
-#include "maths/quaternion.h"
-#include "maths/statistics.h"
-#include "maths/coordtrafos.h"
-#include "maths/diff.h"
-#include "maths/interp.h"
-#include "maths/lapack.h"
-#include "maths/qhull.h"
+#ifdef __TLIBS2_USE_NUMBERS__
+	template<typename T = double> constexpr T golden{std::numbers::phi_v<T>};
+	template<typename T = double> constexpr T pi{std::numbers::pi_v<T>};
+#else
+	// see: https://en.wikipedia.org/wiki/Golden_ratio
+	template<typename T = double> constexpr T golden{1.618033988749895};
+	template<typename T = double> constexpr T pi{M_PI};
+#endif
 
+template<typename INT = int> bool is_even(INT i) { return (i%2 == 0); }
+template<typename INT = int> bool is_odd(INT i) { return !is_even<INT>(i); }
+
+template<class T = double> constexpr T r2d(T rad) { return rad/pi<T>*T(180); }     // rad -> deg
+template<class T = double> constexpr T d2r(T deg) { return deg/T(180)*pi<T>; }     // deg -> rad
+template<class T = double> constexpr T r2m(T rad) { return rad/pi<T>*T(180*60); }  // rad -> min
+template<class T = double> constexpr T m2r(T min) { return min/T(180*60)*pi<T>; }  // min -> rad
+
+/**
+ * Gaussian around 0: f(x) = exp(-1/2 * (x/sig)^2)
+ * at hwhm: f(x_hwhm) = 1/2
+ *          exp(-1/2 * (x_hwhm/sig)^2) = 1/2
+ *          -1/2 * (x_hwhm/sig)^2 = ln(1/2)
+ *          (x_hwhm/sig)^2 = -2*ln(1/2)
+ *          x_hwhm^2 = sig^2 * 2*ln(2)
+ */
+template<class T = double> static constexpr T SIGMA2FWHM = T(2)*std::sqrt(T(2)*std::log(T(2)));
+template<class T = double> static constexpr T SIGMA2HWHM = std::sqrt(T(2)*std::log(T(2)));
+template<class T = double> static constexpr T FWHM2SIGMA = T(1)/SIGMA2FWHM<T>;
+template<class T = double> static constexpr T HWHM2SIGMA = T(1)/SIGMA2HWHM<T>;
+
+}
 
 #endif

@@ -39,10 +39,8 @@
 
 #include <cmath>
 
-#include "../algos.h"
-#include "../traits.h"
-
 #include "decls.h"
+#include "constants.h"
 
 
 
@@ -535,5 +533,4 @@ requires is_quat<t_quat>
 
 }
 
-// ----------------------------------------------------------------------------
 #endif

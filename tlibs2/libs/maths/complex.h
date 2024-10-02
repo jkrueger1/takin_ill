@@ -42,9 +42,6 @@
 #include <tuple>
 #include <vector>
 
-#include "../algos.h"
-#include "../traits.h"
-
 #include "decls.h"
 #include "ndim.h"
 
@@ -453,5 +450,4 @@ requires is_basic_mat<t_mat>
 
 }
 
-// ----------------------------------------------------------------------------
 #endif
