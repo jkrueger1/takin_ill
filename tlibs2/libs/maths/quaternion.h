@@ -203,7 +203,7 @@ requires is_quat<t_quat> && is_mat<t_mat>
 {
 	using T = typename t_quat::value_type;
 	const T tr = trace<t_mat>(rot);
-	T v[3], w;
+	T v[3]{}, w{};
 
 	if(tr > T(0))	// scalar component is largest
 	{
@@ -235,7 +235,7 @@ requires is_quat<t_quat> && is_mat<t_mat>
 		}
 	}
 
-	t_quat quatRet{w, v[0],v[1],v[2]};
+	t_quat quatRet{w, v[0], v[1], v[2]};
 	T norm_eucl = std::sqrt(w*w + v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
 	return quatRet / norm_eucl;
 }
@@ -255,7 +255,7 @@ requires is_quat<t_quat> && is_mat<t_mat>
 	const t_quat cols[] = { quat*i*qc, quat*j*qc, quat*k*qc };
 
 	t_mat mat = unit<t_mat>(3);
-	for(std::size_t icol=0; icol<3; ++icol)
+	for(std::size_t icol = 0; icol < 3; ++icol)
 	{
 		mat(0, icol) = cols[icol].R_component_2();
 		mat(1, icol) = cols[icol].R_component_3();

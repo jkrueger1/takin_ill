@@ -60,8 +60,7 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	m_structplot->GetRenderer()->GetCamera().SetFOV(tl2::d2r<t_real>(g_structplot_fov));
 	m_structplot->GetRenderer()->GetCamera().SetDist(1.5);
 	m_structplot->GetRenderer()->GetCamera().UpdateTransformation();
-	m_structplot->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Expanding});
+	m_structplot->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
 
 	m_coordcross = new QCheckBox("Show Coordinates", this);
 	m_coordcross->setToolTip("Show the coordinate system cross.");

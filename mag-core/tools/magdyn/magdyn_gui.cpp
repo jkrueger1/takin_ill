@@ -95,7 +95,7 @@ void MagDynDlg::CreateMainWindow()
 	// fixed status
 	m_statusFixed = new QLabel(this);
 	m_statusFixed->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-	m_statusFixed->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+	m_statusFixed->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	m_statusFixed->setFrameShape(QFrame::Panel);
 	m_statusFixed->setFrameShadow(QFrame::Sunken);
 	m_statusFixed->setText("Ready.");
@@ -103,24 +103,24 @@ void MagDynDlg::CreateMainWindow()
 	// expanding status
 	m_status = new QLabel(this);
 	m_status->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-	m_status->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	m_status->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	m_status->setFrameShape(QFrame::Panel);
 	m_status->setFrameShadow(QFrame::Sunken);
 
 	// progress bar
 	m_progress = new QProgressBar(this);
-	m_progress->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	m_progress->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
 	// start/stop button
 	m_btnStartStop = new QPushButton("Calculate", this);
 	m_btnStartStop->setIcon(QIcon::fromTheme("media-playback-start"));
 	m_btnStartStop->setToolTip("Start calculation.");
-	m_btnStartStop->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+	m_btnStartStop->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
 	// show structure
 	QPushButton *btnShowStruct = new QPushButton("View Structure...", this);
 	btnShowStruct->setToolTip("Show a 3D view of the magnetic sites and couplings.");
-	btnShowStruct->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+	btnShowStruct->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
 	// splitter for input and output tabs
 	m_split_inout = new QSplitter(this);
