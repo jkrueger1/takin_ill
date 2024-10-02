@@ -142,6 +142,9 @@ InfoDlg::InfoDlg(QWidget* parent, QSettings *sett)
 		QString(__DATE__) + ", " +
 		QString(__TIME__) + ".",
 		infopanel), y++,0, 1,1);
+	grid->addWidget(new QLabel(
+		QString("Using %1-bit real and %2-bit integer type.").arg(sizeof(t_real)*8).arg(sizeof(t_size)*8),
+		infopanel), y++,0, 1,1);
 
 	grid->addWidget(sep2, y++,0, 1,1);
 
