@@ -2053,6 +2053,29 @@ void MagDynDlg::ShowStructPlotDlg(bool only_create)
 
 
 /**
+ * ground state minimiser dialog
+ */
+void MagDynDlg::ShowGroundStateDlg(bool only_create)
+{
+	if(!m_groundstate_dlg)
+	{
+		m_groundstate_dlg = new GroundStateDlg(this, m_sett);
+		m_groundstate_dlg->setFont(this->font());
+
+		m_groundstate_dlg->SetKernel(&m_dyn);
+	}
+
+	if(!only_create)
+	{
+		m_groundstate_dlg->show();
+		m_groundstate_dlg->raise();
+		m_groundstate_dlg->activateWindow();
+	}
+}
+
+
+
+/**
  * main menu
  */
 void MagDynDlg::CreateMenuBar()
@@ -2076,6 +2099,7 @@ void MagDynDlg::CreateMenuBar()
 	auto acStructExportSW = new QAction("Export To SpinW Code...");
 	auto acStructNotes = new QAction("Notes...", menuStruct);
 	auto acStructView = new QAction("View...", menuStruct);
+	auto acGroundState = new QAction("Minimise Ground State...", menuStruct);
 
 	// dispersion menu
 	m_menuDisp = new QMenu("Dispersion", m_menu);
@@ -2256,7 +2280,11 @@ void MagDynDlg::CreateMenuBar()
 	menuStruct->addAction(acStructSymIdx);
 	menuStruct->addSeparator();
 	menuStruct->addAction(acStructNotes);
+	menuStruct->addSeparator();
 	menuStruct->addAction(acStructView);
+#ifdef __TLIBS2_MAGDYN_USE_MINUIT__
+	//menuStruct->addAction(acGroundState);
+#endif
 	menuStruct->addSeparator();
 	menuStruct->addAction(acStructImport);
 	menuStruct->addAction(acStructExportSun);
@@ -2340,6 +2368,7 @@ void MagDynDlg::CreateMenuBar()
 	connect(acStructNotes, &QAction::triggered, this, &MagDynDlg::ShowNotesDlg);
 	connect(acStructSymIdx, &QAction::triggered, this, &MagDynDlg::CalcSymmetryIndices);
 	connect(acStructView, &QAction::triggered, this, &MagDynDlg::ShowStructPlotDlg);
+	connect(acGroundState, &QAction::triggered, this, &MagDynDlg::ShowGroundStateDlg);
 	connect(acStructImport, &QAction::triggered, this, &MagDynDlg::ShowTableImporter);
 	connect(acStructExportSun, &QAction::triggered,
 		this, static_cast<void (MagDynDlg::*)()>(&MagDynDlg::ExportToSunny));

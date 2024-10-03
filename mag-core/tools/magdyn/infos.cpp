@@ -28,7 +28,6 @@
 
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QPushButton>
-#include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QLabel>
 
 #include <boost/version.hpp>
@@ -171,8 +170,7 @@ InfoDlg::InfoDlg(QWidget* parent, QSettings *sett)
 		y++,0, 1,1);
 
 	QPushButton *infoDlgOk = new QPushButton("OK", this);
-	connect(infoDlgOk, &QAbstractButton::clicked,
-		this, &QDialog::accept);
+	connect(infoDlgOk, &QAbstractButton::clicked, this, &QDialog::accept);
 
 	auto dlgGrid = new QGridLayout(this);
 	dlgGrid->setSpacing(4);

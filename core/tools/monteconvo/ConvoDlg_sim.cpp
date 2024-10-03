@@ -275,7 +275,8 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 			[&reso, dCurH, dCurK, dCurL, dCurE, iNumNeutrons, iNumSampleSteps, this]()
 				-> std::pair<bool, t_real>
 			{
-				if(this->StopRequested()) return std::pair<bool, t_real>(false, 0.);
+				if(this->StopRequested())
+					return std::pair<bool, t_real>(false, 0.);
 
 				t_real dS = 0.;
 				t_real dhklE_mean[4] = {0., 0., 0., 0.};
@@ -347,7 +348,8 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 		unsigned int iStep = 0;
 		for(auto &fut : lstFuts)
 		{
-			if(this->StopRequested()) break;
+			if(this->StopRequested())
+				break;
 
 			// deferred (in main thread), eval this task manually
 			if(iNumThreads == 0)
@@ -463,7 +465,7 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 			std::vector<t_real> vecSFuncY;
 			vecSFuncY.reserve(iNumScanPts);
 
-			for(std::size_t iScanPt=0; iScanPt<iNumScanPts; ++iScanPt)
+			for(std::size_t iScanPt = 0; iScanPt < iNumScanPts; ++iScanPt)
 			{
 				const ScanPoint& pt = m_scan.vecPoints[iScanPt];
 				t_real E = pt.E / tl::one_meV;
@@ -473,7 +475,7 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 				// find point on S(Q,E) curve closest to scan point
 				std::size_t iMinIdx = 0;
 				t_real dMinDist = std::numeric_limits<t_real>::max();
-				for(std::size_t iStep=0; iStep<iNumSteps; ++iStep)
+				for(std::size_t iStep = 0; iStep < iNumSteps; ++iStep)
 				{
 					ublas::vector<t_real> vecCurveHKLE =
 						tl::make_vec({ vecH[iStep], vecK[iStep], vecL[iStep], vecE[iStep] });
@@ -524,7 +526,12 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 	}
 	else
 	{
-		if(m_pth) { if(m_pth->joinable()) m_pth->join(); delete m_pth; }
+		if(m_pth)
+		{
+			if(m_pth->joinable())
+				m_pth->join();
+			delete m_pth;
+		}
 		m_pth = new std::thread(std::move(fkt));
 	}
 }
@@ -794,15 +801,14 @@ void ConvoDlg::Start2D()
 			[&reso, dCurH, dCurK, dCurL, dCurE, iNumNeutrons, iNumSampleSteps, this]()
 				-> std::pair<bool, t_real>
 			{
-				if(this->StopRequested()) return std::pair<bool, t_real>(false, 0.);
+				if(this->StopRequested())
+					return std::pair<bool, t_real>(false, 0.);
 
 				t_real dS = 0.;
 				t_real dhklE_mean[4] = {0., 0., 0., 0.};
 
 				if(iNumNeutrons == 0)
 				{	// if no neutrons are given, just plot the unconvoluted S(Q,E)
-					// TODO: add an option to let the user choose if S(Q,E) is
-					// really the dynamical structure factor, or its absolute square
 					dS += (*m_pSqw)(dCurH, dCurK, dCurL, dCurE);
 					dS += m_pSqw->GetBackground(dCurH, dCurK, dCurL, dCurE);
 				}
@@ -817,8 +823,8 @@ void ConvoDlg::Start2D()
 						if(!localreso.SetHKLE(dCurH, dCurK, dCurL, dCurE))
 						{
 							std::ostringstream ostrErr;
-							ostrErr << "Invalid crystal position: (" <<
-								dCurH << " " << dCurK << " " << dCurL << ") rlu, "
+							ostrErr << "Invalid crystal position: ("
+								<< dCurH << " " << dCurK << " " << dCurL << ") rlu, "
 								<< dCurE << " meV.";
 							throw tl::Err(ostrErr.str().c_str());
 						}
@@ -834,23 +840,20 @@ void ConvoDlg::Start2D()
 
 					for(const ublas::vector<t_real>& vecHKLE : vecNeutrons)
 					{
-						if(this->StopRequested()) return std::pair<bool, t_real>(false, 0.);
+						if(this->StopRequested())
+							return std::pair<bool, t_real>(false, 0.);
 
-						// TODO: add an option to let the user choose if S(Q,E) is
-						// really the dynamical structure factor, or its absolute square
 						dS += (*m_pSqw)(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]);
 
-						for(int i=0; i<4; ++i)
+						for(int i = 0; i < 4; ++i)
 							dhklE_mean[i] += vecHKLE[i];
 					}
 
 					dS /= t_real(iNumNeutrons*iNumSampleSteps);
-					for(int i=0; i<4; ++i)
+					for(int i = 0; i < 4; ++i)
 						dhklE_mean[i] /= t_real(iNumNeutrons*iNumSampleSteps);
 
 					dS *= localreso.GetResoResults().dR0 * localreso.GetR0Scale();
-					//if(localreso.GetResoParams().flags & CALC_RESVOL)
-					//	dS /= localreso.GetResoResults().dResVol * tl::get_pi<t_real>() * t_real(3.);
 				}
 				return std::pair<bool, t_real>(true, dS);
 			});
@@ -861,7 +864,8 @@ void ConvoDlg::Start2D()
 		unsigned int iStep = 0;
 		for(auto &fut : lstFuts)
 		{
-			if(this->StopRequested()) break;
+			if(this->StopRequested())
+				break;
 
 			// deferred (in main thread), eval this task manually
 			if(iNumThreads == 0)
@@ -940,7 +944,12 @@ void ConvoDlg::Start2D()
 	}
 	else
 	{
-		if(m_pth) { if(m_pth->joinable()) m_pth->join(); delete m_pth; }
+		if(m_pth)
+		{
+			if(m_pth->joinable())
+				m_pth->join();
+			delete m_pth;
+		}
 		m_pth = new std::thread(std::move(fkt));
 	}
 }
@@ -998,7 +1007,6 @@ void ConvoDlg::StartDisp()
 		watch.start();
 
 		const unsigned int iNumSteps = spinStepCnt->value();
-
 
 		bool bScanAxisFound = 0;
 		int iScanAxisIdx = 0;
@@ -1066,7 +1074,7 @@ void ConvoDlg::StartDisp()
 			tp(iNumThreads);
 		auto& lstFuts = tp.GetResults();
 
-		for(unsigned int iStep=0; iStep<iNumSteps; ++iStep)
+		for(unsigned int iStep = 0; iStep < iNumSteps; ++iStep)
 		{
 			t_real dCurH = vecH[iStep];
 			t_real dCurK = vecK[iStep];

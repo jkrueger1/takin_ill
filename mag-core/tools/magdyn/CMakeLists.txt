@@ -159,6 +159,7 @@ if(USE_QT)
 		magdyn_kernel.cpp magdyn_disp.cpp
 		defs.cpp defs.h gui_defs.h settings.h
 		struct_plot.cpp struct_plot.h
+		ground_state.cpp ground_state.h
 		table_import.cpp table_import.h
 		trafos.cpp trafos.h
 		notes.cpp notes.h

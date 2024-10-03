@@ -54,6 +54,7 @@ using t_real_min = double;
 namespace minuit = ROOT::Minuit2;
 
 
+
 class StopRequestedEx : public std::runtime_error
 {
 public:
@@ -97,7 +98,7 @@ public:
 		// if a stop is requested, we have no other way of getting out of here than throwing an exception...
 		// if not in StartFit(), this exception will be handled at the latest by TakAppl::notify()
 		if(m_convodlg->StopRequested())
-			throw StopRequestedEx{"Convolution fitter stop requested."};
+			throw StopRequestedEx{"Convolution fit stop requested."};
 
 		return m_convodlg->GetChi2();
 	}
@@ -293,7 +294,7 @@ void ConvoDlg::StartFit()
 
 	if(!mini_valid || !mini)
 	{
-		QMessageBox::critical(this, "Error", "Convolution fitter did not converge.");
+		QMessageBox::critical(this, "Error", "Convolution fit did not converge.");
 		ostr_fitresults << "# Warning: Convolution fit did not converge.\n";
 	}
 

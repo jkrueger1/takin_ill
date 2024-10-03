@@ -66,6 +66,7 @@
 #include "graph.h"
 #include "table_import.h"
 #include "struct_plot.h"
+#include "ground_state.h"
 #include "trafos.h"
 #include "notes.h"
 #include "infos.h"
@@ -230,6 +231,7 @@ protected:
 	TrafoCalculator *m_trafos{};           // trafo calculator
 	InfoDlg *m_info_dlg{};                 // info dialog
 	StructPlotDlg *m_structplot_dlg{};     // magnetic structure plotter
+	GroundStateDlg *m_groundstate_dlg{};   // ground state minimiser
 
 
 protected:
@@ -241,6 +243,7 @@ protected:
 	void ShowInfoDlg(bool only_create = false);
 	void ShowNotesDlg(bool only_create = false);
 	void ShowStructPlotDlg(bool only_create = false);
+	void ShowGroundStateDlg(bool only_create = false);
 	void InitSettingsDlg();
 	void InitSettings();
 

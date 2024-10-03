@@ -117,9 +117,7 @@ t_real MAGDYN_INST::CalcGroundStateEnergy() const
  */
 #if defined(__TLIBS2_USE_MINUIT__) && defined(__TLIBS2_MAGDYN_USE_MINUIT__)
 MAGDYN_TEMPL
-bool MAGDYN_INST::CalcGroundState(
-	const std::unordered_set<std::string>* fixed_params,
-	bool verbose)
+bool MAGDYN_INST::CalcGroundState(const std::unordered_set<std::string>* fixed_params, bool verbose)
 {
 	// function to minimise the state's energy
 	auto func = [this](const std::vector<tl2::t_real_min>& args)

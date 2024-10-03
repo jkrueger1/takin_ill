@@ -76,7 +76,7 @@ public:
 	StructPlotDlg& operator=(const StructPlotDlg&) = delete;
 
 	void Sync();
-	void SetKernel(const t_magdyn* dyn) { m_dyn = dyn; };
+	void SetKernel(const t_magdyn* dyn) { m_dyn = dyn; }
 	void SetTables(QTableWidget *sites, QTableWidget *terms)
 	{
 		m_sitestab = sites;

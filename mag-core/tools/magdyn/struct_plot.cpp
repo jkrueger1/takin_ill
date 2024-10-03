@@ -48,7 +48,7 @@ using namespace tl2_ops;
 StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	: QDialog{parent}, m_sett{sett}, m_info_dlg{info}
 {
-	setWindowTitle("Structure Viewer");
+	setWindowTitle("Magnetic Structure");
 	setSizeGripEnabled(true);
 
 	// create gl plotter
@@ -745,7 +745,7 @@ void StructPlotDlg::Sync()
 	// iterate and add exchange terms
 	for(t_size term_idx = 0; term_idx < terms.size(); ++term_idx)
 	{
-		const auto& term = terms[term_idx];
+		const t_term& term = terms[term_idx];
 		if(term.site1_calc >= sites.size() || term.site2_calc >= sites.size())
 			continue;
 
@@ -754,8 +754,8 @@ void StructPlotDlg::Sync()
 			tl2::equals_0<t_vec_real>(term.dist_calc, g_eps))
 			continue;
 
-		const auto& site1 = sites[term.site1_calc];
-		const auto& site2 = sites[term.site2_calc];
+		const t_site& site1 = sites[term.site1_calc];
+		const t_site& site2 = sites[term.site2_calc];
 
 		t_real_gl sc_x = t_real_gl(term.dist_calc[0]);
 		t_real_gl sc_y = t_real_gl(term.dist_calc[1]);
