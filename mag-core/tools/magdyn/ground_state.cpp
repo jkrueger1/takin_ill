@@ -112,7 +112,7 @@ GroundStateDlg::GroundStateDlg(QWidget *parent, QSettings *sett)
 	if(m_sett && m_sett->contains("ground_state/geo"))
 		restoreGeometry(m_sett->value("ground_state/geo").toByteArray());
 	else
-		resize(800, 800);
+		resize(800, 600);
 
 	connect(btnFromKernel, &QAbstractButton::clicked, [this](){ GroundStateDlg::SyncFromKernel(); });
 	connect(btnToKernel, &QAbstractButton::clicked, this, &GroundStateDlg::SyncToKernel);
@@ -164,28 +164,34 @@ void GroundStateDlg::SyncFromKernel(const t_magdyn *dyn,
 		m_spinstab->insertRow(row);
 
 		QTableWidgetItem *item_name = new QTableWidgetItem(site.name.c_str());
-		item_name->setFlags(item_name->flags() & ~Qt::ItemIsEditable);
+		QTableWidgetItem *item_phi = new tl2::NumericTableWidgetItem<t_real>(tl2::r2d(phi));
+		QTableWidgetItem *item_theta = new tl2::NumericTableWidgetItem<t_real>(tl2::r2d(theta));
+		QTableWidgetItem *item_u = new tl2::NumericTableWidgetItem<t_real>(u);
+		QTableWidgetItem *item_v = new tl2::NumericTableWidgetItem<t_real>(v);
+
+		// set write-protected
+		// TODO: allow editing the numerical items directly in the table
+		for(QTableWidgetItem *item : { item_name, item_phi, item_theta, item_u, item_v })
+			item->setFlags(item_name->flags() & ~Qt::ItemIsEditable);
 
 		QCheckBox* u_fixed = new QCheckBox(this);
 		QCheckBox* v_fixed = new QCheckBox(this);
-		u_fixed->setChecked(false);
+		u_fixed->setChecked(true);
 		v_fixed->setChecked(false);
 
 		m_spinstab->setItem(row, COL_SPIN_NAME, item_name);
-		m_spinstab->setItem(row, COL_SPIN_PHI, new tl2::NumericTableWidgetItem<t_real>(tl2::r2d(phi)));
-		m_spinstab->setItem(row, COL_SPIN_THETA, new tl2::NumericTableWidgetItem<t_real>(tl2::r2d(theta)));
-		m_spinstab->setItem(row, COL_SPIN_U, new tl2::NumericTableWidgetItem<t_real>(u));
-		m_spinstab->setItem(row, COL_SPIN_V, new tl2::NumericTableWidgetItem<t_real>(v));
+		m_spinstab->setItem(row, COL_SPIN_PHI, item_phi);
+		m_spinstab->setItem(row, COL_SPIN_THETA, item_theta);
+		m_spinstab->setItem(row, COL_SPIN_U, item_u);
+		m_spinstab->setItem(row, COL_SPIN_V, item_v);
 		m_spinstab->setCellWidget(row, COL_SPIN_U_FIXED, u_fixed);
 		m_spinstab->setCellWidget(row, COL_SPIN_V_FIXED, v_fixed);
 
 		// keep fixed spins
 		if(fixed_spins)
 		{
-			if(fixed_spins->find(site.name + "_phi") != fixed_spins->end())
-				u_fixed->setChecked(true);
-			if(fixed_spins->find(site.name + "_theta") != fixed_spins->end())
-				v_fixed->setChecked(true);
+			u_fixed->setChecked(fixed_spins->find(site.name + "_phi") != fixed_spins->end());
+			v_fixed->setChecked(fixed_spins->find(site.name + "_theta") != fixed_spins->end());
 		}
 	}
 
@@ -206,6 +212,7 @@ void GroundStateDlg::SyncToKernel()
 
 /**
  * minimise the ground state energy
+ * TODO: use threads and allow cancelling the calculation
  */
 void GroundStateDlg::Minimise()
 {
@@ -244,8 +251,10 @@ void GroundStateDlg::Minimise()
 /**
  * dialog is closing
  */
-void GroundStateDlg::closeEvent(QCloseEvent *)
+void GroundStateDlg::accept()
 {
 	if(m_sett)
 		m_sett->setValue("ground_state/geo", saveGeometry());
+
+	QDialog::accept();
 }

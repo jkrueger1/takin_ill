@@ -54,7 +54,7 @@ protected:
 	void SyncToKernel();
 	void Minimise();
 
-	virtual void closeEvent(QCloseEvent *) override;
+	virtual void accept() override;
 
 
 private:
