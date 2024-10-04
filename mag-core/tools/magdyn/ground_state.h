@@ -49,8 +49,10 @@ public:
 
 
 protected:
-	void SyncFromKernel();
+	void SyncFromKernel(const t_magdyn *dyn = nullptr,
+		const std::unordered_set<std::string> *fixed_spins = nullptr);
 	void SyncToKernel();
+	void Minimise();
 
 	virtual void closeEvent(QCloseEvent *) override;
 
@@ -60,7 +62,7 @@ private:
 	std::optional<t_magdyn> m_dyn{};  // local copy to work on
 
 	QSettings *m_sett{};
-	QTableWidget *m_sitestab{};
+	QTableWidget *m_spinstab{};
 
 
 signals:

@@ -34,6 +34,29 @@ namespace pt = boost::property_tree;
 
 
 /**
+ * set kernel from external source
+ */
+void MagDynDlg::SetKernel(const t_magdyn* dyn, bool sync_sites, bool sync_terms, bool sync_idx)
+{
+	if(!dyn)
+		return;
+
+	m_dyn = *dyn;
+
+	if(sync_sites)
+		SyncSitesFromKernel();
+	if(sync_terms)
+		SyncTermsFromKernel();
+	if(sync_idx)
+		SyncSymmetryIndicesFromKernel();
+
+	if((sync_sites || sync_terms || sync_idx) && m_autocalc->isChecked())
+		CalcAll();
+}
+
+
+
+/**
  * get the magnetic sites from the kernel
  * and add them to the table
  */

@@ -2063,6 +2063,11 @@ void MagDynDlg::ShowGroundStateDlg(bool only_create)
 		m_groundstate_dlg->setFont(this->font());
 
 		m_groundstate_dlg->SetKernel(&m_dyn);
+		QObject::connect(m_groundstate_dlg, &GroundStateDlg::SpinsUpdated,
+			[this](const t_magdyn* dyn)
+		{
+			this->SetKernel(dyn, true, false, false);
+		});
 	}
 
 	if(!only_create)
@@ -2283,7 +2288,7 @@ void MagDynDlg::CreateMenuBar()
 	menuStruct->addSeparator();
 	menuStruct->addAction(acStructView);
 #ifdef __TLIBS2_MAGDYN_USE_MINUIT__
-	//menuStruct->addAction(acGroundState);
+	menuStruct->addAction(acGroundState);
 #endif
 	menuStruct->addSeparator();
 	menuStruct->addAction(acStructImport);

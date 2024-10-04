@@ -352,6 +352,7 @@ protected:
 	void SyncToKernel();         // transfer all data to the kernel
 	void CalcSymmetryIndices();  // assign symmetry groups to sites and couplings
 	void CalcAll();              // syncs sites and terms and calculates all dynamics
+	void SetKernel(const t_magdyn* dyn, bool sync_sites = true, bool sync_terms = true, bool sync_idx = true);
 
 	void PlotDispersion();
 

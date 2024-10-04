@@ -769,12 +769,12 @@ void MagDynDlg::MoveTabItemDown(QTableWidget *pTab)
  */
 void MagDynDlg::UpdateVerticalHeader(QTableWidget *pTab)
 {
-	for(int row=0; row<pTab->rowCount(); ++row)
+	for(int row = 0; row < pTab->rowCount(); ++row)
 	{
 		QTableWidgetItem *item = pTab->verticalHeaderItem(row);
 		if(!item)
 			item = new QTableWidgetItem{};
-		item->setText(QString::number(row));
+		item->setText(QString::number(row + 1));
 		pTab->setVerticalHeaderItem(row, item);
 	}
 }

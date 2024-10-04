@@ -233,8 +233,7 @@ bool MAGDYN_INST::CalcGroundState(const std::unordered_set<std::string>* fixed_p
 	}
 	else
 	{
-		std::cerr << "Magdyn error: Ground state minimisation did not converge."
-			<< std::endl;
+		std::cerr << "Magdyn error: Ground state minimisation did not converge." << std::endl;
 		return false;
 	}
 }
@@ -242,8 +241,7 @@ bool MAGDYN_INST::CalcGroundState(const std::unordered_set<std::string>* fixed_p
 MAGDYN_TEMPL
 bool MAGDYN_INST::CalcGroundState(const std::unordered_set<std::string>*, bool)
 {
-	std::cerr << "Magdyn error: Ground state minimisation support disabled."
-		<< std::endl;
+	std::cerr << "Magdyn error: Ground state minimisation support disabled." << std::endl;
 	return false;
 }
 #endif
