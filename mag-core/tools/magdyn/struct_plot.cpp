@@ -578,6 +578,9 @@ void StructPlotDlg::Sync()
 		m_structplot->GetRenderer()->RemoveObject(term_idx);
 	m_terms.clear();
 
+	// clear centre position for camera
+	m_centre = tl2::zero<t_vec_gl>(3);
+	t_size total_sites = 0;
 
 	// crystal matrix
 	t_mat_gl matA = tl2::convert<t_mat_gl>(m_dyn->GetCrystalATrafo());
@@ -587,23 +590,22 @@ void StructPlotDlg::Sync()
 
 
 	// hashes of already seen magnetic sites
-	std::unordered_set<std::size_t> site_hashes;
+	std::unordered_set<t_size> site_hashes;
 
 	// calculate the hash of a magnetic site
 	auto get_site_hash = [](const t_magdyn::MagneticSite& site,
 		t_real_gl sc_x, t_real_gl sc_y, t_real_gl sc_z)
-			-> std::size_t
+			-> t_size
 	{
 		int _sc_x = int(std::round(sc_x));
 		int _sc_y = int(std::round(sc_y));
 		int _sc_z = int(std::round(sc_z));
 
-		std::size_t hash = 0;
+		t_size hash = 0;
 		boost::hash_combine(hash, std::hash<std::string>{}(site.name));
 		boost::hash_combine(hash, std::hash<int>{}(_sc_x));
 		boost::hash_combine(hash, std::hash<int>{}(_sc_y));
 		boost::hash_combine(hash, std::hash<int>{}(_sc_z));
-
 		return hash;
 	};
 
@@ -613,18 +615,18 @@ void StructPlotDlg::Sync()
 		const t_magdyn::MagneticSite& site,
 		t_real_gl sc_x, t_real_gl sc_y, t_real_gl sc_z)
 	{
-		std::size_t hash = get_site_hash(site, sc_x, sc_y, sc_z);
+		t_size hash = get_site_hash(site, sc_x, sc_y, sc_z);
 		return site_hashes.find(hash) == site_hashes.end();
 	};
 
 
 	// add a magnetic site to the plot
 	auto add_site = [this, &site_hashes, &get_site_hash,
-		is_incommensurate, &ordering, &rotaxis](
-		std::size_t site_idx,
-		const t_magdyn::MagneticSite& site,
-		const t_magdyn::ExternalField& field,
-		t_real_gl sc_x, t_real_gl sc_y, t_real_gl sc_z)
+		is_incommensurate, &ordering, &rotaxis, &total_sites](
+			t_size site_idx,
+			const t_magdyn::MagneticSite& site,
+			const t_magdyn::ExternalField& field,
+			t_real_gl sc_x, t_real_gl sc_y, t_real_gl sc_z)
 	{
 		// super cell index
 		int _sc_x = int(std::round(sc_x));
@@ -636,7 +638,7 @@ void StructPlotDlg::Sync()
 
 		// get user-defined colour
 		bool user_col = false;
-		if(m_sitestab && site_idx < std::size_t(m_sitestab->rowCount()))
+		if(m_sitestab && site_idx < t_size(m_sitestab->rowCount()))
 		{
 			user_col = get_colour<t_real_gl>(
 				m_sitestab->item(site_idx, COL_SITE_RGB)->text().toStdString(), rgb);
@@ -725,21 +727,17 @@ void StructPlotDlg::Sync()
 		//m_structplot->GetRenderer()->SetObjectLabel(arrow, site.name);
 
 		// mark the magnetic site as already seen
-		std::size_t hash = get_site_hash(site, sc_x, sc_y, sc_z);
+		t_size hash = get_site_hash(site, sc_x, sc_y, sc_z);
 		site_hashes.insert(hash);
+
+		m_centre += pos_vec;
+		++total_sites;
 	};
 
 
 	// iterate and add unit cell magnetic sites
-	m_centre = tl2::zero<t_vec_gl>(3);
-
-	for(std::size_t site_idx = 0; site_idx < sites.size(); ++site_idx)
-	{
+	for(t_size site_idx = 0; site_idx < sites.size(); ++site_idx)
 		add_site(site_idx, sites[site_idx], field, 0, 0, 0);
-		m_centre += tl2::convert<t_vec_gl>(sites[site_idx].pos_calc);
-	}
-
-	m_centre /= t_real_gl(sites.size());
 
 
 	// iterate and add exchange terms
@@ -763,7 +761,7 @@ void StructPlotDlg::Sync()
 
 		// get colour
 		t_real_gl rgb[3] {0., 0.75, 0.};
-		if(m_termstab && term_idx < std::size_t(m_termstab->rowCount()))
+		if(m_termstab && term_idx < t_size(m_termstab->rowCount()))
 		{
 			get_colour<t_real_gl>(
 				m_termstab->item(term_idx, COL_XCH_RGB)->text().toStdString(), rgb);
@@ -853,6 +851,8 @@ void StructPlotDlg::Sync()
 			//m_structplot->GetRenderer()->SetObjectLabel(objDmi, term.name);
 		}
 	} // terms
+
+	m_centre /= t_real_gl(total_sites);
 
 	CentreCamera();
 	m_structplot->update();
