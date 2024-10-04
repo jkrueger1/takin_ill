@@ -107,6 +107,8 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	m_status->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
 	m_status->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
+	QPushButton *btnOk = new QPushButton("OK", this);
+
 	// general context menu
 	m_context = new QMenu(this);
 	QAction *acCentre = new QAction("Centre Camera", m_context);
@@ -134,7 +136,7 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	int y = 0;
 	auto grid = new QGridLayout(this);
 	grid->setSpacing(4);
-	grid->setContentsMargins(6, 6, 6, 6);
+	grid->setContentsMargins(8, 8, 8, 8);
 	grid->addWidget(m_structplot, y++, 0, 1, 6);
 	grid->addWidget(m_coordcross, y, 0, 1, 2);
 	grid->addWidget(m_labels, y, 2, 1, 2);
@@ -147,8 +149,10 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	grid->addWidget(m_cam_theta, y++, 4, 1, 2);
 	grid->addWidget(new QLabel("Coordinate System:", this), y, 0, 1, 2);
 	grid->addWidget(m_coordsys, y++, 2, 1, 4);
-	grid->addWidget(m_status, y++, 0, 1, 6);
+	grid->addWidget(m_status, y, 0, 1, 5);
+	grid->addWidget(btnOk, y++, 5, 1, 1);
 
+	connect(btnOk, &QAbstractButton::clicked, this, &StructPlotDlg::accept);
 	connect(m_structplot, &tl2::GlPlot::AfterGLInitialisation,
 		this, &StructPlotDlg::AfterGLInitialisation);
 	connect(m_structplot->GetRenderer(), &tl2::GlPlotRenderer::PickerIntersection,
@@ -206,10 +210,12 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 /**
  * dialog is closing
  */
-void StructPlotDlg::closeEvent(QCloseEvent *)
+void StructPlotDlg::accept()
 {
 	if(m_sett)
 		m_sett->setValue("struct_view/geo", saveGeometry());
+
+	QDialog::accept();
 }
 
 

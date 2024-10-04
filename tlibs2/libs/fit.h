@@ -1,5 +1,5 @@
 /**
- * tlibs2 -- fitting library
+ * tlibs2 -- fitting and minimisation library
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
  * @date 2012-2024
  * @note Forked on 7-Nov-2018 from my privately and TUM-PhD-developed "tlibs" project (https://github.com/t-weber/tlibs).
@@ -94,7 +94,7 @@ public:
 	FitterLamFuncModel(t_func func, bool bSeparateX = true)
 		: m_func{func}, m_vecVals{}, m_bSeparateFreeParam{bSeparateX}
 	{
-		m_vecVals.resize(m_bSeparateFreeParam ? num_args-1 : num_args);
+		m_vecVals.resize(m_bSeparateFreeParam ? num_args - 1 : num_args);
 	}
 
 
@@ -157,7 +157,7 @@ public:
 	FitterDynLamFuncModel(std::size_t num_args, t_func func, bool bSeparateX = true)
 	: m_num_args{num_args}, m_func{func}, m_vecVals{}, m_bSeparateFreeParam{bSeparateX}
 	{
-		m_vecVals.resize(m_bSeparateFreeParam ? m_num_args-1 : m_num_args);
+		m_vecVals.resize(m_bSeparateFreeParam ? m_num_args - 1 : m_num_args);
 	}
 
 
@@ -423,7 +423,7 @@ bool fit(t_func&& func,
 
 		// check if all params are fixed
 		if(pVecFixed && std::all_of(pVecFixed->begin(), pVecFixed->end(),
-			[](bool b)->bool { return b; }))
+			[](bool b) -> bool { return b; }))
 			{
 				std::cerr << "Fitter: All parameters are fixed." << std::endl;
 				return false;
@@ -437,23 +437,35 @@ bool fit(t_func&& func,
 			vecYConverted.reserve(vecY.size());
 			vecYErrConverted.reserve(vecYErr.size());
 
-			for(t_real d : vecX) vecXConverted.push_back(static_cast<t_real_min>(d));
-			for(t_real d : vecY) vecYConverted.push_back(static_cast<t_real_min>(d));
-			for(t_real d : vecYErr) vecYErrConverted.push_back(static_cast<t_real_min>(d));
+			for(t_real d : vecX)
+				vecXConverted.push_back(static_cast<t_real_min>(d));
+			for(t_real d : vecY)
+				vecYConverted.push_back(static_cast<t_real_min>(d));
+			for(t_real d : vecYErr)
+				vecYErrConverted.push_back(static_cast<t_real_min>(d));
 		}
 
 		FitterLamFuncModel<t_real_min, num_args, t_func> mod(func);
 
 		std::unique_ptr<Chi2Function<t_real_min>> chi2;
 		if constexpr(std::is_same_v<t_real, t_real_min>)
-			chi2 = std::make_unique<Chi2Function<t_real_min>>(&mod, vecX.size(), vecX.data(), vecY.data(), vecYErr.data());
+		{
+			chi2 = std::make_unique<Chi2Function<t_real_min>>(
+				&mod, vecX.size(), vecX.data(), vecY.data(), vecYErr.data());
+		}
 		else if constexpr(!std::is_same_v<t_real, t_real_min>)
-			chi2 = std::make_unique<Chi2Function<t_real_min>>(&mod, vecXConverted.size(), vecXConverted.data(), vecYConverted.data(), vecYErrConverted.data());
+		{
+			chi2 = std::make_unique<Chi2Function<t_real_min>>(
+				&mod, vecXConverted.size(), vecXConverted.data(),
+				vecYConverted.data(), vecYErrConverted.data());
+		}
 
 		ROOT::Minuit2::MnUserParameters params;
 		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
 		{
-			params.Add(vecParamNames[param_idx], static_cast<t_real_min>(vecVals[param_idx]), static_cast<t_real_min>(vecErrs[param_idx]));
+			params.Add(vecParamNames[param_idx],
+				static_cast<t_real_min>(vecVals[param_idx]),
+				static_cast<t_real_min>(vecErrs[param_idx]));
 			if(pVecFixed && (*pVecFixed)[param_idx])
 				params.Fix(vecParamNames[param_idx]);
 		}
@@ -464,8 +476,10 @@ bool fit(t_func&& func,
 
 		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
 		{
-			vecVals[param_idx] = static_cast<t_real>(mini.UserState().Value(vecParamNames[param_idx]));
-			vecErrs[param_idx] = static_cast<t_real>(std::fabs(mini.UserState().Error(vecParamNames[param_idx])));
+			vecVals[param_idx] = static_cast<t_real>(
+				mini.UserState().Value(vecParamNames[param_idx]));
+			vecErrs[param_idx] = static_cast<t_real>(
+				std::fabs(mini.UserState().Error(vecParamNames[param_idx])));
 		}
 
 		if(bDebug)
@@ -511,7 +525,7 @@ bool fit_expr(const std::string& func,
 
 		// check if all params are fixed
 		if(pVecFixed && std::all_of(pVecFixed->begin(), pVecFixed->end(),
-			[](bool b)->bool { return b; }))
+			[](bool b) -> bool { return b; }))
 			{
 				std::cerr << "Fitter: All parameters are fixed." << std::endl;
 				return false;
@@ -525,18 +539,28 @@ bool fit_expr(const std::string& func,
 			vecYConverted.reserve(vecY.size());
 			vecYErrConverted.reserve(vecYErr.size());
 
-			for(t_real d : vecX) vecXConverted.push_back(static_cast<t_real_min>(d));
-			for(t_real d : vecY) vecYConverted.push_back(static_cast<t_real_min>(d));
-			for(t_real d : vecYErr) vecYErrConverted.push_back(static_cast<t_real_min>(d));
+			for(t_real d : vecX)
+				vecXConverted.push_back(static_cast<t_real_min>(d));
+			for(t_real d : vecY)
+				vecYConverted.push_back(static_cast<t_real_min>(d));
+			for(t_real d : vecYErr)
+				vecYErrConverted.push_back(static_cast<t_real_min>(d));
 		}
 
 		FitterParsedFuncModel<t_real_min> mod(func, strXName, vecParamNames);
 
 		std::unique_ptr<Chi2Function<t_real_min>> chi2;
 		if constexpr(std::is_same_v<t_real, t_real_min>)
-			chi2 = std::make_unique<Chi2Function<t_real_min>>(&mod, vecX.size(), vecX.data(), vecY.data(), vecYErr.data());
+		{
+			chi2 = std::make_unique<Chi2Function<t_real_min>>(
+				&mod, vecX.size(), vecX.data(), vecY.data(), vecYErr.data());
+		}
 		else if constexpr(!std::is_same_v<t_real, t_real_min>)
-			chi2 = std::make_unique<Chi2Function<t_real_min>>(&mod, vecXConverted.size(), vecXConverted.data(), vecYConverted.data(), vecYErrConverted.data());
+		{
+			chi2 = std::make_unique<Chi2Function<t_real_min>>(
+				&mod, vecXConverted.size(), vecXConverted.data(),
+				vecYConverted.data(), vecYErrConverted.data());
+		}
 
 		ROOT::Minuit2::MnUserParameters params;
 		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
@@ -552,8 +576,10 @@ bool fit_expr(const std::string& func,
 
 		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
 		{
-			vecVals[param_idx] = static_cast<t_real>(mini.UserState().Value(vecParamNames[param_idx]));
-			vecErrs[param_idx] = static_cast<t_real>(std::fabs(mini.UserState().Error(vecParamNames[param_idx])));
+			vecVals[param_idx] = static_cast<t_real>(
+				mini.UserState().Value(vecParamNames[param_idx]));
+			vecErrs[param_idx] = static_cast<t_real>(
+				std::fabs(mini.UserState().Error(vecParamNames[param_idx])));
 		}
 
 		if(bDebug)
@@ -586,7 +612,7 @@ bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
 	{
 		// check if all params are fixed
 		if(pVecFixed && std::all_of(pVecFixed->begin(), pVecFixed->end(),
-			[](bool b)->bool { return b; }))
+			[](bool b) -> bool { return b; }))
 			{
 				std::cerr << "Fitter: All parameters are fixed." << std::endl;
 				return false;
@@ -617,8 +643,10 @@ bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
 
 		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
 		{
-			vecVals[param_idx] = static_cast<t_real>(mini.UserState().Value(vecParamNames[param_idx]));
-			vecErrs[param_idx] = static_cast<t_real>(std::fabs(mini.UserState().Error(vecParamNames[param_idx])));
+			vecVals[param_idx] = static_cast<t_real>(
+				mini.UserState().Value(vecParamNames[param_idx]));
+			vecErrs[param_idx] = static_cast<t_real>(
+				std::fabs(mini.UserState().Error(vecParamNames[param_idx])));
 		}
 
 		if(bDebug)
@@ -652,7 +680,7 @@ bool minimise_dynargs(std::size_t num_args, t_func&& func,
 	{
 		// check if all params are fixed
 		if(pVecFixed && std::all_of(pVecFixed->begin(), pVecFixed->end(),
-			[](bool b)->bool { return b; }))
+			[](bool b) -> bool { return b; }))
 			{
 				std::cerr << "Fitter: All parameters are fixed." << std::endl;
 				return false;
@@ -683,8 +711,10 @@ bool minimise_dynargs(std::size_t num_args, t_func&& func,
 
 		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
 		{
-			vecVals[param_idx] = static_cast<t_real>(mini.UserState().Value(vecParamNames[param_idx]));
-			vecErrs[param_idx] = static_cast<t_real>(std::fabs(mini.UserState().Error(vecParamNames[param_idx])));
+			vecVals[param_idx] = static_cast<t_real>(
+				mini.UserState().Value(vecParamNames[param_idx]));
+			vecErrs[param_idx] = static_cast<t_real>(
+				std::fabs(mini.UserState().Error(vecParamNames[param_idx])));
 		}
 
 		if(bDebug)
@@ -714,7 +744,7 @@ bool minimise_expr(const std::string& func, const std::vector<std::string>& vecP
 	{
 		// check if all params are fixed
 		if(pVecFixed && std::all_of(pVecFixed->begin(), pVecFixed->end(),
-			[](bool b)->bool { return b; }))
+			[](bool b) -> bool { return b; }))
 			{
 				std::cerr << "Fitter: All parameters are fixed." << std::endl;
 				return false;
@@ -726,7 +756,9 @@ bool minimise_expr(const std::string& func, const std::vector<std::string>& vecP
 		ROOT::Minuit2::MnUserParameters params;
 		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
 		{
-			params.Add(vecParamNames[param_idx], static_cast<t_real_min>(vecVals[param_idx]), static_cast<t_real_min>(vecErrs[param_idx]));
+			params.Add(vecParamNames[param_idx],
+				static_cast<t_real_min>(vecVals[param_idx]),
+				static_cast<t_real_min>(vecErrs[param_idx]));
 			if(pVecFixed && (*pVecFixed)[param_idx])
 				params.Fix(vecParamNames[param_idx]);
 		}
@@ -737,8 +769,10 @@ bool minimise_expr(const std::string& func, const std::vector<std::string>& vecP
 
 		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
 		{
-			vecVals[param_idx] = static_cast<t_real>(mini.UserState().Value(vecParamNames[param_idx]));
-			vecErrs[param_idx] = static_cast<t_real>(std::fabs(mini.UserState().Error(vecParamNames[param_idx])));
+			vecVals[param_idx] = static_cast<t_real>(
+				mini.UserState().Value(vecParamNames[param_idx]));
+			vecErrs[param_idx] = static_cast<t_real>(
+				std::fabs(mini.UserState().Error(vecParamNames[param_idx])));
 		}
 
 		if(bDebug)

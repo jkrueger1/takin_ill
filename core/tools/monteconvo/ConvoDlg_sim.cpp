@@ -264,7 +264,7 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 		tl::ThreadPool<std::pair<bool, t_real>(), decltype(th_start_func)> tp(iNumThreads, &th_start_func);
 		auto& lstFuts = tp.GetResults();
 
-		for(unsigned int iStep=0; iStep<iNumSteps; ++iStep)
+		for(unsigned int iStep = 0; iStep < iNumSteps; ++iStep)
 		{
 			t_real dCurH = vecH[iStep];
 			t_real dCurK = vecK[iStep];
@@ -279,12 +279,10 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 					return std::pair<bool, t_real>(false, 0.);
 
 				t_real dS = 0.;
-				t_real dhklE_mean[4] = {0., 0., 0., 0.};
+				t_real dhklE_mean[4] = { 0., 0., 0., 0. };
 
 				if(iNumNeutrons == 0)
 				{	// if no neutrons are given, just plot the unconvoluted S(Q,E)
-					// TODO: add an option to let the user choose if S(Q,E) is
-					// really the dynamical structure factor, or its absolute square
 					dS += (*m_pSqw)(dCurH, dCurK, dCurL, dCurE);
 					dS += m_pSqw->GetBackground(dCurH, dCurK, dCurL, dCurE);
 				}
@@ -318,11 +316,9 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 					{
 						if(this->StopRequested()) return std::pair<bool, t_real>(false, 0.);
 
-						// TODO: add an option to let the user choose if S(Q,E) is
-						// really the dynamical structure factor, or its absolute square
 						dS += (*m_pSqw)(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]);
 
-						for(int i=0; i<4; ++i)
+						for(int i = 0; i < 4; ++i)
 							dhklE_mean[i] += vecHKLE[i];
 					}
 
@@ -336,8 +332,6 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 						dhklE_mean[i] /= t_real(iNumNeutrons*iNumSampleSteps);
 
 					dS *= localreso.GetResoResults().dR0 * localreso.GetR0Scale();
-					//if(localreso.GetResoParams().flags & CALC_RESVOL)
-					//	dS /= localreso.GetResoResults().dResVol * tl::get_pi<t_real>() * t_real(3.);
 				}
 				return std::pair<bool, t_real>(true, dS);
 			});
@@ -621,25 +615,25 @@ void ConvoDlg::Start2D()
 
 		std::string strScanVar1 = "";
 		t_real dStart1{}, dStop1{};
-		if(iScanAxis1==1 || (iScanAxis1==0 && !tl::float_equal(spinStartH->value(), spinStopH->value(), m_eps_rlu)))
+		if(iScanAxis1 == 1 || (iScanAxis1 == 0 && !tl::float_equal(spinStartH->value(), spinStopH->value(), m_eps_rlu)))
 		{
 			strScanVar1 = "h (rlu)";
 			dStart1 = spinStartH->value();
 			dStop1 = spinStopH->value();
 		}
-		else if(iScanAxis1==2 || (iScanAxis1==0 && !tl::float_equal(spinStartK->value(), spinStopK->value(), m_eps_rlu)))
+		else if(iScanAxis1 == 2 || (iScanAxis1 == 0 && !tl::float_equal(spinStartK->value(), spinStopK->value(), m_eps_rlu)))
 		{
 			strScanVar1 = "k (rlu)";
 			dStart1 = spinStartK->value();
 			dStop1 = spinStopK->value();
 		}
-		else if(iScanAxis1==3 || (iScanAxis1==0 && !tl::float_equal(spinStartL->value(), spinStopL->value(), m_eps_rlu)))
+		else if(iScanAxis1 == 3 || (iScanAxis1 == 0 && !tl::float_equal(spinStartL->value(), spinStopL->value(), m_eps_rlu)))
 		{
 			strScanVar1 = "l (rlu)";
 			dStart1 = spinStartL->value();
 			dStop1 = spinStopL->value();
 		}
-		else if(iScanAxis1==4 || (iScanAxis1==0 && !tl::float_equal(spinStartE->value(), spinStopE->value(), m_eps_rlu)))
+		else if(iScanAxis1 == 4 || (iScanAxis1 == 0 && !tl::float_equal(spinStartE->value(), spinStopE->value(), m_eps_rlu)))
 		{
 			strScanVar1 = "E (meV)";
 			dStart1 = spinStartE->value();
@@ -648,25 +642,25 @@ void ConvoDlg::Start2D()
 
 		std::string strScanVar2 = "";
 		t_real dStart2{}, dStop2{};
-		if(iScanAxis2==1 || (iScanAxis2==0 && !tl::float_equal(spinStartH->value(), spinStopH2->value(), m_eps_rlu)))
+		if(iScanAxis2 == 1 || (iScanAxis2 == 0 && !tl::float_equal(spinStartH->value(), spinStopH2->value(), m_eps_rlu)))
 		{
 			strScanVar2 = "h (rlu)";
 			dStart2 = spinStartH->value();
 			dStop2 = spinStopH2->value();
 		}
-		else if(iScanAxis2==2 || (iScanAxis2==0 && !tl::float_equal(spinStartK->value(), spinStopK2->value(), m_eps_rlu)))
+		else if(iScanAxis2 == 2 || (iScanAxis2 == 0 && !tl::float_equal(spinStartK->value(), spinStopK2->value(), m_eps_rlu)))
 		{
 			strScanVar2 = "k (rlu)";
 			dStart2 = spinStartK->value();
 			dStop2 = spinStopK2->value();
 		}
-		else if(iScanAxis2==3 || (iScanAxis2==0 && !tl::float_equal(spinStartL->value(), spinStopL2->value(), m_eps_rlu)))
+		else if(iScanAxis2 == 3 || (iScanAxis2 == 0 && !tl::float_equal(spinStartL->value(), spinStopL2->value(), m_eps_rlu)))
 		{
 			strScanVar2 = "l (rlu)";
 			dStart2 = spinStartL->value();
 			dStop2 = spinStopL2->value();
 		}
-		else if(iScanAxis2==4 || (iScanAxis2==0 && !tl::float_equal(spinStartE->value(), spinStopE2->value(), m_eps_rlu)))
+		else if(iScanAxis2 == 4 || (iScanAxis2 == 0 && !tl::float_equal(spinStartE->value(), spinStopE2->value(), m_eps_rlu)))
 		{
 			strScanVar2 = "E (meV)";
 			dStart2 = spinStartE->value();
@@ -790,7 +784,7 @@ void ConvoDlg::Start2D()
 		tl::ThreadPool<std::pair<bool, t_real>()> tp(iNumThreads, pThStartFunc);
 		auto& lstFuts = tp.GetResults();
 
-		for(unsigned int iStep=0; iStep<iNumSteps*iNumSteps; ++iStep)
+		for(unsigned int iStep = 0; iStep < iNumSteps*iNumSteps; ++iStep)
 		{
 			t_real dCurH = vecH[iStep];
 			t_real dCurK = vecK[iStep];
@@ -918,7 +912,8 @@ void ConvoDlg::Start2D()
 
 			QMetaObject::invokeMethod(progress, "setValue", Q_ARG(int, iStep+1));
 			QMetaObject::invokeMethod(editStopTime2d, "setText",
-				Q_ARG(const QString&, QString(watch.GetEstStopTimeStr(t_real(iStep+1)/t_real(iNumSteps*iNumSteps)).c_str())));
+				Q_ARG(const QString&, QString(
+					watch.GetEstStopTimeStr(t_real(iStep + 1)/t_real(iNumSteps*iNumSteps)).c_str())));
 			++iStep;
 		}
 
@@ -1171,7 +1166,8 @@ void ConvoDlg::StartDisp()
 
 			QMetaObject::invokeMethod(progress, "setValue", Q_ARG(int, iStep+1));
 			QMetaObject::invokeMethod(editStopTime, "setText",
-				Q_ARG(const QString&, QString(watch.GetEstStopTimeStr(t_real(iStep+1)/t_real(iNumSteps)).c_str())));
+				Q_ARG(const QString&, QString(
+					watch.GetEstStopTimeStr(t_real(iStep + 1)/t_real(iNumSteps)).c_str())));
 			++iStep;
 		}
 
@@ -1197,7 +1193,12 @@ void ConvoDlg::StartDisp()
 	}
 	else
 	{
-		if(m_pth) { if(m_pth->joinable()) m_pth->join(); delete m_pth; }
+		if(m_pth)
+		{
+			if(m_pth->joinable())
+				m_pth->join();
+			delete m_pth;
+		}
 		m_pth = new std::thread(std::move(fkt));
 	}
 }

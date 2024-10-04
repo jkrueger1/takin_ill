@@ -46,30 +46,23 @@ NotesDlg::NotesDlg(QWidget* parent, QSettings *sett)
 	setWindowTitle("Notes");
 	setSizeGripEnabled(true);
 
-        auto notespanel = new QWidget(this);
-
 	// notes/comments
-	m_notes = new QPlainTextEdit(notespanel);
+	m_notes = new QPlainTextEdit(this);
 	m_notes->setReadOnly(false);
 	m_notes->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Expanding});
 
-	auto grid = new QGridLayout(notespanel);
-	grid->setSpacing(4);
-	grid->setContentsMargins(6, 6, 6, 6);
-
-	int y = 0;
-	grid->addWidget(new QLabel(QString("Comments / Notes:"), notespanel), y++, 0, 1, 1);
-	grid->addWidget(m_notes, y++, 0, 1, 1);
-
 	QPushButton *notesDlgOk = new QPushButton("OK", this);
 	connect(notesDlgOk, &QAbstractButton::clicked, this, &QDialog::accept);
 
-	auto dlgGrid = new QGridLayout(this);
-	dlgGrid->setSpacing(4);
-	dlgGrid->setContentsMargins(8, 8, 8, 8);
-	dlgGrid->addWidget(notespanel, 0,0, 1,4);
-	dlgGrid->addWidget(notesDlgOk, 1,3, 1,1);
+	auto grid = new QGridLayout(this);
+	grid->setSpacing(4);
+	grid->setContentsMargins(8, 8, 8, 8);
+
+	int y = 0;
+	grid->addWidget(new QLabel(QString("Comments / Notes:"), this), y++, 0, 1, 1);
+	grid->addWidget(m_notes, y++, 0, 1, 4);
+	grid->addWidget(notesDlgOk, y++, 3, 1, 1);
 
 	// restore settings
 	if(m_sett)

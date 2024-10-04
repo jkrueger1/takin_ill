@@ -111,7 +111,7 @@ protected:
 	void HighlightSite(const std::string& name);
 	void HighlightTerm(const std::string& name);
 
-	virtual void closeEvent(QCloseEvent *) override;
+	virtual void accept() override;
 
 
 private:

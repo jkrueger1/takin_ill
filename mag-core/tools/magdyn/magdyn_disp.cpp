@@ -63,7 +63,7 @@ void MagDynDlg::ClearDispersion(bool replot)
 	m_Es_data.clear();
 	m_ws_data.clear();
 
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		m_qs_data_channel[i].clear();
 		m_Es_data_channel[i].clear();
@@ -98,7 +98,7 @@ void MagDynDlg::PlotDispersion()
 			QColor(0x00, 0x00, 0xff),
 		};
 
-		for(int i=0; i<3; ++i)
+		for(int i = 0; i < 3; ++i)
 		{
 			if(!m_plot_channel[i]->isChecked())
 				continue;
@@ -368,7 +368,7 @@ void MagDynDlg::CalcDispersion()
 		}
 
 		task->get_future().get();
-		m_progress->setValue(task_idx+1);
+		m_progress->setValue(task_idx + 1);
 	}
 
 	pool.join();
@@ -402,7 +402,7 @@ void MagDynDlg::CalcDispersion()
 	};
 
 	sort_data(m_qs_data, m_Es_data, m_ws_data);
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 		sort_data(m_qs_data_channel[i], m_Es_data_channel[i], m_ws_data_channel[i]);
 
 	PlotDispersion();

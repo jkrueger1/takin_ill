@@ -197,7 +197,7 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	// grid
 	QGridLayout* grid = new QGridLayout(this);
 	grid->setSpacing(4);
-	grid->setContentsMargins(6, 6, 6, 6);
+	grid->setContentsMargins(8, 8, 8, 8);
 	int y = 0;
 	grid->addWidget(labelAtomIdx, y++, 0, 1, 4);
 	grid->addWidget(m_spinAtomName, y, 0, 1, 1);

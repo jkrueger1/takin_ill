@@ -251,9 +251,11 @@ void MagDynDlg::CreateSitesPanel()
 	btnDown->setToolTip("Move selected site(s) down.");
 
 	QPushButton *btnMirrorAtoms = new QPushButton("Mirror", m_sitespanel);
-	QPushButton *btnShowStruct = new QPushButton("View...", m_sitespanel);
+	QPushButton *btnShowNotes = new QPushButton("Notes...", m_sitespanel);
+	QPushButton *btnGroundState = new QPushButton("Ground State...", m_sitespanel);
 	btnMirrorAtoms->setToolTip("Flip the coordinates of the sites.");
-	btnShowStruct->setToolTip("Show a 3D view of the magnetic sites and couplings.");
+	btnShowNotes->setToolTip("Add notes or comments describing the magnetic structure.");
+	btnGroundState->setToolTip("Minimise ground state energy.");
 
 	// extend cell
 	const char* idx_names[] = {"x = ", "y = ", "z = "};
@@ -302,33 +304,34 @@ void MagDynDlg::CreateSitesPanel()
 	grid->setContentsMargins(6, 6, 6, 6);
 
 	int y = 0;
-	grid->addWidget(m_sitestab, y,0,1,4);
-	grid->addWidget(btnAdd, ++y,0,1,1);
-	grid->addWidget(btnDel, y,1,1,1);
-	grid->addWidget(btnUp, y,2,1,1);
-	grid->addWidget(btnDown, y++,3,1,1);
-	grid->addWidget(btnMirrorAtoms, y,0,1,1);
-	grid->addWidget(btnShowStruct, y++,3,1,1);
+	grid->addWidget(m_sitestab, y, 0, 1, 4);
+	grid->addWidget(btnAdd, ++y, 0, 1, 1);
+	grid->addWidget(btnDel, y, 1, 1, 1);
+	grid->addWidget(btnUp, y, 2, 1, 1);
+	grid->addWidget(btnDown, y++, 3, 1, 1);
+	grid->addWidget(btnMirrorAtoms, y, 0, 1, 1);
+	grid->addWidget(btnShowNotes, y, 2, 1, 1);
+	grid->addWidget(btnGroundState, y++, 3, 1, 1);
 
 	auto sep1 = new QFrame(m_sitespanel);
 	sep1->setFrameStyle(QFrame::HLine);
 
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
-		y++,0, 1,1);
+		y++,0, 1, 1);
 	grid->addWidget(sep1, y++,0, 1,4);
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
-		y++,0, 1,1);
+		y++,0, 1, 1);
 
-	grid->addWidget(new QLabel("Extend Structure, Copying Existing Sites:", m_sitespanel), y++,0,1,4);
-	grid->addWidget(m_extCell[0], y,0,1,1);
-	grid->addWidget(m_extCell[1], y,1,1,1);
-	grid->addWidget(m_extCell[2], y,2,1,1);
-	grid->addWidget(btnExtCell, y++,3,1,1);
+	grid->addWidget(new QLabel("Extend Structure, Copying Existing Sites:", m_sitespanel), y++, 0, 1, 4);
+	grid->addWidget(m_extCell[0], y, 0, 1, 1);
+	grid->addWidget(m_extCell[1], y, 1, 1, 1);
+	grid->addWidget(m_extCell[2], y, 2, 1, 1);
+	grid->addWidget(btnExtCell, y++, 3, 1, 1);
 
-	grid->addWidget(new QLabel("Create Symmetry-Equivalent Sites:", m_sitespanel), y,0,1,3);
-	grid->addWidget(btnGenBySG, y++,3,1,1);
+	grid->addWidget(new QLabel("Create Symmetry-Equivalent Sites:", m_sitespanel), y, 0, 1, 3);
+	grid->addWidget(btnGenBySG, y++, 3, 1, 1);
 
 	// table CustomContextMenu
 	QMenu *menuTableContext = new QMenu(m_sitestab);
@@ -377,7 +380,8 @@ void MagDynDlg::CreateSitesPanel()
 		this, &MagDynDlg::ExtendStructure);
 
 	connect(btnMirrorAtoms, &QAbstractButton::clicked, this, &MagDynDlg::MirrorAtoms);
-	connect(btnShowStruct, &QAbstractButton::clicked, this, &MagDynDlg::ShowStructPlotDlg);
+	connect(btnShowNotes, &QAbstractButton::clicked, this, &MagDynDlg::ShowNotesDlg);
+	connect(btnGroundState, &QAbstractButton::clicked, this, &MagDynDlg::ShowGroundStateDlg);
 
 	connect(m_sitestab, &QTableWidget::itemSelectionChanged, [this]()
 	{

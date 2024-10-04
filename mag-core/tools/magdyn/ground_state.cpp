@@ -102,7 +102,7 @@ GroundStateDlg::GroundStateDlg(QWidget *parent, QSettings *sett)
 	int y = 0;
 	auto grid = new QGridLayout(this);
 	grid->setSpacing(4);
-	grid->setContentsMargins(6, 6, 6, 6);
+	grid->setContentsMargins(8, 8, 8, 8);
 	grid->addWidget(m_spinstab, y++, 0, 1, 4);
 	grid->addWidget(btnFromKernel, y, 0, 1, 1);
 	grid->addWidget(btnToKernel, y, 1, 1, 1);
@@ -112,7 +112,7 @@ GroundStateDlg::GroundStateDlg(QWidget *parent, QSettings *sett)
 	if(m_sett && m_sett->contains("ground_state/geo"))
 		restoreGeometry(m_sett->value("ground_state/geo").toByteArray());
 	else
-		resize(800, 600);
+		resize(640, 480);
 
 	connect(btnFromKernel, &QAbstractButton::clicked, [this](){ GroundStateDlg::SyncFromKernel(); });
 	connect(btnToKernel, &QAbstractButton::clicked, this, &GroundStateDlg::SyncToKernel);
@@ -225,7 +225,6 @@ void GroundStateDlg::Minimise()
 		if(u_fixed && u_fixed->isChecked())
 		{
 			std::string fixed_name = m_spinstab->item(row, COL_SPIN_NAME)->text().toStdString() + "_phi";
-			std::cout << fixed_name << std::endl;
 			fixed_spins.emplace(std::move(fixed_name));
 		}
 
@@ -233,7 +232,6 @@ void GroundStateDlg::Minimise()
 		if(v_fixed && v_fixed->isChecked())
 		{
 			std::string fixed_name = m_spinstab->item(row, COL_SPIN_NAME)->text().toStdString() + "_theta";
-			std::cout << fixed_name << std::endl;
 			fixed_spins.emplace(std::move(fixed_name));
 		}
 	}
