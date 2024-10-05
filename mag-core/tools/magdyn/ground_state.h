@@ -31,6 +31,7 @@
 #include <QtWidgets/QPushButton>
 
 #include <thread>
+#include <atomic>
 #include <memory>
 
 #include "gui_defs.h"
@@ -77,7 +78,7 @@ private:
 
 	std::unique_ptr<std::thread> m_thread{};  // minimiser thread
 	bool m_stop_request{false};               // stop minimisation
-	bool m_running{false};                    // is minimisation running?
+	std::atomic<bool> m_running{false};       // is minimisation running?
 
 
 signals:

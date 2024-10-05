@@ -98,6 +98,9 @@ GroundStateDlg::GroundStateDlg(QWidget *parent, QSettings *sett)
 	m_btnMinimise = new QPushButton("Minimise", this);
 	QPushButton *btnOk = new QPushButton("OK", this);
 
+	m_btnFromKernel->setToolTip("Fetch spins from main dialog.");
+	m_btnToKernel->setToolTip("Send spins back to main dialog.");
+
 	int y = 0;
 	auto grid = new QGridLayout(this);
 	grid->setSpacing(4);
@@ -235,6 +238,8 @@ void GroundStateDlg::EnableMinimisation(bool enable)
 		m_btnFromKernel->setEnabled(true);
 		m_btnToKernel->setEnabled(true);
 		m_spinstab->setEnabled(true);
+
+		m_btnMinimise->setToolTip("Start minimisation of ground state energy.");
 	}
 	else
 	{
@@ -242,6 +247,8 @@ void GroundStateDlg::EnableMinimisation(bool enable)
 		m_btnFromKernel->setEnabled(false);
 		m_btnToKernel->setEnabled(false);
 		m_spinstab->setEnabled(false);
+
+		m_btnMinimise->setToolTip("Stop minimisation of ground state energy.");
 	}
 }
 

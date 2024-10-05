@@ -241,7 +241,7 @@ bool MAGDYN_INST::CalcGroundState(const std::unordered_set<std::string>* fixed_p
 }
 #else  // __TLIBS2_USE_MINUIT__
 MAGDYN_TEMPL
-bool MAGDYN_INST::CalcGroundState(const std::unordered_set<std::string>*, bool)
+bool MAGDYN_INST::CalcGroundState(const std::unordered_set<std::string>*, bool, bool*)
 {
 	std::cerr << "Magdyn error: Ground state minimisation support disabled." << std::endl;
 	return false;
