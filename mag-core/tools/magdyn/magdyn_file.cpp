@@ -85,7 +85,10 @@ void MagDynDlg::Clear()
 	m_weight_min->setValue(0.);
 	m_weight_max->setValue(9999.);
 
-	m_notes_dlg->ClearNotes();
+	if(m_groundstate_dlg)
+		m_groundstate_dlg->SyncFromKernel();
+	if(m_notes_dlg)
+		m_notes_dlg->ClearNotes();
 
 	// reset some options
 	for(int i = 0; i < 3; ++i)
@@ -429,6 +432,9 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 				AddCoordinateTabItem(-1, hi, ki, li, hf, kf, lf);
 			}
 		}
+
+		if(m_groundstate_dlg)
+			m_groundstate_dlg->SyncFromKernel();
 	}
 	catch(const std::exception& ex)
 	{

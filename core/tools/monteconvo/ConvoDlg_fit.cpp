@@ -58,7 +58,8 @@ namespace minuit = ROOT::Minuit2;
 class StopRequestedEx : public std::runtime_error
 {
 public:
-	StopRequestedEx(const char* msg) : runtime_error{msg} {}
+	StopRequestedEx(const char* msg) : runtime_error{msg}
+	{}
 };
 
 
@@ -112,10 +113,11 @@ public:
 
 
 private:
-	ConvoDlg* m_convodlg = nullptr;
-	const ConvoDlg::t_sqwparams* m_sqwparams = nullptr;
+	ConvoDlg* m_convodlg{};
+	const ConvoDlg::t_sqwparams* m_sqwparams{};
 	unsigned int m_seed{1234};
 
+	// mutex for m_convodlg
 	mutable QMutex m_mtxMinuit{};
 };
 

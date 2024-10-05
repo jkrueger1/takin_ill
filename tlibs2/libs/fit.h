@@ -46,12 +46,66 @@
 #include <string>
 #include <algorithm>
 #include <type_traits>
+#include <exception>
 
 #include "expr.h"
 #include "maths.h"
 
 
 namespace tl2 {
+
+
+// ----------------------------------------------------------------------------
+// stop request handling
+// ----------------------------------------------------------------------------
+struct StopRequestException : public std::runtime_error
+{
+	StopRequestException(const char* msg = "") : runtime_error{msg}
+	{}
+};
+
+
+class StopRequest
+{
+public:
+	StopRequest() = default;
+	virtual ~StopRequest() = default;
+
+
+	StopRequest(const StopRequest& req)
+		: m_stop_requested{req.m_stop_requested}
+	{
+	}
+
+
+	const StopRequest& operator=(const StopRequest& req)
+	{
+		m_stop_requested = req.m_stop_requested;
+		return *this;
+	}
+
+
+	void SetStopRequest(bool *b)
+	{
+		m_stop_requested = b;
+	}
+
+
+	void HandleStopRequest() const
+	{
+		if(!m_stop_requested || !*m_stop_requested)
+			return;
+
+		// the only way to get out of an ongoing minuit operation
+		throw StopRequestException("Stop requested.");
+	}
+
+
+private:
+	bool *m_stop_requested{};
+};
+// ----------------------------------------------------------------------------
+
 
 
 // ----------------------------------------------------------------------------
@@ -267,7 +321,7 @@ public:
  * @see http://seal.cern.ch/documents/minuit/mnusersguide.pdf
  */
 template<class t_real = t_real_min>
-class Chi2Function : public ROOT::Minuit2::FCNBase
+class Chi2Function : public ROOT::Minuit2::FCNBase, public StopRequest
 {
 protected:
 	const FitterFuncModel<t_real_min> *m_pfkt = nullptr;
@@ -291,14 +345,18 @@ public:
 	virtual ~Chi2Function() = default;
 
 
-	const Chi2Function<t_real> operator=(const Chi2Function<t_real>& other)
+	const Chi2Function<t_real>& operator=(const Chi2Function<t_real>& other)
 	{
+		StopRequest::operator=(*this);
+
 		this->m_pfkt = other.m_pfkt;
 		this->m_px = other.m_px;
 		this->m_py = other.m_py;
 		this->m_pdy = other.m_pdy;
 		this->m_dSigma = other.m_dSigma;
 		this->m_bDebug = other.m_bDebug;
+
+		return *this;
 	}
 
 	Chi2Function(const Chi2Function<t_real>& other)
@@ -331,16 +389,28 @@ public:
 
 	virtual t_real_min operator()(const std::vector<t_real_min>& vecParams) const override
 	{
+		HandleStopRequest();
+
 		t_real_min dChi2 = chi2(vecParams);
 		if(m_bDebug)
 			std::cerr << "Fitter: chi2 = " << dChi2 << "." << std::endl;
 		return dChi2;
 	}
 
-	void SetSigma(t_real_min dSig) { m_dSigma = dSig; }
-	t_real_min GetSigma() const { return m_dSigma; }
+	void SetSigma(t_real_min dSig)
+	{
+		m_dSigma = dSig;
+	}
 
-	void SetDebug(bool b) { m_bDebug = b; }
+	t_real_min GetSigma() const
+	{
+		return m_dSigma;
+	}
+
+	void SetDebug(bool b)
+	{
+		m_bDebug = b;
+	}
 };
 
 
@@ -350,24 +420,31 @@ public:
  * @see http://seal.cern.ch/documents/minuit/mnusersguide.pdf
  */
 template<class t_real = t_real_min>
-class MiniFunction : public ROOT::Minuit2::FCNBase
+class MiniFunction : public ROOT::Minuit2::FCNBase, public StopRequest
 {
 protected:
 	const FitterFuncModel<t_real_min> *m_pfkt = nullptr;
 	t_real_min m_dSigma = 1.;
 
 public:
-	MiniFunction(const FitterFuncModel<t_real_min>* fkt = nullptr) : m_pfkt(fkt) {}
+	MiniFunction(const FitterFuncModel<t_real_min>* fkt = nullptr)
+		: m_pfkt(fkt)
+	{}
+
 	virtual ~MiniFunction() = default;
 
 	MiniFunction(const MiniFunction<t_real>& other)
 		: m_pfkt(other.m_pfkt), m_dSigma(other.m_dSigma)
 	{}
 
-	const MiniFunction<t_real> operator=(const MiniFunction<t_real>& other)
+	const MiniFunction<t_real>& operator=(const MiniFunction<t_real>& other)
 	{
+		StopRequest::operator=(*this);
+
 		this->m_pfkt = other.m_pfkt;
 		this->m_dSigma = other.m_dSigma;
+
+		return *this;
 	}
 
 	virtual t_real_min Up() const override
@@ -377,6 +454,8 @@ public:
 
 	virtual t_real_min operator()(const std::vector<t_real_min>& vecParams) const override
 	{
+		HandleStopRequest();
+
 		// cannot operate on m_pfkt directly, because Minuit
 		// uses more than one thread!
 		std::unique_ptr<FitterFuncModel<t_real_min>> uptrFkt(m_pfkt->copy());
@@ -386,8 +465,15 @@ public:
 		return (*pfkt)(t_real_min(0));	// "0" is an ignored dummy value here
 	}
 
-	void SetSigma(t_real_min dSig) { m_dSigma = dSig; }
-	t_real_min GetSigma() const { return m_dSigma; }
+	void SetSigma(t_real_min dSig)
+	{
+		m_dSigma = dSig;
+	}
+
+	t_real_min GetSigma() const
+	{
+		return m_dSigma;
+	}
 };
 
 
@@ -411,7 +497,7 @@ bool fit(t_func&& func,
 	std::vector<t_real>& vecErrs,
 	const std::vector<bool>* pVecFixed = nullptr,
 
-	bool bDebug = true) noexcept
+	bool bDebug = true, bool *stop_request = nullptr)
 {
 	try
 	{
@@ -459,6 +545,7 @@ bool fit(t_func&& func,
 				&mod, vecXConverted.size(), vecXConverted.data(),
 				vecYConverted.data(), vecYErrConverted.data());
 		}
+		chi2->SetStopRequest(stop_request);
 
 		ROOT::Minuit2::MnUserParameters params;
 		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
@@ -487,6 +574,10 @@ bool fit(t_func&& func,
 
 		return bValidFit;
 	}
+	catch(const tl2::StopRequestException&)
+	{
+		throw;
+	}
 	catch(const std::exception& ex)
 	{
 		std::cerr << "Fitter: " << ex.what() << std::endl;
@@ -513,7 +604,7 @@ bool fit_expr(const std::string& func,
 	std::vector<t_real>& vecErrs,
 	const std::vector<bool>* pVecFixed = nullptr,
 
-	bool bDebug = true) noexcept
+	bool bDebug = true, bool *stop_request = nullptr)
 {
 	try
 	{
@@ -561,6 +652,7 @@ bool fit_expr(const std::string& func,
 				&mod, vecXConverted.size(), vecXConverted.data(),
 				vecYConverted.data(), vecYErrConverted.data());
 		}
+		chi2->SetStopRequest(stop_request);
 
 		ROOT::Minuit2::MnUserParameters params;
 		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
@@ -587,6 +679,10 @@ bool fit_expr(const std::string& func,
 
 		return bValidFit;
 	}
+	catch(const tl2::StopRequestException&)
+	{
+		throw;
+	}
 	catch(const std::exception& ex)
 	{
 		std::cerr << "Fitter: " << ex.what() << std::endl;
@@ -606,7 +702,7 @@ bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
 	const std::vector<bool>* pVecFixed = nullptr,
 	const std::vector<t_real>* pVecLowerLimits = nullptr,
 	const std::vector<t_real>* pVecUpperLimits = nullptr,
-	bool bDebug = true) noexcept
+	bool bDebug = true, bool *stop_request = nullptr)
 {
 	try
 	{
@@ -620,6 +716,7 @@ bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
 
 		FitterLamFuncModel<t_real_min, num_args, t_func> mod(func, false);
 		MiniFunction<t_real_min> minfunc(&mod);
+		minfunc.SetStopRequest(stop_request);
 
 		ROOT::Minuit2::MnUserParameters params;
 		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
@@ -653,6 +750,10 @@ bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
 			std::cerr << mini << std::endl;
 
 		return bMinimumValid;
+	}
+	catch(const tl2::StopRequestException&)
+	{
+		throw;
 	}
 	catch(const std::exception& ex)
 	{
@@ -674,7 +775,7 @@ bool minimise_dynargs(std::size_t num_args, t_func&& func,
 	const std::vector<bool>* pVecFixed = nullptr,
 	const std::vector<t_real>* pVecLowerLimits = nullptr,
 	const std::vector<t_real>* pVecUpperLimits = nullptr,
-	bool bDebug = true) noexcept
+	bool bDebug = true, bool *stop_request = nullptr)
 {
 	try
 	{
@@ -688,6 +789,7 @@ bool minimise_dynargs(std::size_t num_args, t_func&& func,
 
 		FitterDynLamFuncModel<t_real_min, t_func> mod(num_args, func, false);
 		MiniFunction<t_real_min> minfunc(&mod);
+		minfunc.SetStopRequest(stop_request);
 
 		ROOT::Minuit2::MnUserParameters params;
 		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
@@ -722,6 +824,10 @@ bool minimise_dynargs(std::size_t num_args, t_func&& func,
 
 		return bMinimumValid;
 	}
+	catch(const tl2::StopRequestException&)
+	{
+		throw;
+	}
 	catch(const std::exception& ex)
 	{
 		std::cerr << "Fitter: " << ex.what() << std::endl;
@@ -738,7 +844,8 @@ bool minimise_dynargs(std::size_t num_args, t_func&& func,
 template<class t_real = t_real_min>
 bool minimise_expr(const std::string& func, const std::vector<std::string>& vecParamNames,
 	std::vector<t_real>& vecVals, std::vector<t_real>& vecErrs,
-	const std::vector<bool>* pVecFixed = nullptr, bool bDebug = true) noexcept
+	const std::vector<bool>* pVecFixed = nullptr,
+	bool bDebug = true, bool *stop_request = nullptr)
 {
 	try
 	{
@@ -752,6 +859,7 @@ bool minimise_expr(const std::string& func, const std::vector<std::string>& vecP
 
 		FitterParsedFuncModel<t_real_min> mod(func, "", vecParamNames);
 		MiniFunction<t_real_min> minfunc(&mod);
+		minfunc.SetStopRequest(stop_request);
 
 		ROOT::Minuit2::MnUserParameters params;
 		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
@@ -779,6 +887,10 @@ bool minimise_expr(const std::string& func, const std::vector<std::string>& vecP
 			std::cerr << mini << std::endl;
 
 		return bMinimumValid;
+	}
+	catch(const tl2::StopRequestException&)
+	{
+		throw;
 	}
 	catch(const std::exception& ex)
 	{

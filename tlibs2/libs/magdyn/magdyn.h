@@ -475,7 +475,7 @@ public:
 	 * minimise energy to found ground state
 	 */
 	bool CalcGroundState(const std::unordered_set<std::string>* fixed_params = nullptr,
-		bool verbose = false);
+		bool verbose = false, bool *stop_request = nullptr);
 	// --------------------------------------------------------------------
 
 

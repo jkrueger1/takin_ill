@@ -28,6 +28,10 @@
 
 #include <QtCore/QSettings>
 #include <QtWidgets/QTableWidget>
+#include <QtWidgets/QPushButton>
+
+#include <thread>
+#include <memory>
 
 #include "gui_defs.h"
 
@@ -41,18 +45,23 @@ class GroundStateDlg : public QDialog
 { Q_OBJECT
 public:
 	GroundStateDlg(QWidget *parent, QSettings *sett = nullptr);
-	~GroundStateDlg() = default;
+	virtual ~GroundStateDlg();
+
 	GroundStateDlg(const GroundStateDlg&) = delete;
 	GroundStateDlg& operator=(const GroundStateDlg&) = delete;
 
 	void SetKernel(const t_magdyn* dyn);
+	void SyncFromKernel(const t_magdyn *dyn = nullptr,
+		const std::unordered_set<std::string> *fixed_spins = nullptr);
 
 
 protected:
-	void SyncFromKernel(const t_magdyn *dyn = nullptr,
-		const std::unordered_set<std::string> *fixed_spins = nullptr);
 	void SyncToKernel();
+
+	void EnableMinimisation(bool enable = true);
 	void Minimise();
+
+	void ShowError(const char* msg);
 
 	virtual void accept() override;
 
@@ -63,6 +72,12 @@ private:
 
 	QSettings *m_sett{};
 	QTableWidget *m_spinstab{};
+	QPushButton *m_btnFromKernel{}, *m_btnToKernel{};
+	QPushButton *m_btnMinimise{};
+
+	std::unique_ptr<std::thread> m_thread{};  // minimiser thread
+	bool m_stop_request{false};               // stop minimisation
+	bool m_running{false};                    // is minimisation running?
 
 
 signals:

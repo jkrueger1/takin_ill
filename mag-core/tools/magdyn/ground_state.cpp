@@ -26,7 +26,6 @@
 #include "ground_state.h"
 
 #include <QtWidgets/QGridLayout>
-#include <QtWidgets/QPushButton>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QTableWidgetItem>
 #include <QtWidgets/QDialogButtonBox>
@@ -94,9 +93,9 @@ GroundStateDlg::GroundStateDlg(QWidget *parent, QSettings *sett)
 	m_spinstab->setColumnWidth(COL_SPIN_U_FIXED, 50);
 	m_spinstab->setColumnWidth(COL_SPIN_V_FIXED, 50);
 
-	QPushButton *btnFromKernel = new QPushButton("Get Spins", this);
-	QPushButton *btnToKernel = new QPushButton("Set Spins", this);
-	QPushButton *btnMinimise = new QPushButton("Minimise", this);
+	m_btnFromKernel = new QPushButton("Get Spins", this);
+	m_btnToKernel = new QPushButton("Set Spins", this);
+	m_btnMinimise = new QPushButton("Minimise", this);
 	QPushButton *btnOk = new QPushButton("OK", this);
 
 	int y = 0;
@@ -104,9 +103,9 @@ GroundStateDlg::GroundStateDlg(QWidget *parent, QSettings *sett)
 	grid->setSpacing(4);
 	grid->setContentsMargins(8, 8, 8, 8);
 	grid->addWidget(m_spinstab, y++, 0, 1, 4);
-	grid->addWidget(btnFromKernel, y, 0, 1, 1);
-	grid->addWidget(btnToKernel, y, 1, 1, 1);
-	grid->addWidget(btnMinimise, y, 2, 1, 1);
+	grid->addWidget(m_btnFromKernel, y, 0, 1, 1);
+	grid->addWidget(m_btnToKernel, y, 1, 1, 1);
+	grid->addWidget(m_btnMinimise, y, 2, 1, 1);
 	grid->addWidget(btnOk, y++, 3, 1, 1);
 
 	if(m_sett && m_sett->contains("ground_state/geo"))
@@ -114,16 +113,34 @@ GroundStateDlg::GroundStateDlg(QWidget *parent, QSettings *sett)
 	else
 		resize(640, 480);
 
-	connect(btnFromKernel, &QAbstractButton::clicked, [this](){ GroundStateDlg::SyncFromKernel(); });
-	connect(btnToKernel, &QAbstractButton::clicked, this, &GroundStateDlg::SyncToKernel);
-	connect(btnMinimise, &QAbstractButton::clicked, this, &GroundStateDlg::Minimise);
 	connect(btnOk, &QAbstractButton::clicked, this, &QDialog::accept);
+	connect(m_btnMinimise, &QAbstractButton::clicked, this, &GroundStateDlg::Minimise);
+	connect(m_btnToKernel, &QAbstractButton::clicked, this, &GroundStateDlg::SyncToKernel);
+	connect(m_btnFromKernel, &QAbstractButton::clicked, [this]()
+	{
+		GroundStateDlg::SyncFromKernel();
+	});
+
+	EnableMinimisation(true);
+}
+
+
+
+GroundStateDlg::~GroundStateDlg()
+{
+	m_stop_request = true;
+
+	if(m_thread)
+	{
+		m_thread->join();
+		m_thread = nullptr;
+	}
 }
 
 
 
 /**
- * set a pointer to the main magdyn kernel
+ * set a pointer to the main magdyn kernel and synchronise the spins
  */
 void GroundStateDlg::SetKernel(const t_magdyn* dyn)
 {
@@ -210,38 +227,110 @@ void GroundStateDlg::SyncToKernel()
 
 
 
+void GroundStateDlg::EnableMinimisation(bool enable)
+{
+	if(enable)
+	{
+		m_btnMinimise->setText("Minimise");
+		m_btnFromKernel->setEnabled(true);
+		m_btnToKernel->setEnabled(true);
+		m_spinstab->setEnabled(true);
+	}
+	else
+	{
+		m_btnMinimise->setText("Stop");
+		m_btnFromKernel->setEnabled(false);
+		m_btnToKernel->setEnabled(false);
+		m_spinstab->setEnabled(false);
+	}
+}
+
+
+
 /**
  * minimise the ground state energy
- * TODO: use threads and allow cancelling the calculation
  */
 void GroundStateDlg::Minimise()
 {
-	// set fixed spin parameters
-	std::unordered_set<std::string> fixed_spins;
-
-	for(int row = 0; row < m_spinstab->rowCount(); ++row)
+	if(m_running)
 	{
-		QCheckBox* u_fixed = reinterpret_cast<QCheckBox*>(m_spinstab->cellWidget(row, COL_SPIN_U_FIXED));
-		if(u_fixed && u_fixed->isChecked())
-		{
-			std::string fixed_name = m_spinstab->item(row, COL_SPIN_NAME)->text().toStdString() + "_phi";
-			fixed_spins.emplace(std::move(fixed_name));
-		}
-
-		QCheckBox* v_fixed = reinterpret_cast<QCheckBox*>(m_spinstab->cellWidget(row, COL_SPIN_V_FIXED));
-		if(v_fixed && v_fixed->isChecked())
-		{
-			std::string fixed_name = m_spinstab->item(row, COL_SPIN_NAME)->text().toStdString() + "_theta";
-			fixed_spins.emplace(std::move(fixed_name));
-		}
+		m_stop_request = true;
+		return;
 	}
 
-	// minimise
-	if(!m_dyn->CalcGroundState(&fixed_spins, true))
-		QMessageBox::critical(this, "Error", "Could not find minimum ground state energy.");
+	if(m_thread)
+	{
+		m_thread->join();
+		m_thread = nullptr;
+	}
 
-	// set new parameters
-	SyncFromKernel(&*m_dyn, &fixed_spins);
+	m_running = true;
+	EnableMinimisation(false);
+
+	m_thread = std::make_unique<std::thread>([this]()
+	{
+		m_stop_request = false;
+		bool cancelled = false;
+
+		// set fixed spin parameters
+		std::unordered_set<std::string> fixed_spins;
+
+		for(int row = 0; row < m_spinstab->rowCount(); ++row)
+		{
+			QCheckBox *u_fixed = reinterpret_cast<QCheckBox*>(
+				m_spinstab->cellWidget(row, COL_SPIN_U_FIXED));
+			if(u_fixed && u_fixed->isChecked())
+			{
+				std::string fixed_name = m_spinstab->item(
+					row, COL_SPIN_NAME)->text().toStdString() + "_phi";
+				fixed_spins.emplace(std::move(fixed_name));
+			}
+
+			QCheckBox *v_fixed = reinterpret_cast<QCheckBox*>(
+				m_spinstab->cellWidget(row, COL_SPIN_V_FIXED));
+			if(v_fixed && v_fixed->isChecked())
+			{
+				std::string fixed_name = m_spinstab->item(
+					row, COL_SPIN_NAME)->text().toStdString() + "_theta";
+				fixed_spins.emplace(std::move(fixed_name));
+			}
+		}
+
+		try
+		{
+			// minimise
+			if(!m_dyn->CalcGroundState(&fixed_spins, true, &m_stop_request))
+			{
+				QMetaObject::invokeMethod(this, [this]()
+				{
+					this->ShowError("Could not find minimum ground state energy.");
+				});
+			}
+		}
+		catch(const tl2::StopRequestException&)
+		{
+			cancelled = true;
+		}
+
+		if(!cancelled)
+		{
+			// set new parameters
+			QMetaObject::invokeMethod(this, [this, fixed_spins]()
+			{
+				this->SyncFromKernel(&*m_dyn, &fixed_spins);
+			});
+		}
+
+		EnableMinimisation(true);
+		m_running = false;
+	});
+}
+
+
+
+void GroundStateDlg::ShowError(const char* msg)
+{
+	QMessageBox::critical(this, "Error", msg);
 }
 
 
