@@ -197,7 +197,7 @@ protected:
 
 	// hamiltonian
 	QTextEdit *m_hamiltonian{};
-	QDoubleSpinBox *m_q[3]{nullptr, nullptr, nullptr};
+	QDoubleSpinBox *m_Q[3]{nullptr, nullptr, nullptr};
 
 	// external magnetic field
 	QDoubleSpinBox *m_field_dir[3]{nullptr, nullptr, nullptr};
@@ -304,8 +304,8 @@ protected:
 
 	// add a coordinate to the table
 	void AddCoordinateTabItem(int row = -1,
-		t_real hi = 0., t_real ki = 0., t_real li = 1.,
-		t_real hf = 0., t_real kf = 0., t_real lf = 1.);
+		const std::string& name = "",
+		t_real h = 0., t_real k = 0., t_real l = 1.);
 
 	// add a magnetic field to the table
 	void AddFieldTabItem(int row = -1,

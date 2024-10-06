@@ -208,11 +208,11 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 		if(auto optVal = magdyn.get_optional<t_real>("config.l_end"))
 			m_Q_end[2]->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<t_real>("config.h"))
-			m_q[0]->setValue(*optVal);
+			m_Q[0]->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<t_real>("config.k"))
-			m_q[1]->setValue(*optVal);
+			m_Q[1]->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<t_real>("config.l"))
-			m_q[2]->setValue(*optVal);
+			m_Q[2]->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<t_size>("config.num_Q_points"))
 			m_num_points->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<t_real>("config.weight_scale"))
@@ -422,14 +422,12 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 		{
 			for(const auto &var : *vars)
 			{
-				t_real hi = var.second.get<t_real>("h_i", 0.);
-				t_real ki = var.second.get<t_real>("k_i", 0.);
-				t_real li = var.second.get<t_real>("l_i", 0.);
-				t_real hf = var.second.get<t_real>("h_f", 0.);
-				t_real kf = var.second.get<t_real>("k_f", 0.);
-				t_real lf = var.second.get<t_real>("l_f", 0.);
+				std::string name = var.second.get<std::string>("name", "");
+				t_real h = var.second.get<t_real>("h", 0.);
+				t_real k = var.second.get<t_real>("k", 0.);
+				t_real l = var.second.get<t_real>("l", 0.);
 
-				AddCoordinateTabItem(-1, hi, ki, li, hf, kf, lf);
+				AddCoordinateTabItem(-1, name, h, k, l);
 			}
 		}
 
@@ -639,9 +637,9 @@ bool MagDynDlg::Save(const QString& filename)
 		magdyn.put<t_real>("config.h_end", m_Q_end[0]->value());
 		magdyn.put<t_real>("config.k_end", m_Q_end[1]->value());
 		magdyn.put<t_real>("config.l_end", m_Q_end[2]->value());
-		magdyn.put<t_real>("config.h", m_q[0]->value());
-		magdyn.put<t_real>("config.k", m_q[1]->value());
-		magdyn.put<t_real>("config.l", m_q[2]->value());
+		magdyn.put<t_real>("config.h", m_Q[0]->value());
+		magdyn.put<t_real>("config.k", m_Q[1]->value());
+		magdyn.put<t_real>("config.l", m_Q[2]->value());
 		magdyn.put<t_size>("config.num_Q_points", m_num_points->value());
 		magdyn.put<t_real>("config.weight_scale", m_weight_scale->value());
 		magdyn.put<t_real>("config.weight_min", m_weight_min->value());
@@ -756,26 +754,20 @@ bool MagDynDlg::Save(const QString& filename)
 		// saved coordinates
 		for(int coord_row = 0; coord_row < m_coordinatestab->rowCount(); ++coord_row)
 		{
-			const auto* hi = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_coordinatestab->item(coord_row, COL_COORD_HI));
-			const auto* ki = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_coordinatestab->item(coord_row, COL_COORD_KI));
-			const auto* li = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_coordinatestab->item(coord_row, COL_COORD_LI));
-			const auto* hf = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_coordinatestab->item(coord_row, COL_COORD_HF));
-			const auto* kf = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_coordinatestab->item(coord_row, COL_COORD_KF));
-			const auto* lf = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_coordinatestab->item(coord_row, COL_COORD_LF));
+			std::string name = m_coordinatestab->item(
+				coord_row, COL_COORD_NAME)->text().toStdString();
+			const auto* h = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_coordinatestab->item(coord_row, COL_COORD_H));
+			const auto* k = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_coordinatestab->item(coord_row, COL_COORD_K));
+			const auto* l = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_coordinatestab->item(coord_row, COL_COORD_L));
 
 			boost::property_tree::ptree itemNode;
-			itemNode.put<t_real>("h_i", hi ? hi->GetValue() : 0.);
-			itemNode.put<t_real>("k_i", ki ? ki->GetValue() : 0.);
-			itemNode.put<t_real>("l_i", li ? li->GetValue() : 0.);
-			itemNode.put<t_real>("h_f", hf ? hf->GetValue() : 0.);
-			itemNode.put<t_real>("k_f", kf ? kf->GetValue() : 0.);
-			itemNode.put<t_real>("l_f", lf ? lf->GetValue() : 0.);
+			itemNode.put<std::string>("name", name);
+			itemNode.put<t_real>("h", h ? h->GetValue() : 0.);
+			itemNode.put<t_real>("k", k ? k->GetValue() : 0.);
+			itemNode.put<t_real>("l", l ? l->GetValue() : 0.);
 
 			magdyn.add_child("saved_coordinates.coordinate", itemNode);
 		}

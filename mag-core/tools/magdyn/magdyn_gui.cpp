@@ -1470,6 +1470,13 @@ void MagDynDlg::CreateDispersionPanel()
 	m_Q_end[1] = new QDoubleSpinBox(m_disppanel);
 	m_Q_end[2] = new QDoubleSpinBox(m_disppanel);
 
+	m_Q_start[0]->setToolTip("Dispersion initial momentum transfer, h_i (rlu).");
+	m_Q_start[1]->setToolTip("Dispersion initial momentum transfer, k_i (rlu).");
+	m_Q_start[2]->setToolTip("Dispersion initial momentum transfer, l_i (rlu).");
+	m_Q_end[0]->setToolTip("Dispersion final momentum transfer, h_f (rlu).");
+	m_Q_end[1]->setToolTip("Dispersion final momentum transfer, k_f (rlu).");
+	m_Q_end[2]->setToolTip("Dispersion final momentum transfer, l_f (rlu).");
+
 	// number of Q points in the plot
 	m_num_points = new QSpinBox(m_disppanel);
 	m_num_points->setMinimum(1);
@@ -1477,6 +1484,7 @@ void MagDynDlg::CreateDispersionPanel()
 	m_num_points->setValue(512);
 	m_num_points->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Fixed});
+	m_num_points->setToolTip("Number of Q points in the plot.");
 
 	// scaling factor for weights
 	for(auto** comp : {&m_weight_scale, &m_weight_min, &m_weight_max})
@@ -1495,6 +1503,9 @@ void MagDynDlg::CreateDispersionPanel()
 	m_weight_max->setValue(9999);
 	m_weight_min->setMinimum(-1.);	// -1: disable clamping
 	m_weight_max->setMinimum(-1.);	// -1: disable clamping
+	m_weight_min->setToolTip("Minimum spectral weight for clamping.");
+	m_weight_max->setToolTip("Maximum spectral weight for clamping.");
+	m_weight_scale->setToolTip("Spectral weight scaling factor.");
 
 	for(int i = 0; i < 3; ++i)
 	{
@@ -1612,21 +1623,24 @@ void MagDynDlg::CreateHamiltonPanel()
 		QSizePolicy::Expanding, QSizePolicy::Expanding});
 
 	// Q coordinates
-	m_q[0] = new QDoubleSpinBox(m_hamiltonianpanel);
-	m_q[1] = new QDoubleSpinBox(m_hamiltonianpanel);
-	m_q[2] = new QDoubleSpinBox(m_hamiltonianpanel);
+	m_Q[0] = new QDoubleSpinBox(m_hamiltonianpanel);
+	m_Q[1] = new QDoubleSpinBox(m_hamiltonianpanel);
+	m_Q[2] = new QDoubleSpinBox(m_hamiltonianpanel);
+	m_Q[0]->setToolTip("Momentum transfer component h (rlu).");
+	m_Q[1]->setToolTip("Momentum transfer component k (rlu).");
+	m_Q[2]->setToolTip("Momentum transfer component l (rlu).");
 
 	for(int i = 0; i < 3; ++i)
 	{
-		m_q[i]->setDecimals(4);
-		m_q[i]->setMinimum(-99.9999);
-		m_q[i]->setMaximum(+99.9999);
-		m_q[i]->setSingleStep(0.01);
-		m_q[i]->setValue(0.);
-		m_q[i]->setSuffix(" rlu");
-		m_q[i]->setSizePolicy(QSizePolicy{
+		m_Q[i]->setDecimals(4);
+		m_Q[i]->setMinimum(-99.9999);
+		m_Q[i]->setMaximum(+99.9999);
+		m_Q[i]->setSingleStep(0.01);
+		m_Q[i]->setValue(0.);
+		m_Q[i]->setSuffix(" rlu");
+		m_Q[i]->setSizePolicy(QSizePolicy{
 			QSizePolicy::Expanding, QSizePolicy::Fixed});
-		m_q[i]->setPrefix(hklPrefix[i]);
+		m_Q[i]->setPrefix(hklPrefix[i]);
 	}
 
 	auto grid = new QGridLayout(m_hamiltonianpanel);
@@ -1636,14 +1650,14 @@ void MagDynDlg::CreateHamiltonPanel()
 	int y = 0;
 	grid->addWidget(m_hamiltonian, y++,0,1,4);
 	grid->addWidget(new QLabel("Q:", m_hamiltonianpanel), y,0,1,1);
-	grid->addWidget(m_q[0], y,1,1,1);
-	grid->addWidget(m_q[1], y,2,1,1);
-	grid->addWidget(m_q[2], y++,3,1,1);
+	grid->addWidget(m_Q[0], y,1,1,1);
+	grid->addWidget(m_Q[1], y,2,1,1);
+	grid->addWidget(m_Q[2], y++,3,1,1);
 
 	// signals
 	for(int i = 0; i < 3; ++i)
 	{
-		connect(m_q[i],
+		connect(m_Q[i],
 			static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
 			[this]()
 		{
@@ -1680,25 +1694,19 @@ void MagDynDlg::CreateCoordinatesPanel()
 	m_coordinatestab->verticalHeader()->setVisible(true);
 
 	m_coordinatestab->setColumnCount(NUM_COORD_COLS);
-	m_coordinatestab->setHorizontalHeaderItem(COL_COORD_HI,
-		new QTableWidgetItem{"h_i"});
-	m_coordinatestab->setHorizontalHeaderItem(COL_COORD_KI,
-		new QTableWidgetItem{"k_i"});
-	m_coordinatestab->setHorizontalHeaderItem(COL_COORD_LI,
-		new QTableWidgetItem{"l_i"});
-	m_coordinatestab->setHorizontalHeaderItem(COL_COORD_HF,
-		new QTableWidgetItem{"h_f"});
-	m_coordinatestab->setHorizontalHeaderItem(COL_COORD_KF,
-		new QTableWidgetItem{"k_f"});
-	m_coordinatestab->setHorizontalHeaderItem(COL_COORD_LF,
-		new QTableWidgetItem{"l_f"});
+	m_coordinatestab->setHorizontalHeaderItem(COL_COORD_NAME,
+		new QTableWidgetItem{"Name"});
+	m_coordinatestab->setHorizontalHeaderItem(COL_COORD_H,
+		new QTableWidgetItem{"h"});
+	m_coordinatestab->setHorizontalHeaderItem(COL_COORD_K,
+		new QTableWidgetItem{"k"});
+	m_coordinatestab->setHorizontalHeaderItem(COL_COORD_L,
+		new QTableWidgetItem{"l"});
 
-	m_coordinatestab->setColumnWidth(COL_COORD_HI, 90);
-	m_coordinatestab->setColumnWidth(COL_COORD_KI, 90);
-	m_coordinatestab->setColumnWidth(COL_COORD_LI, 90);
-	m_coordinatestab->setColumnWidth(COL_COORD_HF, 90);
-	m_coordinatestab->setColumnWidth(COL_COORD_KF, 90);
-	m_coordinatestab->setColumnWidth(COL_COORD_LF, 90);
+	m_coordinatestab->setColumnWidth(COL_COORD_NAME, 90);
+	m_coordinatestab->setColumnWidth(COL_COORD_H, 90);
+	m_coordinatestab->setColumnWidth(COL_COORD_K, 90);
+	m_coordinatestab->setColumnWidth(COL_COORD_L, 90);
 	m_coordinatestab->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Expanding});
 
@@ -1761,16 +1769,12 @@ void MagDynDlg::CreateCoordinatesPanel()
 	menuTableContext->addSeparator();
 	menuTableContext->addAction(
 		QIcon::fromTheme("go-home"),
-		"Calculate Dispersion", this,
+		"Calculate Dispersion From This To Next Q", this,
 		[this]() { this->SetCurrentCoordinate(0); });
 	menuTableContext->addAction(
 		QIcon::fromTheme("go-home"),
-		"Calculate Hamiltonian From Initial Q", this,
+		"Calculate Hamiltonian For This Q", this,
 		[this]() { this->SetCurrentCoordinate(1); });
-	menuTableContext->addAction(
-		QIcon::fromTheme("go-home"),
-		"Calculate Hamiltonian From Final Q", this,
-		[this]() { this->SetCurrentCoordinate(2); });
 
 
 	// table CustomContextMenu in case nothing is selected
@@ -1778,7 +1782,7 @@ void MagDynDlg::CreateCoordinatesPanel()
 	menuTableContextNoItem->addAction(
 		QIcon::fromTheme("list-add"),
 		"Add Coordinate", this,
-		[this]() { this->AddCoordinateTabItem(-1, -1.,0.,0., 1.,0.,0.); });
+		[this]() { this->AddCoordinateTabItem(-1, "", 1.,0.,0.); });
 	menuTableContextNoItem->addAction(
 		QIcon::fromTheme("list-remove"),
 		"Delete Coordinate", this,
@@ -1790,7 +1794,7 @@ void MagDynDlg::CreateCoordinatesPanel()
 	grid->setContentsMargins(6, 6, 6, 6);
 
 	int y = 0;
-	grid->addWidget(new QLabel("Saved Q Coordinates / Paths:", m_coordinatespanel), y++,0,1,4);
+	grid->addWidget(new QLabel("Saved Q Coordinates (rlu):", m_coordinatespanel), y++,0,1,4);
 	grid->addWidget(m_coordinatestab, y,0,1,4);
 	grid->addWidget(btnAddCoord, ++y,0,1,1);
 	grid->addWidget(btnDelCoord, y,1,1,1);
@@ -1802,7 +1806,7 @@ void MagDynDlg::CreateCoordinatesPanel()
 
 	// signals
 	connect(btnAddCoord, &QAbstractButton::clicked,
-		[this]() { this->AddCoordinateTabItem(-1, -1.,0.,0., 1.,0.,0.); });
+		[this]() { this->AddCoordinateTabItem(-1, "", 1.,0.,0.); });
 	connect(btnDelCoord, &QAbstractButton::clicked,
 		[this]() { this->DelTabItem(m_coordinatestab); });
 	connect(btnCoordUp, &QAbstractButton::clicked,

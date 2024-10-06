@@ -484,8 +484,7 @@ void MagDynDlg::AddVariableTabItem(int row, const std::string& name, const t_cpl
 /**
  * add a magnetic field
  */
-void MagDynDlg::AddFieldTabItem(
-	int row,
+void MagDynDlg::AddFieldTabItem(int row,
 	t_real Bh, t_real Bk, t_real Bl,
 	t_real Bmag)
 {
@@ -538,10 +537,8 @@ void MagDynDlg::AddFieldTabItem(
 /**
  * add a coordinate path
  */
-void MagDynDlg::AddCoordinateTabItem(
-	int row,
-	t_real hi, t_real ki, t_real li,
-	t_real hf, t_real kf, t_real lf)
+void MagDynDlg::AddCoordinateTabItem(int row, const std::string& name,
+	t_real h, t_real k, t_real l)
 {
 	bool bclone = false;
 
@@ -570,18 +567,14 @@ void MagDynDlg::AddCoordinateTabItem(
 	}
 	else
 	{
-		m_coordinatestab->setItem(row, COL_COORD_HI,
-			new tl2::NumericTableWidgetItem<t_real>(hi));
-		m_coordinatestab->setItem(row, COL_COORD_KI,
-			new tl2::NumericTableWidgetItem<t_real>(ki));
-		m_coordinatestab->setItem(row, COL_COORD_LI,
-			new tl2::NumericTableWidgetItem<t_real>(li));
-		m_coordinatestab->setItem(row, COL_COORD_HF,
-			new tl2::NumericTableWidgetItem<t_real>(hf));
-		m_coordinatestab->setItem(row, COL_COORD_KF,
-			new tl2::NumericTableWidgetItem<t_real>(kf));
-		m_coordinatestab->setItem(row, COL_COORD_LF,
-			new tl2::NumericTableWidgetItem<t_real>(lf));
+		m_coordinatestab->setItem(row, COL_COORD_NAME,
+			new QTableWidgetItem(name.c_str()));
+		m_coordinatestab->setItem(row, COL_COORD_H,
+			new tl2::NumericTableWidgetItem<t_real>(h));
+		m_coordinatestab->setItem(row, COL_COORD_K,
+			new tl2::NumericTableWidgetItem<t_real>(k));
+		m_coordinatestab->setItem(row, COL_COORD_L,
+			new tl2::NumericTableWidgetItem<t_real>(l));
 	}
 
 	m_coordinatestab->scrollToItem(m_coordinatestab->item(row, 0));

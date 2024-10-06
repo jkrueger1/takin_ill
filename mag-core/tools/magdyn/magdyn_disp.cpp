@@ -110,8 +110,7 @@ void MagDynDlg::PlotDispersion()
 			graph->setPen(pen);
 			graph->setBrush(QBrush(pen.color(), Qt::SolidPattern));
 			graph->setLineStyle(QCPGraph::lsNone);
-			graph->setScatterStyle(QCPScatterStyle(
-				QCPScatterStyle::ssDisc, m_weight_scale->value()));
+			graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, m_weight_scale->value()));
 			graph->setAntialiased(true);
 			graph->setData(m_qs_data_channel[i], m_Es_data_channel[i], true /*already sorted*/);
 			graph->SetWeights(m_ws_data_channel[i]);
@@ -136,8 +135,7 @@ void MagDynDlg::PlotDispersion()
 		graph->setPen(pen);
 		graph->setBrush(QBrush(pen.color(), Qt::SolidPattern));
 		graph->setLineStyle(QCPGraph::lsNone);
-		graph->setScatterStyle(QCPScatterStyle(
-			QCPScatterStyle::ssDisc, m_weight_scale->value()));
+		graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, m_weight_scale->value()));
 		graph->setAntialiased(true);
 		graph->setData(m_qs_data, m_Es_data, true /*already sorted*/);
 		graph->SetWeights(m_ws_data);
@@ -325,7 +323,6 @@ void MagDynDlg::CalcDispersion()
 						continue;
 
 					m_ws_data.push_back(weight);
-					//std::cout << Q[m_Q_idx] << " " << E << " " << weight << std::endl;
 
 					for(int channel = 0; channel < 3; ++channel)
 					{
@@ -432,9 +429,9 @@ void MagDynDlg::CalcHamiltonian()
 
 	const t_vec_real Q = tl2::create<t_vec_real>(
 	{
-		(t_real)m_q[0]->value(),
-		(t_real)m_q[1]->value(),
-		(t_real)m_q[2]->value(),
+		(t_real)m_Q[0]->value(),
+		(t_real)m_Q[1]->value(),
+		(t_real)m_Q[2]->value(),
 	});
 
 	std::ostringstream ostr;
@@ -730,37 +727,50 @@ void MagDynDlg::SetCoordinates(const t_vec_real& Qi, const t_vec_real& Qf, bool 
 	m_Q_end[2]->setValue(Qf[2]);
 
 	// calculate the hamiltonian for Qi
-	m_q[0]->setValue(Qi[0]);
-	m_q[1]->setValue(Qi[1]);
-	m_q[2]->setValue(Qi[2]);
+	m_Q[0]->setValue(Qi[0]);
+	m_Q[1]->setValue(Qi[1]);
+	m_Q[2]->setValue(Qi[2]);
 }
 
 
 
 /**
- * set the current coordinate path as the current one
+ * set the selected coordinate path as the current one
  */
 void MagDynDlg::SetCurrentCoordinate(int which)
 {
-	if(m_coordinates_cursor_row < 0 || m_coordinates_cursor_row >= m_coordinatestab->rowCount())
+	int idx_i = m_coordinates_cursor_row;
+	if(idx_i < 0 || idx_i >= m_coordinatestab->rowCount())
 		return;
 
 	const auto* hi = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-		m_coordinatestab->item(m_coordinates_cursor_row, COL_COORD_HI));
+		m_coordinatestab->item(idx_i, COL_COORD_H));
 	const auto* ki = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-		m_coordinatestab->item(m_coordinates_cursor_row, COL_COORD_KI));
+		m_coordinatestab->item(idx_i, COL_COORD_K));
 	const auto* li = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-		m_coordinatestab->item(m_coordinates_cursor_row, COL_COORD_LI));
-	const auto* hf = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-		m_coordinatestab->item(m_coordinates_cursor_row, COL_COORD_HF));
-	const auto* kf = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-		m_coordinatestab->item(m_coordinates_cursor_row, COL_COORD_KF));
-	const auto* lf = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-		m_coordinatestab->item(m_coordinates_cursor_row, COL_COORD_LF));
+		m_coordinatestab->item(idx_i, COL_COORD_L));
 
 	// set dispersion start and end coordinates
 	if(which == 0)
 	{
+		int idx_f = idx_i + 1;
+
+		// wrap around
+		if(idx_f >= m_coordinatestab->rowCount())
+			idx_f = 0;
+
+		if(idx_f == idx_i)
+			return;
+		if(idx_f < 0 || idx_f >= m_coordinatestab->rowCount())
+			return;
+
+		const auto* hf = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_coordinatestab->item(idx_f, COL_COORD_H));
+		const auto* kf = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_coordinatestab->item(idx_f, COL_COORD_K));
+		const auto* lf = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_coordinatestab->item(idx_f, COL_COORD_L));
+
 		if(!hi || !ki || !li || !hf || !kf || !lf)
 			return;
 
@@ -796,29 +806,9 @@ void MagDynDlg::SetCurrentCoordinate(int which)
 				this_->CalcHamiltonian();
 		} BOOST_SCOPE_EXIT_END
 
-		m_q[0]->setValue(hi->GetValue());
-		m_q[1]->setValue(ki->GetValue());
-		m_q[2]->setValue(li->GetValue());
-	}
-
-	// send final Q coordinates to hamiltonian calculation
-	else if(which == 2)
-	{
-		if(!hf || !kf || !lf)
-			return;
-
-		m_ignoreCalc = true;
-
-		BOOST_SCOPE_EXIT(this_)
-		{
-			this_->m_ignoreCalc = false;
-			if(this_->m_autocalc->isChecked())
-				this_->CalcHamiltonian();
-		} BOOST_SCOPE_EXIT_END
-
-		m_q[0]->setValue(hf->GetValue());
-		m_q[1]->setValue(kf->GetValue());
-		m_q[2]->setValue(lf->GetValue());
+		m_Q[0]->setValue(hi->GetValue());
+		m_Q[1]->setValue(ki->GetValue());
+		m_Q[2]->setValue(li->GetValue());
 	}
 }
 
