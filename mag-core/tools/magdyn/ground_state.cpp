@@ -373,9 +373,8 @@ void GroundStateDlg::SyncFromKernel(const t_magdyn *dyn,
 		QTableWidgetItem *item_u = new tl2::NumericTableWidgetItem<t_real>(u);
 		QTableWidgetItem *item_v = new tl2::NumericTableWidgetItem<t_real>(v);
 
-		// set write-protected
-		for(QTableWidgetItem *item : { item_name/*, item_phi, item_theta, item_u, item_v*/ })
-			item->setFlags(item_name->flags() & ~Qt::ItemIsEditable);
+		// write-protect site identifier
+		item_name->setFlags(item_name->flags() & ~Qt::ItemIsEditable);
 
 		QCheckBox* u_fixed = new QCheckBox(this);
 		QCheckBox* v_fixed = new QCheckBox(this);
@@ -512,7 +511,7 @@ void GroundStateDlg::Minimise()
 			{
 				QMetaObject::invokeMethod(this, [this]()
 				{
-					this->ShowError("Could not find minimum ground state energy.");
+					this->ShowError("Could not find ground state.");
 				});
 			}
 		}
