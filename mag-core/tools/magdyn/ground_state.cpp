@@ -32,7 +32,10 @@
 #include <QtWidgets/QMessageBox>
 
 #include <string>
+#include <sstream>
 #include <unordered_set>
+
+#include <boost/scope_exit.hpp>
 
 #include "tlibs2/libs/qt/numerictablewidgetitem.h"
 
@@ -101,6 +104,10 @@ GroundStateDlg::GroundStateDlg(QWidget *parent, QSettings *sett)
 	m_btnFromKernel->setToolTip("Fetch spins from main dialog.");
 	m_btnToKernel->setToolTip("Send spins back to main dialog.");
 
+	m_status = new QLabel(this);
+	m_status->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+	m_status->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
 	int y = 0;
 	auto grid = new QGridLayout(this);
 	grid->setSpacing(4);
@@ -110,12 +117,14 @@ GroundStateDlg::GroundStateDlg(QWidget *parent, QSettings *sett)
 	grid->addWidget(m_btnToKernel, y, 1, 1, 1);
 	grid->addWidget(m_btnMinimise, y, 2, 1, 1);
 	grid->addWidget(btnOk, y++, 3, 1, 1);
+	grid->addWidget(m_status, y, 0, 1, 4);
 
 	if(m_sett && m_sett->contains("ground_state/geo"))
 		restoreGeometry(m_sett->value("ground_state/geo").toByteArray());
 	else
 		resize(640, 480);
 
+	connect(m_spinstab, &QTableWidget::itemChanged, this, &GroundStateDlg::SpinsTableItemChanged);
 	connect(btnOk, &QAbstractButton::clicked, this, &QDialog::accept);
 	connect(m_btnMinimise, &QAbstractButton::clicked, this, &GroundStateDlg::Minimise);
 	connect(m_btnToKernel, &QAbstractButton::clicked, this, &GroundStateDlg::SyncToKernel);
@@ -137,6 +146,175 @@ GroundStateDlg::~GroundStateDlg()
 	{
 		m_thread->join();
 		m_thread = nullptr;
+	}
+}
+
+
+
+/**
+ * a spin property was edited in the table
+ */
+void GroundStateDlg::SpinsTableItemChanged(QTableWidgetItem *item)
+{
+	if(!item)
+		return;
+
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_spinstab->blockSignals(false);
+	} BOOST_SCOPE_EXIT_END
+	m_spinstab->blockSignals(true);
+
+	const int row = m_spinstab->row(item);
+	const int col = m_spinstab->column(item);
+	const int num_rows = m_spinstab->rowCount();
+	const int num_cols = m_spinstab->columnCount();
+
+	if(row < 0 || col < 0 || row >= num_rows || col >= num_cols)
+		return;
+
+	switch(col)
+	{
+		// phi was edited
+		case COL_SPIN_PHI:
+		{
+			// get phi and theta
+			auto *item_phi = static_cast<tl2::NumericTableWidgetItem<t_real>*>(item);
+			auto *item_theta = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_spinstab->item(row, COL_SPIN_THETA));
+
+			// calculate new u and v
+			const auto [ u, v ] = tl2::sph_to_uv<t_real>(
+				tl2::d2r(item_phi->GetValue()), tl2::d2r(item_theta->GetValue()));
+
+			// set new u and v
+			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_spinstab->item(row, COL_SPIN_U))->SetValue(u);
+			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_spinstab->item(row, COL_SPIN_V))->SetValue(v);
+
+			break;
+		}
+
+		// theta was edited
+		case COL_SPIN_THETA:
+		{
+			// get phi and theta
+			auto *item_theta = static_cast<tl2::NumericTableWidgetItem<t_real>*>(item);
+			auto *item_phi = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_spinstab->item(row, COL_SPIN_PHI));
+
+			// calculate new u and v
+			const auto [ u, v ] = tl2::sph_to_uv<t_real>(
+				tl2::d2r(item_phi->GetValue()), tl2::d2r(item_theta->GetValue()));
+
+			// set new u and v
+			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_spinstab->item(row, COL_SPIN_U))->SetValue(u);
+			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_spinstab->item(row, COL_SPIN_V))->SetValue(v);
+
+			break;
+		}
+
+		// u was edited
+		case COL_SPIN_U:
+		{
+			// get u and v
+			auto *item_u = static_cast<tl2::NumericTableWidgetItem<t_real>*>(item);
+			auto *item_v = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_spinstab->item(row, COL_SPIN_V));
+
+			// calculate new phi and theta
+			const auto [ phi, theta ] = tl2::uv_to_sph<t_real>(
+				item_u->GetValue(), item_v->GetValue());
+
+			// set new phi and theta
+			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_spinstab->item(row, COL_SPIN_PHI))->SetValue(tl2::r2d(phi));
+			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_spinstab->item(row, COL_SPIN_THETA))->SetValue(tl2::r2d(theta));
+
+			break;
+		}
+
+		// v was edited
+		case COL_SPIN_V:
+		{
+			// get u and v
+			auto *item_v = static_cast<tl2::NumericTableWidgetItem<t_real>*>(item);
+			auto *item_u = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_spinstab->item(row, COL_SPIN_U));
+
+			// calculate new phi and theta
+			const auto [ phi, theta ] = tl2::uv_to_sph<t_real>(
+				item_u->GetValue(), item_v->GetValue());
+
+			// set new phi and theta
+			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_spinstab->item(row, COL_SPIN_PHI))->SetValue(tl2::r2d(phi));
+			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+				m_spinstab->item(row, COL_SPIN_THETA))->SetValue(tl2::r2d(theta));
+
+			break;
+		}
+	}
+
+	UpdateSpinFromTable(row);
+	CalcGroundStateEnergy();
+}
+
+
+
+/**
+ * set the kernel's spins to the ones given in the table
+ */
+void GroundStateDlg::UpdateSpinsFromTable()
+{
+	if(!m_dyn)
+		return;
+
+	for(int row = 0; row < m_spinstab->rowCount(); ++row)
+		UpdateSpinFromTable(row);
+}
+
+
+
+/**
+ * set the kernel's spins to the ones given in the table
+ */
+void GroundStateDlg::UpdateSpinFromTable(int row)
+{
+	if(!m_dyn)
+		return;
+
+	std::string site_name = m_spinstab->item(row, COL_SPIN_NAME)->text().toStdString();
+
+	// get phi and theta
+	auto *item_phi = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+		m_spinstab->item(row, COL_SPIN_PHI));
+	auto *item_theta = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+		m_spinstab->item(row, COL_SPIN_THETA));
+
+	if(!item_phi || !item_theta)
+		return;
+
+	// calculate spin (x, y, z)
+	const auto [ x, y, z ] = tl2::sph_to_cart<t_real>(
+		1., tl2::d2r(item_phi->GetValue()), tl2::d2r(item_theta->GetValue()));
+
+	// set new spin (x, y, z)
+	if(t_size idx = m_dyn->GetMagneticSiteIndex(site_name);
+		idx < m_dyn->GetMagneticSitesCount())
+	{
+		t_site& site = m_dyn->GetMagneticSites()[idx];
+
+		site.spin_dir[0] = tl2::var_to_str(x, g_prec);
+		site.spin_dir[1] = tl2::var_to_str(y, g_prec);
+		site.spin_dir[2] = tl2::var_to_str(z, g_prec);
+		site.spin_dir_calc = tl2::create<t_vec_real>({ x, y, z });
+
+		m_dyn->CalcMagneticSite(site);
 	}
 }
 
@@ -170,6 +348,12 @@ void GroundStateDlg::SyncFromKernel(const t_magdyn *dyn,
 	if(dyn != &*m_dyn)
 		m_dyn = *dyn;
 
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_spinstab->blockSignals(false);
+	} BOOST_SCOPE_EXIT_END
+	m_spinstab->blockSignals(true);
+
 	m_spinstab->setSortingEnabled(false);
 	m_spinstab->clearContents();
 	m_spinstab->setRowCount(0);
@@ -190,8 +374,7 @@ void GroundStateDlg::SyncFromKernel(const t_magdyn *dyn,
 		QTableWidgetItem *item_v = new tl2::NumericTableWidgetItem<t_real>(v);
 
 		// set write-protected
-		// TODO: allow editing the numerical items directly in the table
-		for(QTableWidgetItem *item : { item_name, item_phi, item_theta, item_u, item_v })
+		for(QTableWidgetItem *item : { item_name/*, item_phi, item_theta, item_u, item_v*/ })
 			item->setFlags(item_name->flags() & ~Qt::ItemIsEditable);
 
 		QCheckBox* u_fixed = new QCheckBox(this);
@@ -216,6 +399,7 @@ void GroundStateDlg::SyncFromKernel(const t_magdyn *dyn,
 	}
 
 	m_spinstab->setSortingEnabled(true);
+	CalcGroundStateEnergy();
 }
 
 
@@ -225,6 +409,9 @@ void GroundStateDlg::SyncFromKernel(const t_magdyn *dyn,
  */
 void GroundStateDlg::SyncToKernel()
 {
+	if(!m_dyn)
+		return;
+
 	emit SpinsUpdated(&*m_dyn);
 }
 
@@ -259,9 +446,13 @@ void GroundStateDlg::EnableMinimisation(bool enable)
  */
 void GroundStateDlg::Minimise()
 {
+	if(!m_dyn)
+		return;
+
 	if(m_running)
 	{
 		m_stop_request = true;
+		m_status->setText("Stopping calculation.");
 		return;
 	}
 
@@ -271,11 +462,22 @@ void GroundStateDlg::Minimise()
 		m_thread = nullptr;
 	}
 
+	m_status->setText("Calculating ground state.");
 	m_running = true;
 	EnableMinimisation(false);
 
 	m_thread = std::make_unique<std::thread>([this]()
 	{
+		BOOST_SCOPE_EXIT(this_)
+		{
+			QMetaObject::invokeMethod(this_, [this_]()
+			{
+				this_->CalcGroundStateEnergy();
+				this_->EnableMinimisation(true);
+			});
+			this_->m_running = false;
+		} BOOST_SCOPE_EXIT_END
+
 		m_stop_request = false;
 		bool cancelled = false;
 
@@ -327,10 +529,22 @@ void GroundStateDlg::Minimise()
 				this->SyncFromKernel(&*m_dyn, &fixed_spins);
 			});
 		}
-
-		EnableMinimisation(true);
-		m_running = false;
 	});
+}
+
+
+
+void GroundStateDlg::CalcGroundStateEnergy()
+{
+	if(!m_dyn)
+		return;
+
+	t_real E0 = m_dyn->CalcGroundStateEnergy();
+	std::ostringstream ostr;
+	ostr.precision(g_prec_gui);
+	ostr << "Ground state energy: E0 = " << E0 << ".";
+
+	m_status->setText(ostr.str().c_str());
 }
 
 

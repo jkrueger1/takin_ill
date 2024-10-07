@@ -29,6 +29,7 @@
 #include <QtCore/QSettings>
 #include <QtWidgets/QTableWidget>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QLabel>
 
 #include <thread>
 #include <atomic>
@@ -61,8 +62,13 @@ protected:
 
 	void EnableMinimisation(bool enable = true);
 	void Minimise();
+	void CalcGroundStateEnergy();
 
 	void ShowError(const char* msg);
+
+	void SpinsTableItemChanged(QTableWidgetItem *item);
+	void UpdateSpinFromTable(int row = -1);
+	void UpdateSpinsFromTable();
 
 	virtual void accept() override;
 
@@ -75,6 +81,7 @@ private:
 	QTableWidget *m_spinstab{};
 	QPushButton *m_btnFromKernel{}, *m_btnToKernel{};
 	QPushButton *m_btnMinimise{};
+	QLabel *m_status{};
 
 	std::unique_ptr<std::thread> m_thread{};  // minimiser thread
 	bool m_stop_request{false};               // stop minimisation
