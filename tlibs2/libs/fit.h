@@ -85,7 +85,7 @@ public:
 	}
 
 
-	void SetStopRequest(bool *b)
+	void SetStopRequest(const bool *b)
 	{
 		m_stop_requested = b;
 	}
@@ -102,7 +102,7 @@ public:
 
 
 private:
-	bool *m_stop_requested{};
+	const bool *m_stop_requested{};
 };
 // ----------------------------------------------------------------------------
 
@@ -125,7 +125,7 @@ class FitterFuncModel
 public:
 	virtual ~FitterFuncModel() = default;
 
-	virtual bool SetParams(const std::vector<t_real>& vecParams) = 0;
+	virtual bool SetParams(const std::vector<t_real>& params) = 0;
 	virtual t_real operator()(t_real x) const = 0;
 	virtual FitterFuncModel<t_real>* copy() const = 0;
 };
@@ -134,59 +134,59 @@ public:
 
 /**
  * interface using supplied functions with a fixed number of parameters
- * num_args also includes the "x" parameter to the function, m_vecVals does not
+ * num_args also includes the "x" parameter to the function, m_vals does not
  */
 template<class t_real, std::size_t num_args, typename t_func>
 class FitterLamFuncModel : public FitterFuncModel<t_real>
 {
 protected:
 	t_func m_func{};
-	std::vector<t_real> m_vecVals{};
-	bool m_bSeparateFreeParam{true};  // separate "x" from parameters (for fitter)
+	std::vector<t_real> m_vals{};
+	bool m_separate_free_param{true};  // separate "x" from parameters (for fitter)
 
 public:
 	FitterLamFuncModel(t_func func, bool bSeparateX = true)
-		: m_func{func}, m_vecVals{}, m_bSeparateFreeParam{bSeparateX}
+		: m_func{func}, m_vals{}, m_separate_free_param{bSeparateX}
 	{
-		m_vecVals.resize(m_bSeparateFreeParam ? num_args - 1 : num_args);
+		m_vals.resize(m_separate_free_param ? num_args - 1 : num_args);
 	}
 
 
-	virtual bool SetParams(const std::vector<t_real>& vecParams) override
+	virtual bool SetParams(const std::vector<t_real>& params) override
 	{
-		for(std::size_t i = 0; i < std::min(vecParams.size(), m_vecVals.size()); ++i)
-			m_vecVals[i] = vecParams[i];
+		for(std::size_t i = 0; i < std::min(params.size(), m_vals.size()); ++i)
+			m_vals[i] = params[i];
 		return true;
 	}
 
 
 	virtual t_real operator()(t_real x = t_real(0)) const override
 	{
-		std::vector<t_real> vecValsWithX;
-		vecValsWithX.reserve(num_args);
+		std::vector<t_real> valsWithX;
+		valsWithX.reserve(num_args);
 
-		if(m_bSeparateFreeParam)
+		if(m_separate_free_param)
 		{
-			vecValsWithX.push_back(x);
-			for(t_real d : m_vecVals)
-				vecValsWithX.push_back(d);
+			valsWithX.push_back(x);
+			for(t_real d : m_vals)
+				valsWithX.push_back(d);
 		}
 
-		const std::vector<t_real> *pvecVals = m_bSeparateFreeParam ? &vecValsWithX : &m_vecVals;
-		t_real funcval = call<num_args, t_func, t_real, std::vector>(m_func, *pvecVals);
+		const std::vector<t_real> *pvals = m_separate_free_param ? &valsWithX : &m_vals;
+		t_real funcval = call<num_args, t_func, t_real, std::vector>(m_func, *pvals);
 		return funcval;
 	}
 
 
 	virtual FitterLamFuncModel* copy() const override
 	{
-		FitterLamFuncModel<t_real, num_args, t_func>* pMod =
+		FitterLamFuncModel<t_real, num_args, t_func>* model =
 			new FitterLamFuncModel<t_real, num_args, t_func>(m_func);
 
-		pMod->m_vecVals = this->m_vecVals;
-		pMod->m_bSeparateFreeParam = this->m_bSeparateFreeParam;
+		model->m_vals = this->m_vals;
+		model->m_separate_free_param = this->m_separate_free_param;
 
-		return pMod;
+		return model;
 	}
 };
 
@@ -201,53 +201,53 @@ class FitterDynLamFuncModel : public FitterFuncModel<t_real>
 protected:
 	std::size_t m_num_args{1};
 	t_func m_func{};
-	std::vector<t_real> m_vecVals{};
-	bool m_bSeparateFreeParam{true};  // separate "x" from parameters (for fitter)
+	std::vector<t_real> m_vals{};
+	bool m_separate_free_param{true};  // separate "x" from parameters (for fitter)
 
 public:
 	/**
-	 * num_args also includes the "x" parameter to the function, m_vecVals does not
+	 * num_args also includes the "x" parameter to the function, m_vals does not
 	 */
 	FitterDynLamFuncModel(std::size_t num_args, t_func func, bool bSeparateX = true)
-	: m_num_args{num_args}, m_func{func}, m_vecVals{}, m_bSeparateFreeParam{bSeparateX}
+	: m_num_args{num_args}, m_func{func}, m_vals{}, m_separate_free_param{bSeparateX}
 	{
-		m_vecVals.resize(m_bSeparateFreeParam ? m_num_args - 1 : m_num_args);
+		m_vals.resize(m_separate_free_param ? m_num_args - 1 : m_num_args);
 	}
 
 
-	virtual bool SetParams(const std::vector<t_real>& vecParams) override
+	virtual bool SetParams(const std::vector<t_real>& params) override
 	{
-		for(std::size_t i = 0; i < std::min(vecParams.size(), m_vecVals.size()); ++i)
-			m_vecVals[i] = vecParams[i];
+		for(std::size_t i = 0; i < std::min(params.size(), m_vals.size()); ++i)
+			m_vals[i] = params[i];
 		return true;
 	}
 
 
 	virtual t_real operator()(t_real x = t_real(0)) const override
 	{
-		std::vector<t_real> vecValsWithX;
-		vecValsWithX.reserve(m_num_args);
+		std::vector<t_real> valsWithX;
+		valsWithX.reserve(m_num_args);
 
-		if(m_bSeparateFreeParam)
+		if(m_separate_free_param)
 		{
-			vecValsWithX.push_back(x);
-			for(t_real d : m_vecVals)
-				vecValsWithX.push_back(d);
+			valsWithX.push_back(x);
+			for(t_real d : m_vals)
+				valsWithX.push_back(d);
 		}
 
-		return m_func(m_bSeparateFreeParam ? vecValsWithX : m_vecVals);
+		return m_func(m_separate_free_param ? valsWithX : m_vals);
 	}
 
 
 	virtual FitterDynLamFuncModel* copy() const override
 	{
-		FitterDynLamFuncModel<t_real, t_func>* pMod =
+		FitterDynLamFuncModel<t_real, t_func>* model =
 		new FitterDynLamFuncModel<t_real, t_func>(m_num_args, m_func);
 
-		pMod->m_vecVals = this->m_vecVals;
-		pMod->m_bSeparateFreeParam = this->m_bSeparateFreeParam;
+		model->m_vals = this->m_vals;
+		model->m_separate_free_param = this->m_separate_free_param;
 
-		return pMod;
+		return model;
 	}
 };
 
@@ -255,7 +255,7 @@ public:
 
 /**
  * interface using supplied functions
- * num_args also includes the "x" parameter to the function, m_vecVals does not
+ * num_args also includes the "x" parameter to the function, m_vals does not
  */
 template<class t_real>
 class FitterParsedFuncModel : public FitterFuncModel<t_real>
@@ -264,8 +264,8 @@ protected:
 	std::string m_func;
 
 	std::string m_xName = "x";
-	const std::vector<std::string>& m_vecNames;
-	std::vector<t_real> m_vecVals;
+	const std::vector<std::string>& m_names;
+	std::vector<t_real> m_vals;
 
 	ExprParser<t_real> m_expr{};
 
@@ -273,18 +273,18 @@ protected:
 public:
 	FitterParsedFuncModel(const std::string& func, const std::string& xName,
 		const std::vector<std::string>& vecNames)
-		: m_func{func}, m_xName{xName}, m_vecNames{vecNames}
+		: m_func{func}, m_xName{xName}, m_names{vecNames}
 	{
 		if(!m_expr.parse(m_func))
 			throw std::runtime_error("Could not parse function.");
 	}
 
 
-	virtual bool SetParams(const std::vector<t_real>& vecParams) override
+	virtual bool SetParams(const std::vector<t_real>& params) override
 	{
-		m_vecVals.resize(vecParams.size());
-		for(std::size_t i = 0; i < std::min(vecParams.size(), m_vecVals.size()); ++i)
-			m_vecVals[i] = vecParams[i];
+		m_vals.resize(params.size());
+		for(std::size_t i = 0; i < std::min(params.size(), m_vals.size()); ++i)
+			m_vals[i] = params[i];
 		return true;
 	}
 
@@ -298,8 +298,8 @@ public:
 		if(m_xName != "")
 			expr.register_var(m_xName, x);
 
-		for(std::size_t i = 0; i < m_vecVals.size(); ++i)
-			expr.register_var(m_vecNames[i], m_vecVals[i]);
+		for(std::size_t i = 0; i < m_vals.size(); ++i)
+			expr.register_var(m_names[i], m_vals[i]);
 
 		t_real val = expr.eval();
 		return val;
@@ -308,7 +308,7 @@ public:
 
 	virtual FitterParsedFuncModel* copy() const override
 	{
-		return new FitterParsedFuncModel<t_real>(m_func, m_xName, m_vecNames);
+		return new FitterParsedFuncModel<t_real>(m_func, m_xName, m_names);
 	}
 };
 
@@ -324,22 +324,22 @@ template<class t_real = t_real_min>
 class Chi2Function : public ROOT::Minuit2::FCNBase, public StopRequest
 {
 protected:
-	const FitterFuncModel<t_real_min> *m_pfkt = nullptr;
+	const FitterFuncModel<t_real_min> *m_fkt = nullptr;
 
 	std::size_t m_num_pts = 0;
-	const t_real* m_px = nullptr;
-	const t_real* m_py = nullptr;
-	const t_real* m_pdy = nullptr;
+	const t_real *m_x = nullptr;
+	const t_real *m_y = nullptr;
+	const t_real *m_dy = nullptr;
 
-	t_real_min m_dSigma = 1.;
-	bool m_bDebug = false;
+	t_real_min m_sigma = 1.;
+	bool m_debug = false;
 
 
 public:
 	Chi2Function(const FitterFuncModel<t_real_min> *fkt = nullptr,
 		std::size_t num_pts = 0, const t_real *px = nullptr,
 		const t_real *py = nullptr, const t_real *pdy = nullptr)
-		: m_pfkt{fkt}, m_num_pts{num_pts}, m_px{px}, m_py{py}, m_pdy{pdy}
+		: m_fkt{fkt}, m_num_pts{num_pts}, m_x{px}, m_y{py}, m_dy{pdy}
 	{}
 
 	virtual ~Chi2Function() = default;
@@ -349,12 +349,12 @@ public:
 	{
 		StopRequest::operator=(*this);
 
-		this->m_pfkt = other.m_pfkt;
-		this->m_px = other.m_px;
-		this->m_py = other.m_py;
-		this->m_pdy = other.m_pdy;
-		this->m_dSigma = other.m_dSigma;
-		this->m_bDebug = other.m_bDebug;
+		this->m_fkt = other.m_fkt;
+		this->m_x = other.m_x;
+		this->m_y = other.m_y;
+		this->m_dy = other.m_dy;
+		this->m_sigma = other.m_sigma;
+		this->m_debug = other.m_debug;
 
 		return *this;
 	}
@@ -370,46 +370,46 @@ public:
 	 * based on the example in the Minuit user's guide:
 	 * http://seal.cern.ch/documents/minuit/mnusersguide.pdf
 	 */
-	t_real_min chi2(const std::vector<t_real_min>& vecParams) const
+	t_real_min chi2(const std::vector<t_real_min>& params) const
 	{
-		// cannot operate on m_pfkt directly, because Minuit
+		// cannot operate on m_fkt directly, because Minuit
 		// uses more than one thread!
-		std::unique_ptr<FitterFuncModel<t_real_min>> uptrFkt(m_pfkt->copy());
+		std::unique_ptr<FitterFuncModel<t_real_min>> uptrFkt(m_fkt->copy());
 		FitterFuncModel<t_real_min>* pfkt = uptrFkt.get();
 
-		pfkt->SetParams(vecParams);
+		pfkt->SetParams(params);
 		return tl2::chi2<t_real_min, decltype(*pfkt), const t_real*>(
-			*pfkt, m_num_pts, m_px, m_py, m_pdy);
+			*pfkt, m_num_pts, m_x, m_y, m_dy);
 	}
 
 	virtual t_real_min Up() const override
 	{
-		return m_dSigma*m_dSigma;
+		return m_sigma*m_sigma;
 	}
 
-	virtual t_real_min operator()(const std::vector<t_real_min>& vecParams) const override
+	virtual t_real_min operator()(const std::vector<t_real_min>& params) const override
 	{
 		HandleStopRequest();
 
-		t_real_min dChi2 = chi2(vecParams);
-		if(m_bDebug)
+		t_real_min dChi2 = chi2(params);
+		if(m_debug)
 			std::cerr << "Fitter: chi2 = " << dChi2 << "." << std::endl;
 		return dChi2;
 	}
 
 	void SetSigma(t_real_min dSig)
 	{
-		m_dSigma = dSig;
+		m_sigma = dSig;
 	}
 
 	t_real_min GetSigma() const
 	{
-		return m_dSigma;
+		return m_sigma;
 	}
 
 	void SetDebug(bool b)
 	{
-		m_bDebug = b;
+		m_debug = b;
 	}
 };
 
@@ -423,56 +423,56 @@ template<class t_real = t_real_min>
 class MiniFunction : public ROOT::Minuit2::FCNBase, public StopRequest
 {
 protected:
-	const FitterFuncModel<t_real_min> *m_pfkt = nullptr;
-	t_real_min m_dSigma = 1.;
+	const FitterFuncModel<t_real_min> *m_fkt = nullptr;
+	t_real_min m_sigma = 1.;
 
 public:
 	MiniFunction(const FitterFuncModel<t_real_min>* fkt = nullptr)
-		: m_pfkt(fkt)
+		: m_fkt(fkt)
 	{}
 
 	virtual ~MiniFunction() = default;
 
 	MiniFunction(const MiniFunction<t_real>& other)
-		: m_pfkt(other.m_pfkt), m_dSigma(other.m_dSigma)
+		: m_fkt(other.m_fkt), m_sigma(other.m_sigma)
 	{}
 
 	const MiniFunction<t_real>& operator=(const MiniFunction<t_real>& other)
 	{
 		StopRequest::operator=(*this);
 
-		this->m_pfkt = other.m_pfkt;
-		this->m_dSigma = other.m_dSigma;
+		this->m_fkt = other.m_fkt;
+		this->m_sigma = other.m_sigma;
 
 		return *this;
 	}
 
 	virtual t_real_min Up() const override
 	{
-		return m_dSigma*m_dSigma;
+		return m_sigma*m_sigma;
 	}
 
-	virtual t_real_min operator()(const std::vector<t_real_min>& vecParams) const override
+	virtual t_real_min operator()(const std::vector<t_real_min>& params) const override
 	{
 		HandleStopRequest();
 
-		// cannot operate on m_pfkt directly, because Minuit
+		// cannot operate on m_fkt directly, because Minuit
 		// uses more than one thread!
-		std::unique_ptr<FitterFuncModel<t_real_min>> uptrFkt(m_pfkt->copy());
+		std::unique_ptr<FitterFuncModel<t_real_min>> uptrFkt(m_fkt->copy());
 		FitterFuncModel<t_real_min>* pfkt = uptrFkt.get();
 
-		pfkt->SetParams(vecParams);
+		pfkt->SetParams(params);
 		return (*pfkt)(t_real_min(0));	// "0" is an ignored dummy value here
 	}
 
 	void SetSigma(t_real_min dSig)
 	{
-		m_dSigma = dSig;
+		m_sigma = dSig;
 	}
 
 	t_real_min GetSigma() const
 	{
-		return m_dSigma;
+		return m_sigma;
 	}
 };
 
@@ -492,12 +492,12 @@ bool fit(t_func&& func,
 	const std::vector<t_real>& vecY,
 	const std::vector<t_real>& vecYErr,
 
-	const std::vector<std::string>& vecParamNames,	// size: num_args-1
-	std::vector<t_real>& vecVals,
-	std::vector<t_real>& vecErrs,
-	const std::vector<bool>* pVecFixed = nullptr,
+	const std::vector<std::string>& param_names,	// size: num_args-1
+	std::vector<t_real>& vals,
+	std::vector<t_real>& errs,
+	const std::vector<bool>* fixed = nullptr,
 
-	bool bDebug = true, bool *stop_request = nullptr)
+	bool debug = true, const bool *stop_request = nullptr)
 {
 	try
 	{
@@ -508,7 +508,7 @@ bool fit(t_func&& func,
 		}
 
 		// check if all params are fixed
-		if(pVecFixed && std::all_of(pVecFixed->begin(), pVecFixed->end(),
+		if(fixed && std::all_of(fixed->begin(), fixed->end(),
 			[](bool b) -> bool { return b; }))
 			{
 				std::cerr << "Fitter: All parameters are fixed." << std::endl;
@@ -548,31 +548,31 @@ bool fit(t_func&& func,
 		chi2->SetStopRequest(stop_request);
 
 		ROOT::Minuit2::MnUserParameters params;
-		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
+		for(std::size_t param_idx = 0; param_idx < param_names.size(); ++param_idx)
 		{
-			params.Add(vecParamNames[param_idx],
-				static_cast<t_real_min>(vecVals[param_idx]),
-				static_cast<t_real_min>(vecErrs[param_idx]));
-			if(pVecFixed && (*pVecFixed)[param_idx])
-				params.Fix(vecParamNames[param_idx]);
+			params.Add(param_names[param_idx],
+				static_cast<t_real_min>(vals[param_idx]),
+				static_cast<t_real_min>(errs[param_idx]));
+			if(fixed && (*fixed)[param_idx])
+				params.Fix(param_names[param_idx]);
 		}
 
 		ROOT::Minuit2::MnMigrad migrad(*chi2, params, 2);
 		ROOT::Minuit2::FunctionMinimum mini = migrad();
-		bool bValidFit = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
+		bool fit_valid = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
 
-		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
+		for(std::size_t param_idx = 0; param_idx < param_names.size(); ++param_idx)
 		{
-			vecVals[param_idx] = static_cast<t_real>(
-				mini.UserState().Value(vecParamNames[param_idx]));
-			vecErrs[param_idx] = static_cast<t_real>(
-				std::fabs(mini.UserState().Error(vecParamNames[param_idx])));
+			vals[param_idx] = static_cast<t_real>(
+				mini.UserState().Value(param_names[param_idx]));
+			errs[param_idx] = static_cast<t_real>(
+				std::fabs(mini.UserState().Error(param_names[param_idx])));
 		}
 
-		if(bDebug)
+		if(debug)
 			std::cerr << mini << std::endl;
 
-		return bValidFit;
+		return fit_valid;
 	}
 	catch(const tl2::StopRequestException&)
 	{
@@ -598,13 +598,13 @@ bool fit_expr(const std::string& func,
 	const std::vector<t_real>& vecY,
 	const std::vector<t_real>& vecYErr,
 
-	const std::string& strXName,
-	const std::vector<std::string>& vecParamNames,	// size: num_args-1
-	std::vector<t_real>& vecVals,
-	std::vector<t_real>& vecErrs,
-	const std::vector<bool>* pVecFixed = nullptr,
+	const std::string& x_name,
+	const std::vector<std::string>& param_names,	// size: num_args-1
+	std::vector<t_real>& vals,
+	std::vector<t_real>& errs,
+	const std::vector<bool>* fixed = nullptr,
 
-	bool bDebug = true, bool *stop_request = nullptr)
+	bool debug = true, const bool *stop_request = nullptr)
 {
 	try
 	{
@@ -615,7 +615,7 @@ bool fit_expr(const std::string& func,
 		}
 
 		// check if all params are fixed
-		if(pVecFixed && std::all_of(pVecFixed->begin(), pVecFixed->end(),
+		if(fixed && std::all_of(fixed->begin(), fixed->end(),
 			[](bool b) -> bool { return b; }))
 			{
 				std::cerr << "Fitter: All parameters are fixed." << std::endl;
@@ -638,7 +638,7 @@ bool fit_expr(const std::string& func,
 				vecYErrConverted.push_back(static_cast<t_real_min>(d));
 		}
 
-		FitterParsedFuncModel<t_real_min> mod(func, strXName, vecParamNames);
+		FitterParsedFuncModel<t_real_min> mod(func, x_name, param_names);
 
 		std::unique_ptr<Chi2Function<t_real_min>> chi2;
 		if constexpr(std::is_same_v<t_real, t_real_min>)
@@ -655,29 +655,29 @@ bool fit_expr(const std::string& func,
 		chi2->SetStopRequest(stop_request);
 
 		ROOT::Minuit2::MnUserParameters params;
-		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
+		for(std::size_t param_idx = 0; param_idx < param_names.size(); ++param_idx)
 		{
-			params.Add(vecParamNames[param_idx], static_cast<t_real_min>(vecVals[param_idx]), static_cast<t_real_min>(vecErrs[param_idx]));
-			if(pVecFixed && (*pVecFixed)[param_idx])
-				params.Fix(vecParamNames[param_idx]);
+			params.Add(param_names[param_idx], static_cast<t_real_min>(vals[param_idx]), static_cast<t_real_min>(errs[param_idx]));
+			if(fixed && (*fixed)[param_idx])
+				params.Fix(param_names[param_idx]);
 		}
 
 		ROOT::Minuit2::MnMigrad migrad(*chi2, params, 2);
 		ROOT::Minuit2::FunctionMinimum mini = migrad();
-		bool bValidFit = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
+		bool fit_valid = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
 
-		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
+		for(std::size_t param_idx = 0; param_idx < param_names.size(); ++param_idx)
 		{
-			vecVals[param_idx] = static_cast<t_real>(
-				mini.UserState().Value(vecParamNames[param_idx]));
-			vecErrs[param_idx] = static_cast<t_real>(
-				std::fabs(mini.UserState().Error(vecParamNames[param_idx])));
+			vals[param_idx] = static_cast<t_real>(
+				mini.UserState().Value(param_names[param_idx]));
+			errs[param_idx] = static_cast<t_real>(
+				std::fabs(mini.UserState().Error(param_names[param_idx])));
 		}
 
-		if(bDebug)
+		if(debug)
 			std::cerr << mini << std::endl;
 
-		return bValidFit;
+		return fit_valid;
 	}
 	catch(const tl2::StopRequestException&)
 	{
@@ -697,17 +697,17 @@ bool fit_expr(const std::string& func,
  * find function minimum using a lambda function with fixed args
  */
 template<class t_real = t_real_min, std::size_t num_args, typename t_func>
-bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
-	std::vector<t_real>& vecVals, std::vector<t_real>& vecErrs,
-	const std::vector<bool>* pVecFixed = nullptr,
-	const std::vector<t_real>* pVecLowerLimits = nullptr,
-	const std::vector<t_real>* pVecUpperLimits = nullptr,
-	bool bDebug = true, bool *stop_request = nullptr)
+bool minimise(t_func&& func, const std::vector<std::string>& param_names,
+	std::vector<t_real>& vals, std::vector<t_real>& errs,
+	const std::vector<bool>* fixed = nullptr,
+	const std::vector<t_real>* lower_limits = nullptr,
+	const std::vector<t_real>* upper_limits = nullptr,
+	bool debug = true, const bool *stop_request = nullptr)
 {
 	try
 	{
 		// check if all params are fixed
-		if(pVecFixed && std::all_of(pVecFixed->begin(), pVecFixed->end(),
+		if(fixed && std::all_of(fixed->begin(), fixed->end(),
 			[](bool b) -> bool { return b; }))
 			{
 				std::cerr << "Fitter: All parameters are fixed." << std::endl;
@@ -719,37 +719,37 @@ bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
 		minfunc.SetStopRequest(stop_request);
 
 		ROOT::Minuit2::MnUserParameters params;
-		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
+		for(std::size_t param_idx = 0; param_idx < param_names.size(); ++param_idx)
 		{
-			params.Add(vecParamNames[param_idx],
-				static_cast<t_real_min>(vecVals[param_idx]),
-				static_cast<t_real_min>(vecErrs[param_idx]));
-			if(pVecLowerLimits && pVecUpperLimits)
-				params.SetLimits(vecParamNames[param_idx], (*pVecLowerLimits)[param_idx], (*pVecUpperLimits)[param_idx]);
-			else if(pVecLowerLimits && !pVecUpperLimits)
-				params.SetLowerLimit(vecParamNames[param_idx], (*pVecLowerLimits)[param_idx]);
-			else if(pVecUpperLimits && !pVecLowerLimits)
-				params.SetUpperLimit(vecParamNames[param_idx], (*pVecUpperLimits)[param_idx]);
-			if(pVecFixed && (*pVecFixed)[param_idx])
-				params.Fix(vecParamNames[param_idx]);
+			params.Add(param_names[param_idx],
+				static_cast<t_real_min>(vals[param_idx]),
+				static_cast<t_real_min>(errs[param_idx]));
+			if(lower_limits && upper_limits)
+				params.SetLimits(param_names[param_idx], (*lower_limits)[param_idx], (*upper_limits)[param_idx]);
+			else if(lower_limits && !upper_limits)
+				params.SetLowerLimit(param_names[param_idx], (*lower_limits)[param_idx]);
+			else if(upper_limits && !lower_limits)
+				params.SetUpperLimit(param_names[param_idx], (*upper_limits)[param_idx]);
+			if(fixed && (*fixed)[param_idx])
+				params.Fix(param_names[param_idx]);
 		}
 
 		ROOT::Minuit2::MnMigrad migrad(minfunc, params, 2);
 		ROOT::Minuit2::FunctionMinimum mini = migrad();
-		bool bMinimumValid = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
+		bool minimum_valid = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
 
-		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
+		for(std::size_t param_idx = 0; param_idx < param_names.size(); ++param_idx)
 		{
-			vecVals[param_idx] = static_cast<t_real>(
-				mini.UserState().Value(vecParamNames[param_idx]));
-			vecErrs[param_idx] = static_cast<t_real>(
-				std::fabs(mini.UserState().Error(vecParamNames[param_idx])));
+			vals[param_idx] = static_cast<t_real>(
+				mini.UserState().Value(param_names[param_idx]));
+			errs[param_idx] = static_cast<t_real>(
+				std::fabs(mini.UserState().Error(param_names[param_idx])));
 		}
 
-		if(bDebug)
+		if(debug)
 			std::cerr << mini << std::endl;
 
-		return bMinimumValid;
+		return minimum_valid;
 	}
 	catch(const tl2::StopRequestException&)
 	{
@@ -770,17 +770,17 @@ bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
  */
 template<class t_real = t_real_min, typename t_func>
 bool minimise_dynargs(std::size_t num_args, t_func&& func,
-	const std::vector<std::string>& vecParamNames,
-	std::vector<t_real>& vecVals, std::vector<t_real>& vecErrs,
-	const std::vector<bool>* pVecFixed = nullptr,
-	const std::vector<t_real>* pVecLowerLimits = nullptr,
-	const std::vector<t_real>* pVecUpperLimits = nullptr,
-	bool bDebug = true, bool *stop_request = nullptr)
+	const std::vector<std::string>& param_names,
+	std::vector<t_real>& vals, std::vector<t_real>& errs,
+	const std::vector<bool>* fixed = nullptr,
+	const std::vector<t_real>* lower_limits = nullptr,
+	const std::vector<t_real>* upper_limits = nullptr,
+	bool debug = true, const bool *stop_request = nullptr)
 {
 	try
 	{
 		// check if all params are fixed
-		if(pVecFixed && std::all_of(pVecFixed->begin(), pVecFixed->end(),
+		if(fixed && std::all_of(fixed->begin(), fixed->end(),
 			[](bool b) -> bool { return b; }))
 			{
 				std::cerr << "Fitter: All parameters are fixed." << std::endl;
@@ -792,37 +792,37 @@ bool minimise_dynargs(std::size_t num_args, t_func&& func,
 		minfunc.SetStopRequest(stop_request);
 
 		ROOT::Minuit2::MnUserParameters params;
-		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
+		for(std::size_t param_idx = 0; param_idx < param_names.size(); ++param_idx)
 		{
-			params.Add(vecParamNames[param_idx],
-				static_cast<t_real_min>(vecVals[param_idx]),
-				static_cast<t_real_min>(vecErrs[param_idx]));
-			if(pVecLowerLimits && pVecUpperLimits)
-				params.SetLimits(vecParamNames[param_idx], (*pVecLowerLimits)[param_idx], (*pVecUpperLimits)[param_idx]);
-			else if(pVecLowerLimits && !pVecUpperLimits)
-				params.SetLowerLimit(vecParamNames[param_idx], (*pVecLowerLimits)[param_idx]);
-			else if(pVecUpperLimits && !pVecLowerLimits)
-				params.SetUpperLimit(vecParamNames[param_idx], (*pVecUpperLimits)[param_idx]);
-			if(pVecFixed && (*pVecFixed)[param_idx])
-				params.Fix(vecParamNames[param_idx]);
+			params.Add(param_names[param_idx],
+				static_cast<t_real_min>(vals[param_idx]),
+				static_cast<t_real_min>(errs[param_idx]));
+			if(lower_limits && upper_limits)
+				params.SetLimits(param_names[param_idx], (*lower_limits)[param_idx], (*upper_limits)[param_idx]);
+			else if(lower_limits && !upper_limits)
+				params.SetLowerLimit(param_names[param_idx], (*lower_limits)[param_idx]);
+			else if(upper_limits && !lower_limits)
+				params.SetUpperLimit(param_names[param_idx], (*upper_limits)[param_idx]);
+			if(fixed && (*fixed)[param_idx])
+				params.Fix(param_names[param_idx]);
 		}
 
 		ROOT::Minuit2::MnMigrad migrad(minfunc, params, 2);
 		ROOT::Minuit2::FunctionMinimum mini = migrad();
-		bool bMinimumValid = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
+		bool minimum_valid = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
 
-		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
+		for(std::size_t param_idx = 0; param_idx < param_names.size(); ++param_idx)
 		{
-			vecVals[param_idx] = static_cast<t_real>(
-				mini.UserState().Value(vecParamNames[param_idx]));
-			vecErrs[param_idx] = static_cast<t_real>(
-				std::fabs(mini.UserState().Error(vecParamNames[param_idx])));
+			vals[param_idx] = static_cast<t_real>(
+				mini.UserState().Value(param_names[param_idx]));
+			errs[param_idx] = static_cast<t_real>(
+				std::fabs(mini.UserState().Error(param_names[param_idx])));
 		}
 
-		if(bDebug)
+		if(debug)
 			std::cerr << mini << std::endl;
 
-		return bMinimumValid;
+		return minimum_valid;
 	}
 	catch(const tl2::StopRequestException&)
 	{
@@ -842,51 +842,51 @@ bool minimise_dynargs(std::size_t num_args, t_func&& func,
  * find function minimum for an expression
  */
 template<class t_real = t_real_min>
-bool minimise_expr(const std::string& func, const std::vector<std::string>& vecParamNames,
-	std::vector<t_real>& vecVals, std::vector<t_real>& vecErrs,
-	const std::vector<bool>* pVecFixed = nullptr,
-	bool bDebug = true, bool *stop_request = nullptr)
+bool minimise_expr(const std::string& func, const std::vector<std::string>& param_names,
+	std::vector<t_real>& vals, std::vector<t_real>& errs,
+	const std::vector<bool>* fixed = nullptr,
+	bool debug = true, const bool *stop_request = nullptr)
 {
 	try
 	{
 		// check if all params are fixed
-		if(pVecFixed && std::all_of(pVecFixed->begin(), pVecFixed->end(),
+		if(fixed && std::all_of(fixed->begin(), fixed->end(),
 			[](bool b) -> bool { return b; }))
 			{
 				std::cerr << "Fitter: All parameters are fixed." << std::endl;
 				return false;
 			}
 
-		FitterParsedFuncModel<t_real_min> mod(func, "", vecParamNames);
+		FitterParsedFuncModel<t_real_min> mod(func, "", param_names);
 		MiniFunction<t_real_min> minfunc(&mod);
 		minfunc.SetStopRequest(stop_request);
 
 		ROOT::Minuit2::MnUserParameters params;
-		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
+		for(std::size_t param_idx = 0; param_idx < param_names.size(); ++param_idx)
 		{
-			params.Add(vecParamNames[param_idx],
-				static_cast<t_real_min>(vecVals[param_idx]),
-				static_cast<t_real_min>(vecErrs[param_idx]));
-			if(pVecFixed && (*pVecFixed)[param_idx])
-				params.Fix(vecParamNames[param_idx]);
+			params.Add(param_names[param_idx],
+				static_cast<t_real_min>(vals[param_idx]),
+				static_cast<t_real_min>(errs[param_idx]));
+			if(fixed && (*fixed)[param_idx])
+				params.Fix(param_names[param_idx]);
 		}
 
 		ROOT::Minuit2::MnMigrad migrad(minfunc, params, 2);
 		ROOT::Minuit2::FunctionMinimum mini = migrad();
-		bool bMinimumValid = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
+		bool minimum_valid = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
 
-		for(std::size_t param_idx = 0; param_idx < vecParamNames.size(); ++param_idx)
+		for(std::size_t param_idx = 0; param_idx < param_names.size(); ++param_idx)
 		{
-			vecVals[param_idx] = static_cast<t_real>(
-				mini.UserState().Value(vecParamNames[param_idx]));
-			vecErrs[param_idx] = static_cast<t_real>(
-				std::fabs(mini.UserState().Error(vecParamNames[param_idx])));
+			vals[param_idx] = static_cast<t_real>(
+				mini.UserState().Value(param_names[param_idx]));
+			errs[param_idx] = static_cast<t_real>(
+				std::fabs(mini.UserState().Error(param_names[param_idx])));
 		}
 
-		if(bDebug)
+		if(debug)
 			std::cerr << mini << std::endl;
 
-		return bMinimumValid;
+		return minimum_valid;
 	}
 	catch(const tl2::StopRequestException&)
 	{

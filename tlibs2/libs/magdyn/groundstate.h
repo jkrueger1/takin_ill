@@ -118,7 +118,7 @@ t_real MAGDYN_INST::CalcGroundStateEnergy() const
 #if defined(__TLIBS2_USE_MINUIT__) && defined(__TLIBS2_MAGDYN_USE_MINUIT__)
 MAGDYN_TEMPL
 bool MAGDYN_INST::CalcGroundState(const std::unordered_set<std::string>* fixed_params,
-	bool verbose, bool *stop_request)
+	bool verbose, const bool *stop_request)
 {
 	// function to minimise the state's energy
 	auto func = [this](const std::vector<tl2::t_real_min>& args)
@@ -241,7 +241,7 @@ bool MAGDYN_INST::CalcGroundState(const std::unordered_set<std::string>* fixed_p
 }
 #else  // __TLIBS2_USE_MINUIT__
 MAGDYN_TEMPL
-bool MAGDYN_INST::CalcGroundState(const std::unordered_set<std::string>*, bool, bool*)
+bool MAGDYN_INST::CalcGroundState(const std::unordered_set<std::string>*, bool, const bool*)
 {
 	std::cerr << "Magdyn error: Ground state minimisation support disabled." << std::endl;
 	return false;

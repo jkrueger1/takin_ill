@@ -456,8 +456,8 @@ public:
 	 * generates the dispersion plot along the given q path
 	 */
 	SofQEs CalcDispersion(t_real h_start, t_real k_start, t_real l_start,
-		t_real h_end, t_real k_end, t_real l_end,
-		t_size num_qs = 128, t_size num_threads = 4) const;
+		t_real h_end, t_real k_end, t_real l_end, t_size num_Qs = 128,
+		t_size num_threads = 4, const bool *stop_request = nullptr) const;
 
 	/**
 	 * get the energy minimum
@@ -475,7 +475,7 @@ public:
 	 * minimise energy to found ground state
 	 */
 	bool CalcGroundState(const std::unordered_set<std::string>* fixed_params = nullptr,
-		bool verbose = false, bool *stop_request = nullptr);
+		bool verbose = false, const bool *stop_request = nullptr);
 	// --------------------------------------------------------------------
 
 
@@ -483,20 +483,38 @@ public:
 	// loading and saving
 	// --------------------------------------------------------------------
 	/**
-	 * generates the dispersion plot along the given q path
+	 * generates the dispersion plot along the given Q path
 	 */
-	void SaveDispersion(const std::string& filename,
+	bool SaveDispersion(const std::string& filename,
 		t_real h_start, t_real k_start, t_real l_start,
 		t_real h_end, t_real k_end, t_real l_end,
-		t_size num_qs = 128, t_size num_threads = 4) const;
+		t_size num_Qs = 128, t_size num_threads = 4,
+		const bool *stop_request = nullptr) const;
 
 	/**
-	 * generates the dispersion plot along the given q path
+	 * generates the dispersion plot along the given Q path
 	 */
-	void SaveDispersion(std::ostream& ostr,
+	bool SaveDispersion(std::ostream& ostr,
 		t_real h_start, t_real k_start, t_real l_start,
 		t_real h_end, t_real k_end, t_real l_end,
-		t_size num_qs = 128, t_size num_threads = 4) const;
+		t_size num_Qs = 128, t_size num_threads = 4,
+		const bool *stop_request = nullptr) const;
+
+	/**
+	 * generates the dispersion plot along multiple Q paths
+	 */
+	bool SaveMultiDispersion(const std::string& filename,
+		const std::vector<std::array<t_real, 3>>& Qs,
+		t_size num_Qs = 128, t_size num_threads = 4,
+		const bool *stop_request = nullptr) const;
+
+	/**
+	 * generates the dispersion plot along multiple Q paths
+	 */
+	bool SaveMultiDispersion(std::ostream& ostr,
+		const std::vector<std::array<t_real, 3>>& Qs,
+		t_size num_Qs = 128, t_size num_threads = 4,
+		const bool *stop_request = nullptr) const;
 
 	/**
 	 * load a configuration from a file

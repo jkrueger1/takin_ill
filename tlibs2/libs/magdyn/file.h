@@ -59,31 +59,56 @@
 // loading and saving
 // --------------------------------------------------------------------
 /**
- * generates the dispersion plot along the given q path
+ * generates the dispersion plot along the given Q path
  */
 MAGDYN_TEMPL
-void MAGDYN_INST::SaveDispersion(const std::string& filename,
+bool MAGDYN_INST::SaveDispersion(const std::string& filename,
 	t_real h_start, t_real k_start, t_real l_start,
 	t_real h_end, t_real k_end, t_real l_end,
-	t_size num_qs, t_size num_threads) const
+	t_size num_Qs, t_size num_threads,
+	const bool *stop_request) const
 {
 	std::ofstream ofstr{filename};
-	SaveDispersion(ofstr,
+	if(!ofstr)
+		return false;
+
+	return SaveDispersion(ofstr,
 		h_start, k_start, l_start,
-		h_end, k_end, l_end, num_qs,
-		num_threads);
+		h_end, k_end, l_end, num_Qs,
+		num_threads, stop_request);
 }
 
 
 
 /**
- * generates the dispersion plot along the given q path
+ * generates the dispersion plot along multiple Q paths
  */
 MAGDYN_TEMPL
-void MAGDYN_INST::SaveDispersion(std::ostream& ostr,
+bool MAGDYN_INST::SaveMultiDispersion(const std::string& filename,
+	const std::vector<std::array<t_real, 3>>& Qs,
+	t_size num_Qs, t_size num_threads,
+	const bool *stop_request) const
+{
+	std::ofstream ofstr{filename};
+	if(!ofstr)
+		return false;
+
+	return SaveMultiDispersion(ofstr,
+		Qs, num_Qs, num_threads,
+		stop_request);
+}
+
+
+
+/**
+ * generates the dispersion plot along the given Q path
+ */
+MAGDYN_TEMPL
+bool MAGDYN_INST::SaveDispersion(std::ostream& ostr,
 	t_real h_start, t_real k_start, t_real l_start,
 	t_real h_end, t_real k_end, t_real l_end,
-	t_size num_qs, t_size num_threads) const
+	t_size num_Qs, t_size num_threads,
+	const bool *stop_request) const
 {
 	ostr.precision(m_prec);
 	int field_len = m_prec * 2.5;
@@ -99,11 +124,14 @@ void MAGDYN_INST::SaveDispersion(std::ostream& ostr,
 		<< std::endl;
 
 	SofQEs results = CalcDispersion(h_start, k_start, l_start,
-		h_end, k_end, l_end, num_qs, num_threads);
+		h_end, k_end, l_end, num_Qs, num_threads, stop_request);
 
 	// print results
 	for(const auto& result : results)
 	{
+		if(stop_request && *stop_request)
+			return false;
+
 		for(const EnergyAndWeight& E_and_S : result.E_and_S)
 		{
 			ostr	<< std::setw(field_len) << std::left << result.h << " "
@@ -116,6 +144,39 @@ void MAGDYN_INST::SaveDispersion(std::ostream& ostr,
 				<< std::setw(field_len) << E_and_S.S_perp(2, 2).real()
 				<< std::endl;
 		}
+	}
+
+	return true;
+}
+
+
+
+/**
+ * generates the dispersion plot along multiple Q paths
+ */
+MAGDYN_TEMPL
+bool MAGDYN_INST::SaveMultiDispersion(std::ostream& ostr,
+	const std::vector<std::array<t_real, 3>>& Qs,
+	t_size num_Qs, t_size num_threads,
+	const bool *stop_request) const
+{
+	ostr.precision(m_prec);
+
+	const t_size N = Qs.size();
+	for(t_size i = 0; i < N - 1; ++i)
+	{
+		const std::array<t_real, 3>& Q1 = Qs[i];
+		const std::array<t_real, 3>& Q2 = Qs[i + 1];
+
+		ostr	<< "# (" << Q1[0] << ", " << Q1[1] << ", " << Q1[2]
+			<< ") -> (" << Q2[0] << ", " << Q2[1] << ", " << Q2[2]
+			<< ")\n";
+
+		SaveDispersion(ostr, Q1[0], Q1[1], Q1[2],
+			Q2[0], Q2[1], Q2[2], num_Qs,
+			num_threads, stop_request);
+
+		ostr << std::endl;
 	}
 }
 

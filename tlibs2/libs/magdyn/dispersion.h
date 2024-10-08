@@ -186,8 +186,8 @@ MAGDYN_INST::CalcEnergies(t_real h, t_real k, t_real l, bool only_energies) cons
 MAGDYN_TEMPL
 MAGDYN_TYPE::SofQEs
 MAGDYN_INST::CalcDispersion(t_real h_start, t_real k_start, t_real l_start,
-	t_real h_end, t_real k_end, t_real l_end,
-	t_size num_qs, t_size num_threads) const
+	t_real h_end, t_real k_end, t_real l_end, t_size num_Qs,
+	t_size num_threads, const bool *stop_request) const
 {
 	// determine number of threads
 	if(num_threads == 0)
@@ -200,30 +200,31 @@ MAGDYN_INST::CalcDispersion(t_real h_start, t_real k_start, t_real l_start,
 
 	t_pool pool{num_threads};
 	std::vector<t_taskptr> tasks;
-	tasks.reserve(num_qs);
+	tasks.reserve(num_Qs);
 
 	// calculate dispersion
-	for(t_size i = 0; i < num_qs; ++i)
+	for(t_size i = 0; i < num_Qs; ++i)
 	{
-		auto task = [this, i, num_qs,
+		if(stop_request && *stop_request)
+			break;
+
+		auto task = [this, i, num_Qs,
 			h_start, k_start, l_start,
 			h_end, k_end, l_end]() -> SofQE
 		{
 			// get Q
-			const t_real h = std::lerp(h_start, h_end, t_real(i) / t_real(num_qs - 1));
-			const t_real k = std::lerp(k_start, k_end, t_real(i) / t_real(num_qs - 1));
-			const t_real l = std::lerp(l_start, l_end, t_real(i) / t_real(num_qs - 1));
+			const t_real h = std::lerp(h_start, h_end, t_real(i) / t_real(num_Qs - 1));
+			const t_real k = std::lerp(k_start, k_end, t_real(i) / t_real(num_Qs - 1));
+			const t_real l = std::lerp(l_start, l_end, t_real(i) / t_real(num_Qs - 1));
 
 			// get E and S(Q, E) for this Q
 			EnergiesAndWeights E_and_S = CalcEnergies(h, k, l, false);
 
-			SofQE result
+			return SofQE
 			{
 				.h = h, .k = k, .l = l,
 				.E_and_S = E_and_S
 			};
-
-			return result;
 		};
 
 		t_taskptr taskptr = std::make_shared<t_task>(task);
@@ -237,6 +238,9 @@ MAGDYN_INST::CalcDispersion(t_real h_start, t_real k_start, t_real l_start,
 
 	for(auto& task : tasks)
 	{
+		if(stop_request && *stop_request)
+			break;
+
 		const SofQE& result = task->get_future().get();
 		results.push_back(result);
 	}
