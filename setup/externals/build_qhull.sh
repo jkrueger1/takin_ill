@@ -58,10 +58,13 @@ cd qhull-master
 if [ $BUILD_FOR_MINGW -ne 0 ]; then
 	mkdir build_lib && cd build_lib
 	mingw64-cmake -DCMAKE_BUILD_TYPE=Release \
-		-DQHULL_ENABLE_TESTING=False -DBUILD_APPLICATIONS=False ..
+		-DQHULL_ENABLE_TESTING=False -DBUILD_APPLICATIONS=False \
+		-DBUILD_STATIC_LIBS=True -DBUILD_SHARED_LIBS=False ..
 	mingw64-make -j${NUM_CORES} && sudo mingw64-make install/strip
 else
 	cmake -DCMAKE_BUILD_TYPE=Release \
-		-DQHULL_ENABLE_TESTING=False -DBUILD_APPLICATIONS=False  -B build_lib .
+		-DQHULL_ENABLE_TESTING=False -DBUILD_APPLICATIONS=False \
+		-DBUILD_STATIC_LIBS=True -DBUILD_SHARED_LIBS=False \
+		-B build_lib .
 	cmake --build build_lib --parallel ${NUM_CORES} && sudo cmake --install build_lib --strip
 fi

@@ -127,9 +127,9 @@ if [ $build_externals -ne 0 ]; then
 		if ! "${TAKIN_ROOT}"/setup/externals/build_qhull.sh; then
 			exit -1
 		fi
-		#if ! "${TAKIN_ROOT}"/setup/externals/build_lapacke.sh; then
-		#	exit -1
-		#fi
+		if ! "${TAKIN_ROOT}"/setup/externals/build_lapacke.sh; then
+			exit -1
+		fi
 	popd
 fi
 

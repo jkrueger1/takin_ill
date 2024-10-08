@@ -60,6 +60,7 @@ if [ $BUILD_FOR_MINGW -ne 0 ]; then
 	mingw64-cmake -DCMAKE_BUILD_TYPE=Release -DLAPACKE=TRUE ../lapack-master
 	mingw64-make -j${NUM_CORES} && sudo mingw64-make install/strip
 else
-	cmake -DCMAKE_BUILD_TYPE=Release -DLAPACKE=TRUE -DBUILD_SHARED_LIBS=TRUE -B build_lapacke lapack-master
+	# no shared library, since this interferes with the system library
+	cmake -DCMAKE_BUILD_TYPE=Release -DLAPACKE=TRUE -DBUILD_SHARED_LIBS=FALSE -B build_lapacke lapack-master
 	cmake --build build_lapacke --parallel ${NUM_CORES} && sudo cmake --install build_lapacke --strip
 fi

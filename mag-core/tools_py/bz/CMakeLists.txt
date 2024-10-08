@@ -88,4 +88,9 @@ if(SWIG_FOUND AND SWIG_python_FOUND)
 		${Boost_LIBRARIES}
 		${Qhull_LIBRARIES}
 	)
+
+	# installation
+	get_property(BZ_AUX_FILES TARGET bz_py PROPERTY SWIG_SUPPORT_FILES)
+	install(FILES ${BZ_AUX_FILES} DESTINATION "${Python3_SITEARCH}")
+	install(TARGETS bz_py LIBRARY DESTINATION "${Python3_SITEARCH}")
 endif()
