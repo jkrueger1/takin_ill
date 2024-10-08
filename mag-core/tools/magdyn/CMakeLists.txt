@@ -155,7 +155,8 @@ if(USE_QT)
 		magdyn.cpp magdyn.h
 		magdyn_struct.cpp
 		magdyn_gui.cpp magdyn_tables.cpp
-		magdyn_file.cpp magdyn_export.cpp magdyn_export_sqe.cpp
+		magdyn_configuration.cpp magdyn_file.cpp
+		magdyn_export.cpp magdyn_export_sqe.cpp
 		magdyn_kernel.cpp magdyn_disp.cpp
 		defs.cpp defs.h gui_defs.h settings.h
 		struct_plot.cpp struct_plot.h

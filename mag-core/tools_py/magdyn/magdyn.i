@@ -73,6 +73,7 @@
 %include "../../tlibs2/libs/magdyn/getters.h"
 %include "../../tlibs2/libs/magdyn/gen.h"
 %include "../../tlibs2/libs/magdyn/file.h"
+%include "../../tlibs2/libs/magdyn/configuration.h"
 %include "../../tlibs2/libs/magdyn/groundstate.h"
 %include "../../tlibs2/libs/magdyn/precalc.h"
 %include "../../tlibs2/libs/magdyn/hamilton.h"

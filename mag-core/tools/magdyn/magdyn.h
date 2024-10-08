@@ -336,6 +336,7 @@ protected:
 
 	void SavePlotFigure();
 	void SaveDispersion();
+	void SaveMultiDispersion();
 
 	void MirrorAtoms();
 	void RotateField(bool ccw = true);

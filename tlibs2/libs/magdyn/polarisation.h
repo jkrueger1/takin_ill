@@ -52,8 +52,8 @@
  * TODO: implements the blume-maleev formalism
  */
 MAGDYN_TEMPL
-void MAGDYN_INST::CalcPolarisation(const t_vec_real& Q_rlu,
-	MAGDYN_TYPE::EnergyAndWeight& E_and_S) const
+void MAGDYN_INST::CalcPolarisation(const t_vec_real& /*Q_rlu*/,
+	MAGDYN_TYPE::EnergyAndWeight& /*E_and_S*/) const
 {
 	/*  TODO: polarisation via blume-maleev equation
 	...

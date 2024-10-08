@@ -55,6 +55,7 @@
 #include "magdyn/getters.h"
 #include "magdyn/gen.h"
 #include "magdyn/file.h"
+#include "magdyn/configuration.h"
 #include "magdyn/groundstate.h"
 #include "magdyn/precalc.h"
 #include "magdyn/hamilton.h"

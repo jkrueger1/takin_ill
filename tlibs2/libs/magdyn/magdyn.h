@@ -506,7 +506,8 @@ public:
 	bool SaveMultiDispersion(const std::string& filename,
 		const std::vector<std::array<t_real, 3>>& Qs,
 		t_size num_Qs = 128, t_size num_threads = 4,
-		const bool *stop_request = nullptr) const;
+		const bool *stop_request = nullptr,
+		const std::vector<std::string>* Q_names = nullptr) const;
 
 	/**
 	 * generates the dispersion plot along multiple Q paths
@@ -514,7 +515,8 @@ public:
 	bool SaveMultiDispersion(std::ostream& ostr,
 		const std::vector<std::array<t_real, 3>>& Qs,
 		t_size num_Qs = 128, t_size num_threads = 4,
-		const bool *stop_request = nullptr) const;
+		const bool *stop_request = nullptr,
+		const std::vector<std::string>* Q_names = nullptr) const;
 
 	/**
 	 * load a configuration from a file

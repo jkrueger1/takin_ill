@@ -2126,6 +2126,7 @@ void MagDynDlg::CreateMenuBar()
 	auto acRescalePlot = new QAction("Rescale Axes", m_menuDisp);
 	auto acSaveFigure = new QAction("Save Figure...", m_menuDisp);
 	auto acSaveDisp = new QAction("Save Data...", m_menuDisp);
+	auto acSaveMultiDisp = new QAction("Save Data For All Qs...", m_menuDisp);
 
 	// channels sub-menu
 	m_menuChannels = new QMenu("Selected Channels", m_menuDisp);
@@ -2184,6 +2185,7 @@ void MagDynDlg::CreateMenuBar()
 	m_menuOpenRecent->setIcon(QIcon::fromTheme("document-open-recent"));
 	acSaveFigure->setIcon(QIcon::fromTheme("image-x-generic"));
 	acSaveDisp->setIcon(QIcon::fromTheme("text-x-generic"));
+	acSaveMultiDisp->setIcon(QIcon::fromTheme("text-x-generic"));
 
 	// calculation menu
 	auto menuCalc = new QMenu("Calculation", m_menu);
@@ -2314,6 +2316,7 @@ void MagDynDlg::CreateMenuBar()
 	m_menuDisp->addSeparator();
 	m_menuDisp->addAction(acSaveFigure);
 	m_menuDisp->addAction(acSaveDisp);
+	m_menuDisp->addAction(acSaveMultiDisp);
 
 	menuCalc->addAction(m_autocalc);
 	menuCalc->addAction(acCalc);
@@ -2356,6 +2359,7 @@ void MagDynDlg::CreateMenuBar()
 
 	connect(acSaveFigure, &QAction::triggered, this, &MagDynDlg::SavePlotFigure);
 	connect(acSaveDisp, &QAction::triggered, this, &MagDynDlg::SaveDispersion);
+	connect(acSaveMultiDisp, &QAction::triggered, this, &MagDynDlg::SaveMultiDispersion);
 
 	connect(acRescalePlot, &QAction::triggered, [this]()
 	{
@@ -2471,7 +2475,7 @@ void MagDynDlg::CreateMenuBar()
 	{
 		QUrl url("https://github.com/ILLGrenoble/takin/wiki/Modelling-Magnetic-Structures");
 		if(!QDesktopServices::openUrl(url))
-			QMessageBox::critical(this, "Error", "Could not open the wiki.");
+			QMessageBox::critical(this, "Magnetic Dynamics", "Could not open the wiki.");
 	});
 
 	connect(acAboutQt, &QAction::triggered, []()
