@@ -2649,6 +2649,7 @@ bool eigenvec_sym_simple(const t_mat& mat, std::vector<t_vec>& evecs, std::vecto
 	t_mat I = unit_m<t_mat>(n);
 	t_mat M = mat;
 
+	bool bConverged = false;
 	std::size_t iIter = 0;
 	for(iIter = 0; iIter < MAX_ITER; ++iIter)
 	{
@@ -2663,16 +2664,15 @@ bool eigenvec_sym_simple(const t_mat& mat, std::vector<t_vec>& evecs, std::vecto
 		M = prod_mm(R, Q);
 		I = prod_mm(I, Q);
 
-		bool bConverged = true;
-		for(std::size_t iVal=0; iVal<n; ++iVal)
+		bConverged = true;
+		for(std::size_t iVal = 0; iVal < n; ++iVal)
 		{
-			if(std::abs(M(iVal,iVal)-Mlast(iVal,iVal)) > tEps)
+			if(std::abs(M(iVal,iVal) - Mlast(iVal,iVal)) > tEps)
 			{
 				bConverged = false;
 				break;
 			}
 		}
-
 		if(bConverged)
 			break;
 	}
@@ -2686,7 +2686,7 @@ bool eigenvec_sym_simple(const t_mat& mat, std::vector<t_vec>& evecs, std::vecto
 		evecs[iVal] = get_column(I, iVal);
 	}
 
-	return true;
+	return bConverged;
 }
 
 
