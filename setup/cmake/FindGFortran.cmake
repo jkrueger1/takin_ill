@@ -27,7 +27,7 @@
 
 find_library(GFortran_LIBRARIES
 	NAMES gfortran
-	HINTS /usr/local/lib64 /usr/local/lib /usr/lib64 /usr/lib /opt/local/lib
+	HINTS /usr/local/lib64 /usr/local/lib /usr/lib64 /usr/lib /opt/local/lib /usr/local/Cellar/gcc/*/lib/gcc/current
 	DOC "GFortran libraries"
 )
 
@@ -38,6 +38,7 @@ if(GFortran_LIBRARIES)
 	message("GFortran library: ${GFortran_LIBRARIES}")
 else()
 	set(GFortran_FOUND FALSE)
+	set(GFortran_LIBRARIES "")
 
-	message("Error: GFortran could not be found!")
+	message("GFortran could not be found.")
 endif()
