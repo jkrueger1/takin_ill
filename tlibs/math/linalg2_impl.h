@@ -673,8 +673,7 @@ bool singvec_cplx(const ublas::matrix<std::complex<T>>& mat,
 
 
 template<class T>
-bool qr(const ublas::matrix<T>& M,
-	ublas::matrix<T>& Q, ublas::matrix<T>& R)
+bool qr(const ublas::matrix<T>& M, ublas::matrix<T>& Q, ublas::matrix<T>& R)
 {
 	select_func<float, double, decltype(LAPACKE_sgeqrf), decltype(LAPACKE_dgeqrf)>
 		sfunc(LAPACKE_sgeqrf, LAPACKE_dgeqrf);
@@ -683,7 +682,7 @@ bool qr(const ublas::matrix<T>& M,
 	const typename ublas::matrix<T>::size_type m = M.size1();
 	const typename ublas::matrix<T>::size_type n = M.size2();
 
-	const std::size_t iTauSize = m;//std::min<std::size_t>(m,n);
+	const std::size_t iTauSize = m; //std::min<std::size_t>(m,n);
 
 	std::unique_ptr<T, std::default_delete<T[]>>
 		uptrMem(new T[n*m + iTauSize]);
@@ -700,10 +699,10 @@ bool qr(const ublas::matrix<T>& M,
 	int iInfo = (*pfunc)(LAPACK_ROW_MAJOR, m, n, pMat, n, pTau);
 
 	R = ublas::matrix<T>(m,n);
-	for(std::size_t i=0; i<m; ++i)
-		for(std::size_t j=0; j<n; ++j)
+	for(std::size_t i = 0; i < m; ++i)
+		for(std::size_t j = 0; j < n; ++j)
 		{
-			if(j>=i)
+			if(j >= i)
 				R(i,j) = pMat[i*n + j];
 			else
 				R(i,j) = 0.;
@@ -714,24 +713,24 @@ bool qr(const ublas::matrix<T>& M,
 	const ublas::matrix<T> ident = unit_m<ublas::matrix<T>>(iTauSize);
 	Q = ident;
 
-	for(std::size_t k=1; k<=iTauSize; ++k)
+	for(std::size_t k = 1; k <= iTauSize; ++k)
 	{
 		T dTau = pTau[k-1];
 
-		for(std::size_t i=1; i<=k-1; ++i)
-			v[i-1] = 0.;
-		v[k-1] = 1.;
+		for(std::size_t i = 1; i <= k-1; ++i)
+			v[i - 1] = 0.;
+		v[k - 1] = 1.;
 
-		for(std::size_t i=k+1; i<=iTauSize; ++i)
+		for(std::size_t i = k+1; i <= iTauSize; ++i)
 			v[i-1] = pMat[(i-1)*n + (k-1)];
 
-		ublas::matrix<T> VV = outer(v, transpose(v));
+		ublas::matrix<T> VV = outer(v, v);
 		ublas::matrix<T> H = ident - dTau*VV;
 
 		Q = prod_mm(Q, H);
 	}
 
-	return (iInfo==0);
+	return (iInfo == 0);
 }
 
 }

@@ -39,6 +39,7 @@ option(USE_GENTAB "build setup utilities" TRUE)
 option(USE_RtMp "use auxilliary libraries" TRUE)
 option(USE_Dl "use dl libraries" TRUE)
 option(USE_Py "search for python" TRUE)
+option(USE_LAPACKE "search for Lapacke" FALSE)
 option(USE_CUSTOM_THREADPOOL "use custom threadpool implementation" FALSE)
 option(USE_INTERPROC_EMUL "force shared memory emulation mode" FALSE)
 option(DISABLE_INTERPROC_XSI "disable xsi shared memory syscalls" FALSE)
@@ -216,7 +217,6 @@ endif()
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL)
 find_package(Freetype)
-#find_package(X11)
 
 
 if("${QT_MOC_EXECUTABLE}" STREQUAL "")
@@ -252,7 +252,6 @@ endif()
 message("Qt moc: ${QT_MOC_EXECUTABLE}\nQt uic: ${QT_UIC_EXECUTABLE}")
 
 
-add_definitions(-DNO_LAPACK)
 add_definitions(-DNO_QHULL)
 add_definitions(-DNO_JPEG -DNO_TIFF)
 add_definitions(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
@@ -266,6 +265,11 @@ endif()
 
 if(USE_TR1_FUNCS)
 	add_definitions(-DUSE_BOOST_REX)
+endif()
+
+if(USE_LAPACKE)
+	find_package(GFortran)
+	find_package(Lapacke)
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -339,11 +343,17 @@ endif()
 
 
 
-#if(X11_FOUND)
-#	include_directories(${X11_X11_INCLUDE_PATH})
-#else()
-#	set(X11_X11_LIB "")
-#endif()
+# lapacke support
+if(Lapacke_FOUND)
+	message("Using Lapacke.")
+	add_definitions(-DUSE_LAPACK=1)
+	set(LIBS_LINALG ${Lapacke_LIBRARIES} ${Lapack_LIBRARIES} ${BLAS_LIBRARIES} ${GFortran_LIBRARIES})
+	include_directories("${Lapacke_INCLUDE_DIRS}")
+else()
+	message("Disabling Lapacke support.")
+	set(LIBS_LINALG "")
+	add_definitions(-DNO_LAPACK)
+endif()
 
 
 
@@ -369,7 +379,6 @@ if(OPENGL_FOUND AND FREETYPE_FOUND)
 	set(LIBS_3D
 		${FREETYPE_LIBRARY}
 		${OPENGL_LIBRARIES}  # Qt5::OpenGL
-		#${X11_X11_LIB}
 	)
 else()
 	message("Disabling 3D support: OGL: ${OPENGL_FOUND}, FT: ${FREETYPE_FOUND}")
@@ -494,7 +503,7 @@ add_executable(takin
 )
 
 target_link_libraries(takin
-	${LIBS_FIT}
+	${LIBS_FIT} ${LIBS_LINALG}
 	${SOCK2}
 	Qt5::Core Qt5::Gui Qt5::Svg
 	${QWT_LIBRARIES}
@@ -621,7 +630,8 @@ if(BUILD_EXT_TOOLS)
 	set_target_properties(takin_convofit PROPERTIES COMPILE_FLAGS "-DNO_QT")
 
 	target_link_libraries(takin_convofit
-		${LIBS_FIT} ${SOCK2}
+		${LIBS_FIT} ${LIBS_LINALG}
+		${SOCK2}
 		Threads::Threads ${Mp_LIBRARIES} ${Rt_LIBRARIES} ${Dl_LIBRARIES}
 		Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX} Boost::filesystem${BOOST_SUFFIX} Boost::program_options${BOOST_SUFFIX}
 		${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES}

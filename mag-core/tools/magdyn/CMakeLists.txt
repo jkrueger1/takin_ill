@@ -87,6 +87,7 @@ find_package(Boost REQUIRED COMPONENTS program_options)
 set(Boost_USE_MULTITHREADED TRUE)
 add_definitions(${Boost_CXX_FLAGS})
 
+find_package(GFortran)
 find_package(Lapacke REQUIRED)
 add_definitions(-DUSE_LAPACK=1)
 include_directories("${Lapacke_INCLUDE_DIRS}")
@@ -180,7 +181,7 @@ if(USE_QT)
 		${QtLibraries}
 		${QCP_LIBRARIES}
 		${Boost_LIBRARIES}
-		${Lapacke_LIBRARIES}
+		${Lapacke_LIBRARIES} ${Lapack_LIBRARIES} ${BLAS_LIBRARIES} ${GFortran_LIBRARIES}
 		${HDF5_CXX_LIBRARIES}
 		${Minuit2_LIBRARIES}
 #		/usr/local/lib/liblapack.a /usr/local/lib/libblas.a libgfortran.so    # for static lapack(e)
@@ -199,7 +200,7 @@ else()
 	target_link_libraries(takin_magdyn
 		Threads::Threads
 		${Boost_LIBRARIES}
-		${Lapacke_LIBRARIES}
+		${Lapacke_LIBRARIES} ${Lapack_LIBRARIES} ${BLAS_LIBRARIES} ${GFortran_LIBRARIES}
 		${HDF5_CXX_LIBRARIES}
 		${Minuit2_LIBRARIES}
 #		ws2_32  # for mingw

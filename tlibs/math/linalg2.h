@@ -58,7 +58,7 @@ bool qr(const ublas::matrix<T>& M, ublas::matrix<T>& Q, ublas::matrix<T>& R)
  */
 template<typename T=double>
 bool eigenvec_sym(const ublas::matrix<T>& mat,
-	std::vector<ublas::vector<T>>& evecs, std::vector<T>& evals, bool bNorm=0)
+	std::vector<ublas::vector<T>>& evecs, std::vector<T>& evals, bool bNorm = false)
 {
 	bool bOk = eigenvec_sym_simple(mat, evecs, evals);
 
@@ -76,7 +76,7 @@ bool eigenvec_sym(const ublas::matrix<T>& mat,
  */
 template<typename T=double>
 bool eigenvec_approxsym(const ublas::matrix<T>& mat,
-	std::vector<ublas::vector<T>>& evecs, std::vector<T>& evals, bool bNorm=0)
+	std::vector<ublas::vector<T>>& evecs, std::vector<T>& evals, bool bNorm = false)
 {
 	bool bOk = eigenvec_approxsym_simple(mat, evecs, evals);
 
@@ -106,7 +106,7 @@ bool qr(const ublas::matrix<T>& M, ublas::matrix<T>& Q, ublas::matrix<T>& R);
 template<typename T=double>
 bool eigenvec(const ublas::matrix<T>& mat,
 	std::vector<ublas::vector<T> >& evecs_real, std::vector<ublas::vector<T>>& evecs_imag,
-	std::vector<T>& evals_real, std::vector<T>& evals_imag, bool bNorm=0);
+	std::vector<T>& evals_real, std::vector<T>& evals_imag, bool bNorm = false);
 
 /**
  * calculates only the eigenvalues of a general matrix
@@ -121,7 +121,7 @@ bool eigenval(const ublas::matrix<T>& mat,
 template<typename T=double>
 bool eigenvec_cplx(const ublas::matrix<std::complex<T>>& mat,
 	std::vector<ublas::vector<std::complex<T>> >& evecs,
-	std::vector<std::complex<T>>& evals, bool bNorm=0);
+	std::vector<std::complex<T>>& evals, bool bNorm = false);
 
 /**
  * calculates only the eigenvalues of a general complex matrix
@@ -135,7 +135,7 @@ bool eigenval_cplx(const ublas::matrix<std::complex<T>>& mat, std::vector<std::c
  */
 template<typename T=double>
 bool eigenvec_sym(const ublas::matrix<T>& mat,
-	std::vector<ublas::vector<T>>& evecs, std::vector<T>& evals, bool bNorm=0);
+	std::vector<ublas::vector<T>>& evecs, std::vector<T>& evals, bool bNorm = false);
 
 /**
  * calculates only the eigenvalues of a symmetric matrix
@@ -149,7 +149,7 @@ bool eigenval_sym(const ublas::matrix<T>& mat, std::vector<T>& evals);
 template<typename T=double>
 bool eigenvec_herm(const ublas::matrix<std::complex<T>>& mat,
 	std::vector<ublas::vector<std::complex<T>>>& evecs,
-	std::vector<T>& evals, bool bNorm=0);
+	std::vector<T>& evals, bool bNorm = false);
 
 /**
  * calculates only the eigenvalues of a hermitian matrix
@@ -164,7 +164,7 @@ bool eigenval_herm(const ublas::matrix<std::complex<T>>& mat, std::vector<T>& ev
 template<typename T=double>
 bool eigenvecsel_herm(const ublas::matrix<std::complex<T>>& mat,
 	std::vector<ublas::vector<std::complex<T>>>& evecs,
-	std::vector<T>& evals, bool bNorm=0, T minval=-1, T maxval=-2, T eps=T(-1));
+	std::vector<T>& evals, bool bNorm = false, T minval=-1, T maxval=-2, T eps=T(-1));
 
 
 /**

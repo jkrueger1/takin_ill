@@ -36,17 +36,44 @@ find_path(Lapacke_INCLUDE_DIRS
 find_library(Lapacke_LIBRARIES
 	NAMES lapacke
 	HINTS /usr/local/lib64 /usr/local/lib /usr/lib64 /usr/lib /opt/local/lib /usr/local/opt/lapack/lib /usr/local/Cellar/lapack/*/lib
-	DOC "Lapacke library"
+	DOC "Lapacke libraries"
 )
 
 
-if(Lapacke_INCLUDE_DIRS AND Lapacke_LIBRARIES)
+find_library(Lapack_LIBRARIES
+	NAMES lapack
+	HINTS /usr/local/lib64 /usr/local/lib /usr/lib64 /usr/lib /opt/local/lib /usr/local/opt/lapack/lib /usr/local/Cellar/lapack/*/lib
+	DOC "Lapack libraries"
+)
+
+
+find_library(BLAS_LIBRARIES
+	NAMES blas
+	HINTS /usr/local/lib64 /usr/local/lib /usr/lib64 /usr/lib /opt/local/lib /usr/local/opt/lapack/lib /usr/local/Cellar/lapack/*/lib
+	DOC "BLAS libraries"
+)
+
+
+if(Lapacke_INCLUDE_DIRS AND Lapacke_LIBRARIES AND Lapack_LIBRARIES)
 	set(Lapacke_FOUND TRUE)
 
 	message("Lapacke include directories: ${Lapacke_INCLUDE_DIRS}")
+	message("Lapack library: ${Lapack_LIBRARIES}")
 	message("Lapacke library: ${Lapacke_LIBRARIES}")
+	message("BLAS library: ${BLAS_LIBRARIES}")
 else()
 	set(Lapacke_FOUND FALSE)
 
 	message("Error: Lapacke could not be found!")
+endif()
+
+
+if(BLAS_LIBRARIES)
+	set(BLAS_FOUND TRUE)
+
+	message("BLAS library: ${BLAS_LIBRARIES}")
+else()
+	set(BLAS_FOUND FALSE)
+
+	message("Error: BLAS could not be found!")
 endif()

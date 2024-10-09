@@ -64,7 +64,7 @@ public:
 
 
 protected:
-	bool m_bValid = 0;
+	bool m_bValid = false;
 	t_vec m_vecX0;
 	t_vec m_vecDir0, m_vecDir1;
 	t_vec m_vecNorm;
@@ -81,7 +81,10 @@ public:
 		// normalise normal
 		T tLenNorm = veclen(m_vecNorm);
 		if(float_equal<T>(tLenNorm, 0.) || tLenNorm!=tLenNorm)
-		{ m_bValid = 0; return; }
+		{
+			m_bValid = false;
+			return;
+		}
 		m_vecNorm /= tLenNorm;
 
 		// Hessian form: vecX0*vecNorm - d = 0
@@ -111,7 +114,7 @@ public:
 		m_vecDir1 = cross_3(m_vecNorm, m_vecDir0);
 		m_vecDir0 = cross_3(m_vecDir1, m_vecNorm);
 
-		m_bValid = 1;
+		m_bValid = true;
 	}
 
 
@@ -128,12 +131,15 @@ public:
 		// normalise normal
 		T tLenNorm = veclen(m_vecNorm);
 		if(float_equal<T>(tLenNorm, 0.) || tLenNorm!=tLenNorm)
-		{ m_bValid = 0; return; }
+		{
+			m_bValid = false;
+			return;
+		}
 		m_vecNorm /= tLenNorm;
 
 		// Hessian form: vecX0*vecNorm - d = 0
 		m_d = inner(m_vecX0, m_vecNorm);
-		m_bValid = 1;
+		m_bValid = true;
 	}
 
 
@@ -841,7 +847,7 @@ t_cont<t_cont<t_vec>> verts_to_polyhedron(
 				const t_vec& vert1 = vecVerts[j];
 				const t_vec& vert2 = vecVerts[k];
 
-				bool bPointsUsed = 0;
+				bool bPointsUsed = false;
 				for(std::size_t iPlane=0; iPlane<vecPlanes.size(); ++iPlane)
 				{
 					const Plane<T>& plane = vecPlanes[iPlane];
@@ -857,7 +863,7 @@ t_cont<t_cont<t_vec>> verts_to_polyhedron(
 						fkt_try_add_new_pt(vecPoly, vert1);
 						fkt_try_add_new_pt(vecPoly, vert2);
 
-						bPointsUsed = 1;
+						bPointsUsed = true;
 						break;
 					}
 				}
@@ -871,12 +877,12 @@ t_cont<t_cont<t_vec>> verts_to_polyhedron(
 					Plane<T> plane(vecPoly[0], vecPoly[1]-vecPoly[0], vecPoly[2]-vecPoly[0]);
 
 					// check if all other vertices are on the negative side of the polygon
-					bool bIsHull = 1;
+					bool bIsHull = true;
 					for(const t_vec& vecOtherVert : vecVerts)
 					{
 						if(plane.GetDist(vecOtherVert) > T(10)*eps)
 						{
-							bIsHull = 0;
+							bIsHull = false;
 							break;
 						}
 					}
@@ -926,7 +932,7 @@ protected:
 	T m_s = 0;
 
 	t_vec m_vecOffs = zero_v<t_vec>(3);
-	bool m_bQSymm = 1;
+	bool m_bQSymm = true;
 
 
 protected:
@@ -978,7 +984,7 @@ public:
 		// get eigenvalues
 		std::vector<t_vec> evecs;
 		std::vector<T> evals;
-		bool bEV = 0;
+		bool bEV = false;
 		if(m_bQSymm)
 			bEV = eigenvec_sym(m_Q, evecs, evals);
 		else
@@ -1127,7 +1133,7 @@ public:
 	{
 		std::vector<t_vec> evecs;
 
-		bool bEV = 0;
+		bool bEV = false;
 		if(m_bQSymm)
 			bEV = eigenvec_sym(m_Q, evecs, vecEvals);
 		else

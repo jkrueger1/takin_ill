@@ -69,6 +69,7 @@ endif()
 find_package(Boost REQUIRED)
 add_definitions(${Boost_CXX_FLAGS})
 
+find_package(GFortran)
 find_package(Lapacke REQUIRED)
 add_definitions(-DUSE_LAPACK=1)
 include_directories("${Lapacke_INCLUDE_DIRS}")
@@ -95,7 +96,7 @@ endif()
 
 target_link_libraries(magnonmod
 	${Boost_LIBRARIES}
-	${Lapacke_LIBRARIES}
+	${Lapacke_LIBRARIES} ${Lapack_LIBRARIES} ${BLAS_LIBRARIES} ${GFortran_LIBRARIES}
 )
 
 

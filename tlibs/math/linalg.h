@@ -2630,7 +2630,7 @@ template<class t_mat = ublas::matrix<double>,
 	class t_vec = ublas::vector<typename t_mat::value_type>,
 	typename T = typename t_mat::value_type>
 bool eigenvec_sym_simple(const t_mat& mat, std::vector<t_vec>& evecs, std::vector<T>& evals,
-	std::size_t MAX_ITER=512, T tEps = std::cbrt(get_epsilon<T>()))
+	std::size_t MAX_ITER = 512, T tEps = std::cbrt(get_epsilon<T>()))
 {
 	if(mat.size1() != mat.size2())
 	{
@@ -2641,7 +2641,8 @@ bool eigenvec_sym_simple(const t_mat& mat, std::vector<t_vec>& evecs, std::vecto
 #ifndef NDEBUG
 	t_mat matAbs = apply_fkt(mat, std::function<T(T)>((T(*)(T))std::abs));
 	T _dEps = get_minmax(matAbs).second / 100.;	// 1% accuracy
-	if(!tl::is_symmetric(mat, _dEps)) log_warn("Matrix ", mat, " is not symmetric.");
+	if(!tl::is_symmetric(mat, _dEps))
+		log_warn("Matrix ", mat, " is not symmetric.");
 #endif
 
 	const std::size_t n = mat.size1();
@@ -2649,7 +2650,7 @@ bool eigenvec_sym_simple(const t_mat& mat, std::vector<t_vec>& evecs, std::vecto
 	t_mat M = mat;
 
 	std::size_t iIter = 0;
-	for(iIter=0; iIter<MAX_ITER; ++iIter)
+	for(iIter = 0; iIter < MAX_ITER; ++iIter)
 	{
 		t_mat Q, R;
 		if(!qr_decomp(M, Q, R))
@@ -2662,13 +2663,12 @@ bool eigenvec_sym_simple(const t_mat& mat, std::vector<t_vec>& evecs, std::vecto
 		M = prod_mm(R, Q);
 		I = prod_mm(I, Q);
 
-
-		bool bConverged = 1;
+		bool bConverged = true;
 		for(std::size_t iVal=0; iVal<n; ++iVal)
 		{
 			if(std::abs(M(iVal,iVal)-Mlast(iVal,iVal)) > tEps)
 			{
-				bConverged = 0;
+				bConverged = false;
 				break;
 			}
 		}

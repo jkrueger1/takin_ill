@@ -59,6 +59,7 @@ message("Using Boost version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boo
 
 # -----------------------------------------------------------------------------
 # Lapack(e)
+find_package(GFortran)
 find_package(Lapacke REQUIRED)
 add_definitions(-DUSE_LAPACK=1)
 # -----------------------------------------------------------------------------
@@ -94,7 +95,10 @@ set_source_files_properties(magdyn.i PROPERTIES CPLUSPLUS TRUE)
 set_source_files_properties(magdyn.i PROPERTIES SWIG_FLAGS "-I ${PROJECT_SOURCE_DIR}/libs")
 
 swig_add_library(magdyn_py LANGUAGE python SOURCES magdyn.i)
-target_link_libraries(magdyn_py Python3::Python ${Lapacke_LIBRARIES})
+target_link_libraries(magdyn_py
+	Python3::Python
+	${Lapacke_LIBRARIES} ${Lapack_LIBRARIES} ${BLAS_LIBRARIES} ${GFortran_LIBRARIES}
+)
 #target_link_libraries(magdyn_py Python3::Python /usr/local/lib/liblapacke.a /usr/local/lib/liblapack.a /usr/local/lib/libblas.a libgfortran.so)
 
 # installation
