@@ -248,7 +248,7 @@ bool is_in_range(T val, T centre, T pm)
  * solve a*x^2 + b*x + c for x
  */
 template<class T=double>
-std::vector<T> quadratic_solve(T a, T b, T c)
+std::vector<T> solve_quadratic(T a, T b, T c)
 {
 	std::vector<T> vec;
 
@@ -273,8 +273,10 @@ std::vector<T> quadratic_solve(T a, T b, T c)
 			T r = std::sqrt(D);
 			T t0 = (-b + r) / (T(2)*a);
 			T t1 = (-b - r) / (T(2)*a);
-			if(!std::isnan(t0) && !std::isinf(t0)) vec.push_back(t0);
-			if(!std::isnan(t1) && !std::isinf(t1)) vec.push_back(t1);
+			if(!std::isnan(t0) && !std::isinf(t0))
+				vec.push_back(t0);
+			if(!std::isnan(t1) && !std::isinf(t1))
+				vec.push_back(t1);
 		}
 	}
 

@@ -1215,7 +1215,7 @@ public:
 		T b = inner(x0, vecQd);
 		b += inner(d, vecQx0);
 
-		return quadratic_solve(a,b,c);
+		return solve_quadratic(a,b,c);
 	}
 };
 
