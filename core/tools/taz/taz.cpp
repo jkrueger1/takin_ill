@@ -186,7 +186,8 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 
 	if(m_settings.contains("main/recip_tab"))
 		groupRecip->setCurrentIndex(m_settings.value("main/recip_tab").value<int>());
-
+	else
+		groupRecip->setCurrentIndex(0);
 
 	// real
 	m_pviewRealLattice = new LatticeView(groupReal);
@@ -204,6 +205,8 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 
 	if(m_settings.contains("main/real_tab"))
 		groupReal->setCurrentIndex(m_settings.value("main/real_tab").value<int>());
+	else
+		groupReal->setCurrentIndex(1);
 
 
 	QObject::connect(m_pSettingsDlg, &SettingsDlg::SettingsChanged, this, &TazDlg::SettingsChanged);
