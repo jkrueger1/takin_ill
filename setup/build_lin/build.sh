@@ -37,8 +37,9 @@ build_externals=1
 build_takin=1
 build_takin2=1
 build_plugins=1
-build_py_modules=1
 build_package=1
+
+build_py_modules=1
 
 
 # parse command-line options
@@ -130,6 +131,10 @@ if [ $build_externals -ne 0 ]; then
 		if ! "${TAKIN_ROOT}"/setup/externals/build_lapacke.sh; then
 			exit -1
 		fi
+		cp -v "${TAKIN_ROOT}"/setup/externals/CMakeLists_qcp.txt .
+		if ! "${TAKIN_ROOT}"/setup/externals/build_qcp.sh; then
+			exit -1
+		fi
 	popd
 fi
 
@@ -194,6 +199,9 @@ if [ $build_takin2 -ne 0 ]; then
 
 			cp -v build/tools_py/instr/_instr_py.so "${TAKIN_ROOT}"/core/pymods/
 			cp -v build/tools_py/instr/instr.py "${TAKIN_ROOT}"/core/pymods/
+
+			cp -v build/tools_py/bz/_bz_py.so "${TAKIN_ROOT}"/core/pymods/
+			cp -v build/tools_py/bz/bzcalc.py "${TAKIN_ROOT}"/core/pymods/
 		fi
 	popd
 fi

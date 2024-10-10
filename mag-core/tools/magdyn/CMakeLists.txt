@@ -70,9 +70,11 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
 endif()
 
 
+set(MINGW_EXTRALIBS)
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	# pass linker --subsystem option
 	add_compile_options(-Wl,--subsystem,windows)
+	set(MINGW_EXTRALIBS "ws2_32")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 	add_compile_options(-mmacosx-version-min=10.15)
 endif()
@@ -178,14 +180,15 @@ if(USE_QT)
 
 	target_link_libraries(takin_magdyn
 		Threads::Threads
-		${QtLibraries}
 		${QCP_LIBRARIES}
+		${QtLibraries}
 		${Boost_LIBRARIES}
 		${Lapacke_LIBRARIES} ${Lapack_LIBRARIES} ${BLAS_LIBRARIES} ${GFortran_LIBRARIES}
 		${HDF5_CXX_LIBRARIES}
 		${Minuit2_LIBRARIES}
+		${MINGW_EXTRALIBS}
+
 #		/usr/local/lib/liblapack.a /usr/local/lib/libblas.a libgfortran.so    # for static lapack(e)
-#		ws2_32  # for mingw
 	)
 else()
 	message("Compiling without Qt.")
@@ -203,7 +206,7 @@ else()
 		${Lapacke_LIBRARIES} ${Lapack_LIBRARIES} ${BLAS_LIBRARIES} ${GFortran_LIBRARIES}
 		${HDF5_CXX_LIBRARIES}
 		${Minuit2_LIBRARIES}
-#		ws2_32  # for mingw
+		${MINGW_EXTRALIBS}
 	)
 endif()
 

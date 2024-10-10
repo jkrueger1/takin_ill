@@ -52,8 +52,8 @@ def install_mod(files, msg):
 
 		print("\t\"%s\" -> \"%s\"." % (file_src, file_dst))
 
-		#if os.path.isfile(file_dst):
-		os.remove(file_dst)
+		if os.path.isfile(file_dst):
+			os.remove(file_dst)
 
 		if create_links:
 			os.symlink(os.path.abspath(file_src), file_dst)
