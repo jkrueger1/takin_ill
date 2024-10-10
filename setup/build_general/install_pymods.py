@@ -1,5 +1,5 @@
 #
-# installs Takin's Magdyn and instrument data loader python modules
+# installs takin's python modules
 # @author Tobias Weber <tweber@ill.fr>
 # @date 16-may-2024
 # @license GPLv2
@@ -12,7 +12,8 @@ import shutil
 
 
 magdyn     = [ "magdyn.py", "_magdyn_py.so" ]
-instr      = [ "instr.py", "_instr_py.so" ]
+instr      = [ "instr.py",  "_instr_py.so" ]
+bz         = [ "bzcalc.py", "_bz_py.so" ]
 
 
 # get args
@@ -62,4 +63,5 @@ def install_mod(files, msg):
 
 install_mod(magdyn, "\nInstalling Takin/Magdyn...")
 install_mod(instr, "\nInstalling Takin/Instr...")
+install_mod(bz, "\nInstalling Takin/BZ...")
 print()
