@@ -135,6 +135,10 @@ if [ $build_externals -ne 0 ]; then
 		if ! "${TAKIN_ROOT}"/setup/externals/build_qcp.sh; then
 			exit -1
 		fi
+# no need to build gemmi, we're only using the headers
+#		if ! "${TAKIN_ROOT}"/setup/externals/build_gemmi.sh; then
+#			exit -1
+#		fi
 	popd
 fi
 

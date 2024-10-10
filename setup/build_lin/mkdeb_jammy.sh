@@ -75,6 +75,7 @@ echo -e "Depends:" \
 	"gnuplot," \
 	"gnuplot-qt," \
 	"libopengl0," \
+	"libgfortran5," \
 	"liblapacke," \
 	"libqhull-r8.0," \
 	"libqhullcpp8.0," \
@@ -99,7 +100,7 @@ cp -rv data/samples		${INSTDIR}/usr/local/share/takin
 cp -rv data/instruments		${INSTDIR}/usr/local/share/takin
 cp -v *.txt			${INSTDIR}/usr/local/share/takin
 cp -rv 3rdparty_licenses/*	${INSTDIR}/usr/local/share/takin/3rdparty_licenses/
-cp -v setup_lin/takin.desktop	${INSTDIR}/usr/share/applications
+cp -v ../setup/build_lin/takin.desktop	${INSTDIR}/usr/share/applications
 cp -v /usr/local/lib/libMinuit2.so	${INSTDIR}/usr/local/lib
 cp -v /usr/local/lib/libMinuit2Math.so	${INSTDIR}/usr/local/lib
 
