@@ -100,6 +100,7 @@ cp -v *.txt			${INSTDIR}/usr/local/share/takin
 cp -rv 3rdparty_licenses/*	${INSTDIR}/usr/local/share/takin/3rdparty_licenses/
 cp -v ../setup/build_lin/takin.desktop	${INSTDIR}/usr/share/applications
 cp -v /usr/local/lib/libMinuit2.so 	${INSTDIR}/usr/local/lib
+cp -v /usr/local/lib/libMinuit2Math.so  ${INSTDIR}/usr/local/lib
 
 # if we have the minuit so file (i.e. if it's not statically linked),
 # create some symbolic links
@@ -108,6 +109,11 @@ if [ -e libMinuit2.so ]; then
 	ln -sf libMinuit2.so libMinuit2.so.0
 	ln -sf libMinuit2.so libMinuit2.so.0.0
 	ln -sf libMinuit2.so libMinuit2.so.0.0.0
+fi
+if [ -e libMinuit2Math.so ]; then
+	ln -sf libMinuit2Math.so libMinuit2Math.so.0
+	ln -sf libMinuit2Math.so libMinuit2Math.so.0.0
+	ln -sf libMinuit2Math.so libMinuit2Math.so.0.0.0
 fi
 popd
 
