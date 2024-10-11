@@ -23,6 +23,8 @@
  * ----------------------------------------------------------------------------
  */
 
+#include <boost/scope_exit.hpp>
+
 #include "ground_state.h"
 
 #include <QtWidgets/QGridLayout>
@@ -34,8 +36,6 @@
 #include <string>
 #include <sstream>
 #include <unordered_set>
-
-#include <boost/scope_exit.hpp>
 
 #include "tlibs2/libs/qt/numerictablewidgetitem.h"
 

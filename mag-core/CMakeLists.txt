@@ -29,6 +29,12 @@ option(BUILD_PY_MODULES "build py modules" TRUE)
 option(ONLY_BUILD_FINISHED "only build finished tools" TRUE)
 
 
+# mingw settings
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+	set(Boost_USE_STATIC_LIBS FALSE)
+endif()
+
+
 # cif converter
 message("\n================================================================================")
 message("Configuring cif2xml...")

@@ -23,7 +23,6 @@
  * ----------------------------------------------------------------------------
  */
 
-// these need to be included before all other things on mingw
 #include <boost/scope_exit.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 namespace pt = boost::property_tree;

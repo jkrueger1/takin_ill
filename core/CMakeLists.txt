@@ -99,6 +99,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	set(USE_RtMp FALSE)
 	set(USE_Dl FALSE)
 	set(USE_Py FALSE)
+
+	set(Boost_USE_STATIC_LIBS FALSE)
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
@@ -140,7 +142,8 @@ set(CMAKE_AUTOUIC_SEARCH_PATHS "${PROJECT_SOURCE_DIR}/ui")
 set(Boost_FIND_QUIETLY FALSE)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-	set(BOOST_SUFFIX -x64)
+	#set(BOOST_SUFFIX -x64)
+	set(BOOST_SUFFIX)
 else()
 	set(BOOST_SUFFIX)
 endif()
@@ -416,7 +419,8 @@ if(USE_GENTAB)
 
 	target_link_libraries(gentab
 		Qt5::Core Qt5::Gui Qt5::Widgets
-		Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX} Boost::filesystem${BOOST_SUFFIX} Boost::program_options${BOOST_SUFFIX}
+		Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX}
+		Boost::filesystem${BOOST_SUFFIX} Boost::program_options${BOOST_SUFFIX}
 		${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES}
 		#${Clipper_LIBRARIES}
 	)
@@ -510,7 +514,8 @@ target_link_libraries(takin
 	${LIBS_3D}
 	${PNG_LIBRARIES}
 	${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES}
-	Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX} Boost::filesystem${BOOST_SUFFIX} Boost::program_options${BOOST_SUFFIX}
+	Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX}
+	Boost::filesystem${BOOST_SUFFIX} Boost::program_options${BOOST_SUFFIX}
 	Threads::Threads ${Mp_LIBRARIES} ${Rt_LIBRARIES} ${Dl_LIBRARIES}
 	${HDF5_CXX_LIBRARIES}
 )
@@ -553,7 +558,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 endif()
 
 target_link_libraries(takinmod_py
-	Boost::iostreams Boost::system Boost::filesystem
+	Boost::iostreams${BOOST_SUFFIX} Boost::system Boost::filesystem${BOOST_SUFFIX}
 	${_BOOST_PY_TARGET} ${Python3_LIBRARIES}
 	Threads::Threads ${Rt_LIBRARIES} ${Dl_LIBRARIES}
 )
@@ -579,7 +584,8 @@ add_executable(takinmod_jl
 )
 
 target_link_libraries(takinmod_jl
-	Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX} Boost::filesystem${BOOST_SUFFIX}
+	Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX}
+	Boost::filesystem${BOOST_SUFFIX}
 	${Julia_LIBRARIES}
 	Threads::Threads ${Rt_LIBRARIES}
 )
@@ -633,7 +639,8 @@ if(BUILD_EXT_TOOLS)
 		${LIBS_FIT} ${LIBS_LINALG}
 		${SOCK2}
 		Threads::Threads ${Mp_LIBRARIES} ${Rt_LIBRARIES} ${Dl_LIBRARIES}
-		Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX} Boost::filesystem${BOOST_SUFFIX} Boost::program_options${BOOST_SUFFIX}
+		Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX}
+		Boost::filesystem${BOOST_SUFFIX} Boost::program_options${BOOST_SUFFIX}
 		${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES}
 	)
 
@@ -656,7 +663,8 @@ if(BUILD_EXT_TOOLS)
 	set_target_properties(takin_convoseries PROPERTIES COMPILE_FLAGS "-DNO_QT")
 
 	target_link_libraries(takin_convoseries
-		Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX} Boost::filesystem${BOOST_SUFFIX} Boost::program_options${BOOST_SUFFIX}
+		Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX}
+		Boost::filesystem${BOOST_SUFFIX} Boost::program_options${BOOST_SUFFIX}
 		${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES}
 	)
 

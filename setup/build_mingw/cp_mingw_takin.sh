@@ -92,6 +92,10 @@ cp -v $MINGW_BIN_DIR/libboost_system-x64.dll		${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libboost_iostreams-x64.dll		${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libboost_filesystem-x64.dll	${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libboost_program_options-x64.dll	${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libboost_regex-mt-x64.dll		${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libboost_system-mt-x64.dll		${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libboost_iostreams-mt-x64.dll	${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libboost_filesystem-mt-x64.dll	${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libboost_program_options-mt-x64.dll	${INSTDIR}/
 
 #cp -v $MINGW_BIN_DIR/libboost_python39.dll	${INSTDIR}/
@@ -112,8 +116,11 @@ cp -v $MINGW_BIN_DIR/libfreetype-6.dll		${INSTDIR}/
 cp -v $MINGW_BIN_DIR/liblapack.dll		${INSTDIR}/
 cp -v $MINGW_BIN_DIR/liblapacke.dll		${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libblas.dll		${INSTDIR}/
-#cp -v $MINGW_BIN_DIR/libquadmath-0.dll		${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libquadmath-0.dll		${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libgfortran-5.dll		${INSTDIR}/
+
+cp -v $MINGW_BIN_DIR/libqcustomplot.dll		${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libqhull_r.dll		${INSTDIR}/
 
 
 # qt plugins
@@ -123,7 +130,7 @@ mkdir -p ${INSTDIR}/lib/plugins/imageformats
 
 cp -v $MINGW_LIB_DIR/qt5/plugins/platforms/*.dll		${INSTDIR}/lib/plugins/platforms/
 cp -v $MINGW_LIB_DIR/qt5/plugins/iconengines/qsvgicon.dll	${INSTDIR}/lib/plugins/iconengines/
-cp -v $MINGW_LIB_DIR/qt5/plugins/imageformats/qsvg.dll	${INSTDIR}/lib/plugins/imageformats/
+cp -v $MINGW_LIB_DIR/qt5/plugins/imageformats/qsvg.dll		${INSTDIR}/lib/plugins/imageformats/
 
 
 # convo plugins

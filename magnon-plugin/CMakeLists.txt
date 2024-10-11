@@ -33,6 +33,7 @@ add_compile_options(-std=c++20)
 add_compile_options(-Wall -Wextra -Weffc++)
 add_compile_options(-fvisibility=hidden)
 
+
 list(APPEND CMAKE_MODULE_PATH
 	"${PROJECT_SOURCE_DIR}"
 	"${PROJECT_SOURCE_DIR}/../setup/cmake"
@@ -58,9 +59,13 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
 endif()
 
 
+set(MINGW_EXTRALIBS)
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+	# mingw settings
 	# pass linker --subsystem option
 	add_compile_options(-Wl,--subsystem,windows)
+	set(MINGW_EXTRALIBS "ws2_32")
+	set(Boost_USE_STATIC_LIBS FALSE)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 	add_compile_options(-mmacosx-version-min=10.15)
 endif()
@@ -97,6 +102,7 @@ endif()
 target_link_libraries(magnonmod
 	${Boost_LIBRARIES}
 	${Lapacke_LIBRARIES} ${Lapack_LIBRARIES} ${BLAS_LIBRARIES} ${GFortran_LIBRARIES}
+	${MINGW_EXTRALIBS}
 )
 
 
