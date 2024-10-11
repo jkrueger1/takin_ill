@@ -61,6 +61,7 @@ t_real g_cholesky_delta = 0.0025;
 // optional features
 int g_allow_ortho_spin = 0;
 int g_allow_general_J = 1;
+int g_silent = 1;
 
 #ifndef DONT_USE_QT
 // gui theme

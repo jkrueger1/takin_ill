@@ -196,7 +196,7 @@ bool MAGDYN_INST::CalcGroundState(const std::unordered_set<std::string>* fixed_p
 
 	if(tl2::minimise_dynargs<t_real>(num_args, func,
 		params, vals, errs, &fixed, &lower_lims, &upper_lims,
-		verbose, stop_request))
+		verbose && !m_silent, stop_request))
 	{
 		// set the spins to the newly-found ground state
 		for(t_size site_idx = 0; site_idx < GetMagneticSitesCount(); ++site_idx)
@@ -235,7 +235,9 @@ bool MAGDYN_INST::CalcGroundState(const std::unordered_set<std::string>* fixed_p
 	}
 	else
 	{
-		std::cerr << "Magdyn error: Ground state minimisation did not converge." << std::endl;
+		CERR_OPT << "Magdyn error: Ground state minimisation did not converge."
+			<< std::endl;
+
 		return false;
 	}
 }

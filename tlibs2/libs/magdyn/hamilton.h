@@ -300,8 +300,9 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 		{
 			if(chol_try >= m_tries_chol - 1)
 			{
-				std::cerr << "Magdyn error: Cholesky decomposition failed"
-					<< " at Q = " << Qvec << "." << std::endl;
+				CERR_OPT << "Magdyn error: Cholesky decomposition failed"
+						<< " at Q = " << Qvec << "." << std::endl;
+
 				chol_mat = std::move(_C);
 				chol_failed = true;
 				break;
@@ -315,14 +316,15 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 
 	if(chol_failed || chol_mat.size1() == 0 || chol_mat.size2() == 0)
 	{
-		std::cerr << "Magdyn error: Invalid Cholesky decomposition"
+		CERR_OPT << "Magdyn error: Invalid Cholesky decomposition"
 			<< " at Q = " << Qvec << "." << std::endl;
+
 		return EnergiesAndWeights{};
 	}
 
 	if(m_perform_checks && chol_try > 0)
 	{
-		std::cerr << "Magdyn warning: Needed " << chol_try
+		CERR_OPT << "Magdyn warning: Needed " << chol_try
 			<< " correction(s) for Cholesky decomposition"
 			<< " at Q = " << Qvec << "." << std::endl;
 	}
@@ -333,7 +335,7 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 	const bool is_herm = tl2::is_symm_or_herm<t_mat, t_real>(H_mat, m_eps);
 	if(m_perform_checks && !is_herm)
 	{
-		std::cerr << "Magdyn warning: Hamiltonian is not hermitian"
+		CERR_OPT << "Magdyn warning: Hamiltonian is not hermitian"
 			<< " at Q = " << Qvec << "." << std::endl;
 	}
 
@@ -344,8 +346,9 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 			H_mat, only_energies, is_herm, true);
 	if(!evecs_ok)
 	{
-		std::cerr << "Magdyn error: Eigensystem calculation failed"
+		CERR_OPT << "Magdyn error: Eigensystem calculation failed"
 			<< " at Q = " << Qvec << "." << std::endl;
+
 		return EnergiesAndWeights{};
 	}
 
@@ -362,10 +365,11 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 	// weight factors
 	if(!only_energies)
 	{
-		if(!CalcCorrelationsFromHamiltonian(Es_and_Ws,
-			H_mat, chol_mat, g_sign, Qvec, evecs))
+		bool corr_ok = CalcCorrelationsFromHamiltonian(Es_and_Ws,
+			H_mat, chol_mat, g_sign, Qvec, evecs);
+		if(!corr_ok)
 		{
-			std::cerr << "Magdyn warning: Invalid correlations"
+			CERR_OPT << "Magdyn warning: Invalid correlations"
 				<< " at Q = " << Qvec << "." << std::endl;
 		}
 	}

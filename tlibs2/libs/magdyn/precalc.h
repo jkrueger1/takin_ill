@@ -111,7 +111,7 @@ MAGDYN_TEMPL void MAGDYN_INST::CalcMagneticSite(MagneticSite& site)
 		}
 		else
 		{
-			std::cerr << "Magdyn error: Parsing spin magnitude \""
+			CERR_OPT << "Magdyn error: Parsing spin magnitude \""
 				<< site.spin_mag << "\""
 				<< " for site \"" << site.name << "\""
 				<< "." << std::endl;
@@ -129,7 +129,7 @@ MAGDYN_TEMPL void MAGDYN_INST::CalcMagneticSite(MagneticSite& site)
 				}
 				else
 				{
-					std::cerr << "Magdyn error: Parsing position \""
+					CERR_OPT << "Magdyn error: Parsing position \""
 						<< site.pos[idx] << "\""
 						<< " for site \"" << site.name << "\""
 						<< " and component " << idx
@@ -146,7 +146,7 @@ MAGDYN_TEMPL void MAGDYN_INST::CalcMagneticSite(MagneticSite& site)
 				}
 				else
 				{
-					std::cerr << "Magdyn error: Parsing spin direction \""
+					CERR_OPT << "Magdyn error: Parsing spin direction \""
 						<< site.spin_dir[idx] << "\""
 						<< " for site \"" << site.name << "\""
 						<< " and component " << idx
@@ -167,7 +167,7 @@ MAGDYN_TEMPL void MAGDYN_INST::CalcMagneticSite(MagneticSite& site)
 				{
 					has_explicit_trafo = false;
 
-					std::cerr << "Magdyn error: Parsing spin orthogonal plane \""
+					CERR_OPT << "Magdyn error: Parsing spin orthogonal plane \""
 						<< site.spin_ortho[idx] << "\""
 						<< " for site \"" << site.name << "\""
 						<< " and component " << idx
@@ -222,7 +222,7 @@ MAGDYN_TEMPL void MAGDYN_INST::CalcMagneticSite(MagneticSite& site)
 	}
 	catch(const std::exception& ex)
 	{
-		std::cerr << "Magdyn error: Calculating site \"" << site.name << "\"."
+		CERR_OPT << "Magdyn error: Calculating site \"" << site.name << "\"."
 			<< " Reason: " << ex.what()
 			<< std::endl;
 	}
@@ -268,14 +268,14 @@ MAGDYN_TEMPL void MAGDYN_INST::CalcExchangeTerm(MAGDYN_TYPE::ExchangeTerm& term)
 
 		if(term.site1_calc >= GetMagneticSitesCount())
 		{
-			std::cerr << "Magdyn error: Unknown site 1 name \"" << term.site1 << "\"."
+			CERR_OPT << "Magdyn error: Unknown site 1 name \"" << term.site1 << "\"."
 				<< " in coupling \"" << term.name << "\"."
 				<< std::endl;
 			return;
 		}
 		if(term.site2_calc >= GetMagneticSitesCount())
 		{
-			std::cerr << "Magdyn error: Unknown site 2 name \"" << term.site2 << "\"."
+			CERR_OPT << "Magdyn error: Unknown site 2 name \"" << term.site2 << "\"."
 				<< " in coupling \"" << term.name << "\"."
 				<< std::endl;
 			return;
@@ -292,7 +292,7 @@ MAGDYN_TEMPL void MAGDYN_INST::CalcExchangeTerm(MAGDYN_TYPE::ExchangeTerm& term)
 		}
 		else
 		{
-			std::cerr << "Magdyn error: Parsing J term \""
+			CERR_OPT << "Magdyn error: Parsing J term \""
 				<< term.J << "\"." << std::endl;
 		}
 
@@ -307,7 +307,7 @@ MAGDYN_TEMPL void MAGDYN_INST::CalcExchangeTerm(MAGDYN_TYPE::ExchangeTerm& term)
 				}
 				else
 				{
-					std::cerr << "Magdyn error: Parsing distance term \""
+					CERR_OPT << "Magdyn error: Parsing distance term \""
 						<< term.dist[i]
 						<< "\" (index " << i << ")"
 						<< "." << std::endl;
@@ -323,7 +323,7 @@ MAGDYN_TEMPL void MAGDYN_INST::CalcExchangeTerm(MAGDYN_TYPE::ExchangeTerm& term)
 				}
 				else
 				{
-					std::cerr << "Magdyn error: Parsing DMI term \""
+					CERR_OPT << "Magdyn error: Parsing DMI term \""
 						<< term.dmi[i]
 						<< "\" (index " << i << ")"
 						<< "." << std::endl;
@@ -342,7 +342,7 @@ MAGDYN_TEMPL void MAGDYN_INST::CalcExchangeTerm(MAGDYN_TYPE::ExchangeTerm& term)
 				}
 				else
 				{
-					std::cerr << "Magdyn error: Parsing general term \""
+					CERR_OPT << "Magdyn error: Parsing general term \""
 						<< term.Jgen[i][j]
 						<< "\" (indices " << i << ", " << j << ")"
 						<< "." << std::endl;
@@ -362,8 +362,10 @@ MAGDYN_TEMPL void MAGDYN_INST::CalcExchangeTerm(MAGDYN_TYPE::ExchangeTerm& term)
 	}
 	catch(const std::exception& ex)
 	{
-		std::cerr << "Magdyn error: Calculating coupling \"" << term.name << "\"."
-			<< " Reason: " << ex.what() << "." << std::endl;
+		CERR_OPT << "Magdyn error: Calculating coupling \""
+			<< term.name << "\"."
+			<< " Reason: " << ex.what() << "."
+			<< std::endl;
 	}
 }
 

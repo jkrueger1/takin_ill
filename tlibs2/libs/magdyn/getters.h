@@ -267,6 +267,13 @@ MAGDYN_TEMPL bool MAGDYN_INST::IsIncommensurate() const
 
 
 
+MAGDYN_TEMPL bool MAGDYN_INST::GetSilent() const
+{
+	return m_silent;
+}
+
+
+
 /**
  * get number of magnetic sites with the given name (to check if the name is unique)
  */
@@ -326,7 +333,7 @@ MAGDYN_TEMPL t_size MAGDYN_INST::GetMagneticSiteIndex(const std::string& name) c
 	}
 	else
 	{
-		std::cerr << "Magdyn error: "
+		CERR_OPT << "Magdyn error: "
 			<< "Invalid site name \"" << name << "\"."
 			<< std::endl;
 	}
@@ -360,7 +367,7 @@ MAGDYN_TEMPL t_size MAGDYN_INST::GetExchangeTermIndex(const std::string& name) c
 	}
 	else
 	{
-		std::cerr << "Magdyn error: Invalid coupling name \"" << name << "\"."
+		CERR_OPT << "Magdyn error: Invalid coupling name \"" << name << "\"."
 			<< std::endl;
 	}
 
@@ -476,6 +483,12 @@ MAGDYN_TEMPL void MAGDYN_INST::SetPerformChecks(bool b)
 }
 
 
+MAGDYN_TEMPL void MAGDYN_INST::SetSilent(bool b)
+{
+	m_silent = b;
+}
+
+
 MAGDYN_TEMPL void MAGDYN_INST::SetPhaseSign(t_real sign)
 {
 	m_phase_sign = sign;
@@ -510,7 +523,7 @@ MAGDYN_TEMPL void MAGDYN_INST::SetMagneticFormFactor(const std::string& ffact)
 	{
 		m_magffact_formula = "";
 
-		std::cerr << "Magdyn error: Magnetic form facor formula: \""
+		CERR_OPT << "Magdyn error: Magnetic form facor formula: \""
 			<< ffact << "\" could not be parsed."
 			<< std::endl;
 	}
@@ -649,7 +662,8 @@ void MAGDYN_INST::SetCrystalLattice(t_real a, t_real b, t_real c,
 	catch(const std::exception& ex)
 	{
 		m_xtalA = m_xtalB = tl2::unit<t_mat_real>(3);
-		std::cerr << "Magdyn error: Could not calculate crystal matrices."
+
+		CERR_OPT << "Magdyn error: Could not calculate crystal matrices."
 			<< std::endl;
 	}
 }
@@ -679,13 +693,16 @@ void MAGDYN_INST::SetScatteringPlane(t_real ah, t_real ak, t_real al,
 		std::tie(m_xtalUBinv, inv_ok) = tl2::inv(m_xtalUB);
 
 		if(!inv_ok)
-			std::cerr << "Magdyn error: UB matrix is not invertible."
+		{
+			CERR_OPT << "Magdyn error: UB matrix is not invertible."
 				<< std::endl;
+		}
 	}
 	catch(const std::exception& ex)
 	{
 		m_xtalUB = m_xtalUBinv = tl2::unit<t_mat_real>(3);
-		std::cerr << "Magdyn error: Could not calculate scattering plane matrices."
+
+		CERR_OPT << "Magdyn error: Could not calculate scattering plane matrices."
 			<< std::endl;
 	}
 }
@@ -729,7 +746,7 @@ bool MAGDYN_INST::CheckMagneticSite(t_size idx, bool print_error) const
 	{
 		if(print_error)
 		{
-			std::cerr << "Magdyn error: Site index " << idx
+			CERR_OPT << "Magdyn error: Site index " << idx
 				<< " is out of bounds."
 				<< std::endl;
 		}
@@ -755,7 +772,7 @@ bool MAGDYN_INST::CheckExchangeTerm(t_size idx, bool print_error) const
 	{
 		if(print_error)
 		{
-			std::cerr << "Magdyn error: Coupling index " << idx
+			CERR_OPT << "Magdyn error: Coupling index " << idx
 				<< " is out of bounds."
 				<< std::endl;
 		}
@@ -789,7 +806,7 @@ bool MAGDYN_INST::CheckImagWeights(const t_vec_real& Q_rlu,
 		{
 			ok = false;
 
-			std::cerr << "Magdyn warning: Remaining imaginary S(Q, E) component at Q = "
+			CERR_OPT << "Magdyn warning: Remaining imaginary S(Q, E) component at Q = "
 				<< Q_rlu << " and E = " << EandS.E
 				<< ": imag(S) = " << EandS.S_sum.imag()
 				<< ", imag(S_perp) = " << EandS.S_perp_sum.imag()

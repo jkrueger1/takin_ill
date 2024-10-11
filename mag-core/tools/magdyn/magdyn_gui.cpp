@@ -65,6 +65,7 @@ void MagDynDlg::InitSettingsDlg()
 void MagDynDlg::InitSettings()
 {
 	// calculator settings
+	m_dyn.SetSilent(g_silent);
 	m_dyn.SetEpsilon(g_eps);
 	m_dyn.SetPrecision(g_prec);
 	m_dyn.SetBoseCutoffEnergy(g_bose_cutoff);

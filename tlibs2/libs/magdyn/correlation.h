@@ -101,8 +101,9 @@ bool MAGDYN_INST::CalcCorrelationsFromHamiltonian(
 	if(!inv_ok)
 	{
 		using namespace tl2_ops;
-		std::cerr << "Magdyn error: Cholesky inversion failed"
+		CERR_OPT << "Magdyn error: Cholesky inversion failed"
 			<< " at Q = " << Qvec << "." << std::endl;
+
 		return false;
 	}
 

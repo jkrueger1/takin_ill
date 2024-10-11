@@ -93,6 +93,7 @@ extern t_real g_cholesky_delta;
 
 // optional features
 extern int g_allow_ortho_spin, g_allow_general_J;
+extern int g_silent;
 
 // use native menubar and dialogs?
 extern int g_use_native_menubar, g_use_native_dialogs;
@@ -124,7 +125,7 @@ extern t_real g_structplot_fov;
 // ----------------------------------------------------------------------------
 #include "settings.h"
 
-constexpr std::array<SettingsVariable, 16> g_settingsvariables
+constexpr std::array<SettingsVariable, 17> g_settingsvariables
 {{
 	// threads
 	{
@@ -219,6 +220,12 @@ constexpr std::array<SettingsVariable, 16> g_settingsvariables
 		.description = "Allow setting of general exchange matrix J.",
 		.key = "allow_gen_J",
 		.value = &g_allow_general_J,
+		.editor = SettingsVariableEditor::YESNO,
+	},
+	{
+		.description = "Silence output of error messages on console.",
+		.key = "output_silent",
+		.value = &g_silent,
 		.editor = SettingsVariableEditor::YESNO,
 	},
 }};

@@ -174,11 +174,12 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 		"B_mag", "real", tl::var_to_str(field.mag)});
 	vars.push_back(SqwBase::t_var{
 		"B_align_spins", "real", tl::var_to_str((int)field.align_spins)});
+	vars.push_back(SqwBase::t_var{
+		"silent", "real", tl::var_to_str((int)m_dyn.GetSilent())});
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 	vars.push_back(SqwBase::t_var{
 		"Q_signs", "vector", vec_to_str(m_Qsigns)});
 #endif
-
 	// get variables from the model
 	for(const auto& modelvar : m_dyn.GetVariables())
 	{
@@ -255,6 +256,8 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 			m_dyn.SetExternalField(field);
 			calc_sites = true;
 		}
+		else if(strVar == "silent")
+			m_dyn.SetSilent(tl::str_to_var<int>(strVal) != 0);
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 		else if(strVar == "Q_signs")
 		{

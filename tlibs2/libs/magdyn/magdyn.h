@@ -80,6 +80,9 @@
 #define MAGDYN_TYPE typename MAGDYN_INST
 
 
+// only print if it's not set to silent mode
+#define CERR_OPT if(!m_silent) std::cerr
+
 
 namespace tl2_mag {
 
@@ -181,6 +184,7 @@ public:
 	const ExchangeTerm& GetExchangeTerm(t_size idx) const;
 
 	bool IsIncommensurate() const;
+	bool GetSilent() const;
 
 	/**
 	 * get number of magnetic sites with the given name (to check if the name is unique)
@@ -226,6 +230,7 @@ public:
 	void SetUniteDegenerateEnergies(bool b);
 	void SetForceIncommensurate(bool b);
 	void SetPerformChecks(bool b);
+	void SetSilent(bool b);
 
 	void SetPhaseSign(t_real sign);
 	void SetCholeskyMaxTries(t_size max_tries);
@@ -620,6 +625,7 @@ private:
 	bool m_force_incommensurate{ false };
 	bool m_unite_degenerate_energies{ true };
 	bool m_perform_checks{ true };
+	bool m_silent { false };
 
 	// settings for cholesky decomposition
 	t_size m_tries_chol{ 50 };
