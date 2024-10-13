@@ -301,7 +301,7 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 			if(chol_try >= m_tries_chol - 1)
 			{
 				CERR_OPT << "Magdyn error: Cholesky decomposition failed"
-						<< " at Q = " << Qvec << "." << std::endl;
+					<< " at Q = " << Qvec << "." << std::endl;
 
 				chol_mat = std::move(_C);
 				chol_failed = true;
