@@ -2187,6 +2187,7 @@ void MagDynDlg::CreateMenuBar()
 	acSaveFigure->setIcon(QIcon::fromTheme("image-x-generic"));
 	acSaveDisp->setIcon(QIcon::fromTheme("text-x-generic"));
 	acSaveMultiDisp->setIcon(QIcon::fromTheme("text-x-generic"));
+	acStructExportSun->setIcon(QIcon::fromTheme("weather-clear"));
 
 	// calculation menu
 	auto menuCalc = new QMenu("Calculation", m_menu);
