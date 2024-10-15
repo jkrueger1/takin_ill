@@ -28,7 +28,6 @@
 #include <QtCore/QString>
 
 #include <vector>
-#include <array>
 
 
 
@@ -129,7 +128,7 @@ void MagDynDlg::SaveMultiDispersion(bool as_scr)
 	const t_size num_pts = m_num_points->value();
 
 	// get all Qs from the coordinates table
-	std::vector<std::array<t_real, 3>> Qs;
+	std::vector<t_vec_real> Qs;
 	std::vector<std::string> Q_names;
 	Qs.reserve(m_coordinatestab->rowCount());
 	Q_names.reserve(m_coordinatestab->rowCount());
@@ -146,7 +145,7 @@ void MagDynDlg::SaveMultiDispersion(bool as_scr)
 			m_coordinatestab->item(coord_row, COL_COORD_L))->GetValue();
 
 		Q_names.emplace_back(std::move(name));
-		Qs.emplace_back(std::array<t_real, 3>{{ h, k, l }});
+		Qs.emplace_back(tl2::create<t_vec_real>({ h, k, l }));
 	}
 
 	// TODO

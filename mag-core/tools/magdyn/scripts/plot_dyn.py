@@ -38,6 +38,7 @@ pyplot.rcParams.update({
 # -----------------------------------------------------------------------------
 show_dividers  = False  # show vertical bars between dispersion branches
 plot_file      = ""     # file to save plot to
+only_pos_E     = True   # ignore magnon annihilation?
 
 S_scale        = 2.5    # weight scaling factor
 S_clamp_min    = 1.     # min. clamp factor
@@ -74,6 +75,14 @@ def plot_disp(data):
 
 	branch_idx = 0
 	for (data_h, data_k, data_l, data_E, data_S) in data:
+		if only_pos_E:
+			# ignore magnon annihilation
+			data_h = numpy.array([ h for (h, E) in zip(data_h, data_E) if E >= 0. ])
+			data_k = numpy.array([ k for (k, E) in zip(data_k, data_E) if E >= 0. ])
+			data_l = numpy.array([ l for (l, E) in zip(data_l, data_E) if E >= 0. ])
+			data_S = numpy.array([ S for (S, E) in zip(data_S, data_E) if E >= 0. ])
+			data_E = numpy.array([ E for E in data_E if E >= 0. ])
+
 		# branch start and end point
 		b1 = ( data_h[0], data_k[0], data_l[0] )
 		b2 = ( data_h[-1], data_k[-1], data_l[-1] )
@@ -126,7 +135,7 @@ def plot_disp(data):
 			axes[branch_idx].set_xlabel("Q (rlu)")
 
 		# scale and clamp S
-		data_S = data_S * S_scale
+		data_S *= S_scale
 		if S_clamp_min < S_clamp_max:
 			data_S = numpy.clip(data_S, a_min = S_clamp_min, a_max = S_clamp_max)
 

@@ -69,11 +69,13 @@ pyplot.rcParams.update({
 # -----------------------------------------------------------------------------
 show_dividers  = False  # show vertical bars between dispersion branches
 plot_file      = ""     # file to save plot to
+only_pos_E     = True   # ignore magnon annihilation?
 
-S_scale        = %%SCALE%%
-S_clamp_min    = %%CLAMP_MIN%%
-S_clamp_max    = %%CLAMP_MAX%%
+S_scale        = 5.     # spectral weight scaling factor
+S_clamp_min    = 1.     # spectral weight min. clamping factor
+S_clamp_max    = 500.   # spectral weight max. clamping factor
 
+# settings for dispersion branches
 branch_labels  = %%LABELS%%
 width_ratios   = %%RATIOS%%
 branch_colours = None
@@ -101,6 +103,14 @@ def plot_disp(data):
 		data_l = branch_data[2]
 		data_E = branch_data[3]
 		data_S = branch_data[4]
+
+		if only_pos_E:
+			# ignore magnon annihilation
+			data_h = numpy.array([ h for (h, E) in zip(data_h, data_E) if E >= 0. ])
+			data_k = numpy.array([ k for (k, E) in zip(data_k, data_E) if E >= 0. ])
+			data_l = numpy.array([ l for (l, E) in zip(data_l, data_E) if E >= 0. ])
+			data_S = numpy.array([ S for (S, E) in zip(data_S, data_E) if E >= 0. ])
+			data_E = numpy.array([ E for E in data_E if E >= 0. ])
 
 		# branch start and end point
 		start_Q = ( data_h[0], data_k[0], data_l[0] )
@@ -154,7 +164,7 @@ def plot_disp(data):
 			axes[branch_idx].set_xlabel("Q (rlu)")
 
 		# scale and clamp S
-		data_S = data_S * S_scale
+		data_S *= S_scale
 		if S_clamp_min < S_clamp_max:
 			data_S = numpy.clip(data_S, a_min = S_clamp_min, a_max = S_clamp_max)
 
@@ -215,7 +225,7 @@ bool MAGDYN_INST::SaveDispersion(const std::string& filename,
  */
 MAGDYN_TEMPL
 bool MAGDYN_INST::SaveMultiDispersion(const std::string& filename,
-	const std::vector<std::array<t_real, 3>>& Qs,
+	const std::vector<t_vec_real>& Qs,
 	t_size num_Qs, t_size num_threads, bool as_py,
 	const bool *stop_request,
 	const std::vector<std::string> *Q_names) const
@@ -310,9 +320,6 @@ bool MAGDYN_INST::SaveDispersion(std::ostream& ostr,
 	{
 		std::string pyscr = g_pyscr;
 
-		algo::replace_all(pyscr, "%%SCALE%%", "1.");
-		algo::replace_all(pyscr, "%%CLAMP_MIN%%", "1.");
-		algo::replace_all(pyscr, "%%CLAMP_MAX%%", "1000.");
 		algo::replace_all(pyscr, "%%LABELS%%", "None");
 		algo::replace_all(pyscr, "%%RATIOS%%", "None");
 		algo::replace_all(pyscr, "%%DATA%%", "[[\n" + all_data.str() + "\n]]");
@@ -331,7 +338,7 @@ bool MAGDYN_INST::SaveDispersion(std::ostream& ostr,
  */
 MAGDYN_TEMPL
 bool MAGDYN_INST::SaveMultiDispersion(std::ostream& ostr,
-	const std::vector<std::array<t_real, 3>>& Qs,
+	const std::vector<t_vec_real>& Qs,
 	t_size num_Qs, t_size num_threads, bool as_py,
 	const bool *stop_request,
 	const std::vector<std::string> *Q_names) const
@@ -347,13 +354,20 @@ bool MAGDYN_INST::SaveMultiDispersion(std::ostream& ostr,
 	ostr << "#\n\n";
 
 	// data for script export
-	std::ostringstream all_data;
-	all_data.precision(m_prec);
+	bool has_Q_names = false;
+	std::ostringstream all_data, Q_ratios, Q_labels;
+	for(std::ostringstream* theostr : { &all_data, &Q_ratios, &Q_labels })
+		theostr->precision(m_prec);
 
 	for(t_size i = 0; i < N - 1; ++i)
 	{
-		const std::array<t_real, 3>& Q1 = Qs[i];
-		const std::array<t_real, 3>& Q2 = Qs[i + 1];
+		const t_vec_real& Q1 = Qs[i];
+		const t_vec_real& Q2 = Qs[i + 1];
+
+		// length from Q1 to Q2
+		t_vec_real Q1_lab = m_xtalUB * Q1;
+		t_vec_real Q2_lab = m_xtalUB * Q2;
+		Q_ratios << tl2::norm<t_vec_real>(Q2_lab - Q1_lab) << ", ";
 
 		if(!as_py)  // save as text file
 		{
@@ -379,6 +393,18 @@ bool MAGDYN_INST::SaveMultiDispersion(std::ostream& ostr,
 		}
 		else        // save as py script
 		{
+			// get Q names
+			if(i == 0 && Q_names && (*Q_names)[i] != "")
+			{
+				Q_labels << "\"" << (*Q_names)[i] << "\", ";
+				has_Q_names = true;
+			}
+			if(Q_names && (*Q_names)[i + 1] != "")
+			{
+				Q_labels << "\"" << (*Q_names)[i + 1] << "\", ";
+				has_Q_names = true;
+			}
+
 			SofQEs results = CalcDispersion(Q1[0], Q1[1], Q1[2],
 				Q2[0], Q2[1], Q2[2], num_Qs,
 				num_threads, stop_request);
@@ -409,11 +435,9 @@ bool MAGDYN_INST::SaveMultiDispersion(std::ostream& ostr,
 	{
 		std::string pyscr = g_pyscr;
 
-		algo::replace_all(pyscr, "%%SCALE%%", "1.");
-		algo::replace_all(pyscr, "%%CLAMP_MIN%%", "1.");
-		algo::replace_all(pyscr, "%%CLAMP_MAX%%", "1000.");
-		algo::replace_all(pyscr, "%%LABELS%%", "None");
-		algo::replace_all(pyscr, "%%RATIOS%%", "None");
+		algo::replace_all(pyscr, "%%LABELS%%",
+			has_Q_names ? "[ " + Q_labels.str() + " ]" : "None");
+		algo::replace_all(pyscr, "%%RATIOS%%", "[ " + Q_ratios.str() + " ]");
 		algo::replace_all(pyscr, "%%DATA%%", "[\n" + all_data.str() + "\n]");
 
 		ostr << pyscr << "\n";

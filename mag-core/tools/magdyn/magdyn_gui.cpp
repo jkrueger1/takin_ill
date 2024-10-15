@@ -2319,8 +2319,10 @@ void MagDynDlg::CreateMenuBar()
 	m_menuDisp->addMenu(menuWeights);
 	m_menuDisp->addSeparator();
 	m_menuDisp->addAction(acSaveFigure);
+	m_menuDisp->addSeparator();
 	m_menuDisp->addAction(acSaveDisp);
 	m_menuDisp->addAction(acSaveMultiDisp);
+	m_menuDisp->addSeparator();
 	m_menuDisp->addAction(acSaveDispScr);
 	m_menuDisp->addAction(acSaveMultiDispScr);
 
