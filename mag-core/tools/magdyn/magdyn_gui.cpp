@@ -2128,6 +2128,8 @@ void MagDynDlg::CreateMenuBar()
 	auto acSaveFigure = new QAction("Save Figure...", m_menuDisp);
 	auto acSaveDisp = new QAction("Save Data...", m_menuDisp);
 	auto acSaveMultiDisp = new QAction("Save Data For All Qs...", m_menuDisp);
+	auto acSaveDispScr = new QAction("Save Data As Script...", m_menuDisp);
+	auto acSaveMultiDispScr = new QAction("Save Data As Script For All Qs...", m_menuDisp);
 
 	// channels sub-menu
 	m_menuChannels = new QMenu("Selected Channels", m_menuDisp);
@@ -2319,6 +2321,8 @@ void MagDynDlg::CreateMenuBar()
 	m_menuDisp->addAction(acSaveFigure);
 	m_menuDisp->addAction(acSaveDisp);
 	m_menuDisp->addAction(acSaveMultiDisp);
+	m_menuDisp->addAction(acSaveDispScr);
+	m_menuDisp->addAction(acSaveMultiDispScr);
 
 	menuCalc->addAction(m_autocalc);
 	menuCalc->addAction(acCalc);
@@ -2360,8 +2364,22 @@ void MagDynDlg::CreateMenuBar()
 	connect(acExit, &QAction::triggered, this, &QDialog::close);
 
 	connect(acSaveFigure, &QAction::triggered, this, &MagDynDlg::SavePlotFigure);
-	connect(acSaveDisp, &QAction::triggered, this, &MagDynDlg::SaveDispersion);
-	connect(acSaveMultiDisp, &QAction::triggered, this, &MagDynDlg::SaveMultiDispersion);
+	connect(acSaveDisp, &QAction::triggered, [this]()
+	{
+		this->SaveDispersion(false);
+	});
+	connect(acSaveMultiDisp, &QAction::triggered, [this]()
+	{
+		this->SaveMultiDispersion(false);
+	});
+	connect(acSaveDispScr, &QAction::triggered, [this]()
+	{
+		this->SaveDispersion(true);
+	});
+	connect(acSaveMultiDispScr, &QAction::triggered, [this]()
+	{
+		this->SaveMultiDispersion(true);
+	});
 
 	connect(acRescalePlot, &QAction::triggered, [this]()
 	{
