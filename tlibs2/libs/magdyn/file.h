@@ -45,16 +45,18 @@
 #include <iomanip>
 
 #include <boost/algorithm/string/replace.hpp>
-namespace algo = boost::algorithm;
 
 #include "../algos.h"
 #include "magdyn.h"
 
 
+namespace tl2_mag {
+
 // ============================================================================
 // py plotting script template
 // ============================================================================
-static const std::string g_pyscr = R"RAW(import sys
+template<class t_str = std::string>
+t_str g_pyscr = R"RAW(import sys
 import numpy
 import matplotlib.pyplot as pyplot
 pyplot.rcParams.update({
@@ -71,9 +73,10 @@ show_dividers  = False  # show vertical bars between dispersion branches
 plot_file      = ""     # file to save plot to
 only_pos_E     = True   # ignore magnon annihilation?
 
-S_scale        = 5.     # spectral weight scaling factor
-S_clamp_min    = 1.     # spectral weight min. clamping factor
-S_clamp_max    = 500.   # spectral weight max. clamping factor
+S_filter_min   = 1e-5   # cutoff minimum spectral weight
+S_scale        = 10.    # spectral weight scaling factor
+S_clamp_min    = 0.1    # spectral weight minimum clamping factor
+S_clamp_max    = 100.   # spectral weight maximum clamping factor
 
 # settings for dispersion branches
 branch_labels  = %%LABELS%%
@@ -111,6 +114,14 @@ def plot_disp(data):
 			data_l = numpy.array([ l for (l, E) in zip(data_l, data_E) if E >= 0. ])
 			data_S = numpy.array([ S for (S, E) in zip(data_S, data_E) if E >= 0. ])
 			data_E = numpy.array([ E for E in data_E if E >= 0. ])
+
+		if S_filter_min >= 0.:
+			# filter weights below cutoff
+			data_h = numpy.array([ h for (h, S) in zip(data_h, data_S) if S >= S_filter_min ])
+			data_k = numpy.array([ k for (k, S) in zip(data_k, data_S) if S >= S_filter_min ])
+			data_l = numpy.array([ l for (l, S) in zip(data_l, data_S) if S >= S_filter_min ])
+			data_E = numpy.array([ E for (E, S) in zip(data_E, data_S) if S >= S_filter_min ])
+			data_S = numpy.array([ S for S in data_S if S >= S_filter_min ])
 
 		# branch start and end point
 		start_Q = ( data_h[0], data_k[0], data_l[0] )
@@ -192,6 +203,7 @@ if __name__ == "__main__":
 )RAW";
 // ============================================================================
 
+}  // tl2_mag
 
 
 // --------------------------------------------------------------------
@@ -318,8 +330,9 @@ bool MAGDYN_INST::SaveDispersion(std::ostream& ostr,
 
 	if(as_py)  // save as py script
 	{
-		std::string pyscr = g_pyscr;
+		std::string pyscr = g_pyscr<std::string>;
 
+		namespace algo = boost::algorithm;
 		algo::replace_all(pyscr, "%%LABELS%%", "None");
 		algo::replace_all(pyscr, "%%RATIOS%%", "None");
 		algo::replace_all(pyscr, "%%DATA%%", "[[\n" + all_data.str() + "\n]]");
@@ -433,8 +446,9 @@ bool MAGDYN_INST::SaveMultiDispersion(std::ostream& ostr,
 
 	if(as_py)  // save as py script
 	{
-		std::string pyscr = g_pyscr;
+		std::string pyscr = g_pyscr<std::string>;
 
+		namespace algo = boost::algorithm;
 		algo::replace_all(pyscr, "%%LABELS%%",
 			has_Q_names ? "[ " + Q_labels.str() + " ]" : "None");
 		algo::replace_all(pyscr, "%%RATIOS%%", "[ " + Q_ratios.str() + " ]");

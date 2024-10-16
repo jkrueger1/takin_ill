@@ -40,9 +40,10 @@ show_dividers  = False  # show vertical bars between dispersion branches
 plot_file      = ""     # file to save plot to
 only_pos_E     = True   # ignore magnon annihilation?
 
-S_scale        = 2.5    # weight scaling factor
-S_clamp_min    = 1.     # min. clamp factor
-S_clamp_max    = 1000.  # max. clamp factor
+S_filter_min   = 1e-5   # cutoff minimum spectral weight
+S_scale        = 10     # weight scaling factor
+S_clamp_min    = 0.1    # min. clamp factor
+S_clamp_max    = 100.   # max. clamp factor
 
 branch_labels  = None   # Q end point names
 branch_colours = None   # branch colours
@@ -82,6 +83,14 @@ def plot_disp(data):
 			data_l = numpy.array([ l for (l, E) in zip(data_l, data_E) if E >= 0. ])
 			data_S = numpy.array([ S for (S, E) in zip(data_S, data_E) if E >= 0. ])
 			data_E = numpy.array([ E for E in data_E if E >= 0. ])
+
+		if S_filter_min >= 0.:
+			# filter weights below cutoff
+			data_h = numpy.array([ h for (h, S) in zip(data_h, data_S) if S >= S_filter_min ])
+			data_k = numpy.array([ k for (k, S) in zip(data_k, data_S) if S >= S_filter_min ])
+			data_l = numpy.array([ l for (l, S) in zip(data_l, data_S) if S >= S_filter_min ])
+			data_E = numpy.array([ E for (E, S) in zip(data_E, data_S) if S >= S_filter_min ])
+			data_S = numpy.array([ S for S in data_S if S >= S_filter_min ])
 
 		# branch start and end point
 		b1 = ( data_h[0], data_k[0], data_l[0] )
@@ -154,7 +163,7 @@ def plot_disp(data):
 
 
 if __name__ == "__main__":
-	if len(sys.argv) < 1:
+	if len(sys.argv) < 2:
 		print("Please specify data file names.")
 		sys.exit(-1)
 

@@ -26,6 +26,7 @@
 #include "magdyn.h"
 
 #include <QtCore/QString>
+#include <QtWidgets/QApplication>
 
 #include <vector>
 
@@ -61,11 +62,17 @@ void MagDynDlg::SaveDispersion(bool as_scr)
 
 	QString filename;
 	if(as_scr)
+	{
 		filename = QFileDialog::getSaveFileName(
-			this, "Save Dispersion Data As Script", dirLast, "Py Files (*.py)");
+			this, "Save Dispersion Data As Script",
+			dirLast, "Py Files (*.py)");
+	}
 	else
+	{
 		filename = QFileDialog::getSaveFileName(
-			this, "Save Dispersion Data", dirLast, "Data Files (*.dat)");
+			this, "Save Dispersion Data",
+			dirLast, "Data Files (*.dat)");
+	}
 
 	if(filename == "")
 		return;
@@ -90,6 +97,8 @@ void MagDynDlg::SaveDispersion(bool as_scr)
 	// TODO
 	bool stop_request = false;
 	m_statusFixed->setText("Calculating dispersion.");
+	qApp->processEvents();
+
 	m_dyn.SaveDispersion(filename.toStdString(),
 		Q_start[0], Q_start[1], Q_start[2],
 		Q_end[0], Q_end[1], Q_end[2],
@@ -116,11 +125,17 @@ void MagDynDlg::SaveMultiDispersion(bool as_scr)
 	QString dirLast = m_sett->value("dir", "").toString();
 	QString filename;
 	if(as_scr)
+	{
 		filename = QFileDialog::getSaveFileName(
-			this, "Save Dispersion Data As Script", dirLast, "Py Files (*.py)");
+			this, "Save Dispersion Data As Script",
+			dirLast, "Py Files (*.py)");
+	}
 	else
+	{
 		filename = QFileDialog::getSaveFileName(
-			this, "Save Dispersion Data", dirLast, "Data Files (*.dat)");
+			this, "Save Dispersion Data",
+			dirLast, "Data Files (*.dat)");
+	}
 	if(filename == "")
 		return;
 	m_sett->setValue("dir", QFileInfo(filename).path());
@@ -151,6 +166,8 @@ void MagDynDlg::SaveMultiDispersion(bool as_scr)
 	// TODO
 	bool stop_request = false;
 	m_statusFixed->setText("Calculating dispersion.");
+	qApp->processEvents();
+
 	m_dyn.SaveMultiDispersion(filename.toStdString(),
 		Qs, num_pts, g_num_threads, as_scr,
 		&stop_request, &Q_names);
