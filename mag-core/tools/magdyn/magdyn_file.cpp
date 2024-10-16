@@ -28,8 +28,11 @@
 #include <QtCore/QString>
 #include <QtWidgets/QApplication>
 
+#include <boost/scope_exit.hpp>
+
 #include <vector>
 
+#include "tlibs2/libs/algos.h"
 
 
 // --------------------------------------------------------------------------------
@@ -58,6 +61,13 @@ void MagDynDlg::SavePlotFigure()
  */
 void MagDynDlg::SaveDispersion(bool as_scr)
 {
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->EnableInput();
+	} BOOST_SCOPE_EXIT_END
+	DisableInput();
+	m_stopRequested = false;
+
 	QString dirLast = m_sett->value("dir", "").toString();
 
 	QString filename;
@@ -94,17 +104,43 @@ void MagDynDlg::SaveDispersion(bool as_scr)
 
 	const t_size num_pts = m_num_points->value();
 
-	// TODO
-	bool stop_request = false;
-	m_statusFixed->setText("Calculating dispersion.");
-	qApp->processEvents();
+	// function to track progress and request stopping
+	std::function<bool(int, int)> progress_fkt =
+		[this](int progress, int total) -> bool
+	{
+		if(total >= 0)
+			m_progress->setMaximum(total);
+		if(progress >= 0)
+			m_progress->setValue(progress);
 
-	m_dyn.SaveDispersion(filename.toStdString(),
+		qApp->processEvents();
+		return !m_stopRequested;
+	};
+
+	// start calculation
+	m_status->setText("Calculating dispersion.");
+	tl2::Stopwatch<t_real> stopwatch;
+	stopwatch.start();
+
+	bool ok = m_dyn.SaveDispersion(filename.toStdString(),
 		Q_start[0], Q_start[1], Q_start[2],
 		Q_end[0], Q_end[1], Q_end[2],
 		num_pts, g_num_threads, as_scr,
-		&stop_request);
-	m_statusFixed->setText("Ready.");
+		&progress_fkt);
+
+	// print timing information
+        stopwatch.stop();
+	std::ostringstream ostrMsg;
+	ostrMsg.precision(g_prec_gui);
+	ostrMsg << "Calculation";
+	if(m_stopRequested)
+		ostrMsg << " stopped ";
+	else if(ok)
+		ostrMsg << " finished ";
+	else
+		ostrMsg << " failed ";
+	ostrMsg << "after " << stopwatch.GetDur() << " s.";
+	m_status->setText(ostrMsg.str().c_str());
 }
 
 
@@ -115,32 +151,12 @@ void MagDynDlg::SaveDispersion(bool as_scr)
  */
 void MagDynDlg::SaveMultiDispersion(bool as_scr)
 {
-	if(!m_coordinatestab->rowCount())
+	BOOST_SCOPE_EXIT(this_)
 	{
-		QMessageBox::critical(this, "Magnetic Dynamics", "No Q coordinates available, "
-			"please define them in the \"Coordinates\" tab.");
-		return;
-	}
-
-	QString dirLast = m_sett->value("dir", "").toString();
-	QString filename;
-	if(as_scr)
-	{
-		filename = QFileDialog::getSaveFileName(
-			this, "Save Dispersion Data As Script",
-			dirLast, "Py Files (*.py)");
-	}
-	else
-	{
-		filename = QFileDialog::getSaveFileName(
-			this, "Save Dispersion Data",
-			dirLast, "Data Files (*.dat)");
-	}
-	if(filename == "")
-		return;
-	m_sett->setValue("dir", QFileInfo(filename).path());
-
-	const t_size num_pts = m_num_points->value();
+		this_->EnableInput();
+	} BOOST_SCOPE_EXIT_END
+	DisableInput();
+	m_stopRequested = false;
 
 	// get all Qs from the coordinates table
 	std::vector<t_vec_real> Qs;
@@ -163,14 +179,87 @@ void MagDynDlg::SaveMultiDispersion(bool as_scr)
 		Qs.emplace_back(tl2::create<t_vec_real>({ h, k, l }));
 	}
 
-	// TODO
-	bool stop_request = false;
-	m_statusFixed->setText("Calculating dispersion.");
-	qApp->processEvents();
+	if(Qs.size() <= 1)
+	{
+		QMessageBox::critical(this, "Magnetic Dynamics",
+			"Not enough Q coordinates available, "
+			"please define them in the \"Coordinates\" tab.");
+		return;
+	}
 
-	m_dyn.SaveMultiDispersion(filename.toStdString(),
+	// get file name to save dispersions to
+	QString dirLast = m_sett->value("dir", "").toString();
+	QString filename;
+	if(as_scr)
+	{
+		filename = QFileDialog::getSaveFileName(
+			this, "Save Dispersion Data As Script",
+			dirLast, "Py Files (*.py)");
+	}
+	else
+	{
+		filename = QFileDialog::getSaveFileName(
+			this, "Save Dispersion Data",
+			dirLast, "Data Files (*.dat)");
+	}
+	if(filename == "")
+		return;
+	m_sett->setValue("dir", QFileInfo(filename).path());
+
+	const t_size num_pts = m_num_points->value();
+	const t_size num_disps = Qs.size() - 1;
+	t_size cur_disp = 1;
+	int prev_progress = -1;
+	int total_progress = -1;
+
+	// function to track progress and request stopping
+	std::function<bool(int, int)> progress_fkt =
+		[this, num_disps, &cur_disp, &prev_progress, &total_progress](
+			int progress, int total) -> bool
+	{
+		if(progress == 0 && prev_progress == total)
+		{
+			++cur_disp;
+			m_status->setText(QString(
+				"Calculating dispersion %1/%2.").arg(cur_disp).arg(num_disps));
+		}
+
+		if(total >= 0)
+		{
+			m_progress->setMaximum(total);
+			total_progress = total;
+		}
+		if(progress >= 0)
+		{
+			m_progress->setValue(progress);
+			prev_progress = progress;
+		}
+
+		qApp->processEvents();
+		return !m_stopRequested;
+	};
+
+	// start calculation
+	m_status->setText(QString("Calculating dispersion 1/%1.").arg(num_disps));
+	tl2::Stopwatch<t_real> stopwatch;
+	stopwatch.start();
+
+	bool ok = m_dyn.SaveMultiDispersion(filename.toStdString(),
 		Qs, num_pts, g_num_threads, as_scr,
-		&stop_request, &Q_names);
-	m_statusFixed->setText("Ready.");
+		&progress_fkt, &Q_names);
+
+	// print timing information
+        stopwatch.stop();
+	std::ostringstream ostrMsg;
+	ostrMsg.precision(g_prec_gui);
+	ostrMsg << "Calculation";
+	if(m_stopRequested)
+		ostrMsg << " stopped ";
+	else if(ok)
+		ostrMsg << " finished ";
+	else
+		ostrMsg << " failed ";
+	ostrMsg << "after " << stopwatch.GetDur() << " s.";
+	m_status->setText(ostrMsg.str().c_str());
 }
 // --------------------------------------------------------------------------------

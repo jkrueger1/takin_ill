@@ -217,7 +217,7 @@ bool MAGDYN_INST::SaveDispersion(const std::string& filename,
 	t_real h_start, t_real k_start, t_real l_start,
 	t_real h_end, t_real k_end, t_real l_end,
 	t_size num_Qs, t_size num_threads, bool as_py,
-	const bool *stop_request) const
+	std::function<bool(int, int)> *progress_fkt) const
 {
 	std::ofstream ofstr{filename};
 	if(!ofstr)
@@ -226,7 +226,7 @@ bool MAGDYN_INST::SaveDispersion(const std::string& filename,
 	return SaveDispersion(ofstr,
 		h_start, k_start, l_start,
 		h_end, k_end, l_end, num_Qs,
-		num_threads, as_py, stop_request,
+		num_threads, as_py, progress_fkt,
 		true);
 }
 
@@ -239,7 +239,7 @@ MAGDYN_TEMPL
 bool MAGDYN_INST::SaveMultiDispersion(const std::string& filename,
 	const std::vector<t_vec_real>& Qs,
 	t_size num_Qs, t_size num_threads, bool as_py,
-	const bool *stop_request,
+	std::function<bool(int, int)> *progress_fkt,
 	const std::vector<std::string> *Q_names) const
 {
 	std::ofstream ofstr{filename};
@@ -248,7 +248,7 @@ bool MAGDYN_INST::SaveMultiDispersion(const std::string& filename,
 
 	return SaveMultiDispersion(ofstr,
 		Qs, num_Qs, num_threads, as_py,
-		stop_request, Q_names);
+		progress_fkt, Q_names);
 }
 
 
@@ -261,7 +261,8 @@ bool MAGDYN_INST::SaveDispersion(std::ostream& ostr,
 	t_real h_start, t_real k_start, t_real l_start,
 	t_real h_end, t_real k_end, t_real l_end,
 	t_size num_Qs, t_size num_threads, bool as_py,
-	const bool *stop_request, bool write_header) const
+	std::function<bool(int, int)> *progress_fkt,
+	bool write_header) const
 {
 	ostr.precision(m_prec);
 	int field_len = m_prec * 2.5;
@@ -292,12 +293,12 @@ bool MAGDYN_INST::SaveDispersion(std::ostream& ostr,
 	}
 
 	SofQEs results = CalcDispersion(h_start, k_start, l_start,
-		h_end, k_end, l_end, num_Qs, num_threads, stop_request);
+		h_end, k_end, l_end, num_Qs, num_threads, progress_fkt);
 
 	// print results
 	for(const auto& result : results)
 	{
-		if(stop_request && *stop_request)
+		if(progress_fkt && !(*progress_fkt)(-1, -1))
 			return false;
 
 		// get results
@@ -353,7 +354,7 @@ MAGDYN_TEMPL
 bool MAGDYN_INST::SaveMultiDispersion(std::ostream& ostr,
 	const std::vector<t_vec_real>& Qs,
 	t_size num_Qs, t_size num_threads, bool as_py,
-	const bool *stop_request,
+	std::function<bool(int, int)> *progress_fkt,
 	const std::vector<std::string> *Q_names) const
 {
 	bool ok = true;
@@ -396,7 +397,7 @@ bool MAGDYN_INST::SaveMultiDispersion(std::ostream& ostr,
 
 			if(!SaveDispersion(ostr, Q1[0], Q1[1], Q1[2],
 				Q2[0], Q2[1], Q2[2], num_Qs,
-				num_threads, false, stop_request, false))
+				num_threads, false, progress_fkt, false))
 			{
 				ok = false;
 				break;
@@ -420,9 +421,9 @@ bool MAGDYN_INST::SaveMultiDispersion(std::ostream& ostr,
 
 			SofQEs results = CalcDispersion(Q1[0], Q1[1], Q1[2],
 				Q2[0], Q2[1], Q2[2], num_Qs,
-				num_threads, stop_request);
+				num_threads, progress_fkt);
 
-			if(stop_request && *stop_request)
+			if(progress_fkt && !(*progress_fkt)(-1, -1))
 				break;
 
 			// get results

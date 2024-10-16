@@ -462,7 +462,8 @@ public:
 	 */
 	SofQEs CalcDispersion(t_real h_start, t_real k_start, t_real l_start,
 		t_real h_end, t_real k_end, t_real l_end, t_size num_Qs = 128,
-		t_size num_threads = 4, const bool *stop_request = nullptr) const;
+		t_size num_threads = 4,
+		std::function<bool(int, int)> *progress_fkt = nullptr) const;
 
 	/**
 	 * get the energy minimum
@@ -494,7 +495,8 @@ public:
 		t_real h_start, t_real k_start, t_real l_start,
 		t_real h_end, t_real k_end, t_real l_end,
 		t_size num_Qs = 128, t_size num_threads = 4,
-		bool as_py = false, const bool *stop_request = nullptr) const;
+		bool as_py = false,
+		std::function<bool(int, int)> *progress_fkt = nullptr) const;
 
 	/**
 	 * generates the dispersion plot along the given Q path
@@ -503,7 +505,8 @@ public:
 		t_real h_start, t_real k_start, t_real l_start,
 		t_real h_end, t_real k_end, t_real l_end,
 		t_size num_Qs = 128, t_size num_threads = 4,
-		bool as_py = false, const bool *stop_request = nullptr,
+		bool as_py = false,
+		std::function<bool(int, int)> *progress_fkt = nullptr,
 		bool write_header = true) const;
 
 	/**
@@ -512,7 +515,8 @@ public:
 	bool SaveMultiDispersion(const std::string& filename,
 		const std::vector<t_vec_real>& Qs,
 		t_size num_Qs = 128, t_size num_threads = 4,
-		bool as_py = false, const bool *stop_request = nullptr,
+		bool as_py = false,
+		std::function<bool(int, int)> *progress_fkt = nullptr,
 		const std::vector<std::string>* Q_names = nullptr) const;
 
 	/**
@@ -521,7 +525,8 @@ public:
 	bool SaveMultiDispersion(std::ostream& ostr,
 		const std::vector<t_vec_real>& Qs,
 		t_size num_Qs = 128, t_size num_threads = 4,
-		bool as_py = false, const bool *stop_request = nullptr,
+		bool as_py = false,
+		std::function<bool(int, int)> *progress_fkt = nullptr,
 		const std::vector<std::string>* Q_names = nullptr) const;
 
 	/**
