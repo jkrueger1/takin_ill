@@ -1729,10 +1729,15 @@ void MagDynDlg::CreateCoordinatesPanel()
 	btnCoordUp->setToolTip("Move selected coordinate(s) up.");
 	btnCoordDown->setToolTip("Move selected coordinate(s) down.");
 
+	QPushButton *btnSaveMultiDisp = new QPushButton("Save Data...", m_coordinatespanel);
+	QPushButton *btnSaveMultiDispScr = new QPushButton("Save Script...", m_coordinatespanel);
+	btnSaveMultiDisp->setToolTip("Calculate the dispersion paths and save them to a data file.");
+	btnSaveMultiDispScr->setToolTip("Calculate the dispersion paths and save them to a script file.");
+
 	QPushButton *btnSetDispersion = new QPushButton("To Dispersion", m_coordinatespanel);
-	btnSetDispersion->setToolTip("Calculate the dispersion relation for the currently selected Q path.");
 	QPushButton *btnSetHamilton = new QPushButton("To Hamiltonian", m_coordinatespanel);
-	btnSetHamilton->setToolTip("Calculate the Hamiltonian for the currently selected initial Q coordinate.");
+	btnSetDispersion->setToolTip("Calculate the dispersion relation for the currently selected Q path.");
+	btnSetHamilton->setToolTip("Calculate the Hamiltonian for the currently selected Q coordinate.");
 
 	btnAddCoord->setFocusPolicy(Qt::StrongFocus);
 	btnDelCoord->setFocusPolicy(Qt::StrongFocus);
@@ -1801,9 +1806,10 @@ void MagDynDlg::CreateCoordinatesPanel()
 	grid->addWidget(btnDelCoord, y,1,1,1);
 	grid->addWidget(btnCoordUp, y,2,1,1);
 	grid->addWidget(btnCoordDown, y++,3,1,1);
-	grid->addWidget(btnSetDispersion, y,2,1,1);
-	grid->addWidget(btnSetHamilton, y++,3,1,1);
-
+	grid->addWidget(btnSetDispersion, y,0,1,1);
+	grid->addWidget(btnSetHamilton, y,1,1,1);
+	grid->addWidget(btnSaveMultiDisp, y,2,1,1);
+	grid->addWidget(btnSaveMultiDispScr, y++,3,1,1);
 
 	// signals
 	connect(btnAddCoord, &QAbstractButton::clicked,
@@ -1819,6 +1825,10 @@ void MagDynDlg::CreateCoordinatesPanel()
 		[this]() { this->SetCurrentCoordinate(0); });
 	connect(btnSetHamilton, &QAbstractButton::clicked,
 		[this]() { this->SetCurrentCoordinate(1); });
+	connect(btnSaveMultiDisp, &QAbstractButton::clicked,
+		[this]() { this->SaveMultiDispersion(false); });
+	connect(btnSaveMultiDispScr, &QAbstractButton::clicked,
+		[this]() { this->SaveMultiDispersion(true); });
 
 	connect(m_coordinatestab, &QTableWidget::itemSelectionChanged, [this]()
 	{
@@ -2366,22 +2376,14 @@ void MagDynDlg::CreateMenuBar()
 	connect(acExit, &QAction::triggered, this, &QDialog::close);
 
 	connect(acSaveFigure, &QAction::triggered, this, &MagDynDlg::SavePlotFigure);
-	connect(acSaveDisp, &QAction::triggered, [this]()
-	{
-		this->SaveDispersion(false);
-	});
-	connect(acSaveMultiDisp, &QAction::triggered, [this]()
-	{
-		this->SaveMultiDispersion(false);
-	});
-	connect(acSaveDispScr, &QAction::triggered, [this]()
-	{
-		this->SaveDispersion(true);
-	});
-	connect(acSaveMultiDispScr, &QAction::triggered, [this]()
-	{
-		this->SaveMultiDispersion(true);
-	});
+	connect(acSaveDisp, &QAction::triggered,
+		[this](){ this->SaveDispersion(false); });
+	connect(acSaveMultiDisp, &QAction::triggered,
+		[this](){ this->SaveMultiDispersion(false); });
+	connect(acSaveDispScr, &QAction::triggered,
+		[this](){ this->SaveDispersion(true); });
+	connect(acSaveMultiDispScr, &QAction::triggered,
+		[this](){ this->SaveMultiDispersion(true); });
 
 	connect(acRescalePlot, &QAction::triggered, [this]()
 	{
