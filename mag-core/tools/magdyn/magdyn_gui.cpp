@@ -120,6 +120,7 @@ void MagDynDlg::CreateMainWindow()
 
 	// show structure
 	QPushButton *btnShowStruct = new QPushButton("View Structure...", this);
+	btnShowStruct->setIcon(QIcon::fromTheme("applications-graphics"));
 	btnShowStruct->setToolTip("Show a 3D view of the magnetic sites and couplings.");
 	btnShowStruct->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
@@ -252,7 +253,9 @@ void MagDynDlg::CreateSitesPanel()
 	btnDown->setToolTip("Move selected site(s) down.");
 
 	QPushButton *btnMirrorAtoms = new QPushButton("Mirror", m_sitespanel);
-	QPushButton *btnShowNotes = new QPushButton("Notes...", m_sitespanel);
+	QPushButton *btnShowNotes = new QPushButton(
+		QIcon::fromTheme("accessories-text-editor"),
+		"Notes...", m_sitespanel);
 	QPushButton *btnGroundState = new QPushButton("Ground State...", m_sitespanel);
 	btnMirrorAtoms->setToolTip("Flip the coordinates of the sites.");
 	btnShowNotes->setToolTip("Add notes or comments describing the magnetic structure.");
@@ -275,13 +278,16 @@ void MagDynDlg::CreateSitesPanel()
 			QSizePolicy::Expanding, QSizePolicy::Fixed});
 	}
 
-	QPushButton *btnExtCell = new QPushButton("Generate", m_sitespanel);
+	QPushButton *btnExtCell = new QPushButton(
+		QIcon::fromTheme("insert-object"),
+		"Generate", m_sitespanel);
 	btnExtCell->setToolTip("Extend the unit cell.");
 
 	QPushButton *btnGenBySG = new QPushButton(
 		QIcon::fromTheme("insert-object"),
 		"Generate", m_sitespanel);
-	btnGenBySG->setToolTip("Create site positions from space group symmetry operators and existing positions.");
+	btnGenBySG->setToolTip("Create site positions from space group"
+		" symmetry operators and existing positions.");
 
 	btnAdd->setFocusPolicy(Qt::StrongFocus);
 	btnDel->setFocusPolicy(Qt::StrongFocus);
@@ -328,13 +334,15 @@ void MagDynDlg::CreateSitesPanel()
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1, 1);
 
-	grid->addWidget(new QLabel("Extend Structure, Copying Existing Sites:", m_sitespanel), y++, 0, 1, 4);
+	grid->addWidget(new QLabel("Extend Structure, Copying Existing Sites:",
+		m_sitespanel), y++, 0, 1, 4);
 	grid->addWidget(m_extCell[0], y, 0, 1, 1);
 	grid->addWidget(m_extCell[1], y, 1, 1, 1);
 	grid->addWidget(m_extCell[2], y, 2, 1, 1);
 	grid->addWidget(btnExtCell, y++, 3, 1, 1);
 
-	grid->addWidget(new QLabel("Create Symmetry-Equivalent Sites:", m_sitespanel), y, 0, 1, 3);
+	grid->addWidget(new QLabel("Create Symmetry-Equivalent Sites:",
+		m_sitespanel), y, 0, 1, 3);
 	grid->addWidget(btnGenBySG, y++, 3, 1, 1);
 
 	// table CustomContextMenu
@@ -605,7 +613,8 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	QPushButton *btnGenBySG = new QPushButton(
 		QIcon::fromTheme("insert-object"),
 		"Generate", m_termspanel);
-	btnGenBySG->setToolTip("Create couplings from space group symmetry operators and existing couplings.");
+	btnGenBySG->setToolTip("Create couplings from space group"
+		" symmetry operators and existing couplings.");
 
 	btnGenBySG->setFocusPolicy(Qt::StrongFocus);
 	btnGenBySG->setSizePolicy(QSizePolicy{
@@ -674,12 +683,14 @@ void MagDynDlg::CreateExchangeTermsPanel()
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
 
-	grid->addWidget(new QLabel("Generate Possible Coupling Terms By Distance (\xe2\x84\xab):", m_termspanel), y++,0,1,4);
+	grid->addWidget(new QLabel("Generate Possible Coupling Terms"
+		" By Distance (\xe2\x84\xab):", m_termspanel), y++,0,1,4);
 	grid->addWidget(m_maxdist, y,0,1,1);
 	grid->addWidget(m_maxSC, y,1,1,1);
 	grid->addWidget(m_maxcouplings, y,2,1,1);
 	grid->addWidget(btnGenByDist, y++,3,1,1);
-	grid->addWidget(new QLabel("Create Symmetry-Equivalent Couplings:", m_termspanel), y,0,1,3);
+	grid->addWidget(new QLabel("Create Symmetry-Equivalent Couplings:",
+		m_termspanel), y,0,1,3);
 	grid->addWidget(btnGenBySG, y++,3,1,1);
 
 	grid->addItem(new QSpacerItem(8, 8,
@@ -1729,8 +1740,12 @@ void MagDynDlg::CreateCoordinatesPanel()
 	btnCoordUp->setToolTip("Move selected coordinate(s) up.");
 	btnCoordDown->setToolTip("Move selected coordinate(s) down.");
 
-	QPushButton *btnSaveMultiDisp = new QPushButton("Save Data...", m_coordinatespanel);
-	QPushButton *btnSaveMultiDispScr = new QPushButton("Save Script...", m_coordinatespanel);
+	QPushButton *btnSaveMultiDisp = new QPushButton(
+		QIcon::fromTheme("text-x-generic"),
+		"Save Data...", m_coordinatespanel);
+	QPushButton *btnSaveMultiDispScr = new QPushButton(
+		QIcon::fromTheme("text-x-script"),
+		"Save Script...", m_coordinatespanel);
 	btnSaveMultiDisp->setToolTip("Calculate the dispersion paths and save them to a data file.");
 	btnSaveMultiDispScr->setToolTip("Calculate the dispersion paths and save them to a script file.");
 
@@ -1843,7 +1858,8 @@ void MagDynDlg::CreateCoordinatesPanel()
 	connect(m_coordinatestab, &QTableWidget::customContextMenuRequested,
 		[this, menuTableContext, menuTableContextNoItem](const QPoint& pt)
 	{
-		this->ShowTableContextMenu(m_coordinatestab, menuTableContext, menuTableContextNoItem, pt);
+		this->ShowTableContextMenu(m_coordinatestab, menuTableContext,
+			menuTableContextNoItem, pt);
 	});
 
 
@@ -1941,7 +1957,8 @@ void MagDynDlg::CreateExportPanel()
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
 
-	grid->addWidget(new QLabel("Number of Grid Points per Q Direction:", m_exportpanel), y++,0,1,4);
+	grid->addWidget(new QLabel("Number of Grid Points per Q Direction:",
+		m_exportpanel), y++,0,1,4);
 	grid->addWidget(new QLabel("Points:", m_exportpanel), y,0,1,1);
 	grid->addWidget(m_exportNumPoints[0], y,1,1,1);
 	grid->addWidget(m_exportNumPoints[1], y,2,1,1);
@@ -2199,7 +2216,12 @@ void MagDynDlg::CreateMenuBar()
 	acSaveFigure->setIcon(QIcon::fromTheme("image-x-generic"));
 	acSaveDisp->setIcon(QIcon::fromTheme("text-x-generic"));
 	acSaveMultiDisp->setIcon(QIcon::fromTheme("text-x-generic"));
+	acSaveDispScr->setIcon(QIcon::fromTheme("text-x-script"));
+	acSaveMultiDispScr->setIcon(QIcon::fromTheme("text-x-script"));
 	acStructExportSun->setIcon(QIcon::fromTheme("weather-clear"));
+	acStructExportSW->setIcon(QIcon::fromTheme("text-x-script"));
+	acStructNotes->setIcon(QIcon::fromTheme("accessories-text-editor"));
+	acStructView->setIcon(QIcon::fromTheme("applications-graphics"));
 
 	// calculation menu
 	auto menuCalc = new QMenu("Calculation", m_menu);
