@@ -1106,11 +1106,8 @@ requires is_vec<t_vec>
 
 	// ------------------------------------------------------------------------
 	// intensity
-	// nuclear
-	t_cplx I = N2;
-
-	// magnetic non-chiral
-	I += M2;
+	// nuclear and magnetic non-chiral
+	t_cplx I = N2 + M2;
 
 	// magnetic chiral
 	I += imag * inner<t_vec>(P_i, Mx2);
@@ -1123,21 +1120,21 @@ requires is_vec<t_vec>
 	// ------------------------------------------------------------------------
 	// polarisation vector
 	// nuclear
-	t_vec P_f = N2 * P_i;                            // rotates P
+	t_vec P_f = N2 * P_i;                           // rotates P
 
 	// magnetic non-chiral
 	t_vec rot_ch = Mperp * inner<t_vec>(Mperp, P_i);
-	P_f += rot_ch + tl2::conj(rot_ch);               // rotates P
-	P_f += -M2 * P_i;                                // rotates P
+	P_f += rot_ch + tl2::conj(rot_ch);              // rotates P
+	P_f -= M2 * P_i;                                // rotates P
 
 	// magnetic chiral
-	P_f += -imag * Mx2;                              // creates P
+	P_f -= imag * Mx2;                              // creates P
 
 	// nuclear-magnetic
 	t_vec rot_nm = imag * NConj * cross<t_vec>({ Mperp, P_i });
 	t_vec create_nm = NConj * Mperp;
-	P_f += rot_nm + tl2::conj(rot_nm);               // rotates P
-	P_f += create_nm + tl2::conj(create_nm);         // creates P
+	P_f += rot_nm + tl2::conj(rot_nm);              // rotates P
+	P_f += create_nm + tl2::conj(create_nm);        // creates P
 	// ------------------------------------------------------------------------
 
 	return std::make_tuple(I, P_f/I);
@@ -1161,23 +1158,22 @@ requires is_mat<t_mat> && is_vec<t_vec>
 	const t_cplx NConj = std::conj(N);
 
 	t_cplx N2 = N * NConj;
-	t_cplx M2 = inner_noconj<t_vec>(Mperp, MperpConj);
-	t_mat Mo = t_real(2) * outer_noconj<t_mat, t_vec>(Mperp, MperpConj);
-	auto [ Mor, Moi ] = split_cplx<t_mat, t_mat>(Mo);
+	t_cplx M2 = inner<t_vec>(Mperp, Mperp);
+	t_mat Mo = t_real(2) * outer<t_mat, t_vec>(Mperp, Mperp);
 	t_vec NM = t_real(2) * N * MperpConj;
+
+	auto [ Mor, Moi ] = split_cplx<t_mat, t_mat>(Mo);
+	auto [ NMr, NMi ] = split_cplx<t_vec, t_vec>(NM);
+
+	// cross product vector of imaginary component of Mo
+	t_vec Moivec = create<t_vec>({ Moi(2, 1), Moi(0, 2), Moi(1, 0) });
 
 	// ------------------------------------------------------------------------
 	// intensity
 	// nuclear-magnetic and magnetic chiral intensity
-	t_cplx Ix = P_i[0] * (NM[0].real() + Moi(1, 2));
-	t_cplx Iy = P_i[1] * (NM[1].real() + Moi(2, 0));
-	t_cplx Iz = P_i[2] * (NM[2].real() + Moi(0, 1));
-	t_cplx I = Ix + Iy + Iz;
+	t_cplx I = inner<t_vec>(P_i, NMr + Moivec);
 
 	// nuclear and magnetic non-chiral intensity
-	Ix += N2 + M2;
-	Iy += N2 + M2;
-	Iz += N2 + M2;
 	I += N2 + M2;
 	// ------------------------------------------------------------------------
 
@@ -1187,31 +1183,19 @@ requires is_mat<t_mat> && is_vec<t_vec>
 	t_mat Prot = diag<t_mat>({ N2 - M2, N2 - M2, N2 - M2 });
 
 	// magnetic non-chiral component
+	// Mor * P_i corresponds to rot_ch + tl2::conj(rot_ch) in the case above
 	Prot += Mor;
 
 	// nuclear-magnetic component
-	Prot += create<t_mat>({
-		0,              NM[2].imag(),   NM[1].imag(),
-		-NM[2].imag(),  0,              NM[0].imag(),
-		-NM[1].imag(),  -NM[0].imag(),  0
-	});
+	Prot += skewsymmetric<t_mat>(NMi);
 
-	for(int i = 0; i < 3; ++i)
-	{
-		Prot(0, i) /= Ix;
-		Prot(1, i) /= Iy;
-		Prot(2, i) /= Iz;
-	}
+	Prot /= I;
 	// ------------------------------------------------------------------------
 
 	// ------------------------------------------------------------------------
 	// creates polarisation (nuclear-magnetic and magnetic chiral components)
-	t_vec Pcreate = create<t_vec>({
-		NM[0].real() - Moi(1, 2),
-		NM[1].real() - Moi(2, 0),
-		NM[2].real() - Moi(0, 1)
-	});
-
+	// Moivec correspond to imag * Mx2 in the case above
+	t_vec Pcreate = NMr - Moivec;
 	Pcreate /= I;
 	// ------------------------------------------------------------------------
 

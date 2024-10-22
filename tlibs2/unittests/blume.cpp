@@ -25,6 +25,8 @@
  * ----------------------------------------------------------------------------
  */
 
+// g++ -std=c++20 -I.. -o blume blume.cpp
+
 #define BOOST_TEST_MODULE Blume0
 #include <boost/test/included/unit_test.hpp>
 namespace test = boost::unit_test;
@@ -57,12 +59,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_blume0, t_real, t_types)
 	t_vec Mperp = tl2::create<t_vec>({
 		tl2::get_rand<t_real>(-1, 1),
 		tl2::get_rand<t_real>(-1, 1),
-		tl2::get_rand<t_real>(-1, 1) }) /*+
+		tl2::get_rand<t_real>(-1, 1) }) +
 		imag * tl2::create<t_vec>({
 		tl2::get_rand<t_real>(-1, 1),
 		tl2::get_rand<t_real>(-1, 1),
-		tl2::get_rand<t_real>(-1, 1) })*/;
-	t_cplx N = 0; //tl2::get_rand<t_real>(0, 1) + imag*tl2::get_rand<t_real>(0, 1);
+		tl2::get_rand<t_real>(-1, 1) });
+	t_cplx N = tl2::get_rand<t_real>(0, 1) + imag*tl2::get_rand<t_real>(0, 1);
 
 	//Mperp = ortho_project(Mperp, Pi);
 
@@ -73,11 +75,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_blume0, t_real, t_types)
 	t_real lenPf = std::sqrt((Pf[0]*Pf[0] + Pf[1]*Pf[1] + Pf[2]*Pf[2]).real());
 	t_real lenPf2 = std::sqrt((Pf2[0]*Pf2[0] + Pf2[1]*Pf2[1] + Pf2[2]*Pf2[2]).real());
 	t_real lenPf3 = std::sqrt((Pf3[0]*Pf3[0] + Pf3[1]*Pf3[1] + Pf3[2]*Pf3[2]).real());
+	//Pf3 /= t_cplx(lenPf3);
 
 	t_cplx eps = std::pow(std::numeric_limits<t_real>::epsilon(), 1./2.);
 	std::cout << "eps = " << eps.real() << std::endl;
-
-	Pf3 *= t_cplx(lenPf3);
 
 	std::cout << "Mperp = " << Mperp << std::endl;
 	std::cout << "N = " << N << std::endl;
