@@ -183,9 +183,9 @@ t_mat MAGDYN_INST::CalcHamiltonian(const t_vec_real& Qvec) const
 	const auto [J_Q, J_Q0] = CalcReciprocalJs(Qvec);
 
 	// create the hamiltonian of equation (25) and (26) from (Toth 2015)
-	t_mat H00     = tl2::zero<t_mat>(N, N);
-	t_mat H00c_mQ = tl2::zero<t_mat>(N, N);  // H00*(-Q)
-	t_mat H0N     = tl2::zero<t_mat>(N, N);
+	t_mat H00 = tl2::zero<t_mat>(N, N);
+	t_mat HNN = tl2::zero<t_mat>(N, N);  // = H00*(-Q)
+	t_mat H0N = tl2::zero<t_mat>(N, N);
 
 	bool use_field = !tl2::equals_0<t_real>(m_field.mag, m_eps)
 		&& m_field.dir.size() == 3;
@@ -197,7 +197,7 @@ t_mat MAGDYN_INST::CalcHamiltonian(const t_vec_real& Qvec) const
 
 		// get the pre-calculated u and v vectors for the commensurate case
 		const t_vec& u_i  = s_i.trafo_plane_calc;
-		const t_vec& uc_i = s_i.trafo_plane_conj_calc;  // u*_i
+		const t_vec& uc_i = s_i.trafo_plane_conj_calc;  // = u*_i
 		const t_vec& v_i  = s_i.trafo_z_calc;
 
 		for(t_size j = 0; j < N; ++j)
@@ -206,7 +206,7 @@ t_mat MAGDYN_INST::CalcHamiltonian(const t_vec_real& Qvec) const
 
 			// get the pre-calculated u and v vectors for the commensurate case
 			const t_vec& u_j  = s_j.trafo_plane_calc;
-			const t_vec& uc_j = s_j.trafo_plane_conj_calc;  // u*_j
+			const t_vec& uc_j = s_j.trafo_plane_conj_calc;  // = u*_j
 			const t_vec& v_j  = s_j.trafo_z_calc;
 
 			// get the pre-calculated exchange matrices for the (i, j) coupling
@@ -223,9 +223,9 @@ t_mat MAGDYN_INST::CalcHamiltonian(const t_vec_real& Qvec) const
 				// equation (26) from (Toth 2015)
 				const t_real S_mag = 0.5 * std::sqrt(s_i.spin_mag_calc * s_j.spin_mag_calc);
 
-				H00(i, j)     += S_mag * tl2::inner_noconj<t_vec>(u_i,  (*J_Q33) * uc_j);
-				H00c_mQ(i, j) += S_mag * tl2::inner_noconj<t_vec>(uc_i, (*J_Q33) * u_j);
-				H0N(i, j)     += S_mag * tl2::inner_noconj<t_vec>(u_i,  (*J_Q33) * u_j);
+				H00(i, j) += S_mag * tl2::inner<t_vec>(uc_i, (*J_Q33) * uc_j);
+				HNN(i, j) += S_mag * tl2::inner<t_vec>(u_i,  (*J_Q33) * u_j);
+				H0N(i, j) += S_mag * tl2::inner<t_vec>(uc_i, (*J_Q33) * u_j);
 			}
 
 			if(J_Q033)
@@ -233,8 +233,8 @@ t_mat MAGDYN_INST::CalcHamiltonian(const t_vec_real& Qvec) const
 				// equation (26) from (Toth 2015)
 				t_cplx c = s_j.spin_mag_calc * tl2::inner_noconj<t_vec>(v_i, (*J_Q033) * v_j);
 
-				H00(i, i)     -= c;
-				H00c_mQ(i, i) -= c;
+				H00(i, i) -= c;
+				HNN(i, i) -= c;
 			}
 		}  // end of iteration over j sites
 
@@ -249,17 +249,22 @@ t_mat MAGDYN_INST::CalcHamiltonian(const t_vec_real& Qvec) const
 			constexpr const t_real muB = tl2::mu_B<t_real>
 				/ tl2::meV<t_real> * tl2::tesla<t_real>;
 
-			H00(i, i)     -= muB * Bgv;
-			H00c_mQ(i, i) -= std::conj(muB * Bgv);
+			H00(i, i) -= muB * Bgv;
+			HNN(i, i) -= std::conj(muB * Bgv);
 		}
 	}  // end of iteration over i sites
 
 	// equation (25) from (Toth 2015)
 	const t_mat HN0 = tl2::herm(H0N);
 	t_mat H = tl2::create<t_mat>(2*N, 2*N);
-	tl2::set_submat(H, H00, 0, 0); tl2::set_submat(H, H0N,     0, N);
-	tl2::set_submat(H, HN0, N, 0); tl2::set_submat(H, H00c_mQ, N, N);
+	tl2::set_submat(H, H00, 0, 0); tl2::set_submat(H, H0N, 0, N);
+	tl2::set_submat(H, HN0, N, 0); tl2::set_submat(H, HNN, N, N);
 
+#ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
+	using namespace tl2_ops;
+	std::cout << "H[ Q = " << Qvec << " ] =\n";
+	tl2::niceprint(std::cout, H, 1e-4, 4);
+#endif
 	return H;
 }
 
@@ -289,6 +294,7 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 	bool chol_failed = false;
 	for(; chol_try < m_tries_chol; ++chol_try)
 	{
+		// upper cholesky decomposition: _H = _C^H _C
 		const auto [chol_ok, _C] = tl2_la::chol<t_mat>(_H);
 
 		if(chol_ok)
