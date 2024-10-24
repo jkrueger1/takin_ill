@@ -50,7 +50,7 @@
 
 
 // --------------------------------------------------------------------
-// calculation functions
+// calculation functions for interaction matrix and hamiltonian
 // --------------------------------------------------------------------
 
 /**
@@ -296,22 +296,20 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 			chol_mat = std::move(_C);
 			break;
 		}
-		else
+
+		if(chol_try >= m_tries_chol - 1)
 		{
-			if(chol_try >= m_tries_chol - 1)
-			{
-				CERR_OPT << "Magdyn error: Cholesky decomposition failed"
-					<< " at Q = " << Qvec << "." << std::endl;
+			CERR_OPT << "Magdyn error: Cholesky decomposition failed"
+				<< " at Q = " << Qvec << "." << std::endl;
 
-				chol_mat = std::move(_C);
-				chol_failed = true;
-				break;
-			}
-
-			// try forcing the hamilton to be positive definite
-			for(t_size i = 0; i < _H.size1(); ++i)
-				_H(i, i) += m_delta_chol;
+			chol_mat = std::move(_C);
+			chol_failed = true;
+			break;
 		}
+
+		// try forcing the hamilton to be positive definite
+		for(t_size i = 0; i < _H.size1(); ++i)
+			_H(i, i) += m_delta_chol;
 	}
 
 	if(chol_failed || chol_mat.size1() == 0 || chol_mat.size2() == 0)
@@ -377,37 +375,5 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 	return Es_and_Ws;
 }
 
-
-
-/**
- * converts the rotation matrix rotating the local spins to ferromagnetic
- * [001] directions into the vectors comprised of the matrix columns
- * @see equation (9) and (51) from (Toth 2015)
- */
-MAGDYN_TEMPL
-std::tuple<t_vec, t_vec> MAGDYN_INST::rot_to_trafo(const t_mat& R)
-{
-	const t_vec xy_plane = tl2::col<t_mat, t_vec>(R, 0)
-		 + s_imag * tl2::col<t_mat, t_vec>(R, 1);
-	const t_vec z = tl2::col<t_mat, t_vec>(R, 2);
-
-	return std::make_tuple(xy_plane, z);
-}
-
-
-
-/**
- * rotate local spin to ferromagnetic [001] direction
- * @see equations (7) and (9) from (Toth 2015)
- */
-MAGDYN_TEMPL
-std::tuple<t_vec, t_vec> MAGDYN_INST::spin_to_trafo(const t_vec_real& spin_dir)
-{
-	const t_mat_real _rot = tl2::rotation<t_mat_real, t_vec_real>(
-		spin_dir, m_zdir, &m_rotaxis, m_eps);
-
-	const t_mat rot = tl2::convert<t_mat, t_mat_real>(_rot);
-	return rot_to_trafo(rot);
-}
 
 #endif
