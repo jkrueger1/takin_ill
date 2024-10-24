@@ -91,7 +91,7 @@ def get_energies(Qvec):
 	#print("\nC =\n%s\n\nH_trafo =\n%s" % (C, H_trafo))
 
 
-	# eigenvalues
+	# the eigenvalues of H give the energies
 	Es = np.real(la.eigvals(H_trafo))
 	return Es
 
