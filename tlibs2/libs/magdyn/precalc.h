@@ -199,12 +199,12 @@ MAGDYN_TEMPL void MAGDYN_INST::CalcMagneticSite(MagneticSite& site)
 			// in case they are explicitly given
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
-			std::cout << "Site " << site.name << " u = "
+			std::cout << "Site " << site.name << ": u = "
 				<< site.trafo_plane_calc[0] << " "
 				<< site.trafo_plane_calc[1] << " "
 				<< site.trafo_plane_calc[2]
 				<< std::endl;
-			std::cout << "Site " << site.name << " v = "
+			std::cout << "Site " << site.name << ": v = "
 				<< site.trafo_z_calc[0] << " "
 				<< site.trafo_z_calc[1] << " "
 				<< site.trafo_z_calc[2]
