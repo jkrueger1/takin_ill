@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 # magnetic sites
 sites = [
-	{ "S" : 1., "u" : np.array([ 1, 1j, 0 ]), "v" : np.array([ 0, 0, 1 ]) },
+	{ "S" : 1., "Sdir" : [ 0, 0, 1 ] },
 ]
 
 # magnetic couplings
@@ -21,12 +21,48 @@ couplings = [
 ]
 
 
+# skew-symmetric matrix
+def skew(vec):
+	return np.array([
+		[      0.,   vec[2],  -vec[1] ],
+		[ -vec[2],       0.,   vec[0] ],
+		[  vec[1],  -vec[0],       0. ] ])
+
+
+# calculate spin rotations
+for site in sites:
+	zdir = np.array([ 0., 0., 1. ])
+	Sdir = np.array(site["Sdir"]) / la.norm(site["Sdir"])
+	axis = np.array([ 1., 0., 0. ])
+	s = 0.
+
+	if np.allclose(Sdir, zdir):
+		# spin and z axis parallel
+		c = 1.
+	elif np.allclose(Sdir, -zdir):
+		# spin and z axis anti-parallel
+		c = -1.
+	else:
+		# sine and cosine of the angle between spin and z axis
+		axis = np.cross(Sdir, zdir)
+		s = la.norm(axis)
+		c = np.dot(Sdir, zdir)
+		axis /= s
+
+	# rotation via rodrigues' formula, see (Arens 2015), p. 718 and p. 816
+	rot = (1. - c) * np.outer(axis, axis) + np.diag([ c, c, c ]) - skew(axis)*s
+	site["u"] = rot[0, :] + 1j  * rot[1, :]
+	site["v"] = rot[2, :]
+
+	#print(np.dot(rot, Sdir))
+	#print("\nrot = \n%s\nu = %s\nv = %s" % (rot, site["u"], site["v"]))
+
+
+
 # calculate real interaction matrices
 for coupling in couplings:
-	coupling["J_real"] = np.array([
-		[       coupling["J"],   coupling["DMI"][2],  -coupling["DMI"][1] ],
-		[ -coupling["DMI"][2],        coupling["J"],   coupling["DMI"][0] ],
-		[  coupling["DMI"][1],  -coupling["DMI"][0],      coupling["J"] ] ])
+	J = coupling["J"]
+	coupling["J_real"] = np.diag([ J, J, J ]) + skew(coupling["DMI"])
 
 	#print("\nJ_real =\n%s" % coupling["J_real"])
 
@@ -55,7 +91,7 @@ def get_energies(Qvec):
 	#print("\nJ_fourier =\n%s\n\nJ0_fourier =\n%s" % (J_fourier, J0_fourier))
 
 
-	# hamilton
+	# hamiltonian
 	H = np.zeros((2*num_sites, 2*num_sites), dtype = complex)
 
 	for i in range(num_sites):
