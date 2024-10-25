@@ -22,7 +22,7 @@ is_ferromagnetic = True
 #
 if is_ferromagnetic:
 	sites = [
-		{ "S" : 1., "Sdir" : [ 0, 0, -1 ] },
+		{ "S" : 1., "Sdir" : [ 0, 0, 1 ] },
 	]
 else:  # antiferromagnetic
 	sites = [
