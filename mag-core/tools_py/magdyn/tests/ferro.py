@@ -78,7 +78,7 @@ for site in sites:
 
 	# rotation via rodrigues' formula, see (Arens 2015), p. 718 and p. 816
 	rot = (1. - c) * np.outer(rotaxis, rotaxis) + np.diag([ c, c, c ]) - skew(rotaxis)*s
-	site["u"] = rot[0, :] + 1j  * rot[1, :]
+	site["u"] = rot[0, :] + 1j * rot[1, :]
 	site["v"] = rot[2, :]
 
 	#print(np.dot(rot, Sdir))

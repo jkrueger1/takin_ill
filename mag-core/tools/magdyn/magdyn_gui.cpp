@@ -96,7 +96,7 @@ void MagDynDlg::CreateMainWindow()
 	// fixed status
 	m_statusFixed = new QLabel(this);
 	m_statusFixed->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-	m_statusFixed->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+	m_statusFixed->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
 	m_statusFixed->setFrameShape(QFrame::Panel);
 	m_statusFixed->setFrameShadow(QFrame::Sunken);
 	m_statusFixed->setText("Ready.");
@@ -104,7 +104,7 @@ void MagDynDlg::CreateMainWindow()
 	// expanding status
 	m_status = new QLabel(this);
 	m_status->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-	m_status->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	m_status->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	m_status->setFrameShape(QFrame::Panel);
 	m_status->setFrameShadow(QFrame::Sunken);
 
