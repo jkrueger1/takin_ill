@@ -43,7 +43,7 @@ def skew(vec):
 for site in sites:
 	zdir = np.array([ 0., 0., 1. ])
 	Sdir = np.array(site["Sdir"]) / la.norm(site["Sdir"])
-	axis = np.array([ 1., 0., 0. ])
+	rotaxis = np.array([ 0., 1., 0. ])
 	s = 0.
 
 	if np.allclose(Sdir, zdir):
@@ -54,13 +54,13 @@ for site in sites:
 		c = -1.
 	else:
 		# sine and cosine of the angle between spin and z axis
-		axis = np.cross(Sdir, zdir)
-		s = la.norm(axis)
+		rotaxis = np.cross(Sdir, zdir)
+		s = la.norm(rotaxis)
 		c = np.dot(Sdir, zdir)
-		axis /= s
+		rotaxis /= s
 
 	# rotation via rodrigues' formula, see (Arens 2015), p. 718 and p. 816
-	rot = (1. - c) * np.outer(axis, axis) + np.diag([ c, c, c ]) - skew(axis)*s
+	rot = (1. - c) * np.outer(rotaxis, rotaxis) + np.diag([ c, c, c ]) - skew(rotaxis)*s
 	site["u"] = rot[0, :] + 1j  * rot[1, :]
 	site["v"] = rot[2, :]
 
@@ -93,7 +93,6 @@ def get_energies(Qvec):
 		site2 = coupling["sites"][1]
 
 		phase = -1j * 2.*np.pi * np.dot(dist, Qvec)
-
 		J_fourier[site1, site2] += J_real * np.exp(phase)
 		J_fourier[site2, site1] += J_real.transpose() * np.exp(-phase)
 		J0_fourier[site1, site2] += J_real
@@ -116,16 +115,16 @@ def get_energies(Qvec):
 			v_j = sites[j]["v"]
 			S = 0.5 * np.sqrt(S_i * S_j)
 
-			H[i, j] += \
-				S * np.dot(u_i, np.dot(J_fourier[i][j], u_j.conj())) - \
-				S_j * np.dot(v_i, np.dot(J0_fourier[i][j], v_j))
+			H[i, j] += S * np.dot(u_i, np.dot(J_fourier[i, j], u_j.conj()))
+			H[i, i] -= S_j * np.dot(v_i, np.dot(J0_fourier[i, j], v_j))
 			H[num_sites + i, num_sites + j] += \
-				S * np.dot(u_i.conj(), np.dot(J_fourier[i][j], u_j)) - \
-				S_j * np.dot(v_i, np.dot(J0_fourier[i][j], v_j))
+				S * np.dot(u_i.conj(), np.dot(J_fourier[i, j], u_j))
+			H[num_sites + i, num_sites + i] -= \
+				S_j * np.dot(v_i, np.dot(J0_fourier[i, j], v_j))
 			H[i, num_sites + j] += \
-				S * np.dot(u_i, np.dot(J_fourier[i][j], u_j))
+				S * np.dot(u_i, np.dot(J_fourier[i, j], u_j))
 			H[num_sites + i, j] += \
-				(S * np.dot(u_j, np.dot(J_fourier[j][i], u_i))).conj()
+				(S * np.dot(u_j, np.dot(J_fourier[j, i], u_i))).conj()
 
 	#print("\nH =\n%s" % H)
 
