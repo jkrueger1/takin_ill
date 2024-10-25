@@ -10,18 +10,28 @@ import numpy.linalg as la
 import matplotlib.pyplot as plt
 
 
+#
 # magnetic sites
+# "S": spin magnitude
+# "Sdir": spin direction
+#
 sites = [
 	{ "S" : 1., "Sdir" : [ 0, 0, 1 ] },
 ]
 
+#
 # magnetic couplings
+# "sites": indices of the sites to couple
+# "J": (symmetric) exchange interaction
+# "DMI": (antisymmetric) Dzyaloshinskii-Moryia interaction
+# "dist": distance in rlu to the next unit cell for the coupling
+#
 couplings = [
 	{ "sites" : [ 0, 0 ], "J" : -1., "DMI" : [ 0, 0, 0 ], "dist" : [ 1, 0, 0 ] },
 ]
 
 
-# skew-symmetric matrix
+# skew-symmetric (cross-product) matrix
 def skew(vec):
 	return np.array([
 		[      0.,   vec[2],  -vec[1] ],
@@ -67,6 +77,7 @@ for coupling in couplings:
 	#print("\nJ_real =\n%s" % coupling["J_real"])
 
 
+# get the energies of the dispersion at the momentum transfer Qvec
 def get_energies(Qvec):
 	#print("\n\nQ = %s" % Qvec)
 
@@ -132,7 +143,7 @@ def get_energies(Qvec):
 	return Es
 
 
-# plot
+# plot a dispersion branch
 hs = []
 Es = []
 for h in np.linspace(-1, 1, 128):
