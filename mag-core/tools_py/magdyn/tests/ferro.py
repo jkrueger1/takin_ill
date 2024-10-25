@@ -39,7 +39,7 @@ def skew(vec):
 		[  vec[1],  -vec[0],       0. ] ])
 
 
-# calculate spin rotations
+# calculate spin rotations towards ferromagnetic order along [001]
 for site in sites:
 	zdir = np.array([ 0., 0., 1. ])
 	Sdir = np.array(site["Sdir"]) / la.norm(site["Sdir"])
