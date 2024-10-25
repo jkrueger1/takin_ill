@@ -1,5 +1,6 @@
 #
-# testing the lswt algorithm (https://arxiv.org/abs/1402.6069) for a 1d ferromagnetic chain
+# testing the lswt algorithm (https://arxiv.org/abs/1402.6069)
+# for a 1d ferromagnetic and an antiferromagnetic chain
 # @author Tobias Weber <tweber@ill.fr>
 # @date 24-oct-2024
 # @license GPLv3, see 'LICENSE' file
@@ -10,14 +11,24 @@ import numpy.linalg as la
 import matplotlib.pyplot as plt
 
 
+# choose ferromagnetic or antiferromagnetic 1d spin chain
+is_ferromagnetic = True
+
+
 #
 # magnetic sites
 # "S": spin magnitude
 # "Sdir": spin direction
 #
-sites = [
-	{ "S" : 1., "Sdir" : [ 0, 0, 1 ] },
-]
+if is_ferromagnetic:
+	sites = [
+		{ "S" : 1., "Sdir" : [ 0, 0, -1 ] },
+	]
+else:  # antiferromagnetic
+	sites = [
+		{ "S" : 1., "Sdir" : [ 0, 0, 1 ] },
+		{ "S" : 1., "Sdir" : [ 0, 0, -1 ] },
+	]
 
 #
 # magnetic couplings
@@ -26,9 +37,15 @@ sites = [
 # "DMI": (antisymmetric) Dzyaloshinskii-Moryia interaction
 # "dist": distance in rlu to the next unit cell for the coupling
 #
-couplings = [
-	{ "sites" : [ 0, 0 ], "J" : -1., "DMI" : [ 0, 0, 0 ], "dist" : [ 1, 0, 0 ] },
-]
+if is_ferromagnetic:
+	couplings = [
+		{ "sites" : [ 0, 0 ], "J" : -1., "DMI" : [ 0, 0, 0 ], "dist" : [ 1, 0, 0 ] },
+	]
+else:  # antiferromagnetic
+	couplings = [
+		{ "sites" : [ 0, 1 ], "J" : 1., "DMI" : [ 0, 0, 0 ], "dist" : [ 0, 0, 0 ] },
+		{ "sites" : [ 1, 0 ], "J" : 1., "DMI" : [ 0, 0, 0 ], "dist" : [ 2, 0, 0 ] },
+	]
 
 
 # skew-symmetric (cross-product) matrix
@@ -92,11 +109,11 @@ def get_energies(Qvec):
 		site1 = coupling["sites"][0]
 		site2 = coupling["sites"][1]
 
-		phase = -1j * 2.*np.pi * np.dot(dist, Qvec)
-		J_fourier[site1, site2] += J_real * np.exp(phase)
-		J_fourier[site2, site1] += J_real.transpose() * np.exp(-phase)
+		J_ft = J_real * np.exp(-1j * 2.*np.pi * np.dot(dist, Qvec))
+		J_fourier[site1, site2] += J_ft
+		J_fourier[site2, site1] += J_ft.transpose().conj()
 		J0_fourier[site1, site2] += J_real
-		J0_fourier[site2, site1] += J_real.transpose()
+		J0_fourier[site2, site1] += J_real.transpose().conj()
 
 	#print("\nJ_fourier =\n%s\n\nJ0_fourier =\n%s" % (J_fourier, J0_fourier))
 
@@ -145,16 +162,17 @@ def get_energies(Qvec):
 # plot a dispersion branch
 hs = []
 Es = []
-for h in np.linspace(-1, 1, 128):
+for h in np.linspace(-1, 1, 256):
 	try:
 		Qvec = np.array([ h, 0, 0 ])
-		Es.append(get_energies(Qvec))
-		hs.append(h)
+		for E in get_energies(Qvec):
+			hs.append(h)
+			Es.append(E)
 	except la.LinAlgError:
 		pass
 
 plt.plot()
 plt.xlabel("h (rlu)")
 plt.ylabel("E (meV)")
-plt.plot(hs, Es)
+plt.scatter(hs, Es, marker = '.')
 plt.show()

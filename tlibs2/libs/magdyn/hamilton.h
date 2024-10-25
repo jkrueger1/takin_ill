@@ -134,18 +134,18 @@ MAGDYN_INST::CalcReciprocalJs(const t_vec_real& Qvec) const
 		const t_mat J = CalcRealJ(term);
 		if(J.size1() == 0 || J.size2() == 0)
 			continue;
-		const t_mat J_T = tl2::trans(J);
 
 		// get J in reciprocal space by fourier trafo
 		// equations (14), (12), (11), and (52) from (Toth 2015)
-		const t_cplx phase = m_phase_sign * s_imag * s_twopi *
-			tl2::inner<t_vec_real>(term.dist_calc, Qvec);
+		const t_mat J_fourier = J * std::exp(m_phase_sign * s_imag * s_twopi *
+			tl2::inner<t_vec_real>(term.dist_calc, Qvec));
 
-		insert_or_add(J_Q, indices, J * std::exp(phase));
-		insert_or_add(J_Q, indices_t, J_T * std::exp(-phase));
+		// symmetry: equation (15) from (Toth 2015)
+		insert_or_add(J_Q, indices, J_fourier);
+		insert_or_add(J_Q, indices_t, tl2::herm(J_fourier));
 
 		insert_or_add(J_Q0, indices, J);
-		insert_or_add(J_Q0, indices_t, J_T);
+		insert_or_add(J_Q0, indices_t, tl2::herm(J));
 	}  // end of iteration over couplings
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
