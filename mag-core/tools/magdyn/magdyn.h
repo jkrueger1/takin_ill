@@ -315,6 +315,10 @@ protected:
 	void SetCurrentField();
 	void SetCurrentCoordinate(int which = 0);
 
+	std::vector<t_magdyn::Variable> GetVariables() const;
+	void ReplaceValueWithVariable(const std::string& var, const t_cplx& val);
+	void ReplaceValuesWithVariables();
+
 	void DelTabItem(QTableWidget *pTab, int begin=-2, int end=-2);
 	void UpdateVerticalHeader(QTableWidget *pTab);
 

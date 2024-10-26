@@ -976,3 +976,117 @@ void MagDynDlg::DeleteTerm(const std::string& term)
 		DelTabItem(m_termstab, idx, idx + 1);
 	}
 }
+
+
+
+/**
+ * get all entries from the variables table
+ */
+std::vector<t_magdyn::Variable> MagDynDlg::GetVariables() const
+{
+	std::vector<t_magdyn::Variable> vars;
+	vars.reserve(m_varstab->rowCount());
+
+	// iterate all variables
+	for(int row = 0; row < m_varstab->rowCount(); ++row)
+	{
+		auto *name = m_varstab->item(row, COL_VARS_NAME);
+		auto *val_re = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_varstab->item(row, COL_VARS_VALUE_REAL));
+		auto *val_im = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			m_varstab->item(row, COL_VARS_VALUE_IMAG));
+
+		if(!name || !val_re || !val_im)
+		{
+			std::cerr << "Invalid entry in variables table row "
+				<< row << "." << std::endl;
+			continue;
+		}
+
+		t_magdyn::Variable var;
+		var.name = name->text().toStdString();
+		var.value = val_re->GetValue() + val_im->GetValue() * t_cplx(0, 1);
+
+		vars.emplace_back(std::move(var));
+	}
+
+	return vars;
+}
+
+
+
+/**
+ * replace numeric values in the tables with variable names
+ */
+void MagDynDlg::ReplaceValuesWithVariables()
+{
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_ignoreCalc = false;
+		this_->m_ignoreSitesCalc = false;
+	} BOOST_SCOPE_EXIT_END
+
+	m_ignoreCalc = true;
+	m_ignoreSitesCalc = true;
+
+	for(const t_magdyn::Variable& var : GetVariables())
+		ReplaceValueWithVariable(var.name, var.value);
+}
+
+
+
+/**
+ * replace numeric values in the tables with a variable name
+ */
+void MagDynDlg::ReplaceValueWithVariable(const std::string& var, const t_cplx& val)
+{
+	using t_item = tl2::NumericTableWidgetItem<t_real>;
+
+	// replace the item's numeric value if it's equal to the variable
+	auto replace = [&var, &val](t_item* item)
+	{
+		bool val_ok = false;
+		if(bool equ = tl2::equals<t_cplx>(item->GetValue(&val_ok), val, g_eps);
+			equ && val_ok)
+		{
+			item->setText(var.c_str());
+		}
+	};
+
+
+	// iterate lines in the exchange terms table and replace the values
+	for(int row = 0; row < m_termstab->rowCount(); ++row)
+	{
+		t_item *xch = static_cast<t_item*>(m_termstab->item(row, COL_XCH_INTERACTION));
+		t_item *dmi_x = static_cast<t_item*>(m_termstab->item(row, COL_XCH_DMI_X));
+		t_item *dmi_y = static_cast<t_item*>(m_termstab->item(row, COL_XCH_DMI_Y));
+		t_item *dmi_z = static_cast<t_item*>(m_termstab->item(row, COL_XCH_DMI_Z));
+
+		t_item *gen_xx = nullptr, *gen_xy = nullptr, *gen_xz = nullptr;
+		t_item *gen_yx = nullptr, *gen_yy = nullptr, *gen_yz = nullptr;
+		t_item *gen_zx = nullptr, *gen_zy = nullptr, *gen_zz = nullptr;
+		if(m_allow_general_J)
+		{
+			gen_xx = static_cast<t_item*>(m_termstab->item(row, COL_XCH_GEN_XX));
+			gen_xy = static_cast<t_item*>(m_termstab->item(row, COL_XCH_GEN_XY));
+			gen_xz = static_cast<t_item*>(m_termstab->item(row, COL_XCH_GEN_XZ));
+			gen_yx = static_cast<t_item*>(m_termstab->item(row, COL_XCH_GEN_YX));
+			gen_yy = static_cast<t_item*>(m_termstab->item(row, COL_XCH_GEN_YY));
+			gen_yz = static_cast<t_item*>(m_termstab->item(row, COL_XCH_GEN_YZ));
+			gen_zx = static_cast<t_item*>(m_termstab->item(row, COL_XCH_GEN_ZX));
+			gen_zy = static_cast<t_item*>(m_termstab->item(row, COL_XCH_GEN_ZY));
+			gen_zz = static_cast<t_item*>(m_termstab->item(row, COL_XCH_GEN_ZZ));
+		}
+
+		for(t_item *item : { xch, dmi_x, dmi_y, dmi_z,
+			gen_xx, gen_xy, gen_xz,
+			gen_yx, gen_yy, gen_yz,
+			gen_zx, gen_zy, gen_zz })
+		{
+			if(!item)
+				continue;
+			replace(item);
+		}
+	}
+}
+
