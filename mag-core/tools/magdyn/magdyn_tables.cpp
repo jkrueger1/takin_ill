@@ -1018,7 +1018,7 @@ std::vector<t_magdyn::Variable> MagDynDlg::GetVariables() const
 /**
  * replace numeric values in the tables with variable names
  */
-void MagDynDlg::ReplaceValuesWithVariables()
+t_size MagDynDlg::ReplaceValuesWithVariables()
 {
 	BOOST_SCOPE_EXIT(this_)
 	{
@@ -1029,8 +1029,12 @@ void MagDynDlg::ReplaceValuesWithVariables()
 	m_ignoreCalc = true;
 	m_ignoreSitesCalc = true;
 
+	t_size num_replacements = 0;
 	for(const t_magdyn::Variable& var : GetVariables())
-		ReplaceValueWithVariable(var.name, var.value);
+		num_replacements += ReplaceValueWithVariable(var.name, var.value);
+
+	m_status->setText(QString("Replaced %1 values.").arg(num_replacements));
+	return num_replacements;
 }
 
 
@@ -1038,23 +1042,35 @@ void MagDynDlg::ReplaceValuesWithVariables()
 /**
  * replace numeric values in the tables with a variable name
  */
-void MagDynDlg::ReplaceValueWithVariable(const std::string& var, const t_cplx& val)
+t_size MagDynDlg::ReplaceValueWithVariable(const std::string& var, const t_cplx& val)
 {
 	using t_item = tl2::NumericTableWidgetItem<t_real>;
 
 	// replace the item's numeric value if it's equal to the variable
-	auto replace = [&var, &val](t_item* item)
+	auto replace = [&var, &val](t_item* item) -> bool
 	{
 		bool val_ok = false;
 		if(bool equ = tl2::equals<t_cplx>(item->GetValue(&val_ok), val, g_eps);
 			equ && val_ok)
 		{
+			// variable is equal to table value
 			item->setText(var.c_str());
+			return true;
 		}
+		else if(bool equ = tl2::equals<t_cplx>(item->GetValue(&val_ok), -val, g_eps);
+			equ && val_ok)
+		{
+			// variable is equal to negative table value
+			item->setText(("-" + var).c_str());
+			return true;
+		}
+
+		return false;
 	};
 
 
 	// iterate lines in the exchange terms table and replace the values
+	t_size num_replacements = 0;
 	for(int row = 0; row < m_termstab->rowCount(); ++row)
 	{
 		t_item *xch = static_cast<t_item*>(m_termstab->item(row, COL_XCH_INTERACTION));
@@ -1085,8 +1101,12 @@ void MagDynDlg::ReplaceValueWithVariable(const std::string& var, const t_cplx& v
 		{
 			if(!item)
 				continue;
-			replace(item);
+
+			if(replace(item))
+				++num_replacements;
 		}
 	}
+
+	return num_replacements;
 }
 

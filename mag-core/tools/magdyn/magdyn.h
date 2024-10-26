@@ -316,8 +316,8 @@ protected:
 	void SetCurrentCoordinate(int which = 0);
 
 	std::vector<t_magdyn::Variable> GetVariables() const;
-	void ReplaceValueWithVariable(const std::string& var, const t_cplx& val);
-	void ReplaceValuesWithVariables();
+	t_size ReplaceValueWithVariable(const std::string& var, const t_cplx& val);
+	t_size ReplaceValuesWithVariables();
 
 	void DelTabItem(QTableWidget *pTab, int begin=-2, int end=-2);
 	void UpdateVerticalHeader(QTableWidget *pTab);
