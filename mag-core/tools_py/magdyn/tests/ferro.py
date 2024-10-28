@@ -96,7 +96,6 @@ for site in sites:
 for coupling in couplings:
 	J = coupling["J"]
 	coupling["J_real"] = np.diag([ J, J, J ]) + skew(coupling["DMI"])
-
 	print_infos("\nJ_real =\n%s" % coupling["J_real"])
 
 
@@ -156,7 +155,6 @@ def get_energies(Qvec):
 	C = la.cholesky(H)
 	signs = np.diag(np.concatenate((np.repeat(1, num_sites), np.repeat(-1, num_sites))))
 	H_trafo = np.dot(C.transpose().conj(), np.dot(signs, C))
-
 	print_infos("\nC =\n%s\n\nH_trafo =\n%s" % (C, H_trafo))
 
 
