@@ -1,6 +1,6 @@
 #
-# testing the lswt algorithm (https://arxiv.org/abs/1402.6069)
-# for a 1d ferromagnetic and an antiferromagnetic chain
+# testing the lswt algorithm (https://arxiv.org/abs/1402.6069) directly for comparison,
+# both for a 1d ferromagnetic and for an antiferromagnetic chain
 # @author Tobias Weber <tweber@ill.fr>
 # @date 24-oct-2024
 # @license GPLv3, see 'LICENSE' file
@@ -11,8 +11,8 @@ import numpy.linalg as la
 import matplotlib.pyplot as plt
 
 
-# choose ferromagnetic or antiferromagnetic 1d spin chain
-is_ferromagnetic = True
+is_ferromagnetic = True  # choose ferromagnetic or antiferromagnetic 1d spin chain
+only_pos_E = True        # hide magnon annihilation?
 
 
 #
@@ -162,10 +162,12 @@ def get_energies(Qvec):
 # plot a dispersion branch
 hs = []
 Es = []
-for h in np.linspace(-1, 1, 256):
+for h in np.linspace(-1, 1, 1024):
 	try:
 		Qvec = np.array([ h, 0, 0 ])
 		for E in get_energies(Qvec):
+			if only_pos_E and E < 0.:
+				continue
 			hs.append(h)
 			Es.append(E)
 	except la.LinAlgError:
