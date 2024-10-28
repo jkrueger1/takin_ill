@@ -13,6 +13,12 @@ import matplotlib.pyplot as plt
 
 is_ferromagnetic = True  # choose ferromagnetic or antiferromagnetic 1d spin chain
 only_pos_E = True        # hide magnon annihilation?
+verbose_print = False    # print intermediate results
+
+
+def print_infos(str):
+	if verbose_print:
+		print(str)
 
 
 #
@@ -81,8 +87,8 @@ for site in sites:
 	site["u"] = rot[0, :] + 1j * rot[1, :]
 	site["v"] = rot[2, :]
 
-	#print(np.dot(rot, Sdir))
-	#print("\nrot = \n%s\nu = %s\nv = %s" % (rot, site["u"], site["v"]))
+	print_infos(np.dot(rot, Sdir))
+	print_infos("\nrot = \n%s\nu = %s\nv = %s" % (rot, site["u"], site["v"]))
 
 
 
@@ -91,12 +97,12 @@ for coupling in couplings:
 	J = coupling["J"]
 	coupling["J_real"] = np.diag([ J, J, J ]) + skew(coupling["DMI"])
 
-	#print("\nJ_real =\n%s" % coupling["J_real"])
+	print_infos("\nJ_real =\n%s" % coupling["J_real"])
 
 
 # get the energies of the dispersion at the momentum transfer Qvec
 def get_energies(Qvec):
-	#print("\n\nQ = %s" % Qvec)
+	print_infos("\n\nQ = %s" % Qvec)
 
 	# fourier transform interaction matrices
 	num_sites = len(sites)
@@ -115,7 +121,7 @@ def get_energies(Qvec):
 		J0_fourier[site1, site2] += J_real
 		J0_fourier[site2, site1] += J_real.transpose().conj()
 
-	#print("\nJ_fourier =\n%s\n\nJ0_fourier =\n%s" % (J_fourier, J0_fourier))
+	print_infos("\nJ_fourier =\n%s\n\nJ0_fourier =\n%s" % (J_fourier, J0_fourier))
 
 
 	# hamiltonian
@@ -143,7 +149,7 @@ def get_energies(Qvec):
 			H[num_sites + i, j] += \
 				(S * np.dot(u_j, np.dot(J_fourier[j, i], u_i))).conj()
 
-	#print("\nH =\n%s" % H)
+	print_infos("\nH =\n%s" % H)
 
 
 	# trafo
@@ -151,12 +157,19 @@ def get_energies(Qvec):
 	signs = np.diag(np.concatenate((np.repeat(1, num_sites), np.repeat(-1, num_sites))))
 	H_trafo = np.dot(C.transpose().conj(), np.dot(signs, C))
 
-	#print("\nC =\n%s\n\nH_trafo =\n%s" % (C, H_trafo))
+	print_infos("\nC =\n%s\n\nH_trafo =\n%s" % (C, H_trafo))
 
 
 	# the eigenvalues of H give the energies
 	Es = np.real(la.eigvals(H_trafo))
+	print_infos("\nEs = %s" % Es)
+
 	return Es
+
+
+# calculate a single point
+#get_energies([0.2, 0., 0.])
+#exit(0)
 
 
 # plot a dispersion branch
