@@ -10,18 +10,19 @@ import numpy.random as rnd
 import scipy.constants as const
 
 
-Q     = 0.2   # momentum transfer
-T     = 10.   # temperature
-Emin  = -5.   # energy range
-Emax  = 5.    #
-pts   = 32    # number of points to generate
-sig   = 0.5   # magnon peak with
-amp   = 1.    # magnon peak amplitude
-S0    = 100.  # S scaling factor
-noise = 0.05  # noise on the magnon peaks
-bck   = 10.   # background noise
-plot  = True  # plot the data
-ferro = True  # ferromagnetic or antiferromagnetic dispersion?
+q     = 0.2        # reduced momentum transfer
+G     = [1, 1, 0]  # Bragg peak
+T     = 10.        # temperature
+Emin  = -5.        # energy range
+Emax  = 5.         #
+pts   = 32         # number of points to generate
+sig   = 0.5        # magnon peak with
+amp   = 1.         # magnon peak amplitude
+S0    = 100.       # S scaling factor
+noise = 0.05       # noise on the magnon peaks
+bck   = 10.        # background noise
+plot  = True       # plot the data
+ferro = True       # ferromagnetic or antiferromagnetic dispersion?
 
 
 # ferromagnetic dispersion
@@ -79,7 +80,7 @@ def bose_cutoff(E, T, Ecut = 0.02):
 
 
 Es = np.linspace(Emin, Emax, pts)
-E0 = disp(Q)
+E0 = disp(q)
 
 # add magnons
 S = gauss(Es, E0, sig, amp)*bose_cutoff(E0, T) + rnd.default_rng().random(pts)*noise \
@@ -92,6 +93,8 @@ S = S.round()
 
 # header for the data file to be read by takin
 hdr = """
+this is random data to test the convolution fitter
+
 sample_a     = 5
 sample_b     = 5
 sample_c     = 5
@@ -129,10 +132,11 @@ col_mon      = 7
 col_mon_err  = 8
 """
 
-hs = [Q] * pts
-zeros = np.zeros(pts)
-ones = zeros + 1
-np.savetxt("random.dat", np.array([ hs, zeros, zeros, Es, S, np.sqrt(S), ones, ones ]).T, fmt = "%.4g", header = hdr)
+hs = [q + G[0]] * pts
+ks = [G[1]] * pts
+ls = [G[2]] * pts
+mon = [1e4] * pts
+np.savetxt("random.dat", np.array([ hs, ks, ls, Es, S, np.sqrt(S), mon, np.sqrt(mon) ]).T, fmt = "%.4g", header = hdr)
 
 
 if plot:
