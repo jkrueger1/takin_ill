@@ -181,6 +181,9 @@ g_h = 4.              #
 g_k = 4.              # Bragg peak (hkl)
 g_l = 0.              #
 
+g_sig = 0.5           # magnon linewidth
+g_amp = 2.            # magnon amplitude
+
 g_inc_sig = 0.02      # incoherent width
 g_inc_amp = 1.        # incoherent intensity
 
@@ -204,11 +207,11 @@ def TakinDisp(h, k, l):
 
 	try:
 		Q = np.array([h, k, l])
-		E_peak = get_energies(Q)
+		E_peaks = get_energies(Q)
 	except ZeroDivisionError:
 		return [0., 0.]
 
-	return [[E_peak, -E_peak], [w_peak, w_peak]]
+	return [E_peaks, [w_peak] * len(E_peaks)]
 
 
 #
@@ -216,11 +219,16 @@ def TakinDisp(h, k, l):
 #
 def TakinSqw(h, k, l, E):
 	try:
-		[Ep_peak, Em_peak], [wp_peak, wm_peak] = TakinDisp(h,k,l)
+		S = 0.
+
+		[E_peaks, w_peaks] = TakinDisp(h,k,l)
+		for (E_peak, w_peak) in zip(E_peaks, w_peaks):
+			S += gauss(E, E_peak, g_sig, g_amp)
+		S *= bose_cutoff(E, g_T, g_bose_cut)
 
 		incoh = gauss(E, 0., g_inc_sig, g_inc_amp)
+		S += incoh
 
-		S = incoh
 		return S
 	except ZeroDivisionError:
 		return 0.
