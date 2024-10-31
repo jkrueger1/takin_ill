@@ -93,7 +93,7 @@ S = S.round()
 
 # header for the data file to be read by takin
 hdr = """
-this is random data to test the convolution fitter
+this is randomly generated data to test the convolution fitter
 
 sample_a     = 5
 sample_b     = 5
