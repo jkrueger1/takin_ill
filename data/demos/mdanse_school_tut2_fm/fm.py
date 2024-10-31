@@ -6,8 +6,6 @@
 # @license GPLv3, see 'LICENSE' file
 #
 
-import math as m
-
 import numpy as np
 import numpy.linalg as la
 from numpy import array	# in global namespace so that Takin can access it
@@ -18,9 +16,6 @@ import scipy as sp
 import scipy.constants as const
 
 
-
-#is_ferromagnetic = True  # choose ferromagnetic or antiferromagnetic 1d spin chain
-only_pos_E = True        # hide magnon annihilation?
 verbose_print = False    # print intermediate results
 
 
@@ -32,10 +27,9 @@ def print_infos(str):
 #
 # magnetic sites
 # "S": spin magnitude
-# "Sdir": spin direction
 #
 sites = [
-	{ "S" : 1., "Sdir" : [ 0, 0, 1 ] },
+	{ "S" : 1. },
 ]
 
 #
@@ -52,13 +46,11 @@ couplings = [
 
 # calculate spin rotations towards ferromagnetic order along [001]
 for site in sites:
-	#Sdir = np.array(site["Sdir"]) / la.norm(site["Sdir"])
 	c = 1.
 	rot = np.diag([ c, c, c ])
 	site["u"] = rot[0, :] + 1j * rot[1, :]
 	site["v"] = rot[2, :]
 
-#	print_infos(np.dot(rot, Sdir))
 	print_infos("\nrot = \n%s\nu = %s\nv = %s" % (rot, site["u"], site["v"]))
 
 
@@ -145,7 +137,7 @@ kB = const.k / const.e * 1e3
 
 # Bose factor
 def bose(E, T):
-	n = 1./(m.exp(abs(E)/(kB*T)) - 1.)
+	n = 1./(np.exp(abs(E)/(kB*T)) - 1.)
 	if E >= 0.:
 		n += 1.
 	return n
@@ -163,7 +155,7 @@ def bose_cutoff(E, T, Ecut=0.02):
 
 # Gaussian peak
 def gauss(x, x0, sig, amp):
-	norm = (np.sqrt(2.*m.pi) * sig)
+	norm = (np.sqrt(2.*np.pi) * sig)
 	return amp * np.exp(-0.5*((x-x0)/sig)**2.) / norm
 
 # -----------------------------------------------------------------------------
@@ -175,17 +167,11 @@ def gauss(x, x0, sig, amp):
 # -----------------------------------------------------------------------------
 
 # global variables which can be accessed / changed by Takin
-#g_G = np.array([4., 4., 0.])	# Bragg peak
-
-g_h = 4.              #
-g_k = 4.              # Bragg peak (hkl)
-g_l = 0.              #
-
 g_sig = 0.5           # magnon linewidth
 g_amp = 2.            # magnon amplitude
 
 g_inc_sig = 0.02      # incoherent width
-g_inc_amp = 1.        # incoherent intensity
+g_inc_amp = 0.        # incoherent intensity
 
 g_T = 300.            # temperature
 g_bose_cut = 0.01     # lower cutoff energy for the Bose factor
@@ -195,7 +181,7 @@ g_bose_cut = 0.01     # lower cutoff energy for the Bose factor
 # the init function is called after Takin has changed a global variable (optional)
 #
 def TakinInit():
-	print("Init: G=(%.2f %.2f %.2f), T=%.2f" % (g_h, g_k, g_l, g_T))
+	print("Init: T=%.2f" % (g_T))
 
 
 #
@@ -254,7 +240,7 @@ if __name__ == "__main__":
 	Es_plus = []
 	Es_minus = []
 	for q in qs:
-		[[E_p, E_m], [w_p, w_m]] = TakinDisp(g_h+q, g_k-q, g_l)
+		[[E_p, E_m], [w_p, w_m]] = TakinDisp(q, q, 0)
 		Es_plus.append(E_p)
 		Es_minus.append(E_m)
 
