@@ -119,7 +119,7 @@ orient2_y    = 1
 orient2_z    = 0
 
 is_ki_fixed  = 0
-k_fix        = 1.5
+k_fix        = 2.662
 
 col_h        = 1
 col_k        = 2
