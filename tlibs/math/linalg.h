@@ -2630,7 +2630,7 @@ template<class t_mat = ublas::matrix<double>,
 	class t_vec = ublas::vector<typename t_mat::value_type>,
 	typename T = typename t_mat::value_type>
 bool eigenvec_sym_simple(const t_mat& mat, std::vector<t_vec>& evecs, std::vector<T>& evals,
-	std::size_t MAX_ITER = 512, T tEps = std::cbrt(get_epsilon<T>()))
+	std::size_t MAX_ITER = 1024, T tEps = std::cbrt(get_epsilon<T>()))
 {
 	if(mat.size1() != mat.size2())
 	{
@@ -2694,7 +2694,7 @@ template<class t_mat = ublas::matrix<double>,
 	class t_vec = ublas::vector<typename t_mat::value_type>,
 	typename T = typename t_mat::value_type>
 bool eigenvec_approxsym_simple(const t_mat& mat, std::vector<t_vec>& evecs, std::vector<T>& evals,
-	std::size_t MAX_ITER=512, T tEps = std::cbrt(get_epsilon<T>()))
+	std::size_t MAX_ITER = 1024, T tEps = std::cbrt(get_epsilon<T>()))
 {
 	t_mat MtM = prod_mm(transpose(mat), mat);
 	bool bOk = eigenvec_sym_simple(MtM, evecs, evals, MAX_ITER, tEps);

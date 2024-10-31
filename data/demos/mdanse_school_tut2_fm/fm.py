@@ -207,13 +207,14 @@ def TakinSqw(h, k, l, E):
 	try:
 		S = 0.
 
+		# magnon peaks
 		[E_peaks, w_peaks] = TakinDisp(h,k,l)
 		for (E_peak, w_peak) in zip(E_peaks, w_peaks):
-			S += gauss(E, E_peak, g_sig, g_amp) * w_peak
-		S *= bose_cutoff(E, g_T, g_bose_cut)
+			S += gauss(E, E_peak, g_sig, g_amp) * w_peak * \
+				bose_cutoff(E_peak, g_T, g_bose_cut)
 
-		incoh = gauss(E, 0., g_inc_sig, g_inc_amp)
-		S += incoh
+		# incoherent peak
+		S += gauss(E, 0., g_inc_sig, g_inc_amp)
 
 		return S
 	except ZeroDivisionError:
