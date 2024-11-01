@@ -344,7 +344,6 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 	}
 
 	// eigenvalues of the hamiltonian correspond to the energies
-	// eigenvectors correspond to the spectral weights
 	const auto [evecs_ok, evals, evecs] =
 		tl2_la::eigenvec<t_mat, t_vec, t_cplx, t_real>(
 			H_mat, only_energies, is_herm, true);
@@ -360,9 +359,26 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 	Es_and_Ws.reserve(evals.size());
 
 	// register energies
-	for(const auto& eval : evals)
+	for(t_size eval_idx = 0; eval_idx < evals.size(); ++eval_idx)
 	{
-		const EnergyAndWeight EandS { .E = eval.real(), };
+		const t_cplx& eval = evals[eval_idx];
+		const t_vec* evec = nullptr;
+		if(!only_energies && eval_idx < evecs.size())
+			evec = &evecs[eval_idx];
+
+		if(m_perform_checks && !tl2::equals_0(eval.imag(), m_eps))
+		{
+			CERR_OPT << "Magdyn warning: Remaining imaginary energy component at Q = "
+				<< Qvec << " and E = " << eval
+				<< "." << std::endl;
+		}
+
+		EnergyAndWeight EandS
+		{
+			.E = eval.real(),
+			.state = evec ? *evec : t_vec{},
+		};
+
 		Es_and_Ws.emplace_back(std::move(EandS));
 	}
 

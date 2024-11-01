@@ -791,8 +791,8 @@ bool MAGDYN_INST::CheckImagWeights(const t_vec_real& Q_rlu,
 	for(const EnergyAndWeight& EandS : Es_and_S)
 	{
 		// imaginary parts should be gone after UniteEnergies()
-		if(std::abs(EandS.S_perp_sum.imag()) > m_eps ||
-			std::abs(EandS.S_sum.imag()) > m_eps)
+		if(!tl2::equals_0(EandS.S_perp_sum.imag(), m_eps) ||
+			!tl2::equals_0(EandS.S_sum.imag(), m_eps))
 		{
 			ok = false;
 

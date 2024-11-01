@@ -160,13 +160,16 @@ struct t_ExternalField
 /**
  * eigenenergies and spin-spin correlation matrix
  */
-template<class t_mat, class t_real, class t_cplx = typename t_mat::value_type>
+template<class t_mat, class t_vec, class t_real,
+	class t_cplx = typename t_mat::value_type>
 #ifndef SWIG  // TODO: remove this as soon as swig understands concepts
 requires tl2::is_mat<t_mat>
 #endif
 struct t_EnergyAndWeight
 {
+	// eigenvalue & -vector of hamiltonian
 	t_real E{};
+	t_vec state{};
 
 	// full dynamical structure factor
 	t_mat S{};
@@ -181,14 +184,15 @@ struct t_EnergyAndWeight
 
 
 
-template<class t_mat, class t_real, class t_cplx = typename t_mat::value_type>
+template<class t_mat, class t_vec, class t_real,
+	class t_cplx = typename t_mat::value_type>
 #ifndef SWIG  // TODO: remove this as soon as swig understands concepts
 requires tl2::is_mat<t_mat>
 #endif
 struct t_SofQE
 {
 	t_real h, k, l;
-	std::vector<t_EnergyAndWeight<t_mat, t_real, t_cplx>> E_and_S;
+	std::vector<t_EnergyAndWeight<t_mat, t_vec, t_real, t_cplx>> E_and_S;
 };
 
 

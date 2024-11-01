@@ -131,19 +131,23 @@
 
 %template(EnergyAndWeight) tl2_mag::t_EnergyAndWeight<
 	tl2::mat<std::complex<double>>,
+	tl2::vec<std::complex<double>>,
 	double, std::complex<double>>;
 %template(VecEnergyAndWeight) std::vector<
 	tl2_mag::t_EnergyAndWeight<
 		tl2::mat<std::complex<double>>,
+		tl2::vec<std::complex<double>>,
 		double, std::complex<double>>
 	>;
 
 %template(SofQE) tl2_mag::t_SofQE<
 	tl2::mat<std::complex<double>>,
+	tl2::vec<std::complex<double>>,
 	double, std::complex<double>>;
 %template(VecSofQE) std::vector<
 	tl2_mag::t_SofQE<
 		tl2::mat<std::complex<double>>,
+		tl2::vec<std::complex<double>>,
 		double, std::complex<double>>
 	>;
 
