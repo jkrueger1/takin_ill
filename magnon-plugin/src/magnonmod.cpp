@@ -112,22 +112,32 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 
 t_real MagnonMod::operator()(t_real h, t_real k, t_real l, t_real E) const
 {
+	// bose factor
+	t_real bose = 1.;
+	if(!m_use_model_bose)
+	{
+		// calculate bose factor here (not in model)
+		bose = tl::bose_cutoff(E, m_T, m_dyn.GetBoseCutoffEnergy());
+	}
+
 	std::vector<t_real> Es, Ws;
 	std::tie(Es, Ws) = disp(h, k, l);
 
+	// incoherent peak
 	t_real incoh = 0.;
 	if(!tl::float_equal(m_incoh_amp, t_real(0)))
 		incoh = tl::gauss_model(E, t_real(0),
 			m_incoh_sigma, m_incoh_amp, t_real(0));
 
+	// magnon peaks
 	t_real S = 0.;
-	for(std::size_t iE=0; iE<Es.size(); ++iE)
+	for(std::size_t iE = 0; iE < Es.size(); ++iE)
 	{
 		if(!tl::float_equal(Ws[iE], t_real(0)))
 			S += tl::gauss_model(E, Es[iE], m_sigma, Ws[iE], t_real(0));
 	}
 
-	return m_S0*S + incoh;
+	return m_S0*S*bose + incoh;
 }
 
 // ----------------------------------------------------------------------------
@@ -163,9 +173,11 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 	vars.push_back(SqwBase::t_var{
 		"S0", "real", tl::var_to_str(m_S0)});
 	vars.push_back(SqwBase::t_var{
-		"T", "real", tl::var_to_str(m_dyn.GetTemperature())});
+		"T", "real", tl::var_to_str(m_T /*m_dyn.GetTemperature()*/)});
 	vars.push_back(SqwBase::t_var{
 		"cutoff", "real", tl::var_to_str(m_dyn.GetBoseCutoffEnergy())});
+	vars.push_back(SqwBase::t_var{
+		"use_model_bose", "int", tl::var_to_str((int)m_use_model_bose)});
 	vars.push_back(SqwBase::t_var{
 		"channel", "int", tl::var_to_str(m_channel)});
 	vars.push_back(SqwBase::t_var{
@@ -173,7 +185,7 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 	vars.push_back(SqwBase::t_var{
 		"B_mag", "real", tl::var_to_str(field.mag)});
 	vars.push_back(SqwBase::t_var{
-		"B_align_spins", "real", tl::var_to_str((int)field.align_spins)});
+		"B_align_spins", "int", tl::var_to_str((int)field.align_spins)});
 	vars.push_back(SqwBase::t_var{
 		"silent", "real", tl::var_to_str((int)m_dyn.GetSilent())});
 #ifdef MAGNONMOD_ALLOW_QSIGNS
@@ -219,9 +231,23 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 		else if(strVar == "S0")
 			m_S0 = tl::str_to_var<decltype(m_S0)>(strVal);
 		else if(strVar == "T")
-			m_dyn.SetTemperature(tl::str_to_var<t_real>(strVal));
+		{
+			m_T = tl::str_to_var<t_real>(strVal);
+			if(!m_use_model_bose)
+				m_dyn.SetTemperature(-1.);
+			else
+				m_dyn.SetTemperature(m_T);
+		}
 		else if(strVar == "cutoff")
 			m_dyn.SetBoseCutoffEnergy(tl::str_to_var<t_real>(strVal));
+		else if(strVar == "use_model_bose")
+		{
+			m_use_model_bose = (tl::str_to_var<int>(strVal) != 0);
+			if(!m_use_model_bose)
+				m_dyn.SetTemperature(-1.);
+			else
+				m_dyn.SetTemperature(m_T);
+		}
 		else if(strVar == "channel")
 			m_channel = tl::str_to_var<int>(strVal);
 		else if(strVar == "B_dir")
