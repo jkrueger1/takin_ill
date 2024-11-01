@@ -214,6 +214,7 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 {
 	if(!vars.size()) return;
 
+	bool set_model_temp = false;
 	bool calc_sites = false;
 	bool calc_terms = false;
 
@@ -233,20 +234,14 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 		else if(strVar == "T")
 		{
 			m_T = tl::str_to_var<t_real>(strVal);
-			if(!m_use_model_bose)
-				m_dyn.SetTemperature(-1.);
-			else
-				m_dyn.SetTemperature(m_T);
+			set_model_temp = true;
 		}
 		else if(strVar == "cutoff")
 			m_dyn.SetBoseCutoffEnergy(tl::str_to_var<t_real>(strVal));
 		else if(strVar == "use_model_bose")
 		{
 			m_use_model_bose = (tl::str_to_var<int>(strVal) != 0);
-			if(!m_use_model_bose)
-				m_dyn.SetTemperature(-1.);
-			else
-				m_dyn.SetTemperature(m_T);
+			set_model_temp = true;
 		}
 		else if(strVar == "channel")
 			m_channel = tl::str_to_var<int>(strVal);
@@ -313,6 +308,14 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 		}
 	}
 
+	if(set_model_temp)
+	{
+		if(!m_use_model_bose)
+			m_dyn.SetTemperature(-1.);
+		else
+			m_dyn.SetTemperature(m_T);
+	}
+
 	if(calc_sites)
 	{
 		m_dyn.CalcExternalField();
@@ -344,6 +347,8 @@ SqwBase* MagnonMod::shallow_copy() const
 	mod->m_S0 = this->m_S0;
 	mod->m_dyn = this->m_dyn;
 	mod->m_channel = this->m_channel;
+	mod->m_use_model_bose = this->m_use_model_bose;
+	mod->m_T = this->m_T;
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 	mod->m_Qsigns = this->m_Qsigns;
 #endif
