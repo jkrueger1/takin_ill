@@ -1,6 +1,5 @@
 #
-# testing the lswt algorithm (https://arxiv.org/abs/1402.6069) directly for comparison,
-# both for a 1d ferromagnetic and for an antiferromagnetic chain
+# minimal implementation of the linear spin-wave algorithm (https://arxiv.org/abs/1402.6069) for comparison
 # @author Tobias Weber <tweber@ill.fr>
 # @date 24-oct-2024
 # @license GPLv3, see 'LICENSE' file
