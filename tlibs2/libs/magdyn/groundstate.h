@@ -252,5 +252,4 @@ bool MAGDYN_INST::CalcGroundState(const std::unordered_set<std::string>*, bool, 
 
 // --------------------------------------------------------------------
 
-
 #endif

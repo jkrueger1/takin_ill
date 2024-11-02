@@ -93,7 +93,7 @@ extern t_real g_cholesky_delta;
 
 // optional features
 extern int g_allow_ortho_spin, g_allow_general_J;
-extern int g_silent;
+extern int g_silent, g_checks;
 
 // use native menubar and dialogs?
 extern int g_use_native_menubar, g_use_native_dialogs;
@@ -125,7 +125,7 @@ extern t_real g_structplot_fov;
 // ----------------------------------------------------------------------------
 #include "settings.h"
 
-constexpr std::array<SettingsVariable, 17> g_settingsvariables
+constexpr std::array<SettingsVariable, 18> g_settingsvariables
 {{
 	// threads
 	{
@@ -226,6 +226,12 @@ constexpr std::array<SettingsVariable, 17> g_settingsvariables
 		.description = "Silence output of error messages on console.",
 		.key = "output_silent",
 		.value = &g_silent,
+		.editor = SettingsVariableEditor::YESNO,
+	},
+	{
+		.description = "Perform extra sanity checks.",
+		.key = "sanity_checks",
+		.value = &g_checks,
 		.editor = SettingsVariableEditor::YESNO,
 	},
 }};

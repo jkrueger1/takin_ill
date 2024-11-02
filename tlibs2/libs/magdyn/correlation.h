@@ -75,18 +75,25 @@ bool MAGDYN_INST::CalcCorrelationsFromHamiltonian(
 	});
 
 	const t_mat evec_mat = tl2::create<t_mat>(tl2::reorder(evecs, sorting));
-	const t_mat evec_mat_herm = tl2::herm(evec_mat);
 
 	// equation (32) from (Toth 2015)
-	const t_mat energy_mat = evec_mat_herm * H_mat * evec_mat;  // energies
-	t_mat E_sqrt = g_sign * energy_mat;                         // abs. energies
+	const t_mat energy_mat = tl2::herm(evec_mat) * H_mat * evec_mat;  // energies
+	t_mat E_sqrt = g_sign * energy_mat;              // abs. energies
 	for(t_size i = 0; i < E_sqrt.size1(); ++i)
-		E_sqrt(i, i) = std::sqrt(E_sqrt(i, i));             // sqrt. of abs. energies
+		E_sqrt(i, i) = std::sqrt(E_sqrt(i, i));  // sqrt. of abs. energies
 
 	// re-create energies, to be consistent with the weights
 	Es_and_Ws.clear();
 	for(t_size i = 0; i < energy_mat.size1(); ++i)
 	{
+		if(m_perform_checks && !tl2::equals_0(energy_mat(i, i).imag(), m_eps))
+		{
+			using namespace tl2_ops;
+			CERR_OPT << "Magdyn warning: Remaining imaginary energy component at Q = "
+				<< Qvec << " and E = " << energy_mat(i, i)
+				<< "." << std::endl;
+		}
+
 		const EnergyAndWeight EandS
 		{
 			.E = energy_mat(i, i).real(),
@@ -125,11 +132,8 @@ bool MAGDYN_INST::CalcCorrelationsFromHamiltonian(
 	for(std::uint8_t x_idx = 0; x_idx < 3; ++x_idx)
 	for(std::uint8_t y_idx = 0; y_idx < 3; ++y_idx)
 	{
-		// equations (44) from (Toth 2015)
-		t_mat M00 = tl2::create<t_mat>(N, N);
-		t_mat M0N = tl2::create<t_mat>(N, N);
-		t_mat MN0 = tl2::create<t_mat>(N, N);
-		t_mat MNN = tl2::create<t_mat>(N, N);
+		// equations (44) and (47) from (Toth 2015)
+		t_mat M = tl2::create<t_mat>(2*N, 2*N);
 
 		for(t_size i = 0; i < N; ++i)
 		for(t_size j = 0; j < N; ++j)
@@ -150,16 +154,11 @@ bool MAGDYN_INST::CalcCorrelationsFromHamiltonian(
 				tl2::inner<t_vec_real>(s_j.pos_calc - s_i.pos_calc, Qvec));
 
 			// matrix elements of equation (44) from (Toth 2015)
-			M00(i, j) = phase * S_mag * u_i[x_idx]  * uc_j[y_idx];
-			M0N(i, j) = phase * S_mag * u_i[x_idx]  * u_j[y_idx];
-			MN0(i, j) = phase * S_mag * uc_i[x_idx] * uc_j[y_idx];
-			MNN(i, j) = phase * S_mag * uc_i[x_idx] * u_j[y_idx];
-		} // end of iteration over sites
-
-		// equation (47) from (Toth 2015)
-		t_mat M = tl2::create<t_mat>(2*N, 2*N);
-		tl2::set_submat(M, M00, 0, 0); tl2::set_submat(M, M0N, 0, N);
-		tl2::set_submat(M, MN0, N, 0); tl2::set_submat(M, MNN, N, N);
+			M(    i,     j) = phase * S_mag * u_i[x_idx]  * uc_j[y_idx];
+			M(    i, N + j) = phase * S_mag * u_i[x_idx]  * u_j[y_idx];
+			M(N + i,     j) = phase * S_mag * uc_i[x_idx] * uc_j[y_idx];
+			M(N + i, N + j) = phase * S_mag * uc_i[x_idx] * u_j[y_idx];
+		} // end of site iteration
 
 		const t_mat M_trafo = trafo_herm * M * trafo;
 

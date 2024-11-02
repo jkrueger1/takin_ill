@@ -414,5 +414,4 @@ std::tuple<t_vec, t_vec> MAGDYN_INST::spin_to_trafo(const t_vec_real& spin_dir)
 }
 // --------------------------------------------------------------------
 
-
 #endif

@@ -183,9 +183,7 @@ t_mat MAGDYN_INST::CalcHamiltonian(const t_vec_real& Qvec) const
 	const auto [J_Q, J_Q0] = CalcReciprocalJs(Qvec);
 
 	// create the hamiltonian of equation (25) and (26) from (Toth 2015)
-	t_mat H00 = tl2::zero<t_mat>(N, N);
-	t_mat HNN = tl2::zero<t_mat>(N, N);  // = H00*(-Q)
-	t_mat H0N = tl2::zero<t_mat>(N, N);
+	t_mat H = tl2::create<t_mat>(2*N, 2*N);
 
 	bool use_field = !tl2::equals_0<t_real>(m_field.mag, m_eps)
 		&& m_field.dir.size() == 3;
@@ -223,9 +221,9 @@ t_mat MAGDYN_INST::CalcHamiltonian(const t_vec_real& Qvec) const
 				// equation (26) from (Toth 2015)
 				const t_real S_mag = 0.5 * std::sqrt(s_i.spin_mag_calc * s_j.spin_mag_calc);
 
-				H00(i, j) += S_mag * tl2::inner<t_vec>(uc_i, (*J_Q33) * uc_j);
-				HNN(i, j) += S_mag * tl2::inner<t_vec>(u_i,  (*J_Q33) * u_j);
-				H0N(i, j) += S_mag * tl2::inner<t_vec>(uc_i, (*J_Q33) * u_j);
+				H(    i,     j) += S_mag * tl2::inner<t_vec>(uc_i, (*J_Q33) * uc_j);
+				H(N + i, N + j) += S_mag * tl2::inner<t_vec>(u_i,  (*J_Q33) * u_j);
+				H(    i, N + j) += S_mag * tl2::inner<t_vec>(uc_i, (*J_Q33) * u_j);
 			}
 
 			if(J_Q033)
@@ -233,8 +231,8 @@ t_mat MAGDYN_INST::CalcHamiltonian(const t_vec_real& Qvec) const
 				// equation (26) from (Toth 2015)
 				t_cplx c = s_j.spin_mag_calc * tl2::inner_noconj<t_vec>(v_i, (*J_Q033) * v_j);
 
-				H00(i, i) -= c;
-				HNN(i, i) -= c;
+				H(    i,     i) -= c;
+				H(N + i, N + i) -= c;
 			}
 		}  // end of iteration over j sites
 
@@ -249,16 +247,13 @@ t_mat MAGDYN_INST::CalcHamiltonian(const t_vec_real& Qvec) const
 			constexpr const t_real muB = tl2::mu_B<t_real>
 				/ tl2::meV<t_real> * tl2::tesla<t_real>;
 
-			H00(i, i) -= muB * Bgv;
-			HNN(i, i) -= std::conj(muB * Bgv);
+			H(    i,     i) -= muB * Bgv;
+			H(N + i, N + i) -= std::conj(muB * Bgv);
 		}
 	}  // end of iteration over i sites
 
 	// equation (25) from (Toth 2015)
-	const t_mat HN0 = tl2::herm(H0N);
-	t_mat H = tl2::create<t_mat>(2*N, 2*N);
-	tl2::set_submat(H, H00, 0, 0); tl2::set_submat(H, H0N, 0, N);
-	tl2::set_submat(H, HN0, N, 0); tl2::set_submat(H, HNN, N, N);
+	tl2::set_submat(H, tl2::herm(tl2::submat(H, 0, N, N, N)), N, 0);
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
 	using namespace tl2_ops;
@@ -396,6 +391,6 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 
 	return Es_and_Ws;
 }
-
+// --------------------------------------------------------------------
 
 #endif
