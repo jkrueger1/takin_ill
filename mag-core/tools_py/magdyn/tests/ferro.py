@@ -91,7 +91,6 @@ for site in sites:
 	print_infos("\nrot = \n%s\nu = %s\nv = %s" % (rot, site["u"], site["v"]))
 
 
-
 # calculate real interaction matrices
 for coupling in couplings:
 	J = coupling["J"]
