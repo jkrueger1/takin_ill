@@ -122,7 +122,7 @@ public:
 	using EnergyAndWeight = t_EnergyAndWeight<t_mat, t_vec, t_real, t_cplx>;
 	using EnergiesAndWeights = std::vector<EnergyAndWeight>;
 
-	using SofQE = t_SofQE<t_mat, t_vec, t_real, t_cplx>;
+	using SofQE = t_SofQE<t_mat, t_vec, t_vec_real, t_real, t_cplx>;
 	using SofQEs = std::vector<SofQE>;
 
 	using t_indices = std::pair<t_size, t_size>;
@@ -299,7 +299,7 @@ public:
 	/**
 	 * check if imaginary weights remain
 	 */
-	bool CheckImagWeights(const t_vec_real& Q_rlu, const EnergiesAndWeights& Es_and_S) const;
+	bool CheckImagWeights(const SofQE& S) const;
 	// --------------------------------------------------------------------
 
 
@@ -416,7 +416,7 @@ public:
 	 * get the energies from a hamiltonian
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	EnergiesAndWeights CalcEnergiesFromHamiltonian(
+	SofQE CalcEnergiesFromHamiltonian(
 		t_mat _H, const t_vec_real& Qvec,
 		bool only_energies = false) const;
 
@@ -424,15 +424,15 @@ public:
 	 * get the dynamical structure factor from a hamiltonian
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	bool CalcCorrelationsFromHamiltonian(EnergiesAndWeights& energies_and_correlations,
-		const t_mat& H_mat, const t_mat& chol_mat, const t_mat& g_sign,
-		const t_vec_real& Qvec, const std::vector<t_vec>& evecs) const;
+	bool CalcCorrelationsFromHamiltonian(SofQE& S, const t_mat& H_mat,
+		const t_mat& chol_mat, const t_mat& g_sign,
+		const std::vector<t_vec>& evecs) const;
 
 	/**
 	 * applies projectors, form and weight factors to get neutron intensities
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	void CalcIntensities(const t_vec_real& Q_rlu, EnergiesAndWeights& E_and_S) const;
+	void CalcIntensities(SofQE& S) const;
 
 	/**
 	 * calculates the polarisation matrix
@@ -442,16 +442,14 @@ public:
 	/**
 	 * unite degenerate energies and their corresponding eigenstates
 	 */
-	EnergiesAndWeights UniteEnergies(const EnergiesAndWeights&
-		energies_and_correlations) const;
+	SofQE UniteEnergies(const SofQE& S) const;
 
 	/**
 	 * get the energies and the spin-correlation at the given momentum
 	 * (also calculates incommensurate contributions and applies weight factors)
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	EnergiesAndWeights CalcEnergies(const t_vec_real& Q_rlu,
-		bool only_energies = false) const;
+	SofQE CalcEnergies(const t_vec_real& Q_rlu, bool only_energies = false) const;
 
 	EnergiesAndWeights CalcEnergies(t_real h, t_real k, t_real l,
 		bool only_energies = false) const;

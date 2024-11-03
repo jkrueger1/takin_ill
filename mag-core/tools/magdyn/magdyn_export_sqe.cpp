@@ -164,14 +164,13 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 		for(std::size_t l_idx=0; l_idx<num_pts_l; ++l_idx)
 		{
 			t_real l = l_pos + inc_l*t_real(l_idx);
-			auto energies_and_correlations = dyn.CalcEnergies(
-				h_pos, k_pos, l, !use_weights);
+			auto E_and_S = dyn.CalcEnergies(h_pos, k_pos, l, !use_weights);
 
 			std::vector<t_real> Es, weights;
-			Es.reserve(energies_and_correlations.size());
-			weights.reserve(energies_and_correlations.size());
+			Es.reserve(E_and_S.size());
+			weights.reserve(E_and_S.size());
 
-			for(const auto& E_and_S : energies_and_correlations)
+			for(const auto& E_and_S : E_and_S)
 			{
 				if(m_stopRequested)
 					break;

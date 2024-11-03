@@ -184,15 +184,17 @@ struct t_EnergyAndWeight
 
 
 
-template<class t_mat, class t_vec, class t_real,
+template<class t_mat, class t_vec, class t_vec_real,
+	class t_real = typename t_vec_real::value_type,
 	class t_cplx = typename t_mat::value_type>
 #ifndef SWIG  // TODO: remove this as soon as swig understands concepts
 requires tl2::is_mat<t_mat>
 #endif
 struct t_SofQE
 {
-	t_real h, k, l;
-	std::vector<t_EnergyAndWeight<t_mat, t_vec, t_real, t_cplx>> E_and_S;
+	t_vec_real Q_rlu{};
+	t_mat evec_mat{};
+	std::vector<t_EnergyAndWeight<t_mat, t_vec, t_real, t_cplx>> E_and_S{};
 };
 
 

@@ -59,38 +59,38 @@
  */
 MAGDYN_TEMPL
 bool MAGDYN_INST::CalcCorrelationsFromHamiltonian(
-	MAGDYN_TYPE::EnergiesAndWeights& Es_and_Ws,
-	const t_mat& H_mat, const t_mat& chol_mat, const t_mat& g_sign,
-	const t_vec_real& Qvec, const std::vector<t_vec>& evecs) const
+	MAGDYN_TYPE::SofQE& S, const t_mat& H_mat,
+	const t_mat& chol_mat, const t_mat& g_sign,
+	const std::vector<t_vec>& evecs) const
 {
 	const t_size N = GetMagneticSitesCount();
 	if(N == 0)
 		return false;
 
 	// get the sorting of the energies
-	const std::vector<t_size> sorting = tl2::get_perm(Es_and_Ws.size(),
-		[&Es_and_Ws](t_size idx1, t_size idx2) -> bool
+	const std::vector<t_size> sorting = tl2::get_perm(S.E_and_S.size(),
+		[&S](t_size idx1, t_size idx2) -> bool
 	{
-		return Es_and_Ws[idx1].E >= Es_and_Ws[idx2].E;
+		return S.E_and_S[idx1].E >= S.E_and_S[idx2].E;
 	});
 
-	const t_mat evec_mat = tl2::create<t_mat>(tl2::reorder(evecs, sorting));
+	S.evec_mat = tl2::create<t_mat>(tl2::reorder(evecs, sorting));
 
 	// equation (32) from (Toth 2015)
-	const t_mat energy_mat = tl2::herm(evec_mat) * H_mat * evec_mat;  // energies
+	const t_mat energy_mat = tl2::herm(S.evec_mat) * H_mat * S.evec_mat;  // energies
 	t_mat E_sqrt = g_sign * energy_mat;              // abs. energies
 	for(t_size i = 0; i < E_sqrt.size1(); ++i)
 		E_sqrt(i, i) = std::sqrt(E_sqrt(i, i));  // sqrt. of abs. energies
 
 	// re-create energies, to be consistent with the weights
-	Es_and_Ws.clear();
+	S.E_and_S.clear();
 	for(t_size i = 0; i < energy_mat.size1(); ++i)
 	{
 		if(m_perform_checks && !tl2::equals_0(energy_mat(i, i).imag(), m_eps))
 		{
 			using namespace tl2_ops;
 			CERR_OPT << "Magdyn warning: Remaining imaginary energy component at Q = "
-				<< Qvec << " and E = " << energy_mat(i, i)
+				<< S.Q_rlu << " and E = " << energy_mat(i, i)
 				<< "." << std::endl;
 		}
 
@@ -101,7 +101,7 @@ bool MAGDYN_INST::CalcCorrelationsFromHamiltonian(
 			.S_perp = tl2::zero<t_mat>(3, 3),
 		};
 
-		Es_and_Ws.emplace_back(std::move(EandS));
+		S.E_and_S.emplace_back(std::move(EandS));
 	}
 
 	const auto [chol_inv, inv_ok] = tl2::inv(chol_mat);
@@ -109,13 +109,13 @@ bool MAGDYN_INST::CalcCorrelationsFromHamiltonian(
 	{
 		using namespace tl2_ops;
 		CERR_OPT << "Magdyn error: Cholesky inversion failed"
-			<< " at Q = " << Qvec << "." << std::endl;
+			<< " at Q = " << S.Q_rlu << "." << std::endl;
 
 		return false;
 	}
 
 	// equation (34) from (Toth 2015)
-	const t_mat trafo = chol_inv * evec_mat * E_sqrt;
+	const t_mat trafo = chol_inv * S.evec_mat * E_sqrt;
 	const t_mat trafo_herm = tl2::herm(trafo);
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
@@ -151,7 +151,7 @@ bool MAGDYN_INST::CalcCorrelationsFromHamiltonian(
 			// pre-factors of equation (44) from (Toth 2015)
 			const t_real S_mag = std::sqrt(s_i.spin_mag_calc * s_j.spin_mag_calc);
 			const t_cplx phase = std::exp(-m_phase_sign * s_imag * s_twopi *
-				tl2::inner<t_vec_real>(s_j.pos_calc - s_i.pos_calc, Qvec));
+				tl2::inner<t_vec_real>(s_j.pos_calc - s_i.pos_calc, S.Q_rlu));
 
 			// matrix elements of equation (44) from (Toth 2015)
 			M(    i,     j) = phase * S_mag * u_i[x_idx]  * uc_j[y_idx];
@@ -167,9 +167,9 @@ bool MAGDYN_INST::CalcCorrelationsFromHamiltonian(
 		tl2::niceprint(std::cout, M_trafo, 1e-4, 4);
 #endif
 
-		for(t_size i = 0; i < Es_and_Ws.size(); ++i)
+		for(t_size i = 0; i < S.E_and_S.size(); ++i)
 		{
-			Es_and_Ws[i].S(x_idx, y_idx) +=
+			S.E_and_S[i].S(x_idx, y_idx) +=
 				M_trafo(i, i) / t_real(M.size1());
 		}
 	} // end of coordinate iteration
@@ -184,13 +184,12 @@ bool MAGDYN_INST::CalcCorrelationsFromHamiltonian(
  * @note implements the formalism given by (Toth 2015)
  */
 MAGDYN_TEMPL
-void MAGDYN_INST::CalcIntensities(const t_vec_real& Q_rlu,
-	MAGDYN_TYPE::EnergiesAndWeights& Es_and_Ws) const
+void MAGDYN_INST::CalcIntensities(MAGDYN_TYPE::SofQE& S) const
 {
 	using namespace tl2_ops;
 	tl2::ExprParser<t_cplx> magffact = m_magffact;
 
-	for(EnergyAndWeight& E_and_S : Es_and_Ws)
+	for(EnergyAndWeight& E_and_S : S.E_and_S)
 	{
 		// apply bose factor
 		if(m_temperature >= 0.)
@@ -200,7 +199,7 @@ void MAGDYN_INST::CalcIntensities(const t_vec_real& Q_rlu,
 		if(m_magffact_formula != "")
 		{
 			// get |Q| in units of A^(-1)
-			t_vec_real Q_invA = m_xtalB * Q_rlu;
+			t_vec_real Q_invA = m_xtalB * S.Q_rlu;
 			t_real Q_abs = tl2::norm<t_vec_real>(Q_invA);
 
 			// evaluate form factor expression
@@ -211,10 +210,10 @@ void MAGDYN_INST::CalcIntensities(const t_vec_real& Q_rlu,
 
 		// apply orthogonal projector for magnetic neutron scattering,
 		// see (Shirane 2002), p. 37, equation (2.64)
-		t_mat proj_neutron = tl2::ortho_projector<t_mat, t_vec>(Q_rlu, false);
+		t_mat proj_neutron = tl2::ortho_projector<t_mat, t_vec>(S.Q_rlu, false);
 		E_and_S.S_perp = proj_neutron * E_and_S.S * proj_neutron;
 
-		CalcPolarisation(Q_rlu, E_and_S);
+		CalcPolarisation(S.Q_rlu, E_and_S);
 
 		// weights
 		E_and_S.S_sum       = tl2::trace<t_mat>(E_and_S.S);

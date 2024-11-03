@@ -779,8 +779,7 @@ bool MAGDYN_INST::CheckExchangeTerm(t_size idx, bool print_error) const
  * check if imaginary weights remain
  */
 MAGDYN_TEMPL
-bool MAGDYN_INST::CheckImagWeights(const t_vec_real& Q_rlu,
-	const MAGDYN_TYPE::EnergiesAndWeights& Es_and_S) const
+bool MAGDYN_INST::CheckImagWeights(const MAGDYN_TYPE::SofQE& S) const
 {
 	if(!m_perform_checks)
 		return true;
@@ -788,7 +787,7 @@ bool MAGDYN_INST::CheckImagWeights(const t_vec_real& Q_rlu,
 	using namespace tl2_ops;
 	bool ok = true;
 
-	for(const EnergyAndWeight& EandS : Es_and_S)
+	for(const EnergyAndWeight& EandS : S.E_and_S)
 	{
 		// imaginary parts should be gone after UniteEnergies()
 		if(!tl2::equals_0(EandS.S_perp_sum.imag(), m_eps) ||
@@ -797,7 +796,7 @@ bool MAGDYN_INST::CheckImagWeights(const t_vec_real& Q_rlu,
 			ok = false;
 
 			CERR_OPT << "Magdyn warning: Remaining imaginary S(Q, E) component at Q = "
-				<< Q_rlu << " and E = " << EandS.E
+				<< S.Q_rlu << " and E = " << EandS.E
 				<< ": imag(S) = " << EandS.S_sum.imag()
 				<< ", imag(S_perp) = " << EandS.S_perp_sum.imag()
 				<< "." << std::endl;

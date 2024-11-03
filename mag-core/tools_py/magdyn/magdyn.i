@@ -143,11 +143,13 @@
 %template(SofQE) tl2_mag::t_SofQE<
 	tl2::mat<std::complex<double>>,
 	tl2::vec<std::complex<double>>,
+	tl2::vec<double>,
 	double, std::complex<double>>;
 %template(VecSofQE) std::vector<
 	tl2_mag::t_SofQE<
 		tl2::mat<std::complex<double>>,
 		tl2::vec<std::complex<double>>,
+		tl2::vec<double>,
 		double, std::complex<double>>
 	>;
 

@@ -300,9 +300,9 @@ void MagDynDlg::CalcDispersion()
 				})
 				: tl2::create<t_vec_real>({ Q_start[0], Q_start[1], Q_start[2] });
 
-			auto energies_and_correlations = m_dyn.CalcEnergies(Q, !use_weights);
+			auto S = m_dyn.CalcEnergies(Q, !use_weights);
 
-			for(const auto& E_and_S : energies_and_correlations)
+			for(const auto& E_and_S : S.E_and_S)
 			{
 				if(m_stopRequested)
 					break;
@@ -525,28 +525,28 @@ void MagDynDlg::CalcHamiltonian()
 
 	// get energies and correlation functions
 	using t_E_and_S = typename decltype(m_dyn)::EnergyAndWeight;
-	std::vector<t_E_and_S> energies_and_correlations;
+	typename t_magdyn::SofQE S;
 
 	if(is_comm)
 	{
 		// commensurate case
-		energies_and_correlations = m_dyn.CalcEnergiesFromHamiltonian(H, Q, only_energies);
+		S = m_dyn.CalcEnergiesFromHamiltonian(H, Q, only_energies);
 		if(!only_energies)
-			m_dyn.CalcIntensities(Q, energies_and_correlations);
+			m_dyn.CalcIntensities(S);
 		if(unite_degeneracies)
-			energies_and_correlations = m_dyn.UniteEnergies(energies_and_correlations);
+			S = m_dyn.UniteEnergies(S);
 	}
 	else
 	{
 		// incommensurate case
-		energies_and_correlations = m_dyn.CalcEnergies(Q, only_energies);
+		S = m_dyn.CalcEnergies(Q, only_energies);
 	}
 
 	if(only_energies)
 	{
 		// split into positive and negative energies
 		std::vector<t_magdyn::EnergyAndWeight> Es_neg, Es_pos;
-		for(const t_E_and_S& E_and_S : energies_and_correlations)
+		for(const t_E_and_S& E_and_S : S.E_and_S)
 		{
 			t_real E = E_and_S.E;
 
@@ -605,7 +605,7 @@ void MagDynDlg::CalcHamiltonian()
 	}
 	else
 	{
-		std::stable_sort(energies_and_correlations.begin(), energies_and_correlations.end(),
+		std::stable_sort(S.E_and_S.begin(), S.E_and_S.end(),
 			[](const t_E_and_S& E_and_S_1, const t_E_and_S& E_and_S_2) -> bool
 		{
 			t_real E1 = E_and_S_1.E;
@@ -622,7 +622,7 @@ void MagDynDlg::CalcHamiltonian()
 		ostr << "<th style=\"padding-right:16px\">Weight</td>";
 		ostr << "</tr>";
 
-		for(const t_E_and_S& E_and_S : energies_and_correlations)
+		for(const t_E_and_S& E_and_S : S.E_and_S)
 		{
 			t_real E = E_and_S.E;
 			if(ignore_annihilation && E < t_real(0))

@@ -56,29 +56,27 @@
  * unite degenerate energies and their corresponding eigenstates
  */
 MAGDYN_TEMPL
-MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::UniteEnergies(
-	const MAGDYN_TYPE::EnergiesAndWeights& energies_and_correlations) const
+MAGDYN_TYPE::SofQE MAGDYN_INST::UniteEnergies(const MAGDYN_TYPE::SofQE& S) const
 {
-	EnergiesAndWeights new_energies_and_correlations{};
-	new_energies_and_correlations.reserve(energies_and_correlations.size());
+	SofQE new_S;
+	new_S.Q_rlu = S.Q_rlu;
+	new_S.E_and_S.reserve(S.E_and_S.size());
 
-	for(const EnergyAndWeight& curState : energies_and_correlations)
+	for(const EnergyAndWeight& curState : S.E_and_S)
 	{
 		const t_real curE = curState.E;
 
-		auto iter = std::find_if(
-			new_energies_and_correlations.begin(),
-			new_energies_and_correlations.end(),
+		auto iter = std::find_if(new_S.E_and_S.begin(), new_S.E_and_S.end(),
 			[curE, this](const EnergyAndWeight& E_and_S) -> bool
 		{
 			t_real E = E_and_S.E;
 			return tl2::equals<t_real>(E, curE, m_eps);
 		});
 
-		if(iter == new_energies_and_correlations.end())
+		if(iter == new_S.E_and_S.end())
 		{
 			// energy not yet seen
-			new_energies_and_correlations.push_back(curState);
+			new_S.E_and_S.push_back(curState);
 		}
 		else
 		{
@@ -92,7 +90,7 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::UniteEnergies(
 		}
 	}
 
-	return new_energies_and_correlations;
+	return new_S;
 }
 
 
@@ -103,19 +101,19 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::UniteEnergies(
  * @note implements the formalism given by (Toth 2015)
  */
 MAGDYN_TEMPL
-MAGDYN_TYPE::EnergiesAndWeights
+MAGDYN_TYPE::SofQE
 MAGDYN_INST::CalcEnergies(const t_vec_real& Q_rlu, bool only_energies) const
 {
-	auto calc_EandS = [only_energies, this](const t_vec_real& Q)
-		-> EnergiesAndWeights
+	auto calc_EandS = [only_energies, this](const t_vec_real& Q) -> SofQE
 	{
 		const t_mat H = CalcHamiltonian(Q);
 		return CalcEnergiesFromHamiltonian(H, Q, only_energies);
 	};
 
-	EnergiesAndWeights EsandWs{};
+	SofQE S;
+	S.Q_rlu = Q_rlu;
 	if(m_calc_H)
-		EsandWs = calc_EandS(Q_rlu);
+		S = calc_EandS(Q_rlu);
 
 	if(IsIncommensurate())
 	{
@@ -128,43 +126,43 @@ MAGDYN_INST::CalcEnergies(const t_vec_real& Q_rlu, bool only_energies) const
 		rot_incomm -= proj_norm;
 		rot_incomm *= 0.5;
 
-		EnergiesAndWeights EsandWs_p{}, EsandWs_m{};
+		SofQE S_p{}, S_m{};
 		if(m_calc_Hp)
-			EsandWs_p = calc_EandS(Q_rlu + m_ordering);
+			S_p = calc_EandS(Q_rlu + m_ordering);
 		if(m_calc_Hm)
-			EsandWs_m = calc_EandS(Q_rlu - m_ordering);
+			S_m = calc_EandS(Q_rlu - m_ordering);
 
 		if(!only_energies)
 		{
 			const t_mat rot_incomm_conj = tl2::conj(rot_incomm);
 
 			// formula 40 from (Toth 2015)
-			for(EnergyAndWeight& EandW : EsandWs)
+			for(EnergyAndWeight& EandW : S.E_and_S)
 				EandW.S = EandW.S * proj_norm;
-			for(EnergyAndWeight& EandW : EsandWs_p)
+			for(EnergyAndWeight& EandW : S_p.E_and_S)
 				EandW.S = EandW.S * rot_incomm;
-			for(EnergyAndWeight& EandW : EsandWs_m)
+			for(EnergyAndWeight& EandW : S_m.E_and_S)
 				EandW.S = EandW.S * rot_incomm_conj;
 		}
 
 		// unite energies and weights
-		EsandWs.reserve(EsandWs.size() + EsandWs_p.size() + EsandWs_m.size());
-		for(EnergyAndWeight& EandW : EsandWs_p)
-			EsandWs.emplace_back(std::move(EandW));
-		for(EnergyAndWeight& EandW : EsandWs_m)
-			EsandWs.emplace_back(std::move(EandW));
+		S.E_and_S.reserve(S.E_and_S.size() + S_p.E_and_S.size() + S_m.E_and_S.size());
+		for(EnergyAndWeight& EandW : S_p.E_and_S)
+			S.E_and_S.emplace_back(std::move(EandW));
+		for(EnergyAndWeight& EandW : S_m.E_and_S)
+			S.E_and_S.emplace_back(std::move(EandW));
 	}
 
 	if(!only_energies)
-		CalcIntensities(Q_rlu, EsandWs);
+		CalcIntensities(S);
 
 	if(m_unite_degenerate_energies)
-		EsandWs = UniteEnergies(EsandWs);
+		S = UniteEnergies(S);
 
 	if(!only_energies)
-		CheckImagWeights(Q_rlu, EsandWs);
+		CheckImagWeights(S);
 
-	return EsandWs;
+	return S;
 }
 
 
@@ -175,7 +173,7 @@ MAGDYN_INST::CalcEnergies(t_real h, t_real k, t_real l, bool only_energies) cons
 {
 	// momentum transfer
 	const t_vec_real Qvec = tl2::create<t_vec_real>({ h, k, l });
-	return CalcEnergies(Qvec, only_energies);
+	return CalcEnergies(Qvec, only_energies).E_and_S;
 }
 
 
@@ -216,15 +214,10 @@ MAGDYN_INST::CalcDispersion(t_real h_start, t_real k_start, t_real l_start,
 			const t_real h = std::lerp(h_start, h_end, t_real(i) / t_real(num_Qs - 1));
 			const t_real k = std::lerp(k_start, k_end, t_real(i) / t_real(num_Qs - 1));
 			const t_real l = std::lerp(l_start, l_end, t_real(i) / t_real(num_Qs - 1));
+			const t_vec_real Q = tl2::create<t_vec_real>({ h, k, l });
 
 			// get E and S(Q, E) for this Q
-			EnergiesAndWeights E_and_S = CalcEnergies(h, k, l, false);
-
-			return SofQE
-			{
-				.h = h, .k = k, .l = l,
-				.E_and_S = E_and_S
-			};
+			return CalcEnergies(Q, false);
 		};
 
 		t_taskptr taskptr = std::make_shared<t_task>(task);

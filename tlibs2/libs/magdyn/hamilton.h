@@ -270,13 +270,16 @@ t_mat MAGDYN_INST::CalcHamiltonian(const t_vec_real& Qvec) const
  * @note implements the formalism given by (Toth 2015)
  */
 MAGDYN_TEMPL
-MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
+MAGDYN_TYPE::SofQE MAGDYN_INST::CalcEnergiesFromHamiltonian(
 	t_mat _H, const t_vec_real& Qvec, bool only_energies) const
 {
+	SofQE S;
+	S.Q_rlu = Qvec;
+
 	using namespace tl2_ops;
 	const t_size N = GetMagneticSitesCount();
 	if(N == 0 || _H.size1() == 0 || _H.size2() == 0)
-		return EnergiesAndWeights{};
+		return S;
 
 	// equation (30) from (Toth 2015)
 	t_mat g_sign = tl2::unit<t_mat>(2*N);
@@ -318,7 +321,7 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 		CERR_OPT << "Magdyn error: Invalid Cholesky decomposition"
 			<< " at Q = " << Qvec << "." << std::endl;
 
-		return EnergiesAndWeights{};
+		return S;
 	}
 
 	if(m_perform_checks && chol_try > 0)
@@ -347,11 +350,10 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 		CERR_OPT << "Magdyn error: Eigensystem calculation failed"
 			<< " at Q = " << Qvec << "." << std::endl;
 
-		return EnergiesAndWeights{};
+		return S;
 	}
 
-	EnergiesAndWeights Es_and_Ws{};
-	Es_and_Ws.reserve(evals.size());
+	S.E_and_S.reserve(evals.size());
 
 	// register energies
 	for(t_size eval_idx = 0; eval_idx < evals.size(); ++eval_idx)
@@ -374,14 +376,14 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 			.state = evec ? *evec : t_vec{},
 		};
 
-		Es_and_Ws.emplace_back(std::move(EandS));
+		S.E_and_S.emplace_back(std::move(EandS));
 	}
 
 	// weight factors
 	if(!only_energies)
 	{
-		bool corr_ok = CalcCorrelationsFromHamiltonian(Es_and_Ws,
-			H_mat, chol_mat, g_sign, Qvec, evecs);
+		bool corr_ok = CalcCorrelationsFromHamiltonian(S,
+			H_mat, chol_mat, g_sign, evecs);
 		if(!corr_ok)
 		{
 			CERR_OPT << "Magdyn warning: Invalid correlations"
@@ -389,7 +391,7 @@ MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
 		}
 	}
 
-	return Es_and_Ws;
+	return S;
 }
 // --------------------------------------------------------------------
 

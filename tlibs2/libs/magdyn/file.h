@@ -296,9 +296,9 @@ bool MAGDYN_INST::SaveDispersion(std::ostream& ostr,
 		{
 			if(!as_py)  // save as text file
 			{
-				ostr	<< std::setw(field_len) << std::left << result.h << " "
-					<< std::setw(field_len) << std::left << result.k << " "
-					<< std::setw(field_len) << std::left << result.l << " "
+				ostr	<< std::setw(field_len) << std::left << result.Q_rlu[0] << " "
+					<< std::setw(field_len) << std::left << result.Q_rlu[1] << " "
+					<< std::setw(field_len) << std::left << result.Q_rlu[2] << " "
 					<< std::setw(field_len) << E_and_S.E << " "
 					<< std::setw(field_len) << E_and_S.weight << " "
 					<< std::setw(field_len) << E_and_S.S_perp(0, 0).real() << " "
@@ -309,9 +309,9 @@ bool MAGDYN_INST::SaveDispersion(std::ostream& ostr,
 			else        // save as py script
 			{
 				all_data << "\t"
-					<< "[ " << result.h
-					<< ", " << result.k
-					<< ", " << result.l
+					<< "[ " << result.Q_rlu[0]
+					<< ", " << result.Q_rlu[1]
+					<< ", " << result.Q_rlu[2]
 					<< ", " << E_and_S.E
 					<< ", " << E_and_S.weight
 					<< " ],\n";
@@ -423,9 +423,9 @@ bool MAGDYN_INST::SaveMultiDispersion(std::ostream& ostr,
 				for(const EnergyAndWeight& E_and_S : result.E_and_S)
 				{
 					all_data << "\t"
-						<< "[ " << result.h
-						<< ", " << result.k
-						<< ", " << result.l
+						<< "[ " << result.Q_rlu[0]
+						<< ", " << result.Q_rlu[1]
+						<< ", " << result.Q_rlu[2]
 						<< ", " << E_and_S.E
 						<< ", " << E_and_S.weight
 						<< " ],\n";
