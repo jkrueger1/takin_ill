@@ -8,7 +8,7 @@
 
 import numpy as np
 import numpy.linalg as la
-from numpy import array	# in global namespace so that Takin can access it
+from numpy import array	 # in global namespace so that Takin can access it
 
 import matplotlib.pyplot as plt
 
@@ -16,7 +16,7 @@ import scipy as sp
 import scipy.constants as const
 
 
-verbose_print = True    # print intermediate results
+verbose_print = False    # print intermediate results
 
 
 def print_infos(str):
@@ -24,27 +24,10 @@ def print_infos(str):
 		print(str)
 
 
-#
-# Magnetic sites - ferromagnetic case
-# "S": spin magnitude
-# "u" and "v": spin rotations towards ferromagnetic order along [001]
-#
-site = { "S" : 1., "u" : np.array([ 1.+0.j, 0.+1.j, 0.+0.j ]),  "v" : np.array([ 0., 0., 1. ]) }
 
-print_infos("\nu = %s\nv = %s" % (site["u"], site["v"]))
-
-#
-# Magnetic couplings - ferromagnetic case
-# "sites": indices of the sites to couple
-# "J": (symmetric) exchange interaction
-# "dist": distance in reduced lattice unit (rlu) to the next unit cell for the coupling
-# "J": real interaction matrices
-#
-Jc = -1.
-coupling = { "sites" : [ 0, 0 ], "J" : Jc, "dist" : [ 1, 0, 0 ], "J" : np.diag([ Jc, Jc, Jc]) }
-
-print_infos("\nJ =\n%s" % coupling["J"])
-
+# sites and couplings are defined in TakinInit
+site = {}
+coupling = {}
 
 
 
@@ -72,7 +55,7 @@ def get_energies(Qvec):
 	S_j = site["S"]
 	u_j = site["u"]
 	v_j = site["v"]
-	
+
 	S = 0.5 * np.sqrt(S_i * S_j)
 
 	dist = np.array(coupling["dist"])
@@ -82,7 +65,7 @@ def get_energies(Qvec):
 
 	# Hamiltonian
 	H = np.zeros((2*1, 2*1), dtype = complex)
-	
+
 	#--------------------------
 	# Calculation:
 	#--------------------------
@@ -92,18 +75,17 @@ def get_energies(Qvec):
 	J_fourier[site2, site1] += J_ft.transpose().conj()
 	J0_fourier[site1, site2] += J
 	J0_fourier[site2, site1] += J.transpose().conj()
-	
+
 	print_infos("\nJ_fourier =\n%s\n\nJ0_fourier =\n%s" % (J_fourier, J0_fourier))
 
 
 	H[0, 0] += S * np.dot(u_i, np.dot(J_fourier[0, 0], u_j.conj()))
 	H[0, 0] -= S_j * np.dot(v_i, np.dot(J0_fourier[0, 0], v_j))
-	
+
 	H[1, 1] += S * np.dot(u_i.conj(), np.dot(J_fourier[0, 0], u_j))
 	H[1, 1] -= S_j * np.dot(v_i, np.dot(J0_fourier[0, 0], v_j))
-	
+
 	H[0, 1] += S * np.dot(u_i, np.dot(J_fourier[0, 0], u_j))
-	
 	H[1, 0] += (S * np.dot(u_j, np.dot(J_fourier[0, 0], u_i))).conj()
 
 	print_infos("\nH =\n%s" % H)
@@ -113,13 +95,13 @@ def get_energies(Qvec):
 	C = la.cholesky(H)
 	signs = np.array([[ 1, 0 ], [ 0, -1 ]])
 	H_trafo = np.dot(C.transpose().conj(), np.dot(signs, C))
-	
+
 	print_infos("\nC =\n%s\n\nH_trafo =\n%s" % (C, H_trafo))
 
 
 	# The eigenvalues of H give the energies
 	Es = np.real(la.eigvals(H_trafo))
-	
+
 	print_infos("\nEs = %s" % Es)
 
 	return Es
@@ -176,11 +158,35 @@ g_T = 300.            # temperature
 g_bose_cut = 0.01     # lower cutoff energy for the Bose factor
 
 
+
 #
 # the init function is called after Takin has changed a global variable (optional)
 #
 def TakinInit():
-	print("Init: T=%.2f" % (g_T))
+	#
+	# Magnetic site - ferromagnetic case
+	# "S": spin magnitude
+	# "u" and "v": spin rotations towards ferromagnetic order along [001]
+	#
+	global site
+	site = { "S" : 1., "u" : np.array([ 1.+0.j, 0.+1.j, 0.+0.j ]),  "v" : np.array([ 0., 0., 1. ]) }
+
+	print_infos("\nu = %s\nv = %s" % (site["u"], site["v"]))
+
+
+	#
+	# Magnetic coupling - ferromagnetic case
+	# "sites": indices of the sites to couple
+	# "J": (symmetric) exchange interaction
+	# "dist": distance in reduced lattice unit (rlu) to the next unit cell for the coupling
+	# "J": real interaction matrices
+	#
+	Jc = -1.
+	global coupling
+	coupling = { "sites" : [ 0, 0 ], "dist" : [ 1, 0, 0 ], "J" : np.diag([ Jc, Jc, Jc ]) }
+
+	print("TakinInit: T = %g, J =\n%s" % (g_T, coupling["J"]))
+
 
 
 #
@@ -193,10 +199,11 @@ def TakinDisp(h, k, l):
 	try:
 		Q = np.array([h, k, l])
 		E_peaks = get_energies(Q)
-	except ZeroDivisionError:
-		return [0., 0.]
+	except (ZeroDivisionError, la.LinAlgError):
+		return [[0.], [0.]]
 
 	return [E_peaks, [w_peak] * len(E_peaks)]
+
 
 
 #
@@ -230,27 +237,28 @@ import os
 print("Script working directory: " + os.getcwd())
 
 
-
 #
 # this python file can also be called directly for testing or plotting
 #
 if __name__ == "__main__":
-	# plotting the transverse dispersion branch
-	qs = np.linspace(-0.85, 0.85, 128)
-	Es_plus = []
-	Es_minus = []
-	for q in qs:
-		[[E_p, E_m], [w_p, w_m]] = TakinDisp(q, q, 0)
-		Es_plus.append(E_p)
-		Es_minus.append(E_m)
+	TakinInit()
+
+	# plotting the dispersion
+	qs = []
+	Es = []
+	for q in np.linspace(-1, 1, 128):
+		for E in TakinDisp(q, 0, 0)[0]:
+			if E < 0.:
+				continue
+			qs.append(q)
+			Es.append(E)
 
 	try:
 		import matplotlib.pyplot as plt
 
 		plt.xlabel("q (rlu)")
 		plt.ylabel("E (meV)")
-		plt.plot(qs, Es_plus)
-		plt.plot(qs, Es_minus)
+		plt.plot(qs, Es)
 		plt.show()
 	except ModuleNotFoundError:
 		print("Could not plot dispersion.")
