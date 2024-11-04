@@ -1,5 +1,5 @@
 #
-# testing the lswt algorithm (https://arxiv.org/abs/1402.6069) directly for comparison,
+# Testing the lswt algorithm (https://arxiv.org/abs/1402.6069) directly for comparison,
 # 1d ferromagnetic chain
 # @authors : Tobias Weber <tweber@ill.fr> & Victor Mecoli <mecoli@ill.fr>
 # @date 31-oct-2024
@@ -16,7 +16,7 @@ import scipy as sp
 import scipy.constants as const
 
 
-verbose_print = False    # print intermediate results
+verbose_print = True    # print intermediate results
 
 
 def print_infos(str):
@@ -25,111 +25,111 @@ def print_infos(str):
 
 
 #
-# magnetic sites
+# Magnetic sites - ferromagnetic case
 # "S": spin magnitude
+# "u" and "v": spin rotations towards ferromagnetic order along [001]
 #
-sites = [
-	{ "S" : 1. },
-]
+site = { "S" : 1., "u" : np.array([ 1.+0.j, 0.+1.j, 0.+0.j ]),  "v" : np.array([ 0., 0., 1. ]) }
+
+print_infos("\nu = %s\nv = %s" % (site["u"], site["v"]))
 
 #
-# magnetic couplings
+# Magnetic couplings - ferromagnetic case
 # "sites": indices of the sites to couple
 # "J": (symmetric) exchange interaction
-# "DMI": (antisymmetric) Dzyaloshinskii-Moryia interaction
-# "dist": distance in rlu to the next unit cell for the coupling
+# "dist": distance in reduced lattice unit (rlu) to the next unit cell for the coupling
+# "J": real interaction matrices
 #
-couplings = [
-	{ "sites" : [ 0, 0 ], "J" : -1., "dist" : [ 1, 0, 0 ] },
-]
+Jc = -1.
+coupling = { "sites" : [ 0, 0 ], "J" : Jc, "dist" : [ 1, 0, 0 ], "J" : np.diag([ Jc, Jc, Jc]) }
 
-
-# calculate spin rotations towards ferromagnetic order along [001]
-for site in sites:
-	c = 1.
-	rot = np.diag([ c, c, c ])
-	site["u"] = rot[0, :] + 1j * rot[1, :]
-	site["v"] = rot[2, :]
-
-	print_infos("\nrot = \n%s\nu = %s\nv = %s" % (rot, site["u"], site["v"]))
+print_infos("\nJ =\n%s" % coupling["J"])
 
 
 
-# calculate real interaction matrices
-for coupling in couplings:
-	J = coupling["J"]
-	coupling["J_real"] = np.diag([ J, J, J ])
-	print_infos("\nJ_real =\n%s" % coupling["J_real"])
 
+#----------------------------------------------------------------------------------------------------
+# Energy
+#----------------------------------------------------------------------------------------------------
 
-# get the energies of the dispersion at the momentum transfer Qvec
+# Get the energies of the dispersion at the momentum transfer Qvec - correct when you have only one site
 def get_energies(Qvec):
 	print_infos("\n\nQ = %s" % Qvec)
 
-	# fourier transform interaction matrices
-	num_sites = len(sites)
-	J_fourier = np.zeros((num_sites, num_sites, 3, 3), dtype = complex)
-	J0_fourier = np.zeros((num_sites, num_sites, 3, 3), dtype = complex)
+	#--------------------------
+	# Initialisation:
+	#--------------------------
 
-	for coupling in couplings:
-		dist = np.array(coupling["dist"])
-		J_real = coupling["J_real"]
-		site1 = coupling["sites"][0]
-		site2 = coupling["sites"][1]
+	# Fourier transform interaction matrices
+	J_fourier = np.zeros((1, 1, 3, 3), dtype = complex)
+	J0_fourier = np.zeros((1, 1, 3, 3), dtype = complex)
 
-		J_ft = J_real * np.exp(-1j * 2.*np.pi * np.dot(dist, Qvec))
-		J_fourier[site1, site2] += J_ft
-		J_fourier[site2, site1] += J_ft.transpose().conj()
-		J0_fourier[site1, site2] += J_real
-		J0_fourier[site2, site1] += J_real.transpose().conj()
+	# Parameters of the ferromagnetic chain
+	S_i = site["S"]
+	u_i = site["u"]
+	v_i = site["v"]
 
+	S_j = site["S"]
+	u_j = site["u"]
+	v_j = site["v"]
+	
+	S = 0.5 * np.sqrt(S_i * S_j)
+
+	dist = np.array(coupling["dist"])
+	J = coupling["J"]
+	site1 = coupling["sites"][0]
+	site2 = coupling["sites"][1]
+
+	# Hamiltonian
+	H = np.zeros((2*1, 2*1), dtype = complex)
+	
+	#--------------------------
+	# Calculation:
+	#--------------------------
+
+	J_ft = J * np.exp(-1j * 2.*np.pi * np.dot(dist, Qvec))
+	J_fourier[site1, site2] += J_ft
+	J_fourier[site2, site1] += J_ft.transpose().conj()
+	J0_fourier[site1, site2] += J
+	J0_fourier[site2, site1] += J.transpose().conj()
+	
 	print_infos("\nJ_fourier =\n%s\n\nJ0_fourier =\n%s" % (J_fourier, J0_fourier))
 
 
-	# hamiltonian
-	H = np.zeros((2*num_sites, 2*num_sites), dtype = complex)
-
-	for i in range(num_sites):
-		S_i = sites[i]["S"]
-		u_i = sites[i]["u"]
-		v_i = sites[i]["v"]
-
-		for j in range(num_sites):
-			S_j = sites[j]["S"]
-			u_j = sites[j]["u"]
-			v_j = sites[j]["v"]
-			S = 0.5 * np.sqrt(S_i * S_j)
-
-			H[i, j] += S * np.dot(u_i, np.dot(J_fourier[i, j], u_j.conj()))
-			H[i, i] -= S_j * np.dot(v_i, np.dot(J0_fourier[i, j], v_j))
-			H[num_sites + i, num_sites + j] += \
-				S * np.dot(u_i.conj(), np.dot(J_fourier[i, j], u_j))
-			H[num_sites + i, num_sites + i] -= \
-				S_j * np.dot(v_i, np.dot(J0_fourier[i, j], v_j))
-			H[i, num_sites + j] += \
-				S * np.dot(u_i, np.dot(J_fourier[i, j], u_j))
-			H[num_sites + i, j] += \
-				(S * np.dot(u_j, np.dot(J_fourier[j, i], u_i))).conj()
+	H[0, 0] += S * np.dot(u_i, np.dot(J_fourier[0, 0], u_j.conj()))
+	H[0, 0] -= S_j * np.dot(v_i, np.dot(J0_fourier[0, 0], v_j))
+	
+	H[1, 1] += S * np.dot(u_i.conj(), np.dot(J_fourier[0, 0], u_j))
+	H[1, 1] -= S_j * np.dot(v_i, np.dot(J0_fourier[0, 0], v_j))
+	
+	H[0, 1] += S * np.dot(u_i, np.dot(J_fourier[0, 0], u_j))
+	
+	H[1, 0] += (S * np.dot(u_j, np.dot(J_fourier[0, 0], u_i))).conj()
 
 	print_infos("\nH =\n%s" % H)
 
 
-	# trafo
+	# Trafo
 	C = la.cholesky(H)
-	signs = np.diag(np.concatenate((np.repeat(1, num_sites), np.repeat(-1, num_sites))))
+	signs = np.array([[ 1, 0 ], [ 0, -1 ]])
 	H_trafo = np.dot(C.transpose().conj(), np.dot(signs, C))
+	
 	print_infos("\nC =\n%s\n\nH_trafo =\n%s" % (C, H_trafo))
 
 
-	# the eigenvalues of H give the energies
+	# The eigenvalues of H give the energies
 	Es = np.real(la.eigvals(H_trafo))
+	
 	print_infos("\nEs = %s" % Es)
 
 	return Es
 
-# -----------------------------------------------------------------------------
+
+
+
+#----------------------------------------------------------------------------------------------------
 # dispersion
-# -----------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 
 # kB in meV/K
 kB = const.k / const.e * 1e3
@@ -158,13 +158,12 @@ def gauss(x, x0, sig, amp):
 	norm = (np.sqrt(2.*np.pi) * sig)
 	return amp * np.exp(-0.5*((x-x0)/sig)**2.) / norm
 
-# -----------------------------------------------------------------------------
 
 
 
-# -----------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 # Takin interface
-# -----------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 
 # global variables which can be accessed / changed by Takin
 g_sig = 0.5           # magnon linewidth
@@ -210,8 +209,7 @@ def TakinSqw(h, k, l, E):
 		# magnon peaks
 		[E_peaks, w_peaks] = TakinDisp(h,k,l)
 		for (E_peak, w_peak) in zip(E_peaks, w_peaks):
-			S += gauss(E, E_peak, g_sig, g_amp) * w_peak * \
-				bose_cutoff(E_peak, g_T, g_bose_cut)
+			S += gauss(E, E_peak, g_sig, g_amp) * w_peak * bose_cutoff(E_peak, g_T, g_bose_cut)
 
 		# incoherent peak
 		S += gauss(E, 0., g_inc_sig, g_inc_amp)
@@ -220,7 +218,8 @@ def TakinSqw(h, k, l, E):
 	except ZeroDivisionError:
 		return 0.
 
-# -----------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
+
 
 
 
@@ -237,7 +236,7 @@ print("Script working directory: " + os.getcwd())
 #
 if __name__ == "__main__":
 	# plotting the transverse dispersion branch
-	qs = np.linspace(-0.75, 0.75, 64)
+	qs = np.linspace(-0.85, 0.85, 128)
 	Es_plus = []
 	Es_minus = []
 	for q in qs:
