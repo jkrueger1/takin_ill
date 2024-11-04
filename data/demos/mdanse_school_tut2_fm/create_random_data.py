@@ -21,8 +21,9 @@ amp   = 1.         # magnon peak amplitude
 S0    = 100.       # S scaling factor
 noise = 0.05       # noise on the magnon peaks
 bck   = 10.        # background noise
-plot  = True       # plot the data
 ferro = True       # ferromagnetic or antiferromagnetic dispersion?
+plot  = True       # plot the data
+plot2 = False      # plot dispersion
 
 
 # ferromagnetic dispersion
@@ -31,7 +32,7 @@ def disp_fm(Q):
 	S =  1.  # total spin
 	d =  1.  # distance between spins
 
-	return -2*J*S * (1. - np.cos(Q*d*2.*np.pi))
+	return 2*J*S * (np.cos(Q*d*2.*np.pi) - 1.)
 
 
 # antiferromagnetic dispersion
@@ -151,12 +152,13 @@ if plot:
 	plt.tight_layout()
 	plt.show()
 
-	#plt.plot()
-	#plt.xlabel("Q (rlu)")
-	#plt.ylabel("E (meV)")
-	#Qs = np.linspace(-1, 1, 1024)
-	#Es_fm = disp_fm(Qs)
-	#Es_afm = disp_afm(Qs)
-	#plt.plot(Qs, Es_fm, lw = 2)
-	#plt.plot(Qs, Es_afm, lw = 2)
-	#plt.show()
+	if plot2:
+		plt.plot()
+		plt.xlabel("Q (rlu)")
+		plt.ylabel("E (meV)")
+		Qs = np.linspace(-1, 1, 1024)
+		Es_fm = disp_fm(Qs)
+		Es_afm = disp_afm(Qs)
+		plt.plot(Qs, Es_fm, lw = 2)
+		plt.plot(Qs, Es_afm, lw = 2)
+		plt.show()
