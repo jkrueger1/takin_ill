@@ -729,8 +729,11 @@ tl2::ExprParser<t_cplx> MAGDYN_INST::GetExprParser() const
 MAGDYN_TEMPL
 bool MAGDYN_INST::CheckMagneticSite(t_size idx, bool print_error) const
 {
-	if(!m_perform_checks)
-		return true;
+	// always perform this check as the GUI deliberately sets invalid
+	// indices when adding a new coupling to the table
+
+	//if(!m_perform_checks)
+	//	return true;
 
 	if(idx >= m_sites.size())
 	{
