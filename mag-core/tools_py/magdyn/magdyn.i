@@ -80,6 +80,7 @@
 %include "../../tlibs2/libs/magdyn/correlation.h"
 %include "../../tlibs2/libs/magdyn/polarisation.h"
 %include "../../tlibs2/libs/magdyn/dispersion.h"
+%include "../../tlibs2/libs/magdyn/topology.h"
 
 
 // ----------------------------------------------------------------------------
@@ -200,6 +201,8 @@
 		t_mat, t_vec, t_mat_real, t_vec_real,
 		t_cplx, t_real, std::size_t>;
 
+	using t_SofQE = typename t_MagDyn::SofQE;
+
 
 	/**
 	 * adds a variable
@@ -255,7 +258,6 @@
 	}
 
 
-
 	/**
 	 * sets up the rotation axis for the ordering wave vector
 	 */
@@ -264,7 +266,6 @@
 		t_vec_real vec = tl2::create<t_vec_real>({ x, y, z });
 		magdyn.SetRotationAxis(vec);
 	}
-
 
 
 	/**
@@ -475,6 +476,36 @@
 		}
 
 		magdyn.SymmetriseExchangeTerms(ops);
+	 }
+
+
+	 /**
+	  * helper function to access vector components which are not (yet) seen by swig
+	  * TODO: remove this once swig understands concepts
+	  */
+	 t_real get_h(const t_SofQE& S)
+	 {
+		return S.Q_rlu[0];
+	 }
+
+
+	 /**
+	  * helper function to access vector components which are not (yet) seen by swig
+	  * TODO: remove this once swig understands concepts
+	  */
+	 t_real get_k(const t_SofQE& S)
+	 {
+		return S.Q_rlu[1];
+	 }
+
+
+	 /**
+	  * helper function to access vector components which are not (yet) seen by swig
+	  * TODO: remove this once swig understands concepts
+	  */
+	 t_real get_l(const t_SofQE& S)
+	 {
+		return S.Q_rlu[2];
 	 }
 %}
 // ----------------------------------------------------------------------------

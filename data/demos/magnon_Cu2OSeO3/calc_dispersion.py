@@ -171,17 +171,17 @@ def calc_disp():
 			hkl_start[0], hkl_start[1], hkl_start[2],
 			hkl_end[0], hkl_end[1], hkl_end[2],
 			num_Q_points, max_threads)
-		for data_Q in data_disp:
-			for data_EandS in data_Q.E_and_S:
+		for S in data_disp:
+			for data_EandS in S.E_and_S:
 				if only_positive_energies and data_EandS.E < 0.:
 					continue
 
-				append_data(data_Q.h, data_Q.k, data_Q.l,
+				append_data(magdyn.get_h(S), magdyn.get_k(S), magdyn.get_l(S),
 					data_EandS.E, data_EandS.weight)
 
 				if print_dispersion:
 					print("{:15.4f} {:15.4f} {:15.4f} {:15.4f} {:15.4g}".format(
-						data_Q.h, data_Q.k, data_Q.l,
+						magdyn.get_h(S), magdyn.get_k(S), magdyn.get_l(S),
 						data_EandS.E, data_EandS.weight))
 
 		data.append([ branch_idx, data_h, data_k, data_l, data_E, data_S ])

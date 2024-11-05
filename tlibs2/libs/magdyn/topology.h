@@ -1,17 +1,9 @@
 /**
- * tlibs2 -- magnetic dynamics
+ * tlibs2 -- magnetic dynamics -- topological calculations
  * @author Tobias Weber <tweber@ill.fr>
- * @date 2022 - 2024
+ * @date November 2024
  * @license GPLv3, see 'LICENSE' file
  *
- * References:
- *   - (Toth 2015) S. Toth and B. Lake, J. Phys.: Condens. Matter 27 166002 (2015):
- *                 https://doi.org/10.1088/0953-8984/27/16/166002
- *                 https://arxiv.org/abs/1402.6069
- *   - (Heinsdorf 2021) N. Heinsdorf, manual example calculation for a simple
- *                      ferromagnetic case, personal communications, 2021/2022.
- *
- * @desc The magdyn library implements the formalism given by (Toth 2015).
  * @desc For further references, see the 'LITERATURE' file.
  *
  * ----------------------------------------------------------------------------
@@ -35,34 +27,59 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef __TLIBS2_MAGDYN_H__
-#define __TLIBS2_MAGDYN_H__
+#ifndef __TLIBS2_MAGDYN_TOPO_H__
+#define __TLIBS2_MAGDYN_TOPO_H__
 
-#ifndef USE_LAPACK
-	#define USE_LAPACK 1
-#endif
+#include "../maths.h"
 
-// enables debug output
-//#define __TLIBS2_MAGDYN_DEBUG_OUTPUT__
-
-// enables ground state minimisation
-//#define __TLIBS2_MAGDYN_USE_MINUIT__
+#include "magdyn.h"
 
 
-#include "magdyn/magdyn.h"
-#include "magdyn/structs.h"
-#include "magdyn/helpers.h"
-#include "magdyn/getters.h"
-#include "magdyn/generators.h"
-#include "magdyn/file.h"
-#include "magdyn/configuration.h"
-#include "magdyn/groundstate.h"
-#include "magdyn/precalc.h"
-#include "magdyn/hamilton.h"
-#include "magdyn/correlation.h"
-#include "magdyn/polarisation.h"
-#include "magdyn/dispersion.h"
-#include "magdyn/topology.h"
 
+// --------------------------------------------------------------------
+// topological calculations
+// --------------------------------------------------------------------
+
+/**
+ * get the berry connection for each magnon band
+ */
+MAGDYN_TEMPL
+std::vector<t_vec> MAGDYN_INST::GetBerryConnections(const t_vec_real& /*Q_start*/, t_real /*delta*/) const
+{
+	//SetUniteDegenerateEnergies(false);
+
+	// get eigenstates at specific Q
+	auto get_states = [this](const t_vec_real& Q) -> t_mat
+	{
+		SofQE S = CalcEnergies(Q, false);
+		return S.evec_mat;
+	};
+
+
+	std::vector<t_vec> conn{};
+
+	// TODO
+
+	return conn;
+}
+
+
+
+/**
+ * get the berry curvature for each magnon band
+ */
+MAGDYN_TEMPL
+std::vector<t_cplx> MAGDYN_INST::GetBerryCurvatures(const t_vec_real& /*Q_start*/, t_real /*delta*/) const
+{
+	//SetUniteDegenerateEnergies(false);
+
+	std::vector<t_cplx> curv{};
+
+	// TODO
+
+	return curv;
+}
+
+// --------------------------------------------------------------------
 
 #endif
