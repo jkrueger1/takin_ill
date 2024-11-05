@@ -384,35 +384,8 @@ void MagDynDlg::CreateSitesPanel()
 	connect(btnShowNotes, &QAbstractButton::clicked, this, &MagDynDlg::ShowNotesDlg);
 	connect(btnGroundState, &QAbstractButton::clicked, this, &MagDynDlg::ShowGroundStateDlg);
 
-	connect(m_sitestab, &QTableWidget::itemSelectionChanged, [this]()
-	{
-		QList<QTableWidgetItem*> selected = m_sitestab->selectedItems();
-		if(selected.size() == 0)
-			return;
-
-		const QTableWidgetItem* item = *selected.begin();
-		m_sites_cursor_row = item->row();
-		if(m_sites_cursor_row < 0 ||
-			std::size_t(m_sites_cursor_row) >= m_dyn.GetMagneticSitesCount())
-		{
-			m_status->setText("");
-			return;
-		}
-
-		const auto* site = GetSiteFromTableIndex(m_sites_cursor_row);
-		if(!site)
-		{
-			m_status->setText("Invalid site selected.");
-			return;
-		}
-
-		std::ostringstream ostr;
-		ostr.precision(g_prec_gui);
-		ostr << "Site " << site->name << ".";
-		m_status->setText(ostr.str().c_str());
-	});
-	connect(m_sitestab, &QTableWidget::itemChanged,
-		this, &MagDynDlg::SitesTableItemChanged);
+	connect(m_sitestab, &QTableWidget::itemSelectionChanged, this, &MagDynDlg::SitesSelectionChanged);
+	connect(m_sitestab, &QTableWidget::itemChanged, this, &MagDynDlg::SitesTableItemChanged);
 	connect(m_sitestab, &QTableWidget::customContextMenuRequested,
 		[this, menuTableContext, menuTableContextNoItem](const QPoint& pt)
 	{
@@ -421,6 +394,39 @@ void MagDynDlg::CreateSitesPanel()
 
 
 	m_tabs_in->addTab(m_sitespanel, "Sites");
+}
+
+
+
+/**
+ * a site has been selected
+ */
+void MagDynDlg::SitesSelectionChanged()
+{
+	QList<QTableWidgetItem*> selected = m_sitestab->selectedItems();
+	if(selected.size() == 0)
+		return;
+
+	const QTableWidgetItem* item = *selected.begin();
+	m_sites_cursor_row = item->row();
+	if(m_sites_cursor_row < 0 ||
+		std::size_t(m_sites_cursor_row) >= m_dyn.GetMagneticSitesCount())
+	{
+		m_status->setText("");
+		return;
+	}
+
+	const auto* site = GetSiteFromTableIndex(m_sites_cursor_row);
+	if(!site)
+	{
+		m_status->setText("Invalid site selected.");
+		return;
+	}
+
+	std::ostringstream ostr;
+	ostr.precision(g_prec_gui);
+	ostr << "Site " << site->name << ".";
+	m_status->setText(ostr.str().c_str());
 }
 
 
@@ -738,36 +744,8 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	connect(btnGenBySG, &QAbstractButton::clicked,
 		this, &MagDynDlg::GenerateCouplingsFromSG);
 
-	connect(m_termstab, &QTableWidget::itemSelectionChanged, [this]()
-	{
-		QList<QTableWidgetItem*> selected = m_termstab->selectedItems();
-		if(selected.size() == 0)
-			return;
-
-		const QTableWidgetItem* item = *selected.begin();
-		m_terms_cursor_row = item->row();
-		if(m_terms_cursor_row < 0 ||
-			std::size_t(m_terms_cursor_row) >= m_dyn.GetExchangeTermsCount())
-		{
-			m_status->setText("");
-			return;
-		}
-
-		const auto* term = GetTermFromTableIndex(m_terms_cursor_row);
-		if(!term)
-		{
-			m_status->setText("Invalid coupling selected.");
-			return;
-		}
-
-		std::ostringstream ostr;
-		ostr.precision(g_prec_gui);
-		ostr << "Coupling " << term->name
-			<< ": length = " << term->length_calc << " \xe2\x84\xab.";
-		m_status->setText(ostr.str().c_str());
-	});
-	connect(m_termstab, &QTableWidget::itemChanged,
-		this, &MagDynDlg::TermsTableItemChanged);
+	connect(m_termstab, &QTableWidget::itemSelectionChanged, this, &MagDynDlg::TermsSelectionChanged);
+	connect(m_termstab, &QTableWidget::itemChanged, this, &MagDynDlg::TermsTableItemChanged);
 	connect(m_termstab, &QTableWidget::customContextMenuRequested,
 		[this, menuTableContext, menuTableContextNoItem](const QPoint& pt)
 	{
@@ -793,6 +771,40 @@ void MagDynDlg::CreateExchangeTermsPanel()
 
 
 	m_tabs_in->addTab(m_termspanel, "Couplings");
+}
+
+
+
+/**
+ * a term has been selected
+ */
+void MagDynDlg::TermsSelectionChanged()
+{
+	QList<QTableWidgetItem*> selected = m_termstab->selectedItems();
+	if(selected.size() == 0)
+		return;
+
+	const QTableWidgetItem* item = *selected.begin();
+	m_terms_cursor_row = item->row();
+	if(m_terms_cursor_row < 0 ||
+		std::size_t(m_terms_cursor_row) >= m_dyn.GetExchangeTermsCount())
+	{
+		m_status->setText("");
+		return;
+	}
+
+	const auto* term = GetTermFromTableIndex(m_terms_cursor_row);
+	if(!term)
+	{
+		m_status->setText("Invalid coupling selected.");
+		return;
+	}
+
+	std::ostringstream ostr;
+	ostr.precision(g_prec_gui);
+	ostr << "Coupling " << term->name
+	<< ": length = " << term->length_calc << " \xe2\x84\xab.";
+	m_status->setText(ostr.str().c_str());
 }
 
 
@@ -1077,17 +1089,8 @@ void MagDynDlg::CreateVariablesPanel()
 	connect(btnReplace, &QAbstractButton::clicked,
 		this, &MagDynDlg::ReplaceValuesWithVariables);
 
-	connect(m_varstab, &QTableWidget::itemSelectionChanged, [this]()
-	{
-		QList<QTableWidgetItem*> selected = m_varstab->selectedItems();
-		if(selected.size() == 0)
-			return;
-
-		const QTableWidgetItem* item = *selected.begin();
-		m_variables_cursor_row = item->row();
-	});
-	connect(m_varstab, &QTableWidget::itemChanged,
-		this, &MagDynDlg::VariablesTableItemChanged);
+	connect(m_varstab, &QTableWidget::itemSelectionChanged, this, &MagDynDlg::VariablesSelectionChanged);
+	connect(m_varstab, &QTableWidget::itemChanged, this, &MagDynDlg::VariablesTableItemChanged);
 	connect(m_varstab, &QTableWidget::customContextMenuRequested,
 		[this, menuTableContext, menuTableContextNoItem](const QPoint& pt)
 	{
@@ -1096,6 +1099,22 @@ void MagDynDlg::CreateVariablesPanel()
 
 
 	m_tabs_in->addTab(m_varspanel, "Variables");
+}
+
+
+
+/**
+ * a variable has been selected
+ */
+
+void MagDynDlg::VariablesSelectionChanged()
+{
+	QList<QTableWidgetItem*> selected = m_varstab->selectedItems();
+	if(selected.size() == 0)
+		return;
+
+	const QTableWidgetItem* item = *selected.begin();
+	m_variables_cursor_row = item->row();
 }
 
 
@@ -1410,15 +1429,7 @@ void MagDynDlg::CreateSampleEnvPanel()
 	connect(btnSetField, &QAbstractButton::clicked,
 		[this]() { this->SetCurrentField(); });
 
-	connect(m_fieldstab, &QTableWidget::itemSelectionChanged, [this]()
-	{
-		QList<QTableWidgetItem*> selected = m_fieldstab->selectedItems();
-		if(selected.size() == 0)
-			return;
-
-		const QTableWidgetItem* item = *selected.begin();
-		m_fields_cursor_row = item->row();
-	});
+	connect(m_fieldstab, &QTableWidget::itemSelectionChanged, this, &MagDynDlg::FieldsSelectionChanged);
 	connect(m_fieldstab, &QTableWidget::customContextMenuRequested,
 		[this, menuTableContext, menuTableContextNoItem](const QPoint& pt)
 	{
@@ -1427,6 +1438,21 @@ void MagDynDlg::CreateSampleEnvPanel()
 
 
 	m_tabs_in->addTab(m_sampleenviropanel, "Environment");
+}
+
+
+
+/**
+ * a field value has been selected
+ */
+void MagDynDlg::FieldsSelectionChanged()
+{
+	QList<QTableWidgetItem*> selected = m_fieldstab->selectedItems();
+	if(selected.size() == 0)
+		return;
+
+	const QTableWidgetItem* item = *selected.begin();
+	m_fields_cursor_row = item->row();
 }
 
 
@@ -1813,16 +1839,7 @@ void MagDynDlg::CreateCoordinatesPanel()
 	connect(btnSaveMultiDispScr, &QAbstractButton::clicked,
 		[this]() { this->SaveMultiDispersion(true); });
 
-	connect(m_coordinatestab, &QTableWidget::itemSelectionChanged, [this]()
-	{
-		QList<QTableWidgetItem*> selected = m_coordinatestab->selectedItems();
-		if(selected.size() == 0)
-			return;
-
-		const QTableWidgetItem* item = *selected.begin();
-		m_coordinates_cursor_row = item->row();
-
-	});
+	connect(m_coordinatestab, &QTableWidget::itemSelectionChanged, this, &MagDynDlg::CoordinatesSelectionChanged);
 	connect(m_coordinatestab, &QTableWidget::customContextMenuRequested,
 		[this, menuTableContext, menuTableContextNoItem](const QPoint& pt)
 	{
@@ -1832,6 +1849,21 @@ void MagDynDlg::CreateCoordinatesPanel()
 
 
 	m_tabs_out->addTab(m_coordinatespanel, "Coordinates");
+}
+
+
+
+/**
+ * a coordinate has been selected
+ */
+void MagDynDlg::CoordinatesSelectionChanged()
+{
+	QList<QTableWidgetItem*> selected = m_coordinatestab->selectedItems();
+	if(selected.size() == 0)
+		return;
+
+	const QTableWidgetItem* item = *selected.begin();
+	m_coordinates_cursor_row = item->row();
 }
 
 

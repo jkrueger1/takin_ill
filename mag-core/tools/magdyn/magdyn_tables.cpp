@@ -133,8 +133,7 @@ void MagDynDlg::AddSiteTabItem(
 	}
 	else
 	{
-		m_sitestab->setItem(row, COL_SITE_NAME,
-			new QTableWidgetItem(name.c_str()));
+		m_sitestab->setItem(row, COL_SITE_NAME, new QTableWidgetItem(name.c_str()));
 		m_sitestab->setItem(row, COL_SITE_POS_X, new t_numitem(x));
 		m_sitestab->setItem(row, COL_SITE_POS_Y, new t_numitem(y));
 		m_sitestab->setItem(row, COL_SITE_POS_Z, new t_numitem(z));
@@ -161,6 +160,7 @@ void MagDynDlg::AddSiteTabItem(
 
 	UpdateVerticalHeader(m_sitestab);
 	SyncSiteComboBoxes();
+	SitesSelectionChanged();
 }
 
 
@@ -354,8 +354,7 @@ void MagDynDlg::AddTermTabItem(
 	}
 	else
 	{
-		m_termstab->setItem(row, COL_XCH_NAME,
-			new QTableWidgetItem(name.c_str()));
+		m_termstab->setItem(row, COL_XCH_NAME, new QTableWidgetItem(name.c_str()));
 
 		SitesComboBox* combo1 = CreateSitesComboBox(atom_1);
 		SitesComboBox* combo2 = CreateSitesComboBox(atom_2);
@@ -395,6 +394,7 @@ void MagDynDlg::AddTermTabItem(
 	m_termstab->setSortingEnabled(true);
 
 	UpdateVerticalHeader(m_termstab);
+	TermsSelectionChanged();
 }
 
 
@@ -451,6 +451,7 @@ void MagDynDlg::AddVariableTabItem(int row, const std::string& name, const t_cpl
 	m_varstab->setSortingEnabled(true);
 
 	UpdateVerticalHeader(m_varstab);
+	VariablesSelectionChanged();
 }
 
 
@@ -500,6 +501,7 @@ void MagDynDlg::AddFieldTabItem(int row,
 	m_fieldstab->setSortingEnabled(true);
 
 	UpdateVerticalHeader(m_fieldstab);
+	FieldsSelectionChanged();
 }
 
 
@@ -537,8 +539,7 @@ void MagDynDlg::AddCoordinateTabItem(int row, const std::string& name,
 	}
 	else
 	{
-		m_coordinatestab->setItem(row, COL_COORD_NAME,
-			new QTableWidgetItem(name.c_str()));
+		m_coordinatestab->setItem(row, COL_COORD_NAME, new QTableWidgetItem(name.c_str()));
 		m_coordinatestab->setItem(row, COL_COORD_H, new t_numitem(h));
 		m_coordinatestab->setItem(row, COL_COORD_K, new t_numitem(k));
 		m_coordinatestab->setItem(row, COL_COORD_L, new t_numitem(l));
@@ -549,6 +550,7 @@ void MagDynDlg::AddCoordinateTabItem(int row, const std::string& name,
 	m_coordinatestab->setSortingEnabled(true);
 
 	UpdateVerticalHeader(m_coordinatestab);
+	CoordinatesSelectionChanged();
 }
 
 

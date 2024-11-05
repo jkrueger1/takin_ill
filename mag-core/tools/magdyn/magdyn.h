@@ -322,6 +322,12 @@ protected:
 	void DelTabItem(QTableWidget *pTab, int begin=-2, int end=-2);
 	void UpdateVerticalHeader(QTableWidget *pTab);
 
+	void SitesSelectionChanged();
+	void TermsSelectionChanged();
+	void VariablesSelectionChanged();
+	void FieldsSelectionChanged();
+	void CoordinatesSelectionChanged();
+
 	void SitesTableItemChanged(QTableWidgetItem *item);
 	void TermsTableItemChanged(QTableWidgetItem *item);
 	void VariablesTableItemChanged(QTableWidgetItem *item);
