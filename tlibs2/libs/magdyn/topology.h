@@ -153,7 +153,7 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
  * get the berry connection for each magnon band
  */
 MAGDYN_TEMPL
-std::vector<t_vec> MAGDYN_INST::GetBerryConnections(const t_vec_real& Q_start, t_real delta) const
+std::vector<t_vec> MAGDYN_INST::GetBerryConnections(const t_vec_real& Q, t_real delta) const
 {
 	//SetUniteDegenerateEnergies(false);
 
@@ -165,7 +165,7 @@ std::vector<t_vec> MAGDYN_INST::GetBerryConnections(const t_vec_real& Q_start, t
 	};
 
 	return berry_connections<t_mat, t_vec, t_vec_real, t_cplx, t_real>(
-		get_states, Q_start, delta);
+		get_states, Q, delta);
 }
 
 
@@ -174,7 +174,7 @@ std::vector<t_vec> MAGDYN_INST::GetBerryConnections(const t_vec_real& Q_start, t
  * get the berry curvature for each magnon band
  */
 MAGDYN_TEMPL
-std::vector<t_cplx> MAGDYN_INST::GetBerryCurvatures(const t_vec_real& Q_start, t_real delta) const
+std::vector<t_cplx> MAGDYN_INST::GetBerryCurvatures(const t_vec_real& Q, t_real delta) const
 {
 	//SetUniteDegenerateEnergies(false);
 
@@ -186,7 +186,7 @@ std::vector<t_cplx> MAGDYN_INST::GetBerryCurvatures(const t_vec_real& Q_start, t
 	};
 
 	return berry_curvatures<t_mat, t_vec, t_vec_real, t_cplx, t_real>(
-		get_states, Q_start, delta);
+		get_states, Q, delta);
 }
 
 // --------------------------------------------------------------------
