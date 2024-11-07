@@ -10,12 +10,6 @@ import numpy as np
 import numpy.linalg as la
 from numpy import array	 # in global namespace so that Takin can access it
 
-import matplotlib.pyplot as plt
-
-import scipy as sp
-import scipy.constants as const
-
-
 verbose_print = False    # print intermediate results
 
 
@@ -113,8 +107,9 @@ def get_energies(Qvec):
 # dispersion
 #----------------------------------------------------------------------------------------------------
 
-# kB in meV/K
-kB = const.k / const.e * 1e3
+# kB in meV/K, value from scipy
+kB = 0.08617333
+# kB = const.k / const.e * 1e3
 
 
 # Bose factor
