@@ -53,7 +53,9 @@ template<class t_mat, class t_vec, class t_vec_real,
 std::vector<t_vec> berry_connections(
 	const std::function<t_mat(const t_vec_real& Q)>& get_evecs,
 	const t_vec_real& Q, t_real delta = std::numeric_limits<t_real>::epsilon())
+#ifndef SWIG  // TODO: remove this as soon as swig understands concepts
 requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
+#endif
 {
 	using t_size = decltype(Q.size());
 	constexpr const t_cplx imag{0, 1};
@@ -107,7 +109,9 @@ template<class t_mat, class t_vec, class t_vec_real,
 std::vector<t_cplx> berry_curvatures(
 	const std::function<t_mat(const t_vec_real& Q)>& get_evecs,
 	const t_vec_real& Q, t_real delta = std::numeric_limits<t_real>::epsilon())
+#ifndef SWIG  // TODO: remove this as soon as swig understands concepts
 requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
+#endif
 {
 	using t_size = decltype(Q.size());
 

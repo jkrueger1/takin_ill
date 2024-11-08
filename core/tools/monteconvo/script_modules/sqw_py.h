@@ -69,7 +69,10 @@ public:
 
 	virtual SqwBase* shallow_copy() const override;
 
-	void SetVarPrefix(const char* pcFilter) { m_strVarPrefix = pcFilter; }
+	void SetVarPrefix(const char* pcFilter)
+	{
+		m_strVarPrefix = pcFilter;
+	}
 };
 
 #endif

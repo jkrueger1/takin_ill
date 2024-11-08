@@ -402,6 +402,8 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 
 	connect(comboSqw, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &ConvoDlg::SqwModelChanged);
 	connect(editSqw, &QLineEdit::textChanged, this, &ConvoDlg::createSqwModel);
+	connect(btnSqwReload, &QAbstractButton::clicked, [this]()
+	{ createSqwModel(editSqw->text()); });
 
 	connect(editScan, &QLineEdit::textChanged, this, &ConvoDlg::scanFileChanged);
 	connect(editFilterCol, &QLineEdit::textChanged, this, [this]() -> void

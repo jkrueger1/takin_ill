@@ -1223,6 +1223,22 @@
           <item row="1" column="1">
            <widget class="QLineEdit" name="editSqw"/>
           </item>
+          <item row="1" column="2">
+           <widget class="QToolButton" name="btnSqwReload">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>Reload the S(Q,E) module.</string>
+            </property>
+            <property name="text">
+             <string>↺</string>
+            </property>
+           </widget>
+          </item>
           <item row="1" column="3">
            <widget class="QToolButton" name="btnBrowseSqw">
             <property name="sizePolicy">
@@ -2169,6 +2185,7 @@
   <tabstop>btnSqwHelp</tabstop>
   <tabstop>btnSqwParams</tabstop>
   <tabstop>editSqw</tabstop>
+  <tabstop>btnSqwReload</tabstop>
   <tabstop>btnBrowseSqw</tabstop>
   <tabstop>spinStartH</tabstop>
   <tabstop>spinStartK</tabstop>

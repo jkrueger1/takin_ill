@@ -325,13 +325,13 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 
 					// normalise to mc neutron count
 					dS /= t_real(iNumNeutrons*iNumSampleSteps);
+					for(int i = 0; i < 4; ++i)
+						dhklE_mean[i] /= t_real(iNumNeutrons*iNumSampleSteps);
 
 					// add background
 					dS += m_pSqw->GetBackground(dCurH, dCurK, dCurL, dCurE);
 
-					for(int i=0; i<4; ++i)
-						dhklE_mean[i] /= t_real(iNumNeutrons*iNumSampleSteps);
-
+					// scale factor
 					dS *= localreso.GetResoResults().dR0 * localreso.GetR0Scale();
 				}
 				return std::pair<bool, t_real>(true, dS);
@@ -800,7 +800,7 @@ void ConvoDlg::Start2D()
 					return std::pair<bool, t_real>(false, 0.);
 
 				t_real dS = 0.;
-				t_real dhklE_mean[4] = {0., 0., 0., 0.};
+				t_real dhklE_mean[4] = { 0., 0., 0., 0. };
 
 				if(iNumNeutrons == 0)
 				{	// if no neutrons are given, just plot the unconvoluted S(Q,E)
@@ -844,10 +844,15 @@ void ConvoDlg::Start2D()
 							dhklE_mean[i] += vecHKLE[i];
 					}
 
+					// normalise to mc neutron count
 					dS /= t_real(iNumNeutrons*iNumSampleSteps);
 					for(int i = 0; i < 4; ++i)
 						dhklE_mean[i] /= t_real(iNumNeutrons*iNumSampleSteps);
 
+					// add background
+					dS += m_pSqw->GetBackground(dCurH, dCurK, dCurL, dCurE);
+
+					// scale factor
 					dS *= localreso.GetResoResults().dR0 * localreso.GetR0Scale();
 				}
 				return std::pair<bool, t_real>(true, dS);

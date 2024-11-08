@@ -254,7 +254,6 @@ t_real SqwPy::GetBackground(t_real dh, t_real dk, t_real dl, t_real dE) const
 		return t_real(0);
 	}
 
-
 	std::lock_guard<std::mutex> lock(*m_pmtx);
 	try
 	{
