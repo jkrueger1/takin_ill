@@ -80,14 +80,14 @@ int main(int argc, char** argv)
 	}
 
 	t_magdyn magdyn{};
+	magdyn.SetEpsilon(eps);
+	magdyn.SetUniteDegenerateEnergies(false);
 
 	if(!magdyn.Load(argv[1]))
 	{
 		std::cerr << "Could not load model.";
 		return -1;
 	}
-
-	magdyn.SetUniteDegenerateEnergies(false);
 
 	std::cout << std::left << std::setw(width) << "# q" << " ";
 	std::cout << std::left << std::setw(width) << "E_1" << " ";
