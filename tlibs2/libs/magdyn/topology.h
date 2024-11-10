@@ -157,15 +157,21 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
  * get the berry connection for each magnon band
  */
 MAGDYN_TEMPL
-std::vector<t_vec> MAGDYN_INST::GetBerryConnections(const t_vec_real& Q, t_real delta) const
+std::vector<t_vec> MAGDYN_INST::GetBerryConnections(
+	const t_vec_real& Q, t_real delta,
+	const std::vector<t_size>* perm) const
 {
 	//SetUniteDegenerateEnergies(false);
 
 	// get eigenstates at specific Q
-	auto get_states = [this](const t_vec_real& Q) -> t_mat
+	auto get_states = [this, perm](const t_vec_real& Q) -> t_mat
 	{
 		SofQE S = CalcEnergies(Q, false);
-		return S.evec_mat;
+		t_mat M = S.evec_mat;
+
+		if(perm)
+			M = tl2::reorder_cols<t_mat, t_vec>(M, *perm);
+		return M;
 	};
 
 	return berry_connections<t_mat, t_vec, t_vec_real, t_cplx, t_real>(
@@ -178,15 +184,21 @@ std::vector<t_vec> MAGDYN_INST::GetBerryConnections(const t_vec_real& Q, t_real 
  * get the berry curvature for each magnon band
  */
 MAGDYN_TEMPL
-std::vector<t_cplx> MAGDYN_INST::GetBerryCurvatures(const t_vec_real& Q, t_real delta) const
+std::vector<t_cplx> MAGDYN_INST::GetBerryCurvatures(
+	const t_vec_real& Q, t_real delta,
+	const std::vector<t_size>* perm) const
 {
 	//SetUniteDegenerateEnergies(false);
 
 	// get eigenstates at specific Q
-	auto get_states = [this](const t_vec_real& Q) -> t_mat
+	auto get_states = [this, perm](const t_vec_real& Q) -> t_mat
 	{
 		SofQE S = CalcEnergies(Q, false);
-		return S.evec_mat;
+		t_mat M = S.evec_mat;
+
+		if(perm)
+			M = tl2::reorder_cols<t_mat, t_vec>(M, *perm);
+		return M;
 	};
 
 	return berry_curvatures<t_mat, t_vec, t_vec_real, t_cplx, t_real>(

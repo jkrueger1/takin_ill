@@ -223,7 +223,7 @@ t_vec reorder(const t_vec& vec, const t_perm& perm)
 	t_vec vec_new;
 	vec_new.reserve(vec.size());
 
-	for(decltype(vec.size()) i=0; i<vec.size(); ++i)
+	for(decltype(vec.size()) i = 0; i < vec.size(); ++i)
 		vec_new.push_back(vec[perm[i]]);
 
 	return vec_new;

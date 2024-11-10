@@ -29,7 +29,7 @@
 
 
 #include "libs/magdyn.h"
-
+using namespace tl2_ops;
 
 
 // types
@@ -39,17 +39,17 @@ using t_mat = tl2::mat<t_cplx>;
 using t_vec = tl2::vec<t_cplx>;
 using t_mat_real = tl2::mat<t_real>;
 using t_vec_real = tl2::vec<t_real>;
+using t_size = std::size_t;
 using t_magdyn = tl2_mag::MagDyn<
 	t_mat, t_vec, t_mat_real, t_vec_real,
-	t_cplx, t_real, std::size_t>;
+	t_cplx, t_real, t_size>;
 using t_SofQE = typename t_magdyn::SofQE;
+using t_field = typename t_magdyn::ExternalField;
 
 
-static constexpr t_real eps = 1e-4;
-static constexpr unsigned int prec = 4;
-
-
-using namespace tl2_ops;
+static constexpr t_real eps = 1e-12;
+static constexpr t_real print_eps = 1e-4;
+static constexpr unsigned int print_prec = 4;
 
 
 
@@ -60,7 +60,7 @@ void print_states(const t_SofQE& S)
 		std::cout << EandS.E << ", ";
 
 	std::cout << "states = \n";
-	tl2::niceprint(std::cout, S.evec_mat, eps, prec);
+	tl2::niceprint(std::cout, S.evec_mat, print_eps, print_prec);
 	std::cout << std::endl;
 }
 
@@ -68,10 +68,12 @@ void print_states(const t_SofQE& S)
 
 int main(int argc, char** argv)
 {
-	std::cout.precision(prec);
-	unsigned int width = prec * 3;
-	t_real delta = 0.001;  // for differentiation
+	t_real delta = eps;  // for differentiation
 	t_real h = 0., k = 0., l = 0.;
+	t_real max_curv = 100.;
+
+	unsigned int print_width = print_prec * 3;
+	std::cout.precision(print_prec);
 
 	if(argc < 2)
 	{
@@ -79,26 +81,38 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
+	/*t_field field001
+	{
+		.align_spins = true,
+		.dir = tl2::create<t_vec_real>({ 0., 0., 1. }),
+		.mag = 1.,
+	};*/
+
 	t_magdyn magdyn{};
-	magdyn.SetEpsilon(eps);
-	magdyn.SetUniteDegenerateEnergies(false);
 
 	if(!magdyn.Load(argv[1]))
 	{
-		std::cerr << "Could not load model.";
+		std::cerr << "Could not load model." << std::endl;
 		return -1;
 	}
 
-	std::cout << std::left << std::setw(width) << "# q" << " ";
-	std::cout << std::left << std::setw(width) << "E_1" << " ";
-	std::cout << std::left << std::setw(width) << "Re(b_1)" << " ";
-	std::cout << std::left << std::setw(width) << "Im(b_1)" << " ";
-	std::cout << std::left << std::setw(width) << "...";
+	magdyn.SetEpsilon(eps);
+	magdyn.SetUniteDegenerateEnergies(false);
+	//magdyn.SetExternalField(field001);
+	//magdyn.CalcExternalField();
+	//magdyn.CalcMagneticSites();
+	//magdyn.CalcExchangeTerms();
+
+	std::cout << std::left << std::setw(print_width) << "# q" << " ";
+	std::cout << std::left << std::setw(print_width) << "E_1" << " ";
+	std::cout << std::left << std::setw(print_width) << "Re(b_1)" << " ";
+	std::cout << std::left << std::setw(print_width) << "Im(b_1)" << " ";
+	std::cout << std::left << std::setw(print_width) << "...";
 	std::cout << std::endl;
 
-	for(t_real q = 0.; q < 1.; q += 0.005)
+	for(t_real q = 0.; q < 1.; q += 0.001)
 	{
-		std::cout << std::left << std::setw(width) << q << " ";
+		std::cout << std::left << std::setw(print_width) << q << " ";
 		t_vec_real Q = tl2::create<t_vec_real>({ h + q, k, l });
 
 		t_SofQE S = magdyn.CalcEnergies(Q, false);
@@ -109,16 +123,37 @@ int main(int argc, char** argv)
 			std::cout << conn << std::endl;
 		std::cout << std::endl;*/
 
-		std::vector<t_cplx> curves = magdyn.GetBerryCurvatures(Q, delta);
-		for(std::size_t band = 0; band < curves.size(); ++band)
+		// band permutations
+		/*t_size num_bands = S.E_and_S.size();
+		std::vector<t_size> perm;
+		perm.resize(num_bands);
+		std::iota(perm.begin(), perm.end(), 0);
+		if(q > 0.5)
+		{
+			std::swap(perm[0], perm[1]);
+			std::swap(perm[2], perm[3]);
+		}*/
+
+		std::vector<t_cplx> curves = magdyn.GetBerryCurvatures(Q, delta/*, &perm*/);
+
+		for(t_size band = 0; band < curves.size(); ++band)
 		{
 			const t_cplx& curve = curves[band];
+			//t_real E = S.E_and_S[perm[band]].E;
 			t_real E = S.E_and_S[band].E;
-			std::cout << std::left << std::setw(width) << E << " ";
+			std::cout << std::left << std::setw(print_width) << E << " ";
 
-			std::cout << std::left << std::setw(width) << curve.real() << " ";
-			std::cout << std::left << std::setw(width) << curve.imag() << " ";
+			if(std::abs(curve.real()) > max_curv)
+				std::cout << std::left << std::setw(print_width) << "-" << " ";
+			else
+				std::cout << std::left << std::setw(print_width) << curve.real() << " ";
+
+			if(std::abs(curve.imag()) > max_curv)
+				std::cout << std::left << std::setw(print_width) << "-" << " ";
+			else
+				std::cout << std::left << std::setw(print_width) << curve.imag() << " ";
 		}
+
 		std::cout << std::endl;
 	}
 

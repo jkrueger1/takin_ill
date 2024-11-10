@@ -485,9 +485,11 @@ public:
 	// --------------------------------------------------------------------
 	// topological calculations
 	// --------------------------------------------------------------------
-	std::vector<t_vec> GetBerryConnections(const t_vec_real& Q_start, t_real delta) const;
+	std::vector<t_vec> GetBerryConnections(const t_vec_real& Q_start,
+		t_real delta, const std::vector<t_size>* perm = nullptr) const;
 
-	std::vector<t_cplx> GetBerryCurvatures(const t_vec_real& Q_start, t_real delta) const;
+	std::vector<t_cplx> GetBerryCurvatures(const t_vec_real& Q_start,
+		t_real delta, const std::vector<t_size>* perm = nullptr) const;
 	// --------------------------------------------------------------------
 
 

@@ -1267,6 +1267,26 @@ requires is_mat<t_mat> && is_basic_vec<t_vec>
 
 
 /**
+ * reorder matrix columns according to a permutation
+ */
+template<class t_mat, class t_vec, class t_perm = std::vector<std::size_t>>
+t_mat reorder_cols(const t_mat& mat, const t_perm& perm)
+requires is_mat<t_mat> && is_basic_vec<t_vec>
+{
+	using t_idx = decltype(mat.size1());
+	t_mat mat_new = create<t_mat>(mat.size1(), mat.size2());
+
+	for(t_idx col_idx = 0; col_idx < mat.size2(); ++col_idx)
+	{
+		t_vec colvec = col<t_mat, t_vec>(mat, perm[col_idx]);
+		set_col<t_mat, t_vec>(mat_new, colvec, col_idx);
+	}
+
+	return mat_new;
+}
+
+
+/**
  * inner product <vec1|vec2>
  */
 template<class t_vec>
