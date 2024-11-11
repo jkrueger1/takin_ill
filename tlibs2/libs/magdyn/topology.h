@@ -105,16 +105,16 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
  */
 template<class t_mat, class t_vec, class t_vec_real,
 	typename t_cplx = typename t_vec::value_type,
-	typename t_real = typename t_cplx::value_type>
+	typename t_real = typename t_cplx::value_type,
+	typename t_size = decltype(t_vec{}.size())>
 std::vector<t_cplx> berry_curvatures(
 	const std::function<t_mat(const t_vec_real& Q)>& get_evecs,
-	const t_vec_real& Q, t_real delta = std::numeric_limits<t_real>::epsilon())
+	const t_vec_real& Q, t_real delta = std::numeric_limits<t_real>::epsilon(),
+	t_size dim1 = 0, t_size dim2 = 1)
 #ifndef SWIG  // TODO: remove this as soon as swig understands concepts
 requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
 #endif
 {
-	using t_size = decltype(Q.size());
-
 	const t_mat evecs = get_evecs(Q);
 	const t_size BANDS = evecs.size1();
 	const t_size DIM = Q.size();
@@ -123,15 +123,18 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
 	assert(DIM == 3);
 
 	t_vec_real h = Q, k = Q;
-	h[0] += delta;
-	k[1] += delta;
+	h[dim1] += delta;
+	k[dim2] += delta;
 
 	std::vector<t_vec> connections =
-		berry_connections<t_mat, t_vec, t_vec_real, t_cplx, t_real>(get_evecs, Q, delta);
+		berry_connections<t_mat, t_vec, t_vec_real, t_cplx, t_real>(
+			get_evecs, Q, delta);
 	std::vector<t_vec> connections_h =
-		berry_connections<t_mat, t_vec, t_vec_real, t_cplx, t_real>(get_evecs, h, delta);
+		berry_connections<t_mat, t_vec, t_vec_real, t_cplx, t_real>(
+			get_evecs, h, delta);
 	std::vector<t_vec> connections_k =
-		berry_connections<t_mat, t_vec, t_vec_real, t_cplx, t_real>(get_evecs, k, delta);
+		berry_connections<t_mat, t_vec, t_vec_real, t_cplx, t_real>(
+			get_evecs, k, delta);
 
 	std::vector<t_cplx> curvatures{};
 	curvatures.reserve(BANDS);
@@ -139,9 +142,9 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
 	for(t_size band = 0; band < BANDS; ++band)
 	{
 		// differentiate connection's y component with respect to h
-		t_cplx curv1 = (connections_h[band][1] - connections[band][1]) / delta;
+		t_cplx curv1 = (connections_h[band][dim2] - connections[band][dim2]) / delta;
 		// differentiate connection's x component with respect to k
-		t_cplx curv2 = (connections_k[band][0] - connections[band][0]) / delta;
+		t_cplx curv2 = (connections_k[band][dim1] - connections[band][dim1]) / delta;
 
 		curvatures.emplace_back(curv1 - curv2);
 	}
@@ -186,7 +189,8 @@ std::vector<t_vec> MAGDYN_INST::GetBerryConnections(
 MAGDYN_TEMPL
 std::vector<t_cplx> MAGDYN_INST::GetBerryCurvatures(
 	const t_vec_real& Q, t_real delta,
-	const std::vector<t_size>* perm) const
+	const std::vector<t_size>* perm,
+	t_size dim1, t_size dim2) const
 {
 	//SetUniteDegenerateEnergies(false);
 
@@ -201,8 +205,8 @@ std::vector<t_cplx> MAGDYN_INST::GetBerryCurvatures(
 		return M;
 	};
 
-	return berry_curvatures<t_mat, t_vec, t_vec_real, t_cplx, t_real>(
-		get_states, Q, delta);
+	return berry_curvatures<t_mat, t_vec, t_vec_real, t_cplx, t_real, t_size>(
+		get_states, Q, delta, dim1, dim2);
 }
 
 // --------------------------------------------------------------------

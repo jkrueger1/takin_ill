@@ -489,7 +489,8 @@ public:
 		t_real delta, const std::vector<t_size>* perm = nullptr) const;
 
 	std::vector<t_cplx> GetBerryCurvatures(const t_vec_real& Q_start,
-		t_real delta, const std::vector<t_size>* perm = nullptr) const;
+		t_real delta, const std::vector<t_size>* perm = nullptr,
+		t_size dim1 = 0, t_size dim2 = 1) const;
 	// --------------------------------------------------------------------
 
 
