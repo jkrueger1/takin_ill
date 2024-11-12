@@ -43,7 +43,7 @@
 namespace tl2_mag {
 
 /**
- * calculates the berry connection
+ * calculates the berry connections
  * @see equ. 7 in https://doi.org/10.1146/annurev-conmatphys-031620-104715
  * @see https://en.wikipedia.org/wiki/Berry_connection_and_curvature
  */
@@ -54,7 +54,7 @@ std::vector<t_vec> berry_connections(
 	const std::function<t_mat(const t_vec_real& Q)>& get_evecs,
 	const t_vec_real& Q, t_real delta = std::numeric_limits<t_real>::epsilon())
 #ifndef SWIG  // TODO: remove this as soon as swig understands concepts
-requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
+requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
 #endif
 {
 	using t_size = decltype(Q.size());
@@ -99,7 +99,7 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
 
 
 /**
- * calculates the berry curvature
+ * calculates the berry curvatures
  * @see equ. 8 in https://doi.org/10.1146/annurev-conmatphys-031620-104715
  * @see https://en.wikipedia.org/wiki/Berry_connection_and_curvature
  */
@@ -112,7 +112,7 @@ std::vector<t_cplx> berry_curvatures(
 	const t_vec_real& Q, t_real delta = std::numeric_limits<t_real>::epsilon(),
 	t_size dim1 = 0, t_size dim2 = 1)
 #ifndef SWIG  // TODO: remove this as soon as swig understands concepts
-requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
+requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
 #endif
 {
 	const t_mat evecs = get_evecs(Q);
@@ -152,6 +152,77 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
 	return curvatures;
 }
 
+
+
+/**
+ * calculates the chern numbers
+ * @see equ. 9 in https://doi.org/10.1146/annurev-conmatphys-031620-104715
+ * @see https://en.wikipedia.org/wiki/Berry_connection_and_curvature
+ */
+template<class t_mat, class t_vec, class t_vec_real,
+	typename t_cplx = typename t_vec::value_type,
+	typename t_real = typename t_cplx::value_type,
+	typename t_size = decltype(t_vec{}.size())>
+std::vector<t_cplx> chern_numbers(
+	const std::function<t_mat(const t_vec_real& Q)>& get_evecs,
+	t_real bz = 0.5,  // brillouin zone boundary
+	t_real delta_diff = std::numeric_limits<t_real>::epsilon(),
+	t_real delta_int = std::cbrt(std::numeric_limits<t_real>::epsilon()),
+	t_size dim1 = 0, t_size dim2 = 1)
+#ifndef SWIG  // TODO: remove this as soon as swig understands concepts
+requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
+#endif
+{
+	std::vector<t_cplx> chern_numbers;
+
+	auto int_boundary = [get_evecs, delta_diff, delta_int, bz, dim1, dim2, &chern_numbers](
+		t_size dim, t_vec_real& Q, t_real sign)
+	{
+		for(t_real x = -bz; x < bz; x += delta_int)
+		{
+			Q[dim] = x;
+
+			std::vector<t_vec> conns =
+				berry_connections<t_mat, t_vec, t_vec_real, t_cplx, t_real>(
+					get_evecs, Q, delta_diff);
+
+			// initialise by resetting chern numbers to zeros
+			if(!chern_numbers.size())
+				chern_numbers.resize(conns.size(), t_cplx{});
+
+			// numerically integrate along boundary segment
+			for(t_size band = 0; band < conns.size(); ++band)
+			{
+				chern_numbers[band] += conns[band][dim1] * delta_int * sign;
+				chern_numbers[band] -= conns[band][dim2] * delta_int * sign;
+			}
+		}
+	};
+
+	// bottom part of boundary
+	t_vec_real Q = tl2::zero<t_vec_real>(3);
+	Q[dim2] -= bz;
+	int_boundary(dim1, Q, 1.);
+
+	// top part of boundary
+	Q = tl2::zero<t_vec_real>(3);
+	Q[dim2] += bz;
+	int_boundary(dim1, Q, -1.);
+
+	// left part of boundary
+	Q = tl2::zero<t_vec_real>(3);
+	Q[dim1] -= bz;
+	int_boundary(dim2, Q, 1.);
+
+	// right part of boundary
+	Q = tl2::zero<t_vec_real>(3);
+	Q[dim1] += bz;
+	int_boundary(dim2, Q, -1.);
+
+	// should be integers
+	return chern_numbers;
+}
+
 }   // namespace tl2_mag
 
 
@@ -160,7 +231,7 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
  * get the berry connection for each magnon band
  */
 MAGDYN_TEMPL
-std::vector<t_vec> MAGDYN_INST::GetBerryConnections(
+std::vector<t_vec> MAGDYN_INST::CalcBerryConnections(
 	const t_vec_real& Q, t_real delta,
 	const std::vector<t_size>* perm) const
 {
@@ -187,7 +258,7 @@ std::vector<t_vec> MAGDYN_INST::GetBerryConnections(
  * get the berry curvature for each magnon band
  */
 MAGDYN_TEMPL
-std::vector<t_cplx> MAGDYN_INST::GetBerryCurvatures(
+std::vector<t_cplx> MAGDYN_INST::CalcBerryCurvatures(
 	const t_vec_real& Q, t_real delta,
 	const std::vector<t_size>* perm,
 	t_size dim1, t_size dim2) const
@@ -207,6 +278,33 @@ std::vector<t_cplx> MAGDYN_INST::GetBerryCurvatures(
 
 	return berry_curvatures<t_mat, t_vec, t_vec_real, t_cplx, t_real, t_size>(
 		get_states, Q, delta, dim1, dim2);
+}
+
+
+
+/**
+ * get the berry curvature for each magnon band
+ */
+MAGDYN_TEMPL
+std::vector<t_cplx> MAGDYN_INST::CalcChernNumbers(
+	t_real bz, t_real delta_diff, t_real delta_int,
+	t_size dim1, t_size dim2) const
+{
+	//SetUniteDegenerateEnergies(false);
+
+	// get eigenstates at specific Q
+	auto get_states = [this](const t_vec_real& Q) -> t_mat
+	{
+		SofQE S = CalcEnergies(Q, false);
+		t_mat M = S.evec_mat;
+
+		//if(perm)
+		//	M = tl2::reorder_cols<t_mat, t_vec>(M, *perm);
+		return M;
+	};
+
+	return chern_numbers<t_mat, t_vec, t_vec_real, t_cplx, t_real, t_size>(
+		get_states, bz, delta_diff, delta_int, dim1, dim2);
 }
 
 // --------------------------------------------------------------------

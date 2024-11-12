@@ -32,6 +32,9 @@
 using namespace tl2_ops;
 
 
+#define CALC_CHERN_NUM 0
+
+
 // types
 using t_real = double;
 using t_cplx = std::complex<t_real>;
@@ -48,8 +51,8 @@ using t_field = typename t_magdyn::ExternalField;
 
 
 static constexpr t_real eps = 1e-12;
-static constexpr t_real print_eps = 1e-4;
-static constexpr unsigned int print_prec = 4;
+static constexpr t_real print_eps = 1e-5;
+static constexpr unsigned int print_prec = 5;
 
 
 
@@ -68,8 +71,9 @@ void print_states(const t_SofQE& S)
 
 int main(int argc, char** argv)
 {
-	t_real delta = eps;  // for differentiation
-	t_real h = 0., k = 0., l = 0.;
+	t_real delta = eps;       // for differentiation
+	t_real delta_int = 1e-3;  // for integration
+	t_vec_real Q0 = tl2::create<t_vec_real>({ 0., 0., 0. });
 	t_real max_curv = 100.;
 
 	unsigned int print_width = print_prec * 3;
@@ -103,6 +107,14 @@ int main(int argc, char** argv)
 	//magdyn.CalcMagneticSites();
 	//magdyn.CalcExchangeTerms();
 
+#if CALC_CHERN_NUM != 0
+	std::cout << "# Chern numbers: ";
+	std::vector<t_cplx> cherns = magdyn.CalcChernNumbers(0.5, delta, delta_int);
+	for(const t_cplx& chern : cherns)
+		std::cout << chern << " ";
+	std::cout << std::endl;
+#endif
+
 	std::cout << std::left << std::setw(print_width) << "# q" << " ";
 	std::cout << std::left << std::setw(print_width) << "E_1" << " ";
 	std::cout << std::left << std::setw(print_width) << "Re(b_1)" << " ";
@@ -110,15 +122,16 @@ int main(int argc, char** argv)
 	std::cout << std::left << std::setw(print_width) << "...";
 	std::cout << std::endl;
 
+	t_vec_real Q = Q0;
 	for(t_real q = 0.; q < 1.; q += 0.001)
 	{
+		Q[0] = Q0[0] + q;
 		std::cout << std::left << std::setw(print_width) << q << " ";
-		t_vec_real Q = tl2::create<t_vec_real>({ h + q, k, l });
 
 		t_SofQE S = magdyn.CalcEnergies(Q, false);
 		//print_states(S);
 
-		/*std::vector<t_vec> conns = magdyn.GetBerryConnections(Q, 0.001);
+		/*std::vector<t_vec> conns = magdyn.CalcBerryConnections(Q, 0.001);
 		for(const t_vec& conn : conns)
 			std::cout << conn << std::endl;
 		std::cout << std::endl;*/
@@ -134,7 +147,7 @@ int main(int argc, char** argv)
 			std::swap(perm[2], perm[3]);
 		}*/
 
-		std::vector<t_cplx> curves = magdyn.GetBerryCurvatures(Q, delta/*, &perm*/);
+		std::vector<t_cplx> curves = magdyn.CalcBerryCurvatures(Q, delta/*, &perm*/);
 
 		for(t_size band = 0; band < curves.size(); ++band)
 		{
