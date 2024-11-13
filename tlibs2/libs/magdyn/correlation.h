@@ -8,6 +8,7 @@
  *   - (Toth 2015) S. Toth and B. Lake, J. Phys.: Condens. Matter 27 166002 (2015):
  *                 https://doi.org/10.1088/0953-8984/27/16/166002
  *                 https://arxiv.org/abs/1402.6069
+ *   - (McClarty 2022) https://doi.org/10.1146/annurev-conmatphys-031620-104715
  *   - (Heinsdorf 2021) N. Heinsdorf, manual example calculation for a simple
  *                      ferromagnetic case, personal communications, 2021/2022.
  *
@@ -60,7 +61,7 @@
 MAGDYN_TEMPL
 bool MAGDYN_INST::CalcCorrelationsFromHamiltonian(
 	MAGDYN_TYPE::SofQE& S, const t_mat& H_mat,
-	const t_mat& chol_mat, const t_mat& g_sign,
+	const t_mat& chol_mat, const t_mat& comm,
 	const std::vector<t_vec>& evecs) const
 {
 	const t_size N = GetMagneticSitesCount();
@@ -76,9 +77,21 @@ bool MAGDYN_INST::CalcCorrelationsFromHamiltonian(
 
 	S.evec_mat = tl2::create<t_mat>(tl2::reorder(evecs, sorting));
 
+	if(m_perform_checks)
+	{
+		// check commutator relations, see before equ. 7 in (McClarty 2022)
+		using namespace tl2_ops;
+		//t_mat check_comm = S.evec_mat * comm * tl2::herm(S.evec_mat);
+		t_mat check_comm = S.evec_mat * tl2::herm(S.evec_mat);
+		if(!tl2::equals(/*comm*/ tl2::unit<t_mat>(2*N), check_comm, m_eps))
+			CERR_OPT << "Magdyn error: Wrong commutator at Q = "
+				<< S.Q_rlu << ": " << check_comm
+				<< "." << std::endl;
+	}
+
 	// equation (32) from (Toth 2015)
 	const t_mat energy_mat = tl2::herm(S.evec_mat) * H_mat * S.evec_mat;  // energies
-	t_mat E_sqrt = g_sign * energy_mat;              // abs. energies
+	t_mat E_sqrt = comm * energy_mat;                // abs. energies
 	for(t_size i = 0; i < E_sqrt.size1(); ++i)
 		E_sqrt(i, i) = std::sqrt(E_sqrt(i, i));  // sqrt. of abs. energies
 

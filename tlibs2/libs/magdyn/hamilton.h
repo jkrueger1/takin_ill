@@ -281,10 +281,10 @@ MAGDYN_TYPE::SofQE MAGDYN_INST::CalcEnergiesFromHamiltonian(
 	if(N == 0 || _H.size1() == 0 || _H.size2() == 0)
 		return S;
 
-	// equation (30) from (Toth 2015)
-	t_mat g_sign = tl2::unit<t_mat>(2*N);
-	for(t_size i = N; i < g_sign.size1(); ++i)
-		g_sign(i, i) = -1.;
+	// equation (30) from (Toth 2015), to ensure correct commutators
+	t_mat comm = tl2::unit<t_mat>(2*N);
+	for(t_size i = N; i < comm.size1(); ++i)
+		comm(i, i) = -1.;
 
 	// equation (31) from (Toth 2015)
 	t_mat chol_mat;
@@ -332,7 +332,7 @@ MAGDYN_TYPE::SofQE MAGDYN_INST::CalcEnergiesFromHamiltonian(
 	}
 
 	// see p. 5 in (Toth 2015)
-	t_mat H_mat = chol_mat * g_sign * tl2::herm<t_mat>(chol_mat);
+	t_mat H_mat = chol_mat * comm * tl2::herm<t_mat>(chol_mat);
 
 	const bool is_herm = tl2::is_symm_or_herm<t_mat, t_real>(H_mat, m_eps);
 	if(m_perform_checks && !is_herm)
@@ -383,7 +383,7 @@ MAGDYN_TYPE::SofQE MAGDYN_INST::CalcEnergiesFromHamiltonian(
 	if(!only_energies)
 	{
 		bool corr_ok = CalcCorrelationsFromHamiltonian(S,
-			H_mat, chol_mat, g_sign, evecs);
+			H_mat, chol_mat, comm, evecs);
 		if(!corr_ok)
 		{
 			CERR_OPT << "Magdyn warning: Invalid correlations"

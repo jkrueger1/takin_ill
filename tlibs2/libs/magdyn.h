@@ -8,6 +8,7 @@
  *   - (Toth 2015) S. Toth and B. Lake, J. Phys.: Condens. Matter 27 166002 (2015):
  *                 https://doi.org/10.1088/0953-8984/27/16/166002
  *                 https://arxiv.org/abs/1402.6069
+ *   - (McClarty 2022) https://doi.org/10.1146/annurev-conmatphys-031620-104715
  *   - (Heinsdorf 2021) N. Heinsdorf, manual example calculation for a simple
  *                      ferromagnetic case, personal communications, 2021/2022.
  *

@@ -4,6 +4,9 @@
  * @date November 2024
  * @license GPLv3, see 'LICENSE' file
  *
+ * References:
+ *   - (McClarty 2022) https://doi.org/10.1146/annurev-conmatphys-031620-104715
+ *
  * @note Forked on 5-November-2024 from my privately developed "mathlibs" project (https://github.com/t-weber/mathlibs).
  * @desc For references, see the 'LITERATURE' file.
  *
@@ -44,7 +47,7 @@ namespace tl2_mag {
 
 /**
  * calculates the berry connections
- * @see equ. 7 in https://doi.org/10.1146/annurev-conmatphys-031620-104715
+ * @see equ. 7 in (McClarty 2022)
  * @see https://en.wikipedia.org/wiki/Berry_connection_and_curvature
  */
 template<class t_mat, class t_vec, class t_vec_real,
@@ -52,7 +55,8 @@ template<class t_mat, class t_vec, class t_vec_real,
 	typename t_real = typename t_cplx::value_type>
 std::vector<t_vec> berry_connections(
 	const std::function<t_mat(const t_vec_real& Q)>& get_evecs,
-	const t_vec_real& Q, t_real delta = std::numeric_limits<t_real>::epsilon())
+	const t_vec_real& Q, t_real delta = std::numeric_limits<t_real>::epsilon(),
+	bool enforce_commutator = false)
 #ifndef SWIG  // TODO: remove this as soon as swig understands concepts
 requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
 #endif
@@ -65,14 +69,16 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
 	const t_size DIM = Q.size();
 
 	// to ensure correct commutators
-	t_mat comm = tl2::unit<t_mat>(BANDS);
+	t_mat comm;
+	if(enforce_commutator)
+		comm = tl2::unit<t_mat>(BANDS);
 
 	std::vector<t_vec> connections{};
 	connections.reserve(BANDS);
 
 	for(t_size band = 0; band < BANDS; ++band)
 	{
-		if(band >= BANDS / 2)
+		if(enforce_commutator && band >= BANDS / 2)
 			comm(band, band) = -1;
 
 		connections.emplace_back(tl2::create<t_vec>(DIM));
@@ -87,7 +93,11 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
 		t_mat evecs_diff = (get_evecs(Q1) - evecs) / delta;
 
 		t_mat evecs_H = tl2::herm(evecs);
-		t_mat C = comm * evecs_H * comm * evecs_diff;
+		t_mat C;
+		if(enforce_commutator)
+			C = comm * evecs_H * comm * evecs_diff;
+		else
+			C = evecs_H * evecs_diff;
 
 		for(t_size band = 0; band < BANDS; ++band)
 			connections[band][dim] = C(band, band) * imag;
@@ -100,7 +110,7 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
 
 /**
  * calculates the berry curvatures
- * @see equ. 8 in https://doi.org/10.1146/annurev-conmatphys-031620-104715
+ * @see equ. 8 in (McClarty 2022)
  * @see https://en.wikipedia.org/wiki/Berry_connection_and_curvature
  */
 template<class t_mat, class t_vec, class t_vec_real,
@@ -155,7 +165,7 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
 
 /**
  * calculates the chern numbers
- * @see equ. 9 in https://doi.org/10.1146/annurev-conmatphys-031620-104715
+ * @see equ. 9 in (McClarty 2022)
  * @see https://en.wikipedia.org/wiki/Berry_connection_and_curvature
  */
 template<class t_mat, class t_vec, class t_vec_real,
