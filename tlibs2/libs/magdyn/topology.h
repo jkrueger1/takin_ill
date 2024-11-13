@@ -106,7 +106,7 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
 template<class t_mat, class t_vec, class t_vec_real,
 	typename t_cplx = typename t_vec::value_type,
 	typename t_real = typename t_cplx::value_type,
-	typename t_size = decltype(t_vec{}.size())>
+	typename t_size = std::size_t>
 std::vector<t_cplx> berry_curvatures(
 	const std::function<t_mat(const t_vec_real& Q)>& get_evecs,
 	const t_vec_real& Q, t_real delta = std::numeric_limits<t_real>::epsilon(),
@@ -117,10 +117,9 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
 {
 	const t_mat evecs = get_evecs(Q);
 	const t_size BANDS = evecs.size1();
-	const t_size DIM = Q.size();
 
 	// only valid in three dimensions
-	assert(DIM == 3);
+	assert(Q.size() == 3);
 
 	t_vec_real h = Q, k = Q;
 	h[dim1] += delta;
@@ -162,7 +161,7 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
 template<class t_mat, class t_vec, class t_vec_real,
 	typename t_cplx = typename t_vec::value_type,
 	typename t_real = typename t_cplx::value_type,
-	typename t_size = decltype(t_vec{}.size())>
+	typename t_size = std::size_t>
 std::vector<t_cplx> chern_numbers(
 	const std::function<t_mat(const t_vec_real& Q)>& get_evecs,
 	t_real bz = 0.5,  // brillouin zone boundary
@@ -230,7 +229,7 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
 		for(Q[dim2] = -bz; Q[dim2] < bz; Q[dim2] += delta_int)
 		{
 			std::vector<t_cplx> curvs = berry_curvatures<
-				t_mat, t_vec, t_vec_real, t_cplx, t_real>(
+				t_mat, t_vec, t_vec_real, t_cplx, t_real, t_size>(
 					get_evecs, Q, delta_diff, dim1, dim2);
 
 			// initialise by resetting chern numbers to zeros
@@ -303,8 +302,9 @@ std::vector<t_cplx> MAGDYN_INST::CalcBerryCurvatures(
 		return M;
 	};
 
-	return berry_curvatures<t_mat, t_vec, t_vec_real, t_cplx, t_real, t_size>(
-		get_states, Q, delta, dim1, dim2);
+	return berry_curvatures<
+		t_mat, t_vec, t_vec_real,t_cplx, t_real, t_size>(
+			get_states, Q, delta, dim1, dim2);
 }
 
 
@@ -331,9 +331,10 @@ std::vector<t_cplx> MAGDYN_INST::CalcChernNumbers(
 	};
 
 	bool calc_via_boundary = true;
-	return chern_numbers<t_mat, t_vec, t_vec_real, t_cplx, t_real, t_size>(
-		get_states, bz, delta_diff, delta_int,
-		dim1, dim2, calc_via_boundary);
+	return chern_numbers<
+		t_mat, t_vec, t_vec_real, t_cplx, t_real, t_size>(
+			get_states, bz, delta_diff, delta_int,
+			dim1, dim2, calc_via_boundary);
 }
 
 // --------------------------------------------------------------------
