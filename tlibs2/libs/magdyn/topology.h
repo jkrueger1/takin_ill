@@ -168,59 +168,86 @@ std::vector<t_cplx> chern_numbers(
 	t_real bz = 0.5,  // brillouin zone boundary
 	t_real delta_diff = std::numeric_limits<t_real>::epsilon(),
 	t_real delta_int = std::cbrt(std::numeric_limits<t_real>::epsilon()),
-	t_size dim1 = 0, t_size dim2 = 1)
+	t_size dim1 = 0, t_size dim2 = 1, bool calc_via_boundary = true)
 #ifndef SWIG  // TODO: remove this as soon as swig understands concepts
 requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
 #endif
 {
-	std::vector<t_cplx> chern_numbers;
+	std::vector<t_cplx> chern_nums;
 
-	auto int_boundary = [get_evecs, delta_diff, delta_int, bz, dim1, dim2, &chern_numbers](
+	auto int_boundary = [get_evecs, delta_diff, delta_int, bz, dim1, dim2, &chern_nums](
 		t_size dim, t_vec_real& Q, t_real sign)
 	{
-		for(t_real x = -bz; x < bz; x += delta_int)
+		for(Q[dim] = -bz; Q[dim] < bz; Q[dim] += delta_int)
 		{
-			Q[dim] = x;
-
 			std::vector<t_vec> conns =
 				berry_connections<t_mat, t_vec, t_vec_real, t_cplx, t_real>(
 					get_evecs, Q, delta_diff);
 
 			// initialise by resetting chern numbers to zeros
-			if(!chern_numbers.size())
-				chern_numbers.resize(conns.size(), t_cplx{});
+			if(!chern_nums.size())
+				chern_nums.resize(conns.size(), t_cplx{});
 
 			// numerically integrate along boundary segment
 			for(t_size band = 0; band < conns.size(); ++band)
 			{
-				chern_numbers[band] += conns[band][dim1] * delta_int * sign;
-				chern_numbers[band] -= conns[band][dim2] * delta_int * sign;
+				chern_nums[band] += conns[band][dim1] * delta_int * sign;
+				chern_nums[band] -= conns[band][dim2] * delta_int * sign;
 			}
 		}
 	};
 
-	// bottom part of boundary
-	t_vec_real Q = tl2::zero<t_vec_real>(3);
-	Q[dim2] -= bz;
-	int_boundary(dim1, Q, 1.);
+	// calculate via boundary over berry connections
+	if(calc_via_boundary)
+	{
+		// bottom part of boundary
+		t_vec_real Q = tl2::zero<t_vec_real>(3);
+		Q[dim2] -= bz;
+		int_boundary(dim1, Q, 1.);
 
-	// top part of boundary
-	Q = tl2::zero<t_vec_real>(3);
-	Q[dim2] += bz;
-	int_boundary(dim1, Q, -1.);
+		// top part of boundary
+		Q = tl2::zero<t_vec_real>(3);
+		Q[dim2] += bz;
+		int_boundary(dim1, Q, -1.);
 
-	// left part of boundary
-	Q = tl2::zero<t_vec_real>(3);
-	Q[dim1] -= bz;
-	int_boundary(dim2, Q, 1.);
+		// left part of boundary
+		Q = tl2::zero<t_vec_real>(3);
+		Q[dim1] -= bz;
+		int_boundary(dim2, Q, 1.);
 
-	// right part of boundary
-	Q = tl2::zero<t_vec_real>(3);
-	Q[dim1] += bz;
-	int_boundary(dim2, Q, -1.);
+		// right part of boundary
+		Q = tl2::zero<t_vec_real>(3);
+		Q[dim1] += bz;
+		int_boundary(dim2, Q, -1.);
+	}
+
+	// calculate via area over berry curvatures
+	else
+	{
+		t_vec_real Q = tl2::zero<t_vec_real>(3);
+
+		for(Q[dim1] = -bz; Q[dim1] < bz; Q[dim1] += delta_int)
+		for(Q[dim2] = -bz; Q[dim2] < bz; Q[dim2] += delta_int)
+		{
+			std::vector<t_cplx> curvs = berry_curvatures<
+				t_mat, t_vec, t_vec_real, t_cplx, t_real>(
+					get_evecs, Q, delta_diff, dim1, dim2);
+
+			// initialise by resetting chern numbers to zeros
+			if(!chern_nums.size())
+				chern_nums.resize(curvs.size(), t_cplx{});
+
+			// numerically integrate the brillouin zone area for each band
+			for(t_size band = 0; band < curvs.size(); ++band)
+				chern_nums[band] += curvs[band] * delta_int * delta_int;
+		}
+
+		for(t_cplx& num : chern_nums)
+			num /= t_real(2) * tl2::pi<t_real>;
+	}
 
 	// should be integers
-	return chern_numbers;
+	return chern_nums;
 }
 
 }   // namespace tl2_mag
@@ -303,10 +330,13 @@ std::vector<t_cplx> MAGDYN_INST::CalcChernNumbers(
 		return M;
 	};
 
+	bool calc_via_boundary = true;
 	return chern_numbers<t_mat, t_vec, t_vec_real, t_cplx, t_real, t_size>(
-		get_states, bz, delta_diff, delta_int, dim1, dim2);
+		get_states, bz, delta_diff, delta_int,
+		dim1, dim2, calc_via_boundary);
 }
 
 // --------------------------------------------------------------------
 
 #endif
+
