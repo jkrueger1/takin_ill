@@ -64,12 +64,15 @@
 
 #include "gui_defs.h"
 #include "graph.h"
-#include "table_import.h"
-#include "struct_plot.h"
-#include "ground_state.h"
-#include "trafos.h"
-#include "notes.h"
-#include "infos.h"
+
+// dialogs
+#include "dialogs/table_import.h"
+#include "dialogs/struct_plot.h"
+#include "dialogs/ground_state.h"
+#include "dialogs/topology.h"
+#include "dialogs/trafos.h"
+#include "dialogs/notes.h"
+#include "dialogs/infos.h"
 
 
 
@@ -232,6 +235,7 @@ protected:
 	InfoDlg *m_info_dlg{};                 // info dialog
 	StructPlotDlg *m_structplot_dlg{};     // magnetic structure plotter
 	GroundStateDlg *m_groundstate_dlg{};   // ground state minimiser
+	TopologyDlg *m_topo_dlg{};             // topological calculations
 
 
 protected:
@@ -244,6 +248,7 @@ protected:
 	void ShowNotesDlg(bool only_create = false);
 	void ShowStructPlotDlg(bool only_create = false);
 	void ShowGroundStateDlg(bool only_create = false);
+	void ShowTopologyDlg(bool only_create = false);
 	void InitSettingsDlg();
 	void InitSettings();
 

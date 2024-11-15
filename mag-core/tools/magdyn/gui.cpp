@@ -2102,6 +2102,7 @@ void MagDynDlg::ShowGroundStateDlg(bool only_create)
 		m_groundstate_dlg->setFont(this->font());
 
 		m_groundstate_dlg->SetKernel(&m_dyn);
+
 		QObject::connect(m_groundstate_dlg, &GroundStateDlg::SpinsUpdated,
 			[this](const t_magdyn* dyn)
 		{
@@ -2114,6 +2115,29 @@ void MagDynDlg::ShowGroundStateDlg(bool only_create)
 		m_groundstate_dlg->show();
 		m_groundstate_dlg->raise();
 		m_groundstate_dlg->activateWindow();
+	}
+}
+
+
+
+/**
+ * topology dialog
+ */
+void MagDynDlg::ShowTopologyDlg(bool only_create)
+{
+	if(!m_topo_dlg)
+	{
+		m_topo_dlg = new TopologyDlg(this, m_sett);
+		m_topo_dlg->setFont(this->font());
+
+		m_topo_dlg->SetKernel(&m_dyn);
+	}
+
+	if(!only_create)
+	{
+		m_topo_dlg->show();
+		m_topo_dlg->raise();
+		m_topo_dlg->activateWindow();
 	}
 }
 
@@ -2294,6 +2318,7 @@ void MagDynDlg::CreateMenuBar()
 
 	// tools menu
 	auto menuTools = new QMenu("Tools", m_menu);
+	auto acTopo = new QAction("Topology...", menuTools);
 	auto acTrafoCalc = new QAction("Transformation Calculator...", menuTools);
 	auto acPreferences = new QAction("Preferences...", menuTools);
 	acTrafoCalc->setIcon(QIcon::fromTheme("accessories-calculator"));
@@ -2376,6 +2401,7 @@ void MagDynDlg::CreateMenuBar()
 	menuCalc->addAction(m_force_incommensurate);
 	menuCalc->addMenu(menuHamiltonians);
 
+	//menuTools->addAction(acTopo);   // TODO
 	menuTools->addAction(acTrafoCalc);
 	menuTools->addSeparator();
 	menuTools->addAction(acPreferences);
@@ -2435,6 +2461,7 @@ void MagDynDlg::CreateMenuBar()
 	connect(acStructSymIdx, &QAction::triggered, this, &MagDynDlg::CalcSymmetryIndices);
 	connect(acStructView, &QAction::triggered, this, &MagDynDlg::ShowStructPlotDlg);
 	connect(acGroundState, &QAction::triggered, this, &MagDynDlg::ShowGroundStateDlg);
+	connect(acTopo, &QAction::triggered, this, &MagDynDlg::ShowTopologyDlg);
 	connect(acStructImport, &QAction::triggered, this, &MagDynDlg::ShowTableImporter);
 	connect(acStructExportSun, &QAction::triggered,
 		this, static_cast<void (MagDynDlg::*)()>(&MagDynDlg::ExportToSunny));

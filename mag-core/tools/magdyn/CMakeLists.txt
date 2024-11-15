@@ -154,22 +154,27 @@ if(USE_QT)
 	include_directories("${QCP_INCLUDE_DIRS}")
 
 	add_executable(takin_magdyn
+		# main program
 		main.cpp main_gui.cpp
 		magdyn.cpp magdyn.h
-		magdyn_struct.cpp
-		magdyn_gui.cpp magdyn_tables.cpp
-		magdyn_configuration.cpp magdyn_file.cpp
-		magdyn_export.cpp magdyn_export_sqe.cpp
-		magdyn_kernel.cpp magdyn_disp.cpp
-		defs.cpp defs.h gui_defs.h settings.h
-		struct_plot.cpp struct_plot.h
-		ground_state.cpp ground_state.h
-		table_import.cpp table_import.h
-		trafos.cpp trafos.h
-		notes.cpp notes.h
-		infos.cpp infos.h
-		graph.h
+		struct.cpp gui.cpp tables.cpp
+		config.cpp file.cpp
+		export.cpp export_sqe.cpp
+		kernel.cpp disp.cpp
+		defs.cpp defs.h
+		gui_defs.h graph.h
 
+		# dialogs
+		dialogs/struct_plot.cpp dialogs/struct_plot.h
+		dialogs/ground_state.cpp dialogs/ground_state.h
+		dialogs/topology.cpp dialogs/topology.h
+		dialogs/table_import.cpp dialogs/table_import.h
+		dialogs/trafos.cpp dialogs/trafos.h
+		dialogs/notes.cpp dialogs/notes.h
+		dialogs/infos.cpp dialogs/infos.h
+		dialogs/settings.h
+
+		# library
 		../../tlibs2/libs/magdyn.h
 		../../tlibs2/libs/qt/gl.cpp ../../tlibs2/libs/qt/gl.h
 		../../tlibs2/libs/qt/glplot.cpp ../../tlibs2/libs/qt/glplot.h

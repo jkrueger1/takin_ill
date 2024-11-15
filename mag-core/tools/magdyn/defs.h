@@ -123,7 +123,7 @@ extern t_real g_structplot_fov;
 // ----------------------------------------------------------------------------
 // variables register
 // ----------------------------------------------------------------------------
-#include "settings.h"
+#include "dialogs/settings.h"
 
 constexpr std::array<SettingsVariable, 18> g_settingsvariables
 {{

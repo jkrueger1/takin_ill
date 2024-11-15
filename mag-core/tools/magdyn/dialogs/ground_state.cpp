@@ -30,7 +30,6 @@
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QTableWidgetItem>
-#include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QMessageBox>
 
 #include <string>
