@@ -437,12 +437,15 @@ void MagDynDlg::CalcHamiltonian()
 	std::ostringstream ostr;
 	ostr.precision(g_prec_gui);
 
+
 	// print hamiltonian
 	auto print_H = [&ostr](const t_mat& H, const t_vec_real& Qvec,
-		const std::string& Qstr = "Q", const std::string& mQstr = "-Q")
+		const std::string& Qstr = "Q", const std::string& mQstr = "-Q",
+		const std::string& title = "")
 	{
 		ostr << "<p><h3>Hamiltonian at " << Qstr <<  " = ("
-			<< Qvec[0] << ", " << Qvec[1] << ", " << Qvec[2] << ")</h3>";
+			<< Qvec[0] << ", " << Qvec[1] << ", " << Qvec[2] << ")"
+			<< title << "</h3>";
 		ostr << "<table style=\"border:0px\">";
 
 		// horizontal header
@@ -489,16 +492,23 @@ void MagDynDlg::CalcHamiltonian()
 		ostr << "</table></p>";
 	};
 
+
 	// get hamiltonian at Q
 	t_mat H = m_dyn.CalcHamiltonian(Q);
 	const bool is_comm = !m_dyn.IsIncommensurate();
 	if(m_hamiltonian_comp[0]->isChecked() || is_comm)  // always calculate commensurate case
 		print_H(H, Q, "Q", "-Q");
 
+
 	// print shifted hamiltonians for incommensurate case
+	bool print_incomm_p = false;
+	bool print_incomm_m = false;
+	t_vec_real O;
+
 	if(!is_comm)
 	{
-		const t_vec_real O = tl2::create<t_vec_real>(
+		// ordering wave vector
+		O = tl2::create<t_vec_real>(
 		{
 			(t_real)m_ordering[0]->value(),
 			(t_real)m_ordering[1]->value(),
@@ -512,6 +522,8 @@ void MagDynDlg::CalcHamiltonian()
 				// get hamiltonian at Q + ordering vector
 				t_mat H_p = m_dyn.CalcHamiltonian(Q + O);
 				print_H(H_p, Q + O, "Q + O", "Q - O");
+
+				print_incomm_p = true;
 			}
 
 			if(m_hamiltonian_comp[2]->isChecked())
@@ -519,9 +531,12 @@ void MagDynDlg::CalcHamiltonian()
 				// get hamiltonian at Q - ordering vector
 				t_mat H_m = m_dyn.CalcHamiltonian(Q - O);
 				print_H(H_m, Q - O, "Q - O", "Q + O");
+
+				print_incomm_m = true;
 			}
 		}
 	}
+
 
 	// get energies and correlation functions
 	using t_E_and_S = typename decltype(m_dyn)::EnergyAndWeight;
@@ -542,7 +557,17 @@ void MagDynDlg::CalcHamiltonian()
 		S = m_dyn.CalcEnergies(Q, only_energies);
 	}
 
-	if(only_energies)
+
+	ostr << "<hr>";
+	print_H(S.H_comm, Q, "Q", "-Q", ", Correct Commutators");
+	if(print_incomm_p)
+		print_H(S.H_comm_p, Q + O, "Q + O", "Q - O", ", Correct Commutators");
+	if(print_incomm_m)
+		print_H(S.H_comm_m, Q - O, "Q - O", "Q + O", ", Correct Commutators");
+	ostr << "<hr>";
+
+
+	if(only_energies)  // print energies
 	{
 		// split into positive and negative energies
 		std::vector<t_magdyn::EnergyAndWeight> Es_neg, Es_pos;
@@ -603,7 +628,7 @@ void MagDynDlg::CalcHamiltonian()
 
 		ostr << "</table></p>";
 	}
-	else
+	else  // print energies and weights
 	{
 		std::stable_sort(S.E_and_S.begin(), S.E_and_S.end(),
 			[](const t_E_and_S& E_and_S_1, const t_E_and_S& E_and_S_2) -> bool
@@ -685,6 +710,51 @@ void MagDynDlg::CalcHamiltonian()
 		}
 		ostr << "</table></p>";
 	}
+
+
+	// print eigenstates
+	if(S.E_and_S.size() && S.E_and_S[0].state.size())
+	{
+		ostr << "<hr>";
+
+		ostr << "<p><h3>Eigenstates</h3>";
+		ostr << "<table style=\"border:0px\">";
+		ostr << "<tr>";
+		ostr << "<th style=\"padding-right:16px\">Energy E</td>";
+		ostr << "<th style=\"padding-right:16px\">State |s></td>";
+		ostr << "</tr>";
+
+		for(const t_E_and_S& E_and_S : S.E_and_S)
+		{
+			t_real E = E_and_S.E;
+			if(ignore_annihilation && E < t_real(0))
+				continue;
+
+			t_vec state = E_and_S.state;
+
+			tl2::set_eps_0(E);
+			tl2::set_eps_0(state);
+
+			// energy
+			ostr << "<tr>";
+			ostr << "<td style=\"padding-right:16px\">"
+				<< E << " meV" << "</td>";
+
+			// state
+			ostr << "<td style=\"padding-right:16px\">";
+			for(t_size idx = 0; idx < state.size(); ++idx)
+			{
+				ostr << state[idx];
+				if(idx < state.size() - 1)
+					ostr << ", ";
+			}
+			ostr << "</td>";
+			ostr << "</tr>";
+		}
+
+		ostr << "</table></p>";
+	}
+
 
 	m_hamiltonian->setHtml(ostr.str().c_str());
 }

@@ -231,6 +231,29 @@ t_vec reorder(const t_vec& vec, const t_perm& perm)
 
 
 
+/**
+ * reorder a vector according to a permutation
+ */
+template<class t_vec, class t_func, class t_perm = std::vector<std::size_t>>
+t_vec reorder(const t_func& get_elem_ptr, std::size_t N, const t_perm& perm)
+{
+	using t_elem = typename t_vec::value_type;
+
+	t_vec vec_new;
+	vec_new.reserve(N);
+
+	for(std::size_t i = 0; i < N; ++i)
+	{
+		const t_elem* elem = get_elem_ptr(perm[i]);
+		if(elem)
+			vec_new.push_back(*elem);
+	}
+
+	return vec_new;
+}
+
+
+
 /*
  * count how many bits are needed for the given number
  */

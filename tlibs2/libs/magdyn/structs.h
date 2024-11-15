@@ -166,23 +166,23 @@ requires tl2::is_mat<t_mat>
 #endif
 struct t_EnergyAndWeight
 {
-	// eigenvalue & -vector of hamiltonian
-	t_real E{};
-	t_vec state{};
+	t_real E{};                  // eigenenergy of hamiltonian
+	t_vec state{};               // eigenstate of hamiltonian
 
-	// full dynamical structure factor
-	t_mat S{};
+	t_mat S{};                   // full dynamical structure factor
 	t_cplx S_sum{};
 	t_real weight_full{};
 
-	// projected dynamical structure factor for neutron scattering
-	t_mat S_perp{};
+	t_mat S_perp{};              // projected dynamical structure factor for neutron scattering
 	t_cplx S_perp_sum{};
 	t_real weight{};
 };
 
 
 
+/**
+ * energies and correlations
+ */
 template<class t_mat, class t_vec, class t_vec_real,
 	class t_real = typename t_vec_real::value_type,
 	class t_cplx = typename t_mat::value_type>
@@ -191,8 +191,28 @@ requires tl2::is_mat<t_mat>
 #endif
 struct t_SofQE
 {
-	t_vec_real Q_rlu{};
-	t_mat evec_mat{};
+	t_vec_real Q_rlu{};          // momentum transfer
+	t_mat comm{};                // commutators
+
+	t_mat H{};                   // hamiltonian
+	t_mat H_chol{};              // hamiltonian after cholesky correction
+	t_mat H_comm{};              // final hamiltonian with correct commutators
+	t_mat evec_mat{};            // eigenvector matrix for H
+
+	// ------------------------------------------------------------------------
+	// incommensurate case
+	t_mat H_p{};                 // additional hamiltonian for the incommensurate case Q+O
+	t_mat H_chol_p{};            // ... after cholesky correction
+	t_mat H_comm_p{};            // ... and with correct commutators
+	t_mat evec_mat_p{};          // eigenvector matrix for H_p
+
+	t_mat H_m{};                 // additional hamiltonian for the incommensurate case Q-O
+	t_mat H_chol_m{};            // ... after cholesky correction
+	t_mat H_comm_m{};            // ... and with correct commutators
+	t_mat evec_mat_m{};          // eigenvector matrix for H_m
+	// ------------------------------------------------------------------------
+
+	// energies and correlations
 	std::vector<t_EnergyAndWeight<t_mat, t_vec, t_real, t_cplx>> E_and_S{};
 };
 

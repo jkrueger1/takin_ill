@@ -418,16 +418,14 @@ public:
 	 * @note implements the formalism given by (Toth 2015)
 	 */
 	SofQE CalcEnergiesFromHamiltonian(
-		t_mat _H, const t_vec_real& Qvec,
+		const t_mat& _H, const t_vec_real& Qvec,
 		bool only_energies = false) const;
 
 	/**
 	 * get the dynamical structure factor from a hamiltonian
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	bool CalcCorrelationsFromHamiltonian(SofQE& S, const t_mat& H_mat,
-		const t_mat& chol_mat, const t_mat& comm,
-		const std::vector<t_vec>& evecs) const;
+	bool CalcCorrelationsFromHamiltonian(SofQE& S) const;
 
 	/**
 	 * applies projectors, form and weight factors to get neutron intensities

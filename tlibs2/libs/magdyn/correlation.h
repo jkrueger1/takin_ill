@@ -59,11 +59,10 @@
  * @note implements the formalism given by (Toth 2015)
  */
 MAGDYN_TEMPL
-bool MAGDYN_INST::CalcCorrelationsFromHamiltonian(
-	MAGDYN_TYPE::SofQE& S, const t_mat& H_mat,
-	const t_mat& chol_mat, const t_mat& comm,
-	const std::vector<t_vec>& evecs) const
+bool MAGDYN_INST::CalcCorrelationsFromHamiltonian(MAGDYN_TYPE::SofQE& S) const
 {
+	using namespace tl2_ops;
+
 	const t_size N = GetMagneticSitesCount();
 	if(N == 0)
 		return false;
@@ -75,55 +74,76 @@ bool MAGDYN_INST::CalcCorrelationsFromHamiltonian(
 		return S.E_and_S[idx1].E >= S.E_and_S[idx2].E;
 	});
 
-	S.evec_mat = tl2::create<t_mat>(tl2::reorder(evecs, sorting));
+	// get the eigenvector with the given index
+	auto get_evec = [&S](t_size idx) -> const t_vec*
+	{
+		if(idx >= S.E_and_S.size())
+			return nullptr;
+		return &S.E_and_S[idx].state;
+	};
+
+	// create a matrix of eigenvectors
+	std::vector<t_vec> evecs = tl2::reorder<std::vector<t_vec>>(
+		get_evec, S.E_and_S.size(), sorting);
+	S.evec_mat = tl2::create<t_mat>(evecs);
 
 	if(m_perform_checks)
 	{
 		// check commutator relations, see before equ. 7 in (McClarty 2022)
-		using namespace tl2_ops;
-		//t_mat check_comm = S.evec_mat * comm * tl2::herm(S.evec_mat);
+		//t_mat check_comm = S.evec_mat * S.comm * tl2::herm(S.evec_mat);
 		t_mat check_comm = S.evec_mat * tl2::herm(S.evec_mat);
-		if(!tl2::equals(/*comm*/ tl2::unit<t_mat>(2*N), check_comm, m_eps))
+		if(!tl2::equals(/*S.comm*/ tl2::unit<t_mat>(2*N), check_comm, m_eps))
+		{
 			CERR_OPT << "Magdyn error: Wrong commutator at Q = "
 				<< S.Q_rlu << ": " << check_comm
 				<< "." << std::endl;
+		}
 	}
 
 	// equation (32) from (Toth 2015)
-	const t_mat energy_mat = tl2::herm(S.evec_mat) * H_mat * S.evec_mat;  // energies
-	t_mat E_sqrt = comm * energy_mat;                // abs. energies
+	const t_mat energy_mat = tl2::herm(S.evec_mat) * S.H_comm * S.evec_mat;  // energies
+	t_mat E_sqrt = S.comm * energy_mat;          // abs. energies
 	for(t_size i = 0; i < E_sqrt.size1(); ++i)
 		E_sqrt(i, i) = std::sqrt(E_sqrt(i, i));  // sqrt. of abs. energies
 
 	// re-create energies, to be consistent with the weights
-	S.E_and_S.clear();
+	S.E_and_S = tl2::reorder(S.E_and_S, sorting);
+	if(energy_mat.size1() != S.E_and_S.size())
+	{
+		CERR_OPT << "Magdyn warning: Expected " << S.E_and_S.size() << " energies at Q = "
+			<< S.Q_rlu << ", but got " << energy_mat.size1() << " energies"
+			<< "." << std::endl;
+
+		S.E_and_S.resize(energy_mat.size1());
+	}
+
 	for(t_size i = 0; i < energy_mat.size1(); ++i)
 	{
 		if(m_perform_checks && !tl2::equals_0(energy_mat(i, i).imag(), m_eps))
 		{
-			using namespace tl2_ops;
 			CERR_OPT << "Magdyn warning: Remaining imaginary energy component at Q = "
 				<< S.Q_rlu << " and E = " << energy_mat(i, i)
 				<< "." << std::endl;
 		}
 
-		const EnergyAndWeight EandS
+		if(m_perform_checks && !tl2::equals(energy_mat(i, i).real(), S.E_and_S[i].E, m_eps))
 		{
-			.E = energy_mat(i, i).real(),
-			.S = tl2::zero<t_mat>(3, 3),
-			.S_perp = tl2::zero<t_mat>(3, 3),
-		};
+			CERR_OPT << "Magdyn warning: Mismatching energy at Q = "
+				<< S.Q_rlu << " and E = " << energy_mat(i, i).real()
+				<< ", expected E = " << S.E_and_S[i].E
+				<< "." << std::endl;
+		}
 
-		S.E_and_S.emplace_back(std::move(EandS));
+		S.E_and_S[i].E = energy_mat(i, i).real();
+		S.E_and_S[i].S = tl2::zero<t_mat>(3, 3);
+		S.E_and_S[i].S_perp = tl2::zero<t_mat>(3, 3);
 	}
 
-	const auto [chol_inv, inv_ok] = tl2::inv(chol_mat);
+	const auto [chol_inv, inv_ok] = tl2::inv(S.H_chol);
 	if(!inv_ok)
 	{
-		using namespace tl2_ops;
 		CERR_OPT << "Magdyn error: Cholesky inversion failed"
 			<< " at Q = " << S.Q_rlu << "." << std::endl;
-
 		return false;
 	}
 
@@ -132,7 +152,7 @@ bool MAGDYN_INST::CalcCorrelationsFromHamiltonian(
 	const t_mat trafo_herm = tl2::herm(trafo);
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
-	t_mat D_mat = trafo_herm * H_mat * trafo;
+	t_mat D_mat = trafo_herm * S.H_comm * trafo;
 	std::cout << "D =\n";
 	tl2::niceprint(std::cout, D_mat, 1e-4, 4);
 	std::cout << "E_sqrt =\n";

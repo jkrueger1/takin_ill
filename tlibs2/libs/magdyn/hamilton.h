@@ -271,33 +271,33 @@ t_mat MAGDYN_INST::CalcHamiltonian(const t_vec_real& Qvec) const
  */
 MAGDYN_TEMPL
 MAGDYN_TYPE::SofQE MAGDYN_INST::CalcEnergiesFromHamiltonian(
-	t_mat _H, const t_vec_real& Qvec, bool only_energies) const
+	const t_mat& _H, const t_vec_real& Qvec, bool only_energies) const
 {
 	SofQE S;
 	S.Q_rlu = Qvec;
+	S.H = _H;
 
 	using namespace tl2_ops;
 	const t_size N = GetMagneticSitesCount();
-	if(N == 0 || _H.size1() == 0 || _H.size2() == 0)
+	if(N == 0 || S.H.size1() == 0 || S.H.size2() == 0)
 		return S;
 
 	// equation (30) from (Toth 2015), to ensure correct commutators
-	t_mat comm = tl2::unit<t_mat>(2*N);
-	for(t_size i = N; i < comm.size1(); ++i)
-		comm(i, i) = -1.;
+	S.comm = tl2::unit<t_mat>(2*N);
+	for(t_size i = N; i < S.comm.size1(); ++i)
+		S.comm(i, i) = -1.;
 
 	// equation (31) from (Toth 2015)
-	t_mat chol_mat;
 	t_size chol_try = 0;
 	bool chol_failed = false;
 	for(; chol_try < m_tries_chol; ++chol_try)
 	{
-		// upper cholesky decomposition: _H = _C^H _C
-		const auto [chol_ok, _C] = tl2_la::chol<t_mat>(_H);
+		// upper cholesky decomposition: S.H = _C^H _C
+		const auto [chol_ok, _C] = tl2_la::chol<t_mat>(S.H);
 
 		if(chol_ok)
 		{
-			chol_mat = std::move(_C);
+			S.H_chol = std::move(_C);
 			break;
 		}
 
@@ -306,21 +306,20 @@ MAGDYN_TYPE::SofQE MAGDYN_INST::CalcEnergiesFromHamiltonian(
 			CERR_OPT << "Magdyn error: Cholesky decomposition failed"
 				<< " at Q = " << Qvec << "." << std::endl;
 
-			chol_mat = std::move(_C);
+			S.H_chol = std::move(_C);
 			chol_failed = true;
 			break;
 		}
 
-		// try forcing the hamilton to be positive definite
-		for(t_size i = 0; i < _H.size1(); ++i)
-			_H(i, i) += m_delta_chol;
+		// try forcing the hamiltonian to be positive definite
+		for(t_size i = 0; i < S.H.size1(); ++i)
+			S.H(i, i) += m_delta_chol;
 	}
 
-	if(chol_failed || chol_mat.size1() == 0 || chol_mat.size2() == 0)
+	if(chol_failed || S.H_chol.size1() == 0 || S.H_chol.size2() == 0)
 	{
 		CERR_OPT << "Magdyn error: Invalid Cholesky decomposition"
 			<< " at Q = " << Qvec << "." << std::endl;
-
 		return S;
 	}
 
@@ -332,9 +331,9 @@ MAGDYN_TYPE::SofQE MAGDYN_INST::CalcEnergiesFromHamiltonian(
 	}
 
 	// see p. 5 in (Toth 2015)
-	t_mat H_mat = chol_mat * comm * tl2::herm<t_mat>(chol_mat);
+	S.H_comm = S.H_chol * S.comm * tl2::herm<t_mat>(S.H_chol);
 
-	const bool is_herm = tl2::is_symm_or_herm<t_mat, t_real>(H_mat, m_eps);
+	const bool is_herm = tl2::is_symm_or_herm<t_mat, t_real>(S.H_comm, m_eps);
 	if(m_perform_checks && !is_herm)
 	{
 		CERR_OPT << "Magdyn warning: Hamiltonian is not hermitian"
@@ -344,18 +343,17 @@ MAGDYN_TYPE::SofQE MAGDYN_INST::CalcEnergiesFromHamiltonian(
 	// eigenvalues of the hamiltonian correspond to the energies
 	const auto [evecs_ok, evals, evecs] =
 		tl2_la::eigenvec<t_mat, t_vec, t_cplx, t_real>(
-			H_mat, only_energies, is_herm, true);
+			S.H_comm, only_energies, is_herm, true);
 	if(!evecs_ok)
 	{
 		CERR_OPT << "Magdyn error: Eigensystem calculation failed"
 			<< " at Q = " << Qvec << "." << std::endl;
-
 		return S;
 	}
 
 	S.E_and_S.reserve(evals.size());
 
-	// register energies
+	// register energies and states
 	for(t_size eval_idx = 0; eval_idx < evals.size(); ++eval_idx)
 	{
 		const t_cplx& eval = evals[eval_idx];
@@ -382,8 +380,7 @@ MAGDYN_TYPE::SofQE MAGDYN_INST::CalcEnergiesFromHamiltonian(
 	// weight factors
 	if(!only_energies)
 	{
-		bool corr_ok = CalcCorrelationsFromHamiltonian(S,
-			H_mat, chol_mat, comm, evecs);
+		bool corr_ok = CalcCorrelationsFromHamiltonian(S);
 		if(!corr_ok)
 		{
 			CERR_OPT << "Magdyn warning: Invalid correlations"

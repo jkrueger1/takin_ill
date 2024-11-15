@@ -54,23 +54,23 @@
 
 /**
  * unite degenerate energies and their corresponding eigenstates
+ * TODO: handle case where the energy is the same but the state is different
  */
 MAGDYN_TEMPL
 MAGDYN_TYPE::SofQE MAGDYN_INST::UniteEnergies(const MAGDYN_TYPE::SofQE& S) const
 {
-	SofQE new_S;
-	new_S.Q_rlu = S.Q_rlu;
+	SofQE new_S = S;
+	new_S.E_and_S.clear();
 	new_S.E_and_S.reserve(S.E_and_S.size());
 
 	for(const EnergyAndWeight& curState : S.E_and_S)
 	{
-		const t_real curE = curState.E;
-
+		// find states with the same energy
 		auto iter = std::find_if(new_S.E_and_S.begin(), new_S.E_and_S.end(),
-			[curE, this](const EnergyAndWeight& E_and_S) -> bool
+			[&curState, this](const EnergyAndWeight& E_and_S) -> bool
 		{
 			t_real E = E_and_S.E;
-			return tl2::equals<t_real>(E, curE, m_eps);
+			return tl2::equals<t_real>(E, curState.E, m_eps);
 		});
 
 		if(iter == new_S.E_and_S.end())
@@ -126,11 +126,22 @@ MAGDYN_INST::CalcEnergies(const t_vec_real& Q_rlu, bool only_energies) const
 		rot_incomm -= proj_norm;
 		rot_incomm *= 0.5;
 
+		// calculate additional hamiltonians for Q+-O
 		SofQE S_p{}, S_m{};
 		if(m_calc_Hp)
 			S_p = calc_EandS(Q_rlu + m_ordering);
 		if(m_calc_Hm)
 			S_m = calc_EandS(Q_rlu - m_ordering);
+
+		// move over additional hamiltonians for Q+-O
+		S.H_p = std::move(S_p.H);
+		S.H_chol_p = std::move(S_p.H_chol);
+		S.H_comm_p = std::move(S_p.H_comm);
+		S.evec_mat_p = std::move(S_p.evec_mat);
+		S.H_m = std::move(S_m.H);
+		S.H_chol_m = std::move(S_m.H_chol);
+		S.H_comm_m = std::move(S_m.H_comm);
+		S.evec_mat_m = std::move(S_m.evec_mat);
 
 		if(!only_energies)
 		{
@@ -145,7 +156,7 @@ MAGDYN_INST::CalcEnergies(const t_vec_real& Q_rlu, bool only_energies) const
 				EandW.S = EandW.S * rot_incomm_conj;
 		}
 
-		// unite energies and weights
+		// merge energies and weights
 		S.E_and_S.reserve(S.E_and_S.size() + S_p.E_and_S.size() + S_m.E_and_S.size());
 		for(EnergyAndWeight& EandW : S_p.E_and_S)
 			S.E_and_S.emplace_back(std::move(EandW));
