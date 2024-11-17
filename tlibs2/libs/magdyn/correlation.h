@@ -74,17 +74,14 @@ bool MAGDYN_INST::CalcCorrelationsFromHamiltonian(MAGDYN_TYPE::SofQE& S) const
 		return S.E_and_S[idx1].E >= S.E_and_S[idx2].E;
 	});
 
-	// get the eigenvector with the given index
-	auto get_evec = [&S](t_size idx) -> const t_vec*
-	{
-		if(idx >= S.E_and_S.size())
-			return nullptr;
-		return &S.E_and_S[idx].state;
-	};
+	// sort states by energies
+	S.E_and_S = tl2::reorder(S.E_and_S, sorting);
 
 	// create a matrix of eigenvectors
-	std::vector<t_vec> evecs = tl2::reorder<std::vector<t_vec>>(
-		get_evec, S.E_and_S.size(), sorting);
+	std::vector<t_vec> evecs;
+	evecs.reserve(S.E_and_S.size());
+	for(t_size idx = 0; idx < S.E_and_S.size(); ++idx)
+		evecs.push_back(S.E_and_S[idx].state);
 	S.evec_mat = tl2::create<t_mat>(evecs);
 
 	if(m_perform_checks)
@@ -107,7 +104,6 @@ bool MAGDYN_INST::CalcCorrelationsFromHamiltonian(MAGDYN_TYPE::SofQE& S) const
 		E_sqrt(i, i) = std::sqrt(E_sqrt(i, i));  // sqrt. of abs. energies
 
 	// re-create energies, to be consistent with the weights
-	S.E_and_S = tl2::reorder(S.E_and_S, sorting);
 	if(energy_mat.size1() != S.E_and_S.size())
 	{
 		CERR_OPT << "Magdyn warning: Expected " << S.E_and_S.size() << " energies at Q = "

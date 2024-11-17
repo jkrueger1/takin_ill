@@ -35,8 +35,10 @@
 #define __TLIBS2_MAGDYN_TOPO_H__
 
 #include "../maths.h"
+#include "../algos.h"
 
 #include "magdyn.h"
+
 
 
 // --------------------------------------------------------------------
@@ -50,7 +52,7 @@ namespace tl2_mag {
  * @see equ. 7 in (McClarty 2022)
  * @see https://en.wikipedia.org/wiki/Berry_connection_and_curvature
  */
-template<class t_mat, class t_vec, class t_vec_real,
+template<class t_vec, class t_vec_real, class t_mat,
 	typename t_cplx = typename t_vec::value_type,
 	typename t_real = typename t_cplx::value_type>
 std::vector<t_vec> berry_connections(
@@ -109,11 +111,60 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
 
 
 /**
+ * calculates the berry connections for orthonormal eigenvectors
+ * @see equ. 7 in (McClarty 2022)
+ * @see https://en.wikipedia.org/wiki/Berry_connection_and_curvature
+ */
+template<class t_vec, class t_vec_real,
+	class t_vecs = std::vector<t_vec>,
+	typename t_cplx = typename t_vec::value_type,
+	typename t_real = typename t_cplx::value_type>
+t_vecs berry_connections(
+	const std::function<t_vecs(const t_vec_real& Q)>& get_evecs,
+	const t_vec_real& Q, t_real delta = std::numeric_limits<t_real>::epsilon())
+#ifndef SWIG  // TODO: remove this as soon as swig understands concepts
+requires (!tl2::is_mat<t_vecs>) && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
+#endif
+{
+	using t_size = decltype(Q.size());
+	constexpr const t_cplx imag{0, 1};
+
+	const std::vector<t_vec> evecs = get_evecs(Q);
+	const t_size BANDS = evecs.size();
+	const t_size DIM = Q.size();
+
+	t_vecs connections{};
+	connections.reserve(BANDS);
+	for(t_size band = 0; band < BANDS; ++band)
+		connections.emplace_back(tl2::create<t_vec>(DIM));
+
+	for(t_size dim = 0; dim < DIM; ++dim)
+	{
+		// differentiate with respect to component "dim"
+		t_vec_real Q1 = Q;
+		Q1[dim] += delta;
+		const t_vecs evecs_delta = get_evecs(Q1);
+
+		for(t_size band = 0; band < BANDS; ++band)
+		{
+			// differentiate eigenvectors
+			t_vec evec_diff = (evecs_delta[band] - evecs[band]) / delta;
+			// scalar product between eigenvector and its derivative
+			connections[band][dim] = tl2::inner(evecs[band], evec_diff) * imag;
+		}
+	}
+
+	return connections;
+}
+
+
+
+/**
  * calculates the berry curvatures
  * @see equ. 8 in (McClarty 2022)
  * @see https://en.wikipedia.org/wiki/Berry_connection_and_curvature
  */
-template<class t_mat, class t_vec, class t_vec_real,
+template<class t_vec, class t_vec_real, class t_mat /*either matrix or vector container*/,
 	typename t_cplx = typename t_vec::value_type,
 	typename t_real = typename t_cplx::value_type,
 	typename t_size = std::size_t>
@@ -122,11 +173,15 @@ std::vector<t_cplx> berry_curvatures(
 	const t_vec_real& Q, t_real delta = std::numeric_limits<t_real>::epsilon(),
 	t_size dim1 = 0, t_size dim2 = 1)
 #ifndef SWIG  // TODO: remove this as soon as swig understands concepts
-requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
+requires tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
 #endif
 {
 	const t_mat evecs = get_evecs(Q);
-	const t_size BANDS = evecs.size1();
+	t_size BANDS{};
+	if constexpr (tl2::is_mat<t_mat>)
+		BANDS = evecs.size1();  // matrix
+	else
+		BANDS = evecs.size();   // collection of vectors
 
 	// only valid in three dimensions
 	assert(Q.size() == 3);
@@ -136,13 +191,13 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
 	k[dim2] += delta;
 
 	std::vector<t_vec> connections =
-		berry_connections<t_mat, t_vec, t_vec_real, t_cplx, t_real>(
+		berry_connections<t_vec, t_vec_real, t_mat, t_cplx, t_real>(
 			get_evecs, Q, delta);
 	std::vector<t_vec> connections_h =
-		berry_connections<t_mat, t_vec, t_vec_real, t_cplx, t_real>(
+		berry_connections<t_vec, t_vec_real, t_mat, t_cplx, t_real>(
 			get_evecs, h, delta);
 	std::vector<t_vec> connections_k =
-		berry_connections<t_mat, t_vec, t_vec_real, t_cplx, t_real>(
+		berry_connections<t_vec, t_vec_real, t_mat, t_cplx, t_real>(
 			get_evecs, k, delta);
 
 	std::vector<t_cplx> curvatures{};
@@ -168,7 +223,7 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
  * @see equ. 9 in (McClarty 2022)
  * @see https://en.wikipedia.org/wiki/Berry_connection_and_curvature
  */
-template<class t_mat, class t_vec, class t_vec_real,
+template<class t_vec, class t_vec_real, class t_mat,
 	typename t_cplx = typename t_vec::value_type,
 	typename t_real = typename t_cplx::value_type,
 	typename t_size = std::size_t>
@@ -190,7 +245,7 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
 		for(Q[dim] = -bz; Q[dim] < bz; Q[dim] += delta_int)
 		{
 			std::vector<t_vec> conns =
-				berry_connections<t_mat, t_vec, t_vec_real, t_cplx, t_real>(
+				berry_connections<t_vec, t_vec_real, t_mat, t_cplx, t_real>(
 					get_evecs, Q, delta_diff);
 
 			// initialise by resetting chern numbers to zeros
@@ -239,7 +294,7 @@ requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
 		for(Q[dim2] = -bz; Q[dim2] < bz; Q[dim2] += delta_int)
 		{
 			std::vector<t_cplx> curvs = berry_curvatures<
-				t_mat, t_vec, t_vec_real, t_cplx, t_real, t_size>(
+				t_vec, t_vec_real, t_mat, t_cplx, t_real, t_size>(
 					get_evecs, Q, delta_diff, dim1, dim2);
 
 			// initialise by resetting chern numbers to zeros
@@ -272,22 +327,48 @@ std::vector<t_vec> MAGDYN_INST::CalcBerryConnections(
 	const std::vector<t_size>* perm) const
 {
 	//SetUniteDegenerateEnergies(false);
+	bool evecs_ortho = true;
 
-	// get eigenstates at specific Q
-	auto get_states = [this, perm](const t_vec_real& Q) -> t_mat
+	if(evecs_ortho)
 	{
-		SofQE S = CalcEnergies(Q, false);
-		t_mat M = S.evec_mat;
+		using t_vecs = std::vector<t_vec>;
 
-		if(perm)
-			M = tl2::reorder_cols<t_mat, t_vec>(M, *perm);
-		return M;
-	};
+		// get eigenstates at specific Q
+		auto get_states = [this, perm](const t_vec_real& Q) -> t_vecs
+		{
+			SofQE S = CalcEnergies(Q, false);
 
-	return berry_connections<t_mat, t_vec, t_vec_real, t_cplx, t_real>(
-		get_states, Q, delta);
+			std::vector<t_vec> vecs;
+			vecs.reserve(S.E_and_S.size());
+
+			for(const auto& E_and_S : S.E_and_S)
+				vecs.push_back(E_and_S.state);
+
+			if(perm)
+				vecs = tl2::reorder(vecs, *perm);
+			return vecs;
+		};
+
+		return berry_connections<t_vec, t_vec_real, t_vecs, t_cplx, t_real>(
+			get_states, Q, delta);
+	}
+	else
+	{
+		// get eigenstates at specific Q
+		auto get_states = [this, perm](const t_vec_real& Q) -> t_mat
+		{
+			SofQE S = CalcEnergies(Q, false);
+			t_mat M = S.evec_mat;
+
+			if(perm)
+				M = tl2::reorder_cols<t_mat, t_vec>(M, *perm);
+			return M;
+		};
+
+		return berry_connections<t_vec, t_vec_real, t_mat, t_cplx, t_real>(
+			get_states, Q, delta);
+	}
 }
-
 
 
 /**
@@ -300,27 +381,55 @@ std::vector<t_cplx> MAGDYN_INST::CalcBerryCurvatures(
 	t_size dim1, t_size dim2) const
 {
 	//SetUniteDegenerateEnergies(false);
+	bool evecs_ortho = true;
 
-	// get eigenstates at specific Q
-	auto get_states = [this, perm](const t_vec_real& Q) -> t_mat
+	if(evecs_ortho)
 	{
-		SofQE S = CalcEnergies(Q, false);
-		t_mat M = S.evec_mat;
+		using t_vecs = std::vector<t_vec>;
 
-		if(perm)
-			M = tl2::reorder_cols<t_mat, t_vec>(M, *perm);
-		return M;
-	};
+		// get eigenstates at specific Q
+		auto get_states = [this, perm](const t_vec_real& Q) -> t_vecs
+		{
+			SofQE S = CalcEnergies(Q, false);
 
-	return berry_curvatures<
-		t_mat, t_vec, t_vec_real,t_cplx, t_real, t_size>(
-			get_states, Q, delta, dim1, dim2);
+			std::vector<t_vec> vecs;
+			vecs.reserve(S.E_and_S.size());
+
+			for(const auto& E_and_S : S.E_and_S)
+				vecs.push_back(E_and_S.state);
+
+			if(perm)
+				vecs = tl2::reorder(vecs, *perm);
+			return vecs;
+		};
+
+		return berry_curvatures<
+			t_vec, t_vec_real, t_vecs, t_cplx, t_real, t_size>(
+				get_states, Q, delta, dim1, dim2);
+	}
+	else
+	{
+		// get eigenstates at specific Q
+		auto get_states = [this, perm](const t_vec_real& Q) -> t_mat
+		{
+			SofQE S = CalcEnergies(Q, false);
+			t_mat M = S.evec_mat;
+
+			if(perm)
+				M = tl2::reorder_cols<t_mat, t_vec>(M, *perm);
+			return M;
+		};
+
+		return berry_curvatures<
+			t_vec, t_vec_real, t_mat, t_cplx, t_real, t_size>(
+				get_states, Q, delta, dim1, dim2);
+	}
 }
 
 
 
 /**
- * get the berry curvature for each magnon band
+ * get the chern number for each magnon band
  */
 MAGDYN_TEMPL
 std::vector<t_cplx> MAGDYN_INST::CalcChernNumbers(
@@ -328,26 +437,54 @@ std::vector<t_cplx> MAGDYN_INST::CalcChernNumbers(
 	t_size dim1, t_size dim2) const
 {
 	//SetUniteDegenerateEnergies(false);
-
-	// get eigenstates at specific Q
-	auto get_states = [this](const t_vec_real& Q) -> t_mat
-	{
-		SofQE S = CalcEnergies(Q, false);
-		t_mat M = S.evec_mat;
-
-		//if(perm)
-		//	M = tl2::reorder_cols<t_mat, t_vec>(M, *perm);
-		return M;
-	};
-
+	bool evecs_ortho = true;
 	bool calc_via_boundary = true;
-	return chern_numbers<
-		t_mat, t_vec, t_vec_real, t_cplx, t_real, t_size>(
-			get_states, bz, delta_diff, delta_int,
-			dim1, dim2, calc_via_boundary);
+
+	if(evecs_ortho)
+	{
+		using t_vecs = std::vector<t_vec>;
+
+		// get eigenstates at specific Q
+		auto get_states = [this](const t_vec_real& Q) -> t_vecs
+		{
+			SofQE S = CalcEnergies(Q, false);
+
+			std::vector<t_vec> vecs;
+			vecs.reserve(S.E_and_S.size());
+
+			for(const auto& E_and_S : S.E_and_S)
+				vecs.push_back(E_and_S.state);
+
+			//if(perm)
+			//	vecs = tl2::reorder(vecs, *perm);
+			return vecs;
+		};
+
+		return chern_numbers<
+			t_vec, t_vec_real, t_mat, t_cplx, t_real, t_size>(
+				get_states, bz, delta_diff, delta_int,
+				dim1, dim2, calc_via_boundary);
+	}
+	else
+	{
+		// get eigenstates at specific Q
+		auto get_states = [this](const t_vec_real& Q) -> t_mat
+		{
+			SofQE S = CalcEnergies(Q, false);
+			t_mat M = S.evec_mat;
+
+			//if(perm)
+			//	M = tl2::reorder_cols<t_mat, t_vec>(M, *perm);
+			return M;
+		};
+
+		return chern_numbers<
+			t_vec, t_vec_real, t_mat, t_cplx, t_real, t_size>(
+				get_states, bz, delta_diff, delta_int,
+				dim1, dim2, calc_via_boundary);
+	}
 }
 
 // --------------------------------------------------------------------
 
 #endif
-
