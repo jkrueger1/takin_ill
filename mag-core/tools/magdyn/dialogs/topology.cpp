@@ -24,6 +24,7 @@
  */
 
 #include "topology.h"
+#include "defs.h"
 
 #include <QtWidgets/QGridLayout>
 
@@ -38,6 +39,21 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	setWindowTitle("Topology");
 	setSizeGripEnabled(true);
 
+	// plotter
+	m_plot = new QCustomPlot(this);
+	m_plot->xAxis->setLabel("Momentum Transfer Q (rlu)");
+	m_plot->yAxis->setLabel("Berry Curvature B");
+	m_plot->setInteraction(QCP::iRangeDrag, true);
+	m_plot->setInteraction(QCP::iRangeZoom, true);
+	m_plot->setSelectionRectMode(QCP::srmZoom);
+	m_plot->setSizePolicy(QSizePolicy{
+		QSizePolicy::Expanding, QSizePolicy::Expanding});
+
+	// context menu for plotter
+	m_menuPlot = new QMenu("Plotter", this);
+	QAction *acRescalePlot = new QAction("Rescale Axes", m_menuPlot);
+	m_menuPlot->addAction(acRescalePlot);
+
 	QPushButton *btnOk = new QPushButton("OK", this);
 
 	m_status = new QLabel(this);
@@ -50,6 +66,7 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	grid->setContentsMargins(8, 8, 8, 8);
 
 	int y = 0;
+	grid->addWidget(m_plot, y++, 0, 1, 4);
 	grid->addWidget(btnOk, y++, 3, 1, 1);
 	grid->addWidget(m_status, y, 0, 1, 4);
 
@@ -58,6 +75,10 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	else
 		resize(640, 480);
 
+	// connections
+	connect(m_plot, &QCustomPlot::mouseMove, this, &TopologyDlg::PlotMouseMove);
+	connect(m_plot, &QCustomPlot::mousePress, this, &TopologyDlg::PlotMousePress);
+	connect(acRescalePlot, &QAction::triggered, this, &TopologyDlg::RescalePlot);
 	connect(btnOk, &QAbstractButton::clicked, this, &QDialog::accept);
 }
 
@@ -65,6 +86,54 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 
 TopologyDlg::~TopologyDlg()
 {
+}
+
+
+
+void TopologyDlg::PlotMouseMove(QMouseEvent* evt)
+{
+	if(!m_status)
+		return;
+
+	t_real Q = m_plot->xAxis->pixelToCoord(evt->pos().x());
+	t_real berry = m_plot->yAxis->pixelToCoord(evt->pos().y());
+
+	QString status("Q = %1 rlu, B = %2.");
+	status = status.arg(Q, 0, 'g', g_prec_gui).arg(berry, 0, 'g', g_prec_gui);
+	m_status->setText(status);
+}
+
+
+
+void TopologyDlg::PlotMousePress(QMouseEvent* evt)
+{
+	// show context menu
+	if(evt->buttons() & Qt::RightButton)
+	{
+		if(!m_menuPlot)
+			return;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+		QPoint pos = evt->globalPos();
+#else
+		QPoint pos = evt->globalPosition().toPoint();
+#endif
+		m_menuPlot->popup(pos);
+		evt->accept();
+        }
+}
+
+
+
+/**
+ * rescale plot axes to fit the content
+ */
+void TopologyDlg::RescalePlot()
+{
+	if(!m_plot)
+		return;
+
+	m_plot->rescaleAxes();
+	m_plot->replot();
 }
 
 

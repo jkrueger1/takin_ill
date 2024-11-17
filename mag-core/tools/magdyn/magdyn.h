@@ -370,8 +370,8 @@ protected:
 	void CalcAll();              // syncs sites and terms and calculates all dynamics
 	void SetKernel(const t_magdyn* dyn, bool sync_sites = true, bool sync_terms = true, bool sync_idx = true);
 
+	// plotter functions
 	void PlotDispersion();
-
 	void PlotMouseMove(QMouseEvent* evt);
 	void PlotMousePress(QMouseEvent* evt);
 
@@ -390,10 +390,10 @@ protected:
 	void DisableInput();
 
 	// get the site corresponding to the given table index
-	const t_magdyn::MagneticSite* GetSiteFromTableIndex(int idx) const;
+	const t_site* GetSiteFromTableIndex(int idx) const;
 
 	// get the coupling corresponding to the given table index
-	const t_magdyn::ExchangeTerm* GetTermFromTableIndex(int idx) const;
+	const t_term* GetTermFromTableIndex(int idx) const;
 
 
 public:

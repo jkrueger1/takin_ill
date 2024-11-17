@@ -42,7 +42,7 @@
 TrafoCalculator::TrafoCalculator(QWidget* pParent, QSettings *sett)
 	: QDialog{pParent}, m_sett(sett)
 {
-	setWindowTitle("Transformation Calculator");
+	setWindowTitle("Transformations");
 	setSizeGripEnabled(true);
 
 	// tabs

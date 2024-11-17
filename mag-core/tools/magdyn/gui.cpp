@@ -298,7 +298,7 @@ void MagDynDlg::CreateSitesPanel()
 	}
 
 
-	auto grid = new QGridLayout(m_sitespanel);
+	QGridLayout *grid = new QGridLayout(m_sitespanel);
 	grid->setSpacing(4);
 	grid->setContentsMargins(6, 6, 6, 6);
 
@@ -312,7 +312,7 @@ void MagDynDlg::CreateSitesPanel()
 	grid->addWidget(btnShowNotes, y, 2, 1, 1);
 	grid->addWidget(btnGroundState, y++, 3, 1, 1);
 
-	auto sep1 = new QFrame(m_sitespanel);
+	QFrame *sep1 = new QFrame(m_sitespanel);
 	sep1->setFrameStyle(QFrame::HLine);
 
 	grid->addItem(new QSpacerItem(8, 8,
@@ -416,7 +416,7 @@ void MagDynDlg::SitesSelectionChanged()
 		return;
 	}
 
-	const auto* site = GetSiteFromTableIndex(m_sites_cursor_row);
+	const t_site* site = GetSiteFromTableIndex(m_sites_cursor_row);
 	if(!site)
 	{
 		m_status->setText("Invalid site selected.");
@@ -647,7 +647,7 @@ void MagDynDlg::CreateExchangeTermsPanel()
 
 
 	// grid
-	auto grid = new QGridLayout(m_termspanel);
+	QGridLayout *grid = new QGridLayout(m_termspanel);
 	grid->setSpacing(4);
 	grid->setContentsMargins(6, 6, 6, 6);
 
@@ -658,9 +658,9 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	grid->addWidget(btnUp, y,2,1,1);
 	grid->addWidget(btnDown, y++,3,1,1);
 
-	auto sep1 = new QFrame(m_sampleenviropanel);
+	QFrame *sep1 = new QFrame(m_sampleenviropanel);
 	sep1->setFrameStyle(QFrame::HLine);
-	auto sep2 = new QFrame(m_sampleenviropanel);
+	QFrame *sep2 = new QFrame(m_sampleenviropanel);
 	sep2->setFrameStyle(QFrame::HLine);
 
 	grid->addItem(new QSpacerItem(8, 8,
@@ -793,7 +793,7 @@ void MagDynDlg::TermsSelectionChanged()
 		return;
 	}
 
-	const auto* term = GetTermFromTableIndex(m_terms_cursor_row);
+	const t_term* term = GetTermFromTableIndex(m_terms_cursor_row);
 	if(!term)
 	{
 		m_status->setText("Invalid coupling selected.");
@@ -873,7 +873,7 @@ void MagDynDlg::CreateSamplePanel()
 	m_ffact = new QPlainTextEdit(m_samplepanel);
 
 
-	auto grid = new QGridLayout(m_samplepanel);
+	QGridLayout *grid = new QGridLayout(m_samplepanel);
 	grid->setSpacing(4);
 	grid->setContentsMargins(6, 6, 6, 6);
 
@@ -893,7 +893,7 @@ void MagDynDlg::CreateSamplePanel()
 	grid->addWidget(m_comboSG, y++,1,1,3);
 
 	// separator
-	auto sep1 = new QFrame(m_sampleenviropanel);
+	QFrame *sep1 = new QFrame(m_sampleenviropanel);
 	sep1->setFrameStyle(QFrame::HLine);
 
 	grid->addItem(new QSpacerItem(8, 8,
@@ -916,7 +916,7 @@ void MagDynDlg::CreateSamplePanel()
 	grid->addWidget(m_scatteringplane[5], y++,3,1,1);
 
 	// separator
-	auto sep2 = new QFrame(m_sampleenviropanel);
+	QFrame *sep2 = new QFrame(m_sampleenviropanel);
 	sep2->setFrameStyle(QFrame::HLine);
 
 	grid->addItem(new QSpacerItem(8, 8,
@@ -1032,7 +1032,7 @@ void MagDynDlg::CreateVariablesPanel()
 
 
 	// grid
-	auto grid = new QGridLayout(m_varspanel);
+	QGridLayout *grid = new QGridLayout(m_varspanel);
 	grid->setSpacing(4);
 	grid->setContentsMargins(6, 6, 6, 6);
 
@@ -1313,7 +1313,7 @@ void MagDynDlg::CreateSampleEnvPanel()
 	m_field_dir[1]->setPrefix("Bk = ");
 	m_field_dir[2]->setPrefix("Bl = ");
 
-	auto grid = new QGridLayout(m_sampleenviropanel);
+	QGridLayout *grid = new QGridLayout(m_sampleenviropanel);
 	grid->setSpacing(4);
 	grid->setContentsMargins(6, 6, 6, 6);
 
@@ -1327,11 +1327,11 @@ void MagDynDlg::CreateSampleEnvPanel()
 	grid->addWidget(m_field_dir[2], y++,3,1,1);
 	grid->addWidget(m_align_spins, y++,0,1,4);
 
-	auto sep1 = new QFrame(m_sampleenviropanel);
+	QFrame *sep1 = new QFrame(m_sampleenviropanel);
 	sep1->setFrameStyle(QFrame::HLine);
-	auto sep2 = new QFrame(m_sampleenviropanel);
+	QFrame *sep2 = new QFrame(m_sampleenviropanel);
 	sep2->setFrameStyle(QFrame::HLine);
-	auto sep3 = new QFrame(m_sampleenviropanel);
+	QFrame *sep3 = new QFrame(m_sampleenviropanel);
 	sep3->setFrameStyle(QFrame::HLine);
 
 	grid->addItem(new QSpacerItem(8, 8,
@@ -1546,7 +1546,7 @@ void MagDynDlg::CreateDispersionPanel()
 	m_Q_start[0]->setValue(-1.);
 	m_Q_end[0]->setValue(+1.);
 
-	auto grid = new QGridLayout(m_disppanel);
+	QGridLayout *grid = new QGridLayout(m_disppanel);
 	grid->setSpacing(4);
 	grid->setContentsMargins(6, 6, 6, 6);
 
@@ -1656,7 +1656,7 @@ void MagDynDlg::CreateHamiltonPanel()
 		m_Q[i]->setPrefix(hklPrefix[i]);
 	}
 
-	auto grid = new QGridLayout(m_hamiltonianpanel);
+	QGridLayout *grid = new QGridLayout(m_hamiltonianpanel);
 	grid->setSpacing(4);
 	grid->setContentsMargins(6, 6, 6, 6);
 
@@ -1804,7 +1804,7 @@ void MagDynDlg::CreateCoordinatesPanel()
 		[this]() { this->DelTabItem(m_coordinatestab); });
 
 
-	auto grid = new QGridLayout(m_coordinatespanel);
+	QGridLayout *grid = new QGridLayout(m_coordinatespanel);
 	grid->setSpacing(4);
 	grid->setContentsMargins(6, 6, 6, 6);
 
@@ -1932,7 +1932,7 @@ void MagDynDlg::CreateExportPanel()
 	}
 
 
-	auto grid = new QGridLayout(m_exportpanel);
+	QGridLayout *grid = new QGridLayout(m_exportpanel);
 	grid->setSpacing(4);
 	grid->setContentsMargins(6, 6, 6, 6);
 
@@ -1950,7 +1950,7 @@ void MagDynDlg::CreateExportPanel()
 	grid->addItem(new QSpacerItem(8, 8,
 		QSizePolicy::Minimum, QSizePolicy::Fixed),
 		y++,0, 1,1);
-	auto sep1 = new QFrame(m_sampleenviropanel);
+	QFrame *sep1 = new QFrame(m_sampleenviropanel);
 	sep1->setFrameStyle(QFrame::HLine);
 	grid->addWidget(sep1, y++, 0,1,4);
 	grid->addItem(new QSpacerItem(8, 8,
@@ -1964,7 +1964,7 @@ void MagDynDlg::CreateExportPanel()
 	grid->addWidget(m_exportNumPoints[1], y,2,1,1);
 	grid->addWidget(m_exportNumPoints[2], y++,3,1,1);
 
-	auto sep2 = new QFrame(m_sampleenviropanel);
+	QFrame *sep2 = new QFrame(m_sampleenviropanel);
 	sep2->setFrameStyle(QFrame::HLine);
 
 	grid->addItem(new QSpacerItem(8, 8,
@@ -1984,7 +1984,7 @@ void MagDynDlg::CreateExportPanel()
 	labelBoseInfo->setWordWrap(true);
 	grid->addWidget(labelBoseInfo, y++,0,1,4);
 
-	auto sep3 = new QFrame(m_sampleenviropanel);
+	QFrame *sep3 = new QFrame(m_sampleenviropanel);
 	sep3->setFrameStyle(QFrame::HLine);
 
 	grid->addItem(new QSpacerItem(8, 8,
@@ -2151,23 +2151,23 @@ void MagDynDlg::CreateMenuBar()
 	m_menu = new QMenuBar(this);
 
 	// file menu
-	auto menuFile = new QMenu("File", m_menu);
-	auto acNew = new QAction("New", menuFile);
-	auto acLoad = new QAction("Open...", menuFile);
-	auto acImportStructure = new QAction("Import Structure...", menuFile);
-	auto acSave = new QAction("Save", menuFile);
-	auto acSaveAs = new QAction("Save As...", menuFile);
-	auto acExit = new QAction("Quit", menuFile);
+	QMenu *menuFile = new QMenu("File", m_menu);
+	QAction *acNew = new QAction("New", menuFile);
+	QAction *acLoad = new QAction("Open...", menuFile);
+	QAction *acImportStructure = new QAction("Import Structure...", menuFile);
+	QAction *acSave = new QAction("Save", menuFile);
+	QAction *acSaveAs = new QAction("Save As...", menuFile);
+	QAction *acExit = new QAction("Quit", menuFile);
 
 	// structure menu
-	auto menuStruct = new QMenu("Structure", m_menu);
-	auto acStructSymIdx = new QAction("Assign Symmetry Indices", menuStruct);
-	auto acStructImport = new QAction("Import From Table...", menuStruct);
-	auto acStructExportSun = new QAction("Export To Sunny Code...");
-	auto acStructExportSW = new QAction("Export To SpinW Code...");
-	auto acStructNotes = new QAction("Notes...", menuStruct);
-	auto acStructView = new QAction("View...", menuStruct);
-	auto acGroundState = new QAction("Minimise Ground State...", menuStruct);
+	QMenu *menuStruct = new QMenu("Structure", m_menu);
+	QAction *acStructSymIdx = new QAction("Assign Symmetry Indices", menuStruct);
+	QAction *acStructImport = new QAction("Import From Table...", menuStruct);
+	QAction *acStructExportSun = new QAction("Export To Sunny Code...");
+	QAction *acStructExportSW = new QAction("Export To SpinW Code...");
+	QAction *acStructNotes = new QAction("Notes...", menuStruct);
+	QAction *acStructView = new QAction("View...", menuStruct);
+	QAction *acGroundState = new QAction("Minimise Ground State...", menuStruct);
 
 	// dispersion menu
 	m_menuDisp = new QMenu("Dispersion", m_menu);
@@ -2175,12 +2175,12 @@ void MagDynDlg::CreateMenuBar()
 	m_plot_channels->setToolTip("Plot individual polarisation channels.");
 	m_plot_channels->setCheckable(true);
 	m_plot_channels->setChecked(false);
-	auto acRescalePlot = new QAction("Rescale Axes", m_menuDisp);
-	auto acSaveFigure = new QAction("Save Figure...", m_menuDisp);
-	auto acSaveDisp = new QAction("Save Data...", m_menuDisp);
-	auto acSaveMultiDisp = new QAction("Save Data For All Qs...", m_menuDisp);
-	auto acSaveDispScr = new QAction("Save Data As Script...", m_menuDisp);
-	auto acSaveMultiDispScr = new QAction("Save Data As Script For All Qs...", m_menuDisp);
+	QAction *acRescalePlot = new QAction("Rescale Axes", m_menuDisp);
+	QAction *acSaveFigure = new QAction("Save Figure...", m_menuDisp);
+	QAction *acSaveDisp = new QAction("Save Data...", m_menuDisp);
+	QAction *acSaveMultiDisp = new QAction("Save Data For All Qs...", m_menuDisp);
+	QAction *acSaveDispScr = new QAction("Save Data As Script...", m_menuDisp);
+	QAction *acSaveMultiDispScr = new QAction("Save Data As Script For All Qs...", m_menuDisp);
 
 	// channels sub-menu
 	m_menuChannels = new QMenu("Selected Channels", m_menuDisp);
@@ -2248,7 +2248,7 @@ void MagDynDlg::CreateMenuBar()
 	acStructView->setIcon(QIcon::fromTheme("applications-graphics"));
 
 	// calculation menu
-	auto menuCalc = new QMenu("Calculation", m_menu);
+	QMenu *menuCalc = new QMenu("Calculation", m_menu);
 	m_autocalc = new QAction("Automatically Calculate", menuCalc);
 	m_autocalc->setToolTip("Automatically calculate the results.");
 	m_autocalc->setCheckable(true);
@@ -2317,10 +2317,10 @@ void MagDynDlg::CreateMenuBar()
 	menuHamiltonians->addAction(m_hamiltonian_comp[2]);
 
 	// tools menu
-	auto menuTools = new QMenu("Tools", m_menu);
-	auto acTopo = new QAction("Topology...", menuTools);
-	auto acTrafoCalc = new QAction("Transformation Calculator...", menuTools);
-	auto acPreferences = new QAction("Preferences...", menuTools);
+	QMenu *menuTools = new QMenu("Tools", m_menu);
+	QAction *acTopo = new QAction("Topology...", menuTools);
+	QAction *acTrafoCalc = new QAction("Transformations...", menuTools);
+	QAction *acPreferences = new QAction("Preferences...", menuTools);
 	acTrafoCalc->setIcon(QIcon::fromTheme("accessories-calculator"));
 	acPreferences->setIcon(QIcon::fromTheme("preferences-system"));
 
@@ -2328,7 +2328,7 @@ void MagDynDlg::CreateMenuBar()
 	acPreferences->setMenuRole(QAction::PreferencesRole);
 
 	// help menu
-	auto menuHelp = new QMenu("Help", m_menu);
+	QMenu *menuHelp = new QMenu("Help", m_menu);
 	QAction *acHelp = new QAction(
 		QIcon::fromTheme("help-contents"),
 		"Show Help...", menuHelp);

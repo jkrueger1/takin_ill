@@ -28,6 +28,7 @@
 
 #include <QtCore/QSettings>
 #include <QtWidgets/QLabel>
+#include <QtWidgets/QMenu>
 
 #include <qcustomplot.h>
 
@@ -54,6 +55,10 @@ public:
 protected:
 	virtual void accept() override;
 
+	void RescalePlot();
+	void PlotMouseMove(QMouseEvent* evt);
+	void PlotMousePress(QMouseEvent* evt);
+
 
 private:
 	const t_magdyn *m_dyn{};  // main calculation kernel
@@ -61,6 +66,7 @@ private:
 
 	QSettings *m_sett{};      // program settings
 	QLabel *m_status{};       // status bar
+	QMenu *m_menuPlot{};      // context menu for plot
 };
 
 
