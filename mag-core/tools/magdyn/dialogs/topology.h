@@ -29,8 +29,12 @@
 #include <QtCore/QSettings>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMenu>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QSpinBox>
+#include <QtWidgets/QDoubleSpinBox>
 
 #include <qcustomplot.h>
+#include <vector>
 
 #include "gui_defs.h"
 
@@ -56,17 +60,29 @@ protected:
 	virtual void accept() override;
 
 	void RescalePlot();
+	void ClearPlot(bool replot = true);
 	void PlotMouseMove(QMouseEvent* evt);
 	void PlotMousePress(QMouseEvent* evt);
 
+	void EnableCalculation(bool enable = true);
+	void Calculate();
+
 
 private:
-	const t_magdyn *m_dyn{};  // main calculation kernel
-	QCustomPlot *m_plot{};    // plotter
+	const t_magdyn *m_dyn{};         // main calculation kernel
 
-	QSettings *m_sett{};      // program settings
-	QLabel *m_status{};       // status bar
-	QMenu *m_menuPlot{};      // context menu for plot
+	QCustomPlot *m_plot{};              // plotter
+	std::vector<QCPGraph*> m_graphs{};  // graphs
+
+	QDoubleSpinBox *m_Q_start[3]{};  // Q start coordinate
+	QDoubleSpinBox *m_Q_end[3]{};    // Q end coordinate
+	QSpinBox *m_num_Q{};             // number of Q coordinates
+
+	QPushButton *m_btnStartStop{};   // start/stop calculation
+
+	QSettings *m_sett{};             // program settings
+	QLabel *m_status{};              // status bar
+	QMenu *m_menuPlot{};             // context menu for plot
 };
 
 

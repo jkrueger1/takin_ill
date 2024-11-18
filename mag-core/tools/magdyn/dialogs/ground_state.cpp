@@ -406,6 +406,9 @@ void GroundStateDlg::SyncToKernel()
 
 
 
+/**
+ * toggle between "calculate" and "stop" button
+ */
 void GroundStateDlg::EnableMinimisation(bool enable)
 {
 	if(enable)
@@ -416,6 +419,7 @@ void GroundStateDlg::EnableMinimisation(bool enable)
 		m_spinstab->setEnabled(true);
 
 		m_btnMinimise->setToolTip("Start minimisation of ground state energy.");
+		m_btnMinimise->setIcon(QIcon::fromTheme("media-playback-start"));
 	}
 	else
 	{
@@ -425,6 +429,7 @@ void GroundStateDlg::EnableMinimisation(bool enable)
 		m_spinstab->setEnabled(false);
 
 		m_btnMinimise->setToolTip("Stop minimisation of ground state energy.");
+		m_btnMinimise->setIcon(QIcon::fromTheme("media-playback-stop"));
 	}
 }
 

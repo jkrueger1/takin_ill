@@ -1462,7 +1462,6 @@ void MagDynDlg::FieldsSelectionChanged()
  */
 void MagDynDlg::CreateDispersionPanel()
 {
-	const char* hklPrefix[] = { "h = ", "k = ","l = ", };
 	m_disppanel = new QWidget(this);
 
 	// plotter
@@ -1472,8 +1471,7 @@ void MagDynDlg::CreateDispersionPanel()
 	m_plot->setInteraction(QCP::iRangeDrag, true);
 	m_plot->setInteraction(QCP::iRangeZoom, true);
 	m_plot->setSelectionRectMode(QCP::srmZoom);
-	m_plot->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Expanding});
+	m_plot->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
 
 	// start and stop coordinates
 	m_Q_start[0] = new QDoubleSpinBox(m_disppanel);
@@ -1500,15 +1498,14 @@ void MagDynDlg::CreateDispersionPanel()
 	m_num_points->setToolTip("Number of Q points in the plot.");
 
 	// scaling factor for weights
-	for(auto** comp : {&m_weight_scale, &m_weight_min, &m_weight_max})
+	for(auto** comp : { &m_weight_scale, &m_weight_min, &m_weight_max })
 	{
 		*comp = new QDoubleSpinBox(m_disppanel);
 		(*comp)->setDecimals(4);
 		(*comp)->setMinimum(0.);
 		(*comp)->setMaximum(+9999.9999);
 		(*comp)->setSingleStep(0.1);
-		(*comp)->setSizePolicy(QSizePolicy{
-			QSizePolicy::Expanding, QSizePolicy::Fixed});
+		(*comp)->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
 	}
 
 	m_weight_scale->setValue(1.);
@@ -1520,31 +1517,27 @@ void MagDynDlg::CreateDispersionPanel()
 	m_weight_max->setToolTip("Maximum spectral weight for clamping.");
 	m_weight_scale->setToolTip("Spectral weight scaling factor.");
 
+	static const char* hklPrefix[] = { "h = ", "k = ","l = ", };
 	for(int i = 0; i < 3; ++i)
 	{
 		m_Q_start[i]->setDecimals(4);
 		m_Q_start[i]->setMinimum(-99.9999);
 		m_Q_start[i]->setMaximum(+99.9999);
 		m_Q_start[i]->setSingleStep(0.01);
-		m_Q_start[i]->setValue(0.);
+		m_Q_start[i]->setValue(i == 0 ? -1. : 0.);
 		//m_Q_start[i]->setSuffix(" rlu");
-		m_Q_start[i]->setSizePolicy(QSizePolicy{
-			QSizePolicy::Expanding, QSizePolicy::Fixed});
+		m_Q_start[i]->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
 		m_Q_start[i]->setPrefix(hklPrefix[i]);
 
 		m_Q_end[i]->setDecimals(4);
 		m_Q_end[i]->setMinimum(-99.9999);
 		m_Q_end[i]->setMaximum(+99.9999);
 		m_Q_end[i]->setSingleStep(0.01);
-		m_Q_end[i]->setValue(0.);
+		m_Q_end[i]->setValue(i == 0 ? 1. : 0.);
 		//m_Q_end[i]->setSuffix(" rlu");
-		m_Q_end[i]->setSizePolicy(QSizePolicy{
-			QSizePolicy::Expanding, QSizePolicy::Fixed});
+		m_Q_end[i]->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
 		m_Q_end[i]->setPrefix(hklPrefix[i]);
 	}
-
-	m_Q_start[0]->setValue(-1.);
-	m_Q_end[0]->setValue(+1.);
 
 	QGridLayout *grid = new QGridLayout(m_disppanel);
 	grid->setSpacing(4);
