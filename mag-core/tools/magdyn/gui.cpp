@@ -2394,7 +2394,7 @@ void MagDynDlg::CreateMenuBar()
 	menuCalc->addAction(m_force_incommensurate);
 	menuCalc->addMenu(menuHamiltonians);
 
-	//menuTools->addAction(acTopo);   // TODO
+	menuTools->addAction(acTopo);
 	menuTools->addAction(acTrafoCalc);
 	menuTools->addSeparator();
 	menuTools->addAction(acPreferences);

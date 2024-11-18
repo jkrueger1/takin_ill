@@ -149,9 +149,11 @@ void MagDynDlg::PlotDispersion()
 	const char* Q_label[]{ "h (rlu)", "k (rlu)", "l (rlu)" };
 	m_plot->xAxis->setLabel(Q_label[m_Q_idx]);
 
-	// set ranges
-	auto [min_E_iter, max_E_iter] = std::minmax_element(m_Es_data.begin(), m_Es_data.end());
+	// set x plot range
 	m_plot->xAxis->setRange(m_Q_min, m_Q_max);
+
+	// set y plot range
+	auto [min_E_iter, max_E_iter] = std::minmax_element(m_Es_data.begin(), m_Es_data.end());
 	if(min_E_iter != m_Es_data.end() && max_E_iter != m_Es_data.end())
 	{
 		t_real E_range = *max_E_iter - *min_E_iter;

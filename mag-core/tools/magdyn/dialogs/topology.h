@@ -61,6 +61,7 @@ protected:
 
 	void RescalePlot();
 	void ClearPlot(bool replot = true);
+	void Plot();
 	void PlotMouseMove(QMouseEvent* evt);
 	void PlotMousePress(QMouseEvent* evt);
 
@@ -71,8 +72,13 @@ protected:
 private:
 	const t_magdyn *m_dyn{};         // main calculation kernel
 
-	QCustomPlot *m_plot{};              // plotter
-	std::vector<QCPGraph*> m_graphs{};  // graphs
+	QCustomPlot *m_plot{};                    // plotter
+	std::vector<QCPCurve*> m_curves{};        // plot curves
+	std::vector<QVector<qreal>> m_Qs_data{};  // momentum transfer per band
+	std::vector<QVector<qreal>> m_Bs_data{};  // berry curvature per band
+	t_size m_Q_idx{};                         // index of dominant Q component
+	t_real m_Q_min{}, m_Q_max{};              // range of dominant Q component
+	t_real m_B_min{}, m_B_max{};              // range of berry curvature
 
 	QDoubleSpinBox *m_Q_start[3]{};  // Q start coordinate
 	QDoubleSpinBox *m_Q_end[3]{};    // Q end coordinate
