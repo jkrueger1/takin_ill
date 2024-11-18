@@ -63,9 +63,9 @@ void MagDynDlg::SaveDispersion(bool as_scr)
 {
 	BOOST_SCOPE_EXIT(this_)
 	{
-		this_->EnableInput();
+		this_->EnableInput(true);
 	} BOOST_SCOPE_EXIT_END
-	DisableInput();
+	EnableInput(false);
 	m_stopRequested = false;
 
 	QString dirLast = m_sett->value("dir", "").toString();
@@ -155,9 +155,9 @@ void MagDynDlg::SaveMultiDispersion(bool as_scr)
 
 	BOOST_SCOPE_EXIT(this_)
 	{
-		this_->EnableInput();
+		this_->EnableInput(true);
 	} BOOST_SCOPE_EXIT_END
-	DisableInput();
+	EnableInput(false);
 	m_stopRequested = false;
 
 	// get all Qs from the coordinates table

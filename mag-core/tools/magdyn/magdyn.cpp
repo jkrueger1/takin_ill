@@ -230,33 +230,30 @@ void MagDynDlg::CalcAll()
 
 
 /**
- * enable GUI inputs after calculation threads have finished
+ * enable (or disable) GUI inputs after calculation threads have finished
  */
-void MagDynDlg::EnableInput()
+void MagDynDlg::EnableInput(bool enable)
 {
-	m_tabs_in->setEnabled(true);
-	m_tabs_out->setEnabled(true);
-	m_menu->setEnabled(true);
+	m_startEnabled = enable;
 
-	m_startEnabled = true;
-	m_btnStartStop->setText("Calculate");
-	m_btnStartStop->setToolTip("Start calculation.");
-	m_btnStartStop->setIcon(QIcon::fromTheme("media-playback-start"));
-}
+	if(enable)
+	{
+		m_tabs_in->setEnabled(true);
+		m_tabs_out->setEnabled(true);
+		m_menu->setEnabled(true);
 
+		m_btnStartStop->setText("Calculate");
+		m_btnStartStop->setToolTip("Start calculation.");
+		m_btnStartStop->setIcon(QIcon::fromTheme("media-playback-start"));
+	}
+	else
+	{
+		m_menu->setEnabled(false);
+		m_tabs_out->setEnabled(false);
+		m_tabs_in->setEnabled(false);
 
-
-/**
- * disable GUI inputs for calculation threads
- */
-void MagDynDlg::DisableInput()
-{
-	m_menu->setEnabled(false);
-	m_tabs_out->setEnabled(false);
-	m_tabs_in->setEnabled(false);
-
-	m_startEnabled = false;
-	m_btnStartStop->setText("Stop");
-	m_btnStartStop->setToolTip("Stop calculation.");
-	m_btnStartStop->setIcon(QIcon::fromTheme("media-playback-stop"));
+		m_btnStartStop->setText("Stop");
+		m_btnStartStop->setToolTip("Stop calculation.");
+		m_btnStartStop->setIcon(QIcon::fromTheme("media-playback-stop"));
+	}
 }

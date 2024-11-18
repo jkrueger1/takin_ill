@@ -23,13 +23,20 @@
  * ----------------------------------------------------------------------------
  */
 #include <boost/scope_exit.hpp>
+#include <boost/asio.hpp>
+namespace asio = boost::asio;
+
 #include <limits>
+#include <mutex>
+#include <memory>
+#include <sstream>
 
 #include <QtWidgets/QGridLayout>
 
 #include "topology.h"
-#include "defs.h"
 #include "helper.h"
+
+#include "tlibs2/libs/algos.h"
 
 
 
@@ -105,6 +112,10 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	// close button
 	QPushButton *btnOk = new QPushButton("OK", this);
 
+	// progress bar
+	m_progress = new QProgressBar(this);
+	m_progress->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
 	// status bar
 	m_status = new QLabel(this);
 	m_status->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
@@ -129,7 +140,8 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	grid->addWidget(m_num_Q, y,1,1,1);
 	grid->addWidget(m_btnStartStop, y, 2, 1, 1);
 	grid->addWidget(btnOk, y++, 3, 1, 1);
-	grid->addWidget(m_status, y, 0, 1, 4);
+	grid->addWidget(m_progress, y++, 0, 1, 4);
+	grid->addWidget(m_status, y++, 0, 1, 4);
 
 	// restore settings
 	if(m_sett && m_sett->contains("topology/geo"))
@@ -141,7 +153,15 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	connect(m_plot, &QCustomPlot::mouseMove, this, &TopologyDlg::PlotMouseMove);
 	connect(m_plot, &QCustomPlot::mousePress, this, &TopologyDlg::PlotMousePress);
 	connect(acRescalePlot, &QAction::triggered, this, &TopologyDlg::RescalePlot);
-	connect(m_btnStartStop, &QAbstractButton::clicked, this, &TopologyDlg::Calculate);
+	connect(m_btnStartStop, &QAbstractButton::clicked, [this]()
+	{
+		// behaves as start or stop button?
+		if(m_calcEnabled)
+			Calculate();
+		else
+			m_stopRequested = true;
+	});
+
 	connect(btnOk, &QAbstractButton::clicked, this, &QDialog::accept);
 
 	EnableCalculation();
@@ -167,17 +187,23 @@ void TopologyDlg::Plot()
 	m_curves.clear();
 
 	// plot berry curvatures per band
-	for(t_size band = 0; band < m_Bs_data.size(); ++band)
+	const t_size num_bands = m_Bs_data.size();
+	for(t_size band = 0; band < num_bands; ++band)
 	{
 		QCPCurve *curve = new QCPCurve(m_plot->xAxis, m_plot->yAxis);
 
 		// colour
 		QPen pen = curve->pen();
-		int col[3] = { 0xff, 0, 0 };
-		get_colour<int>(g_colPlot, col);
+		int col[3] = {
+			int(std::lerp(1., 0., t_real(band) / t_real(num_bands - 1)) * 255.),
+			0x00,
+			int(std::lerp(0., 1., t_real(band) / t_real(num_bands - 1)) * 255.),
+		};
+
+		//get_colour<int>(g_colPlot, col);
 		const QColor colFull(col[0], col[1], col[2]);
 		pen.setColor(colFull);
-		pen.setWidthF(1.5);
+		pen.setWidthF(2.);
 
 		curve->setPen(pen);
 		curve->setLineStyle(QCPCurve::lsLine);
@@ -240,41 +266,127 @@ void TopologyDlg::Calculate()
 	if(std::abs(Q_range[2]) > std::abs(Q_range[m_Q_idx]))
 		m_Q_idx = 2;
 
+	// keep the scanned Q component in ascending order
+	if(Q_start[m_Q_idx] > Q_end[m_Q_idx])
+		std::swap(Q_start, Q_end);
+
 	// get settings
 	t_size Q_count = m_num_Q->value();
 	t_real delta = 1e-12; //g_eps;
 	std::vector<t_size> *perm = nullptr;
 	t_size dim1 = 0, dim2 = 1;
 	bool evecs_ortho = true;
+	bool show_imag_comp = false;
 	t_real max_curv = 100.;
 
 	// calculate berry curvature
 	t_magdyn dyn = *m_dyn;
 	dyn.SetUniteDegenerateEnergies(false);
 
+	// tread pool and mutex to protect m_Qs_data and m_Bs_data
+	asio::thread_pool pool{g_num_threads};
+	std::mutex mtx;
+
+	m_stopRequested = false;
+	m_progress->setMinimum(0);
+	m_progress->setMaximum(Q_count);
+	m_progress->setValue(0);
+	m_status->setText(QString("Starting calculation using %1 thread(s).").arg(g_num_threads));
+	tl2::Stopwatch<t_real> stopwatch;
+	stopwatch.start();
+
+	// create calculation tasks
+	using t_task = std::packaged_task<void()>;
+	using t_taskptr = std::shared_ptr<t_task>;
+	std::vector<t_taskptr> tasks;
+	tasks.reserve(Q_count);
+
 	for(t_size i = 0; i < Q_count; ++i)
 	{
-		const t_vec_real Q = Q_count > 1
-			? tl2::lerp(Q_start, Q_end, t_real(i) / t_real(Q_count - 1))
-			: Q_start;
-
-		std::vector<t_cplx> curvs = dyn.CalcBerryCurvatures(
-			Q, delta, perm, dim1, dim2, evecs_ortho);
-
-		if(curvs.size() > m_Bs_data.size())
-			m_Bs_data.resize(curvs.size());
-		if(curvs.size() > m_Qs_data.size())
-			m_Qs_data.resize(curvs.size());
-
-		for(t_size band = 0; band < curvs.size(); ++band)
+		auto task = [this, &mtx, &dyn, &Q_start, &Q_end, i, Q_count, delta,
+			perm, dim1, dim2, evecs_ortho, show_imag_comp, max_curv]()
 		{
-			if(std::abs(curvs[band].real()) > max_curv)
-				continue;
+			const t_vec_real Q = Q_count > 1
+				? tl2::lerp(Q_start, Q_end, t_real(i) / t_real(Q_count - 1))
+				: Q_start;
 
-			m_Qs_data[band].push_back(Q[m_Q_idx]);
-			m_Bs_data[band].push_back(curvs[band].real());
-		}
+			std::vector<t_cplx> curvs = dyn.CalcBerryCurvatures(
+				Q, delta, perm, dim1, dim2, evecs_ortho);
+
+			std::lock_guard<std::mutex> _lck{mtx};
+
+			if(curvs.size() > m_Bs_data.size())
+				m_Bs_data.resize(curvs.size());
+			if(curvs.size() > m_Qs_data.size())
+				m_Qs_data.resize(curvs.size());
+
+			for(t_size band = 0; band < curvs.size(); ++band)
+			{
+				t_real berry_comp = show_imag_comp
+					? curvs[band].imag()
+					: curvs[band].real();
+
+				if(std::abs(berry_comp) > max_curv)
+					continue;
+
+				m_Qs_data[band].push_back(Q[m_Q_idx]);
+				m_Bs_data[band].push_back(berry_comp);
+			}
+		};
+
+		t_taskptr taskptr = std::make_shared<t_task>(task);
+		tasks.push_back(taskptr);
+		asio::post(pool, [taskptr]() { (*taskptr)(); });
 	}
+
+	m_status->setText(QString("Calculating in %1 thread(s)...").arg(g_num_threads));
+
+	// get results from tasks
+	for(std::size_t task_idx = 0; task_idx < tasks.size(); ++task_idx)
+	{
+		t_taskptr task = tasks[task_idx];
+
+		qApp->processEvents();  // process events to see if the stop button was clicked
+		if(m_stopRequested)
+		{
+			pool.stop();
+			break;
+		}
+
+		task->get_future().get();
+		m_progress->setValue(task_idx + 1);
+	}
+
+	pool.join();
+	stopwatch.stop();
+
+	// show elapsed time
+	std::ostringstream ostrMsg;
+	ostrMsg.precision(g_prec_gui);
+	ostrMsg << "Calculation";
+	if(m_stopRequested)
+		ostrMsg << " stopped ";
+	else
+		ostrMsg << " finished ";
+	ostrMsg << "after " << stopwatch.GetDur() << " s.";
+	m_status->setText(ostrMsg.str().c_str());
+
+	// sort data by Q
+	auto sort_data = [](QVector<qreal>& Qvec, QVector<qreal>& Bvec)
+	{
+		// sort vectors by Q component
+		std::vector<std::size_t> perm = tl2::get_perm(Qvec.size(),
+			[&Qvec, &Bvec](std::size_t idx1, std::size_t idx2) -> bool
+		{
+			return Qvec[idx1] < Qvec[idx2];
+		});
+
+		Qvec = tl2::reorder(Qvec, perm);
+		Bvec = tl2::reorder(Bvec, perm);
+	};
+
+	for(t_size band = 0; band < m_Bs_data.size(); ++band)
+		sort_data(m_Qs_data[band], m_Bs_data[band]);
 
 	// data ranges
 	m_Q_min = Q_start[m_Q_idx];
@@ -390,6 +502,8 @@ void TopologyDlg::SetKernel(const t_magdyn* dyn)
  */
 void TopologyDlg::EnableCalculation(bool enable)
 {
+	m_calcEnabled = enable;
+
 	if(enable)
 	{
 		m_btnStartStop->setText("Calculate");

@@ -386,8 +386,7 @@ protected:
 	void ImportCouplings(const std::vector<TableImportCoupling>&, bool clear_existing = true);
 
 	// disable/enable gui input for threaded operations
-	void EnableInput();
-	void DisableInput();
+	void EnableInput(bool enable = true);
 
 	// get the site corresponding to the given table index
 	const t_site* GetSiteFromTableIndex(int idx) const;

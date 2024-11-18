@@ -185,9 +185,9 @@ void MagDynDlg::CalcDispersion()
 
 	BOOST_SCOPE_EXIT(this_)
 	{
-		this_->EnableInput();
+		this_->EnableInput(true);
 	} BOOST_SCOPE_EXIT_END
-	DisableInput();
+	EnableInput(false);
 
 	// nothing to calculate?
 	if(m_dyn.GetMagneticSitesCount() == 0 || m_dyn.GetExchangeTermsCount() == 0)
@@ -244,6 +244,14 @@ void MagDynDlg::CalcDispersion()
 	m_Q_min = Q_start[m_Q_idx];
 	m_Q_max = Q_end[m_Q_idx];
 
+	// keep the scanned Q component in ascending order
+	if(Q_start[m_Q_idx] > Q_end[m_Q_idx])
+	{
+		std::swap(Q_start[0], Q_end[0]);
+		std::swap(Q_start[1], Q_end[1]);
+		std::swap(Q_start[2], Q_end[2]);
+	}
+
 	// options
 	const bool is_comm = !m_dyn.IsIncommensurate();
 	const bool use_min_E = false;
@@ -261,32 +269,23 @@ void MagDynDlg::CalcDispersion()
 		m_hamiltonian_comp[1]->isChecked(),
 		m_hamiltonian_comp[2]->isChecked());
 
-	// tread pool
+	// tread pool and mutex to protect m_qs_data, m_Es_data, and m_ws_data
 	asio::thread_pool pool{g_num_threads};
-
-	// mutex to protect m_qs_data, m_Es_data, and m_ws_data
 	std::mutex mtx;
-
-	using t_task = std::packaged_task<void()>;
-	using t_taskptr = std::shared_ptr<t_task>;
-	std::vector<t_taskptr> tasks;
-	tasks.reserve(num_pts);
-
-	// keep the scanned Q component in ascending order
-	if(Q_start[m_Q_idx] > Q_end[m_Q_idx])
-	{
-		std::swap(Q_start[0], Q_end[0]);
-		std::swap(Q_start[1], Q_end[1]);
-		std::swap(Q_start[2], Q_end[2]);
-	}
 
 	m_stopRequested = false;
 	m_progress->setMinimum(0);
 	m_progress->setMaximum(num_pts);
 	m_progress->setValue(0);
-	m_status->setText("Starting calculation.");
+	m_status->setText(QString("Starting dispersion calculation using %1 thread(s).").arg(g_num_threads));
 	tl2::Stopwatch<t_real> stopwatch;
 	stopwatch.start();
+
+	// create calculation tasks
+	using t_task = std::packaged_task<void()>;
+	using t_taskptr = std::shared_ptr<t_task>;
+	std::vector<t_taskptr> tasks;
+	tasks.reserve(num_pts);
 
 	for(t_size i = 0; i < num_pts; ++i)
 	{
@@ -353,8 +352,9 @@ void MagDynDlg::CalcDispersion()
 		asio::post(pool, [taskptr]() { (*taskptr)(); });
 	}
 
-	m_status->setText("Calculating dispersion.");
+	m_status->setText(QString("Calculating dispersion in %1 thread(s)...").arg(g_num_threads));
 
+	// get results from tasks
 	for(std::size_t task_idx = 0; task_idx < tasks.size(); ++task_idx)
 	{
 		t_taskptr task = tasks[task_idx];
@@ -373,6 +373,7 @@ void MagDynDlg::CalcDispersion()
 	pool.join();
 	stopwatch.stop();
 
+	// show elapsed time
 	std::ostringstream ostrMsg;
 	ostrMsg.precision(g_prec_gui);
 	ostrMsg << "Calculation";

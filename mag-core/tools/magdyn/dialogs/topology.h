@@ -32,6 +32,7 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpinBox>
 #include <QtWidgets/QDoubleSpinBox>
+#include <QtWidgets/QProgressBar>
 
 #include <qcustomplot.h>
 #include <vector>
@@ -85,8 +86,11 @@ private:
 	QSpinBox *m_num_Q{};             // number of Q coordinates
 
 	QPushButton *m_btnStartStop{};   // start/stop calculation
+	bool m_calcEnabled{};            // enable calculations
+	bool m_stopRequested{};          // stop running calculations
 
 	QSettings *m_sett{};             // program settings
+	QProgressBar *m_progress{};      // progress bar
 	QLabel *m_status{};              // status bar
 	QMenu *m_menuPlot{};             // context menu for plot
 };

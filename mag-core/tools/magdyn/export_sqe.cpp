@@ -210,7 +210,7 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 	m_progress->setMaximum(num_pts_h * num_pts_k /** num_pts_l*/);
 	m_progress->setValue(0);
 	m_status->setText("Starting calculation.");
-	DisableInput();
+	EnableInput(false);
 	tl2::Stopwatch<t_real> stopwatch;
 	stopwatch.start();
 
@@ -366,7 +366,7 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 	}
 
 	pool.join();
-	EnableInput();
+	EnableInput(true);
 
 	if(format == EXPORT_GRID)  // Takin grid format
 	{
