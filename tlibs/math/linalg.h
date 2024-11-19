@@ -617,12 +617,12 @@ t_vec prod_vm(const t_vec& vec, const t_mat& mat)
 }
 
 
-
 /**
- * 2-norm -- general version
+ * 2-norm -- general real version
  */
 template<class t_vec = ublas::vector<double>,
-	typename std::enable_if<!std::is_convertible<t_vec, ublas::vector<typename t_vec::value_type>>::value, char>::type=0>
+	typename std::enable_if<!std::is_convertible<t_vec, ublas::vector<typename t_vec::value_type>>::value
+		&& std::is_floating_point<typename t_vec::value_type>::value, char>::type=0>
 typename t_vec::value_type veclen(const t_vec& vec)
 {
 	using T = typename t_vec::value_type;
@@ -632,6 +632,24 @@ typename t_vec::value_type veclen(const t_vec& vec)
 		len += vec[i]*vec[i];
 
 	return std::sqrt(len);
+}
+
+
+/**
+ * 2-norm -- general complex version
+ */
+template<class t_vec = ublas::vector<double>,
+	typename std::enable_if<!std::is_convertible<t_vec, ublas::vector<typename t_vec::value_type>>::value
+		&& !std::is_floating_point<typename t_vec::value_type>::value, char>::type=0>
+typename t_vec::value_type::value_type veclen(const t_vec& vec)
+{
+        using T = typename t_vec::value_type::value_type;
+        T len(0);
+
+        for(std::size_t i=0; i<vec.size(); ++i)
+                len += (std::conj(vec[i])*vec[i]).real();
+
+        return std::sqrt(len);
 }
 
 
