@@ -102,9 +102,41 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	m_num_Q = new QSpinBox(this);
 	m_num_Q->setMinimum(1);
 	m_num_Q->setMaximum(99999);
-	m_num_Q->setValue(64);
+	m_num_Q->setValue(128);
 	m_num_Q->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
-	m_num_Q->setToolTip("Number of Q points in the plot.");
+	m_num_Q->setToolTip("Number of Q points to calculate.");
+
+	// cutoff value for filtering numerical artefacts
+	m_B_filter = new QDoubleSpinBox(this);
+	m_B_filter->setDecimals(2);
+	m_B_filter->setMinimum(-1.);
+	m_B_filter->setMaximum(+99999.99);
+	m_B_filter->setSingleStep(1.);
+	m_B_filter->setValue(m_B_filter->maximum());
+	m_B_filter->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
+	m_B_filter->setToolTip("Cutoff Berry curvature for filtering numerical artefacts (-1: deactivated).");
+
+	// coordinate components
+	m_coords[0] = new QSpinBox(this);
+	m_coords[0]->setMinimum(0);
+	m_coords[0]->setMaximum(2);
+	m_coords[0]->setValue(0);
+	m_coords[0]->setPrefix("i = ");
+	m_coords[0]->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
+	m_coords[0]->setToolTip("First component index of B_ij matrix.");
+
+	m_coords[1] = new QSpinBox(this);
+	m_coords[1]->setMinimum(0);
+	m_coords[1]->setMaximum(2);
+	m_coords[1]->setValue(1);
+	m_coords[1]->setPrefix("j = ");
+	m_coords[1]->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
+	m_coords[1]->setToolTip("Second component index of B_ij matrix.");
+
+	m_imag = new QCheckBox("Imaginary", this);
+	m_imag->setChecked(false);
+	m_imag->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
+	m_imag->setToolTip("Show imaginary component of Berry curvature?");
 
 	// start/stop button
 	m_btnStartStop = new QPushButton("Calculate", this);
@@ -137,10 +169,16 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	grid->addWidget(m_Q_end[1], y, 2, 1, 1);
 	grid->addWidget(m_Q_end[2], y++, 3, 1, 1);
 	grid->addWidget(new QLabel("Q Count:", this), y, 0, 1, 1);
-	grid->addWidget(m_num_Q, y,1,1,1);
+	grid->addWidget(m_num_Q, y, 1, 1, 1);
+	grid->addWidget(new QLabel("B Cutoff:", this), y, 2, 1, 1);
+	grid->addWidget(m_B_filter, y++, 3, 1, 1);
+	grid->addWidget(new QLabel("B Component:", this), y, 0, 1, 1);
+	grid->addWidget(m_coords[0], y, 1, 1, 1);
+	grid->addWidget(m_coords[1], y, 2, 1, 1);
+	grid->addWidget(m_imag, y++, 3, 1, 1);
+	grid->addWidget(m_progress, y, 0, 1, 2);
 	grid->addWidget(m_btnStartStop, y, 2, 1, 1);
 	grid->addWidget(btnOk, y++, 3, 1, 1);
-	grid->addWidget(m_progress, y++, 0, 1, 4);
 	grid->addWidget(m_status, y++, 0, 1, 4);
 
 	// restore settings
@@ -272,12 +310,11 @@ void TopologyDlg::Calculate()
 
 	// get settings
 	t_size Q_count = m_num_Q->value();
-	t_real delta = 1e-12; //g_eps;
 	std::vector<t_size> *perm = nullptr;
-	t_size dim1 = 0, dim2 = 1;
-	bool evecs_ortho = true;
-	bool show_imag_comp = false;
-	t_real max_curv = 100.;
+	t_size dim1 = m_coords[0]->value();
+	t_size dim2 = m_coords[1]->value();
+	t_real max_curv = m_B_filter->value();
+	bool show_imag_comp = m_imag->isChecked();
 
 	// calculate berry curvature
 	t_magdyn dyn = *m_dyn;
@@ -292,6 +329,7 @@ void TopologyDlg::Calculate()
 	m_progress->setMaximum(Q_count);
 	m_progress->setValue(0);
 	m_status->setText(QString("Starting calculation using %1 thread(s).").arg(g_num_threads));
+
 	tl2::Stopwatch<t_real> stopwatch;
 	stopwatch.start();
 
@@ -301,17 +339,17 @@ void TopologyDlg::Calculate()
 	std::vector<t_taskptr> tasks;
 	tasks.reserve(Q_count);
 
-	for(t_size i = 0; i < Q_count; ++i)
+	for(t_size Q_idx = 0; Q_idx < Q_count; ++Q_idx)
 	{
-		auto task = [this, &mtx, &dyn, &Q_start, &Q_end, i, Q_count, delta,
-			perm, dim1, dim2, evecs_ortho, show_imag_comp, max_curv]()
+		auto task = [this, &mtx, &dyn, &Q_start, &Q_end, Q_idx, Q_count,
+			perm, dim1, dim2, show_imag_comp, max_curv]()
 		{
 			const t_vec_real Q = Q_count > 1
-				? tl2::lerp(Q_start, Q_end, t_real(i) / t_real(Q_count - 1))
+				? tl2::lerp(Q_start, Q_end, t_real(Q_idx) / t_real(Q_count - 1))
 				: Q_start;
 
 			std::vector<t_cplx> curvs = dyn.CalcBerryCurvatures(
-				Q, delta, perm, dim1, dim2, evecs_ortho);
+				Q, g_delta_diff, perm, dim1, dim2, g_evecs_ortho != 0);
 
 			std::lock_guard<std::mutex> _lck{mtx};
 
@@ -326,7 +364,8 @@ void TopologyDlg::Calculate()
 					? curvs[band].imag()
 					: curvs[band].real();
 
-				if(std::abs(berry_comp) > max_curv)
+				// filter numerical artefacts
+				if(max_curv >= 0. && std::abs(berry_comp) > max_curv)
 					continue;
 
 				m_Qs_data[band].push_back(Q[m_Q_idx]);

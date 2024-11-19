@@ -31,6 +31,7 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpinBox>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QProgressBar>
 
@@ -84,6 +85,10 @@ private:
 	QDoubleSpinBox *m_Q_start[3]{};  // Q start coordinate
 	QDoubleSpinBox *m_Q_end[3]{};    // Q end coordinate
 	QSpinBox *m_num_Q{};             // number of Q coordinates
+
+	QDoubleSpinBox *m_B_filter{};    // maximum B value
+	QSpinBox *m_coords[2]{};         // berry curvature component indices
+	QCheckBox *m_imag{};             // imaginary or real components?
 
 	QPushButton *m_btnStartStop{};   // start/stop calculation
 	bool m_calcEnabled{};            // enable calculations

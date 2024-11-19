@@ -84,6 +84,9 @@ extern int g_prec, g_prec_gui;
 // epsilon
 extern t_real g_eps;
 
+// delta for numerical differentiation
+extern t_real g_delta_diff;
+
 // bose cutoff energy
 extern t_real g_bose_cutoff;
 
@@ -93,6 +96,9 @@ extern t_real g_cholesky_delta;
 
 // optional features
 extern int g_allow_ortho_spin, g_allow_general_J;
+extern int g_evecs_ortho;
+
+// console messages
 extern int g_silent, g_checks;
 
 // use native menubar and dialogs?
@@ -125,7 +131,7 @@ extern t_real g_structplot_fov;
 // ----------------------------------------------------------------------------
 #include "dialogs/settings.h"
 
-constexpr std::array<SettingsVariable, 18> g_settingsvariables
+constexpr std::array<SettingsVariable, 20> g_settingsvariables
 {{
 	// threads
 	{
@@ -149,6 +155,12 @@ constexpr std::array<SettingsVariable, 18> g_settingsvariables
 		.description = "GUI number precision.",
 		.key = "prec_gui",
 		.value = &g_prec_gui,
+	},
+	// deltas for numerical calculations
+	{
+		.description = "Differentiation delta.",
+		.key = "delta_diff",
+		.value = &g_delta_diff,
 	},
 	{
 		.description = "Bose cutoff energy.",
@@ -222,6 +234,14 @@ constexpr std::array<SettingsVariable, 18> g_settingsvariables
 		.value = &g_allow_general_J,
 		.editor = SettingsVariableEditor::YESNO,
 	},
+	{
+		.description = "Eigenstates of H are always orthogonal.",
+		.key = "evecs_ortho",
+		.value = &g_evecs_ortho,
+		.editor = SettingsVariableEditor::YESNO,
+	},
+
+	// console messages
 	{
 		.description = "Silence output of error messages on console.",
 		.key = "output_silent",
