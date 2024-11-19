@@ -22,6 +22,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * ----------------------------------------------------------------------------
  */
+
 #include <boost/scope_exit.hpp>
 #include <boost/asio.hpp>
 namespace asio = boost::asio;
@@ -40,169 +41,194 @@ namespace asio = boost::asio;
 
 
 
+// ============================================================================
+// topology dialog
+// ============================================================================
 /**
- * shows the topology dialog
+ * sets up the topology dialog
  */
 TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	: QDialog{parent}, m_sett{sett}
 {
+	// ------------------------------------------------------------------------
+	// general dialog
+	// ------------------------------------------------------------------------
 	setWindowTitle("Topology");
 	setSizeGripEnabled(true);
 
-	// plotter
-	m_plot = new QCustomPlot(this);
-	m_plot->xAxis->setLabel("Momentum Transfer Q (rlu)");
-	m_plot->yAxis->setLabel("Berry Curvature B");
-	m_plot->setInteraction(QCP::iRangeDrag, true);
-	m_plot->setInteraction(QCP::iRangeZoom, true);
-	m_plot->setSelectionRectMode(QCP::srmZoom);
-	m_plot->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
-
-	// context menu for plotter
-	m_menuPlot = new QMenu("Plotter", this);
-	QAction *acRescalePlot = new QAction("Rescale Axes", m_menuPlot);
-	m_menuPlot->addAction(acRescalePlot);
-
-	// start and stop coordinates
-	m_Q_start[0] = new QDoubleSpinBox(this);
-	m_Q_start[1] = new QDoubleSpinBox(this);
-	m_Q_start[2] = new QDoubleSpinBox(this);
-	m_Q_end[0] = new QDoubleSpinBox(this);
-	m_Q_end[1] = new QDoubleSpinBox(this);
-	m_Q_end[2] = new QDoubleSpinBox(this);
-
-	m_Q_start[0]->setToolTip("Dispersion initial momentum transfer, h_i (rlu).");
-	m_Q_start[1]->setToolTip("Dispersion initial momentum transfer, k_i (rlu).");
-	m_Q_start[2]->setToolTip("Dispersion initial momentum transfer, l_i (rlu).");
-	m_Q_end[0]->setToolTip("Dispersion final momentum transfer, h_f (rlu).");
-	m_Q_end[1]->setToolTip("Dispersion final momentum transfer, k_f (rlu).");
-	m_Q_end[2]->setToolTip("Dispersion final momentum transfer, l_f (rlu).");
-
-	static const char* hklPrefix[] = { "h = ", "k = ","l = ", };
-	for(int i = 0; i < 3; ++i)
-	{
-		m_Q_start[i]->setDecimals(4);
-		m_Q_start[i]->setMinimum(-99.9999);
-		m_Q_start[i]->setMaximum(+99.9999);
-		m_Q_start[i]->setSingleStep(0.01);
-		m_Q_start[i]->setValue(i == 0 ? -1. : 0.);
-		m_Q_start[i]->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
-		m_Q_start[i]->setPrefix(hklPrefix[i]);
-
-		m_Q_end[i]->setDecimals(4);
-		m_Q_end[i]->setMinimum(-99.9999);
-		m_Q_end[i]->setMaximum(+99.9999);
-		m_Q_end[i]->setSingleStep(0.01);
-		m_Q_end[i]->setValue(i == 0 ? 1. : 0.);
-		m_Q_end[i]->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
-		m_Q_end[i]->setPrefix(hklPrefix[i]);
-	}
-
-	// number of Q points in the plot
-	m_num_Q = new QSpinBox(this);
-	m_num_Q->setMinimum(1);
-	m_num_Q->setMaximum(99999);
-	m_num_Q->setValue(128);
-	m_num_Q->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
-	m_num_Q->setToolTip("Number of Q points to calculate.");
-
-	// cutoff value for filtering numerical artefacts
-	m_B_filter = new QDoubleSpinBox(this);
-	m_B_filter->setDecimals(2);
-	m_B_filter->setMinimum(-1.);
-	m_B_filter->setMaximum(+99999.99);
-	m_B_filter->setSingleStep(1.);
-	m_B_filter->setValue(m_B_filter->maximum());
-	m_B_filter->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
-	m_B_filter->setToolTip("Cutoff Berry curvature for filtering numerical artefacts (-1: deactivated).");
-
-	// coordinate components
-	m_coords[0] = new QSpinBox(this);
-	m_coords[0]->setMinimum(0);
-	m_coords[0]->setMaximum(2);
-	m_coords[0]->setValue(0);
-	m_coords[0]->setPrefix("i = ");
-	m_coords[0]->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
-	m_coords[0]->setToolTip("First component index of B_ij matrix.");
-
-	m_coords[1] = new QSpinBox(this);
-	m_coords[1]->setMinimum(0);
-	m_coords[1]->setMaximum(2);
-	m_coords[1]->setValue(1);
-	m_coords[1]->setPrefix("j = ");
-	m_coords[1]->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
-	m_coords[1]->setToolTip("Second component index of B_ij matrix.");
-
-	m_imag = new QCheckBox("Imaginary", this);
-	m_imag->setChecked(false);
-	m_imag->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
-	m_imag->setToolTip("Show imaginary component of Berry curvature?");
-
-	// start/stop button
-	m_btnStartStop = new QPushButton("Calculate", this);
-
-	// close button
-	QPushButton *btnOk = new QPushButton("OK", this);
-
-	// progress bar
-	m_progress = new QProgressBar(this);
-	m_progress->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	// tab widget
+	m_tabs = new QTabWidget(this);
 
 	// status bar
 	m_status = new QLabel(this);
 	m_status->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
 	m_status->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
+	// close button
+	QPushButton *btnOk = new QPushButton("OK", this);
+
+	// main grid
+	QGridLayout *maingrid = new QGridLayout(this);
+	maingrid->setSpacing(4);
+	maingrid->setContentsMargins(8, 8, 8, 8);
+	maingrid->addWidget(m_tabs, 0, 0, 1, 4);
+	maingrid->addWidget(m_status, 1, 0, 1, 3);
+	maingrid->addWidget(btnOk, 1, 3, 1, 1);
+
+	// connections
+	connect(btnOk, &QAbstractButton::clicked, this, &QDialog::accept);
+	// ------------------------------------------------------------------------
+
+
+	// ------------------------------------------------------------------------
+	// berry curvature tab
+	// ------------------------------------------------------------------------
+	QWidget *panelBerryCurvature = new QWidget(this);
+
+	// plotter
+	m_plot_bc = new QCustomPlot(panelBerryCurvature);
+	m_plot_bc->xAxis->setLabel("Momentum Transfer Q (rlu)");
+	m_plot_bc->yAxis->setLabel("Berry Curvature B");
+	m_plot_bc->setInteraction(QCP::iRangeDrag, true);
+	m_plot_bc->setInteraction(QCP::iRangeZoom, true);
+	m_plot_bc->setSelectionRectMode(QCP::srmZoom);
+	m_plot_bc->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
+
+	// context menu for plotter
+	m_menuPlot_bc = new QMenu("Plotter", panelBerryCurvature);
+	QAction *acRescalePlot = new QAction("Rescale Axes", m_menuPlot_bc);
+	m_menuPlot_bc->addAction(acRescalePlot);
+
+	// start and stop coordinates
+	m_Q_start_bc[0] = new QDoubleSpinBox(panelBerryCurvature);
+	m_Q_start_bc[1] = new QDoubleSpinBox(panelBerryCurvature);
+	m_Q_start_bc[2] = new QDoubleSpinBox(panelBerryCurvature);
+	m_Q_end_bc[0] = new QDoubleSpinBox(panelBerryCurvature);
+	m_Q_end_bc[1] = new QDoubleSpinBox(panelBerryCurvature);
+	m_Q_end_bc[2] = new QDoubleSpinBox(panelBerryCurvature);
+
+	m_Q_start_bc[0]->setToolTip("Dispersion initial momentum transfer, h_i (rlu).");
+	m_Q_start_bc[1]->setToolTip("Dispersion initial momentum transfer, k_i (rlu).");
+	m_Q_start_bc[2]->setToolTip("Dispersion initial momentum transfer, l_i (rlu).");
+	m_Q_end_bc[0]->setToolTip("Dispersion final momentum transfer, h_f (rlu).");
+	m_Q_end_bc[1]->setToolTip("Dispersion final momentum transfer, k_f (rlu).");
+	m_Q_end_bc[2]->setToolTip("Dispersion final momentum transfer, l_f (rlu).");
+
+	static const char* hklPrefix[] = { "h = ", "k = ","l = ", };
+	for(int i = 0; i < 3; ++i)
+	{
+		m_Q_start_bc[i]->setDecimals(4);
+		m_Q_start_bc[i]->setMinimum(-99.9999);
+		m_Q_start_bc[i]->setMaximum(+99.9999);
+		m_Q_start_bc[i]->setSingleStep(0.01);
+		m_Q_start_bc[i]->setValue(i == 0 ? -1. : 0.);
+		m_Q_start_bc[i]->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
+		m_Q_start_bc[i]->setPrefix(hklPrefix[i]);
+
+		m_Q_end_bc[i]->setDecimals(4);
+		m_Q_end_bc[i]->setMinimum(-99.9999);
+		m_Q_end_bc[i]->setMaximum(+99.9999);
+		m_Q_end_bc[i]->setSingleStep(0.01);
+		m_Q_end_bc[i]->setValue(i == 0 ? 1. : 0.);
+		m_Q_end_bc[i]->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
+		m_Q_end_bc[i]->setPrefix(hklPrefix[i]);
+	}
+
+	// number of Q points in the plot
+	m_num_Q_bc = new QSpinBox(panelBerryCurvature);
+	m_num_Q_bc->setMinimum(1);
+	m_num_Q_bc->setMaximum(99999);
+	m_num_Q_bc->setValue(128);
+	m_num_Q_bc->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
+	m_num_Q_bc->setToolTip("Number of Q points to calculate.");
+
+	// cutoff value for filtering numerical artefacts
+	m_B_filter_bc = new QDoubleSpinBox(panelBerryCurvature);
+	m_B_filter_bc->setDecimals(2);
+	m_B_filter_bc->setMinimum(-1.);
+	m_B_filter_bc->setMaximum(+99999.99);
+	m_B_filter_bc->setSingleStep(1.);
+	m_B_filter_bc->setValue(m_B_filter_bc->maximum());
+	m_B_filter_bc->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
+	m_B_filter_bc->setToolTip("Cutoff Berry curvature for filtering numerical artefacts (-1: deactivated).");
+
+	// coordinate components
+	m_coords_bc[0] = new QSpinBox(panelBerryCurvature);
+	m_coords_bc[0]->setMinimum(0);
+	m_coords_bc[0]->setMaximum(2);
+	m_coords_bc[0]->setValue(0);
+	m_coords_bc[0]->setPrefix("i = ");
+	m_coords_bc[0]->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
+	m_coords_bc[0]->setToolTip("First component index of B_ij matrix.");
+
+	m_coords_bc[1] = new QSpinBox(panelBerryCurvature);
+	m_coords_bc[1]->setMinimum(0);
+	m_coords_bc[1]->setMaximum(2);
+	m_coords_bc[1]->setValue(1);
+	m_coords_bc[1]->setPrefix("j = ");
+	m_coords_bc[1]->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
+	m_coords_bc[1]->setToolTip("Second component index of B_ij matrix.");
+
+	m_imag_bc = new QCheckBox("Imaginary", panelBerryCurvature);
+	m_imag_bc->setChecked(false);
+	m_imag_bc->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
+	m_imag_bc->setToolTip("Show imaginary component of Berry curvature?");
+
+	// start/stop button
+	m_btnStartStop_bc = new QPushButton("Calculate", panelBerryCurvature);
+
+	// progress bar
+	m_progress_bc = new QProgressBar(panelBerryCurvature);
+	m_progress_bc->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
 	// component grid
-	auto grid = new QGridLayout(this);
+	auto grid = new QGridLayout(panelBerryCurvature);
 	grid->setSpacing(4);
-	grid->setContentsMargins(8, 8, 8, 8);
+	grid->setContentsMargins(6, 6, 6, 6);
 
 	int y = 0;
-	grid->addWidget(m_plot, y++, 0, 1, 4);
-	grid->addWidget(new QLabel("Start Q (rlu):", this), y, 0, 1, 1);
-	grid->addWidget(m_Q_start[0], y, 1, 1, 1);
-	grid->addWidget(m_Q_start[1], y, 2, 1, 1);
-	grid->addWidget(m_Q_start[2], y++, 3, 1, 1);
-	grid->addWidget(new QLabel("End Q (rlu):", this), y, 0, 1, 1);
-	grid->addWidget(m_Q_end[0], y, 1, 1, 1);
-	grid->addWidget(m_Q_end[1], y, 2, 1, 1);
-	grid->addWidget(m_Q_end[2], y++, 3, 1, 1);
-	grid->addWidget(new QLabel("Q Count:", this), y, 0, 1, 1);
-	grid->addWidget(m_num_Q, y, 1, 1, 1);
-	grid->addWidget(new QLabel("B Cutoff:", this), y, 2, 1, 1);
-	grid->addWidget(m_B_filter, y++, 3, 1, 1);
-	grid->addWidget(new QLabel("B Component:", this), y, 0, 1, 1);
-	grid->addWidget(m_coords[0], y, 1, 1, 1);
-	grid->addWidget(m_coords[1], y, 2, 1, 1);
-	grid->addWidget(m_imag, y++, 3, 1, 1);
-	grid->addWidget(m_progress, y, 0, 1, 2);
-	grid->addWidget(m_btnStartStop, y, 2, 1, 1);
-	grid->addWidget(btnOk, y++, 3, 1, 1);
-	grid->addWidget(m_status, y++, 0, 1, 4);
+	grid->addWidget(m_plot_bc, y++, 0, 1, 4);
+	grid->addWidget(new QLabel("Start Q (rlu):", panelBerryCurvature), y, 0, 1, 1);
+	grid->addWidget(m_Q_start_bc[0], y, 1, 1, 1);
+	grid->addWidget(m_Q_start_bc[1], y, 2, 1, 1);
+	grid->addWidget(m_Q_start_bc[2], y++, 3, 1, 1);
+	grid->addWidget(new QLabel("End Q (rlu):", panelBerryCurvature), y, 0, 1, 1);
+	grid->addWidget(m_Q_end_bc[0], y, 1, 1, 1);
+	grid->addWidget(m_Q_end_bc[1], y, 2, 1, 1);
+	grid->addWidget(m_Q_end_bc[2], y++, 3, 1, 1);
+	grid->addWidget(new QLabel("Q Count:", panelBerryCurvature), y, 0, 1, 1);
+	grid->addWidget(m_num_Q_bc, y, 1, 1, 1);
+	grid->addWidget(new QLabel("B Cutoff:", panelBerryCurvature), y, 2, 1, 1);
+	grid->addWidget(m_B_filter_bc, y++, 3, 1, 1);
+	grid->addWidget(new QLabel("B Component:", panelBerryCurvature), y, 0, 1, 1);
+	grid->addWidget(m_coords_bc[0], y, 1, 1, 1);
+	grid->addWidget(m_coords_bc[1], y, 2, 1, 1);
+	grid->addWidget(m_imag_bc, y++, 3, 1, 1);
+	grid->addWidget(m_progress_bc, y, 0, 1, 3);
+	grid->addWidget(m_btnStartStop_bc, y++, 3, 1, 1);
 
 	// restore settings
 	if(m_sett && m_sett->contains("topology/geo"))
 		restoreGeometry(m_sett->value("topology/geo").toByteArray());
 	else
-		resize(640, 480);
+		resize(640, 640);
 
 	// connections
-	connect(m_plot, &QCustomPlot::mouseMove, this, &TopologyDlg::PlotMouseMove);
-	connect(m_plot, &QCustomPlot::mousePress, this, &TopologyDlg::PlotMousePress);
-	connect(acRescalePlot, &QAction::triggered, this, &TopologyDlg::RescalePlot);
-	connect(m_btnStartStop, &QAbstractButton::clicked, [this]()
+	connect(m_plot_bc, &QCustomPlot::mouseMove, this, &TopologyDlg::BerryCurvaturePlotMouseMove);
+	connect(m_plot_bc, &QCustomPlot::mousePress, this, &TopologyDlg::BerryCurvaturePlotMousePress);
+	connect(acRescalePlot, &QAction::triggered, this, &TopologyDlg::RescaleBerryCurvaturePlot);
+	connect(m_btnStartStop_bc, &QAbstractButton::clicked, [this]()
 	{
 		// behaves as start or stop button?
-		if(m_calcEnabled)
-			Calculate();
+		if(m_calcEnabled_bc)
+			CalculateBerryCurvature();
 		else
-			m_stopRequested = true;
+			m_stopRequested_bc = true;
 	});
 
-	connect(btnOk, &QAbstractButton::clicked, this, &QDialog::accept);
-
-	EnableCalculation();
+	m_tabs->addTab(panelBerryCurvature, "Berry Curvature");
+	EnableBerryCurvatureCalculation();
+	// ------------------------------------------------------------------------
 }
 
 
@@ -214,21 +240,48 @@ TopologyDlg::~TopologyDlg()
 
 
 /**
+ * set a pointer to the main magdyn kernel
+ */
+void TopologyDlg::SetKernel(const t_magdyn* dyn)
+{
+	m_dyn = dyn;
+}
+
+
+
+/**
+ * dialog is closing
+ */
+void TopologyDlg::accept()
+{
+	if(m_sett)
+		m_sett->setValue("topology/geo", saveGeometry());
+
+	QDialog::accept();
+}
+// ============================================================================
+
+
+
+// ============================================================================
+// calculate berry curvature
+// ============================================================================
+/**
  * plot the berry curvature
  */
-void TopologyDlg::Plot()
+void TopologyDlg::PlotBerryCurvature()
 {
-	if(!m_plot)
+	if(!m_plot_bc)
 		return;
 
-	m_plot->clearPlottables();
-	m_curves.clear();
+	m_plot_bc->clearPlottables();
+	m_curves_bc.clear();
 
 	// plot berry curvatures per band
-	const t_size num_bands = m_Bs_data.size();
+	const t_size num_bands = m_Bs_data_bc.size();
 	for(t_size band = 0; band < num_bands; ++band)
 	{
-		QCPCurve *curve = new QCPCurve(m_plot->xAxis, m_plot->yAxis);
+		QCPCurve *curve = new QCPCurve(m_plot_bc->xAxis, m_plot_bc->yAxis);
 
 		// colour
 		QPen pen = curve->pen();
@@ -247,20 +300,20 @@ void TopologyDlg::Plot()
 		curve->setLineStyle(QCPCurve::lsLine);
 		curve->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssNone, 1));
 		curve->setAntialiased(true);
-		curve->setData(m_Qs_data[band], m_Bs_data[band]);
+		curve->setData(m_Qs_data_bc[band], m_Bs_data_bc[band]);
 
-		m_curves.push_back(curve);
+		m_curves_bc.push_back(curve);
 	}
 
 	// set labels
 	const char* Q_label[]{ "h (rlu)", "k (rlu)", "l (rlu)" };
-	m_plot->xAxis->setLabel(QString("Momentum Transfer ") + Q_label[m_Q_idx]);
+	m_plot_bc->xAxis->setLabel(QString("Momentum Transfer ") + Q_label[m_Q_idx_bc]);
 
 	// set ranges
-	m_plot->xAxis->setRange(m_Q_min, m_Q_max);
-	m_plot->yAxis->setRange(m_B_min, m_B_max);
+	m_plot_bc->xAxis->setRange(m_Q_min_bc, m_Q_max_bc);
+	m_plot_bc->yAxis->setRange(m_B_min_bc, m_B_max_bc);
 
-	m_plot->replot();
+	m_plot_bc->replot();
 }
 
 
@@ -268,66 +321,66 @@ void TopologyDlg::Plot()
 /**
  * calculate the berry curvature
  */
-void TopologyDlg::Calculate()
+void TopologyDlg::CalculateBerryCurvature()
 {
 	if(!m_dyn)
 		return;
 
 	BOOST_SCOPE_EXIT(this_)
 	{
-		this_->EnableCalculation(true);
+		this_->EnableBerryCurvatureCalculation(true);
 	} BOOST_SCOPE_EXIT_END
-	EnableCalculation(false);
+	EnableBerryCurvatureCalculation(false);
 
-	ClearPlot(false);
+	ClearBerryCurvaturePlot(false);
 
 	// get coordinates
 	t_vec_real Q_start = tl2::create<t_vec_real>(
 	{
-		m_Q_start[0]->value(),
-		m_Q_start[1]->value(),
-		m_Q_start[2]->value(),
+		m_Q_start_bc[0]->value(),
+		m_Q_start_bc[1]->value(),
+		m_Q_start_bc[2]->value(),
 	});
 
 	t_vec_real Q_end = tl2::create<t_vec_real>(
 	{
-		m_Q_end[0]->value(),
-		m_Q_end[1]->value(),
-		m_Q_end[2]->value(),
+		m_Q_end_bc[0]->value(),
+		m_Q_end_bc[1]->value(),
+		m_Q_end_bc[2]->value(),
 	});
 
 	// get Q component with maximum range
 	t_vec_real Q_range = Q_end - Q_start;
-	m_Q_idx = 0;
-	if(std::abs(Q_range[1]) > std::abs(Q_range[m_Q_idx]))
-		m_Q_idx = 1;
-	if(std::abs(Q_range[2]) > std::abs(Q_range[m_Q_idx]))
-		m_Q_idx = 2;
+	m_Q_idx_bc = 0;
+	if(std::abs(Q_range[1]) > std::abs(Q_range[m_Q_idx_bc]))
+		m_Q_idx_bc = 1;
+	if(std::abs(Q_range[2]) > std::abs(Q_range[m_Q_idx_bc]))
+		m_Q_idx_bc = 2;
 
 	// keep the scanned Q component in ascending order
-	if(Q_start[m_Q_idx] > Q_end[m_Q_idx])
+	if(Q_start[m_Q_idx_bc] > Q_end[m_Q_idx_bc])
 		std::swap(Q_start, Q_end);
 
 	// get settings
-	t_size Q_count = m_num_Q->value();
+	t_size Q_count = m_num_Q_bc->value();
 	std::vector<t_size> *perm = nullptr;
-	t_size dim1 = m_coords[0]->value();
-	t_size dim2 = m_coords[1]->value();
-	t_real max_curv = m_B_filter->value();
-	bool show_imag_comp = m_imag->isChecked();
+	t_size dim1 = m_coords_bc[0]->value();
+	t_size dim2 = m_coords_bc[1]->value();
+	t_real max_curv = m_B_filter_bc->value();
+	bool show_imag_comp = m_imag_bc->isChecked();
 
 	// calculate berry curvature
 	t_magdyn dyn = *m_dyn;
 	dyn.SetUniteDegenerateEnergies(false);
 
-	// tread pool and mutex to protect m_Qs_data and m_Bs_data
+	// tread pool and mutex to protect m_Qs_data_bc and m_Bs_data_bc
 	asio::thread_pool pool{g_num_threads};
 	std::mutex mtx;
 
-	m_stopRequested = false;
-	m_progress->setMinimum(0);
-	m_progress->setMaximum(Q_count);
-	m_progress->setValue(0);
+	m_stopRequested_bc = false;
+	m_progress_bc->setMinimum(0);
+	m_progress_bc->setMaximum(Q_count);
+	m_progress_bc->setValue(0);
 	m_status->setText(QString("Starting calculation using %1 thread(s).").arg(g_num_threads));
 
 	tl2::Stopwatch<t_real> stopwatch;
@@ -353,10 +406,10 @@ void TopologyDlg::Calculate()
 
 			std::lock_guard<std::mutex> _lck{mtx};
 
-			if(curvs.size() > m_Bs_data.size())
-				m_Bs_data.resize(curvs.size());
-			if(curvs.size() > m_Qs_data.size())
-				m_Qs_data.resize(curvs.size());
+			if(curvs.size() > m_Bs_data_bc.size())
+				m_Bs_data_bc.resize(curvs.size());
+			if(curvs.size() > m_Qs_data_bc.size())
+				m_Qs_data_bc.resize(curvs.size());
 
 			for(t_size band = 0; band < curvs.size(); ++band)
 			{
@@ -368,8 +421,8 @@ void TopologyDlg::Calculate()
 				if(max_curv >= 0. && std::abs(berry_comp) > max_curv)
 					continue;
 
-				m_Qs_data[band].push_back(Q[m_Q_idx]);
-				m_Bs_data[band].push_back(berry_comp);
+				m_Qs_data_bc[band].push_back(Q[m_Q_idx_bc]);
+				m_Bs_data_bc[band].push_back(berry_comp);
 			}
 		};
 
@@ -386,14 +439,14 @@ void TopologyDlg::Calculate()
 		t_taskptr task = tasks[task_idx];
 
 		qApp->processEvents();  // process events to see if the stop button was clicked
-		if(m_stopRequested)
+		if(m_stopRequested_bc)
 		{
 			pool.stop();
 			break;
 		}
 
 		task->get_future().get();
-		m_progress->setValue(task_idx + 1);
+		m_progress_bc->setValue(task_idx + 1);
 	}
 
 	pool.join();
@@ -403,7 +456,7 @@ void TopologyDlg::Calculate()
 	std::ostringstream ostrMsg;
 	ostrMsg.precision(g_prec_gui);
 	ostrMsg << "Calculation";
-	if(m_stopRequested)
+	if(m_stopRequested_bc)
 		ostrMsg << " stopped ";
 	else
 		ostrMsg << " finished ";
@@ -424,29 +477,29 @@ void TopologyDlg::Calculate()
 		Bvec = tl2::reorder(Bvec, perm);
 	};
 
-	for(t_size band = 0; band < m_Bs_data.size(); ++band)
-		sort_data(m_Qs_data[band], m_Bs_data[band]);
+	for(t_size band = 0; band < m_Bs_data_bc.size(); ++band)
+		sort_data(m_Qs_data_bc[band], m_Bs_data_bc[band]);
 
 	// data ranges
-	m_Q_min = Q_start[m_Q_idx];
-	m_Q_max = Q_end[m_Q_idx];
-	m_B_min = std::numeric_limits<t_real>::max();
-	m_B_max = -m_B_min;
+	m_Q_min_bc = Q_start[m_Q_idx_bc];
+	m_Q_max_bc = Q_end[m_Q_idx_bc];
+	m_B_min_bc = std::numeric_limits<t_real>::max();
+	m_B_max_bc = -m_B_min_bc;
 
 	// get berry curvature range
-	for(const QVector<t_real>& Bs_data : m_Bs_data)
+	for(const QVector<t_real>& Bs_data : m_Bs_data_bc)
 	{
 		auto [min_B_iter, max_B_iter] = std::minmax_element(Bs_data.begin(), Bs_data.end());
 		if(min_B_iter != Bs_data.end() && max_B_iter != Bs_data.end())
 		{
 			t_real B_range = *max_B_iter - *min_B_iter;
 
-			m_B_max = std::max(m_B_max, *max_B_iter + B_range*0.05);
-			m_B_min = std::min(m_B_min, *min_B_iter - B_range*0.05);
+			m_B_max_bc = std::max(m_B_max_bc, *max_B_iter + B_range*0.05);
+			m_B_min_bc = std::min(m_B_min_bc, *min_B_iter - B_range*0.05);
 		}
 	}
 
-	Plot();
+	PlotBerryCurvature();
 }
 
 
@@ -454,20 +507,20 @@ void TopologyDlg::Calculate()
 /**
  * clears the dispersion graph
  */
-void TopologyDlg::ClearPlot(bool replot)
+void TopologyDlg::ClearBerryCurvaturePlot(bool replot)
 {
-	m_curves.clear();
+	m_curves_bc.clear();
 
-	if(m_plot)
+	if(m_plot_bc)
 	{
-		m_plot->clearPlottables();
+		m_plot_bc->clearPlottables();
 		if(replot)
-			m_plot->replot();
+			m_plot_bc->replot();
 	}
 
-	m_Qs_data.clear();
-	m_Bs_data.clear();
-	m_Q_idx = 0;
+	m_Qs_data_bc.clear();
+	m_Bs_data_bc.clear();
+	m_Q_idx_bc = 0;
 }
 
 
@@ -475,13 +528,13 @@ void TopologyDlg::ClearPlot(bool replot)
 /**
  * show current cursor coordinates
  */
-void TopologyDlg::PlotMouseMove(QMouseEvent* evt)
+void TopologyDlg::BerryCurvaturePlotMouseMove(QMouseEvent* evt)
 {
 	if(!m_status)
 		return;
 
-	t_real Q = m_plot->xAxis->pixelToCoord(evt->pos().x());
-	t_real berry = m_plot->yAxis->pixelToCoord(evt->pos().y());
+	t_real Q = m_plot_bc->xAxis->pixelToCoord(evt->pos().x());
+	t_real berry = m_plot_bc->yAxis->pixelToCoord(evt->pos().y());
 
 	QString status("Q = %1 rlu, B = %2.");
 	status = status.arg(Q, 0, 'g', g_prec_gui).arg(berry, 0, 'g', g_prec_gui);
@@ -493,19 +546,19 @@ void TopologyDlg::PlotMouseMove(QMouseEvent* evt)
 /**
  * show plot context menu
  */
-void TopologyDlg::PlotMousePress(QMouseEvent* evt)
+void TopologyDlg::BerryCurvaturePlotMousePress(QMouseEvent* evt)
 {
 	// show context menu
 	if(evt->buttons() & Qt::RightButton)
 	{
-		if(!m_menuPlot)
+		if(!m_menuPlot_bc)
 			return;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		QPoint pos = evt->globalPos();
 #else
 		QPoint pos = evt->globalPosition().toPoint();
 #endif
-		m_menuPlot->popup(pos);
+		m_menuPlot_bc->popup(pos);
 		evt->accept();
 	}
 }
@@ -515,23 +568,13 @@ void TopologyDlg::PlotMousePress(QMouseEvent* evt)
 /**
  * rescale plot axes to fit the content
  */
-void TopologyDlg::RescalePlot()
+void TopologyDlg::RescaleBerryCurvaturePlot()
 {
-	if(!m_plot)
+	if(!m_plot_bc)
 		return;
 
-	m_plot->rescaleAxes();
-	m_plot->replot();
-}
-
-
-
-/**
- * set a pointer to the main magdyn kernel
- */
-void TopologyDlg::SetKernel(const t_magdyn* dyn)
-{
-	m_dyn = dyn;
+	m_plot_bc->rescaleAxes();
+	m_plot_bc->replot();
 }
 
 
@@ -539,33 +582,21 @@ void TopologyDlg::SetKernel(const t_magdyn* dyn)
 /**
  * toggle between "calculate" and "stop" button
  */
-void TopologyDlg::EnableCalculation(bool enable)
+void TopologyDlg::EnableBerryCurvatureCalculation(bool enable)
 {
-	m_calcEnabled = enable;
+	m_calcEnabled_bc = enable;
 
 	if(enable)
 	{
-		m_btnStartStop->setText("Calculate");
-		m_btnStartStop->setToolTip("Start calculation.");
-		m_btnStartStop->setIcon(QIcon::fromTheme("media-playback-start"));
+		m_btnStartStop_bc->setText("Calculate");
+		m_btnStartStop_bc->setToolTip("Start calculation.");
+		m_btnStartStop_bc->setIcon(QIcon::fromTheme("media-playback-start"));
 	}
 	else
 	{
-		m_btnStartStop->setText("Stop");
-		m_btnStartStop->setToolTip("Stop running calculation.");
-		m_btnStartStop->setIcon(QIcon::fromTheme("media-playback-stop"));
+		m_btnStartStop_bc->setText("Stop");
+		m_btnStartStop_bc->setToolTip("Stop running calculation.");
+		m_btnStartStop_bc->setIcon(QIcon::fromTheme("media-playback-stop"));
 	}
 }
-
-
-
-/**
- * dialog is closing
- */
-void TopologyDlg::accept()
-{
-	if(m_sett)
-		m_sett->setValue("topology/geo", saveGeometry());
-
-	QDialog::accept();
-}
+// ============================================================================

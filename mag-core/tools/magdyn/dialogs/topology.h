@@ -27,6 +27,7 @@
 #define __MAG_DYN_TOPO_DLG_H__
 
 #include <QtCore/QSettings>
+#include <QtWidgets/QTabWidget>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QPushButton>
@@ -61,43 +62,54 @@ public:
 protected:
 	virtual void accept() override;
 
-	void RescalePlot();
-	void ClearPlot(bool replot = true);
-	void Plot();
-	void PlotMouseMove(QMouseEvent* evt);
-	void PlotMousePress(QMouseEvent* evt);
+	// ------------------------------------------------------------------------
+	// berry curvature tab
+	void RescaleBerryCurvaturePlot();
+	void ClearBerryCurvaturePlot(bool replot = true);
+	void PlotBerryCurvature();
+	void BerryCurvaturePlotMouseMove(QMouseEvent *evt);
+	void BerryCurvaturePlotMousePress(QMouseEvent *evt);
 
-	void EnableCalculation(bool enable = true);
-	void Calculate();
+	void EnableBerryCurvatureCalculation(bool enable = true);
+	void CalculateBerryCurvature();
+	// ------------------------------------------------------------------------
 
 
 private:
-	const t_magdyn *m_dyn{};         // main calculation kernel
+	const t_magdyn *m_dyn{};            // main calculation kernel
 
-	QCustomPlot *m_plot{};                    // plotter
-	std::vector<QCPCurve*> m_curves{};        // plot curves
-	std::vector<QVector<qreal>> m_Qs_data{};  // momentum transfer per band
-	std::vector<QVector<qreal>> m_Bs_data{};  // berry curvature per band
-	t_size m_Q_idx{};                         // index of dominant Q component
-	t_real m_Q_min{}, m_Q_max{};              // range of dominant Q component
-	t_real m_B_min{}, m_B_max{};              // range of berry curvature
+	// ------------------------------------------------------------------------
+	// main dialog
+	QTabWidget *m_tabs{};               // tabs
+	QSettings *m_sett{};                // program settings
+	QLabel *m_status{};                 // status bar
+	// ------------------------------------------------------------------------
 
-	QDoubleSpinBox *m_Q_start[3]{};  // Q start coordinate
-	QDoubleSpinBox *m_Q_end[3]{};    // Q end coordinate
-	QSpinBox *m_num_Q{};             // number of Q coordinates
+	// ------------------------------------------------------------------------
+	// berry curvature tab
+	QCustomPlot *m_plot_bc{};                 // berry curvature plotter
+	std::vector<QCPCurve*> m_curves_bc{};     // berry cyrvature plot curves
+	std::vector<QVector<qreal>> m_Qs_data_bc{};  // momentum transfer per band
+	std::vector<QVector<qreal>> m_Bs_data_bc{};  // berry curvature per band
+	t_size m_Q_idx_bc{};                      // index of dominant Q component
+	t_real m_Q_min_bc{}, m_Q_max_bc{};        // range of dominant Q component
+	t_real m_B_min_bc{}, m_B_max_bc{};        // range of berry curvature
 
-	QDoubleSpinBox *m_B_filter{};    // maximum B value
-	QSpinBox *m_coords[2]{};         // berry curvature component indices
-	QCheckBox *m_imag{};             // imaginary or real components?
+	QDoubleSpinBox *m_Q_start_bc[3]{};  // Q start coordinate
+	QDoubleSpinBox *m_Q_end_bc[3]{};    // Q end coordinate
+	QSpinBox *m_num_Q_bc{};             // number of Q coordinates
 
-	QPushButton *m_btnStartStop{};   // start/stop calculation
-	bool m_calcEnabled{};            // enable calculations
-	bool m_stopRequested{};          // stop running calculations
+	QDoubleSpinBox *m_B_filter_bc{};    // maximum B value
+	QSpinBox *m_coords_bc[2]{};         // berry curvature component indices
+	QCheckBox *m_imag_bc{};             // imaginary or real components?
 
-	QSettings *m_sett{};             // program settings
-	QProgressBar *m_progress{};      // progress bar
-	QLabel *m_status{};              // status bar
-	QMenu *m_menuPlot{};             // context menu for plot
+	QPushButton *m_btnStartStop_bc{};   // start/stop calculation
+	bool m_calcEnabled_bc{};            // enable calculations
+	bool m_stopRequested_bc{};          // stop running calculations
+
+	QProgressBar *m_progress_bc{};      // progress bar
+	QMenu *m_menuPlot_bc{};             // context menu for plot
+	// ------------------------------------------------------------------------
 };
 
 
