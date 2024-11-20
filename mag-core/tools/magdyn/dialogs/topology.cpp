@@ -437,6 +437,7 @@ void TopologyDlg::CalculateBerryCurvature()
 	using t_taskptr = std::shared_ptr<t_task>;
 	std::vector<t_taskptr> tasks;
 	tasks.reserve(Q_count);
+	m_data_bc.reserve(Q_count);
 
 	for(t_size Q_idx = 0; Q_idx < Q_count; ++Q_idx)
 	{
@@ -447,21 +448,36 @@ void TopologyDlg::CalculateBerryCurvature()
 				? tl2::lerp(Q_start, Q_end, t_real(Q_idx) / t_real(Q_count - 1))
 				: Q_start;
 
-			std::vector<t_cplx> curvs = dyn.CalcBerryCurvatures(
+			// calculate berry curvatures per band
+			BerryCurvatureData data_bc;
+			data_bc.momentum = Q;
+			typename t_magdyn::SofQE S;
+			std::tie(data_bc.curvatures, S) = dyn.CalcBerryCurvatures(
 				Q, g_delta_diff, perm, dim1, dim2, g_evecs_ortho != 0);
+			t_size num_bands = data_bc.curvatures.size();
+			data_bc.energies.reserve(num_bands);
+			data_bc.weights.reserve(num_bands);
+
+			// calculate energies per band
+			assert(S.E_and_S.size() == num_bands);
+			for(t_size band = 0; band < num_bands; ++band)
+			{
+				data_bc.energies.push_back(S.E_and_S[band].E);
+				data_bc.weights.push_back(S.E_and_S[band].weight);
+			}
 
 			std::lock_guard<std::mutex> _lck{mtx};
 
-			if(curvs.size() > m_Bs_data_bc.size())
-				m_Bs_data_bc.resize(curvs.size());
-			if(curvs.size() > m_Qs_data_bc.size())
-				m_Qs_data_bc.resize(curvs.size());
+			if(num_bands > m_Bs_data_bc.size())
+				m_Bs_data_bc.resize(num_bands);
+			if(num_bands > m_Qs_data_bc.size())
+				m_Qs_data_bc.resize(num_bands);
 
-			for(t_size band = 0; band < curvs.size(); ++band)
+			for(t_size band = 0; band < num_bands; ++band)
 			{
 				t_real berry_comp = show_imag_comp
-					? curvs[band].imag()
-					: curvs[band].real();
+					? data_bc.curvatures[band].imag()
+					: data_bc.curvatures[band].real();
 
 				// filter numerical artefacts
 				if(max_curv >= 0. && std::abs(berry_comp) > max_curv)
@@ -470,6 +486,8 @@ void TopologyDlg::CalculateBerryCurvature()
 				m_Qs_data_bc[band].push_back(Q[m_Q_idx_bc]);
 				m_Bs_data_bc[band].push_back(berry_comp);
 			}
+
+			m_data_bc.emplace_back(std::move(data_bc));
 		};
 
 		t_taskptr taskptr = std::make_shared<t_task>(task);
@@ -509,7 +527,17 @@ void TopologyDlg::CalculateBerryCurvature()
 	ostrMsg << "after " << stopwatch.GetDur() << " s.";
 	m_status->setText(ostrMsg.str().c_str());
 
-	// sort data by Q
+	// sort raw unfiltered data by Q
+	std::vector<std::size_t> perm_all = tl2::get_perm(m_data_bc.size(),
+		[this](std::size_t idx1, std::size_t idx2) -> bool
+	{
+		return m_data_bc[idx1].momentum[m_Q_idx_bc]
+			< m_data_bc[idx2].momentum[m_Q_idx_bc];
+	});
+
+	m_data_bc = tl2::reorder(m_data_bc, perm_all);
+
+	// sort filtered data by Q
 	auto sort_data = [](QVector<qreal>& Qvec, QVector<qreal>& Bvec)
 	{
 		// sort vectors by Q component
@@ -564,6 +592,7 @@ void TopologyDlg::ClearBerryCurvaturePlot(bool replot)
 			m_plot_bc->replot();
 	}
 
+	m_data_bc.clear();
 	m_Qs_data_bc.clear();
 	m_Bs_data_bc.clear();
 	m_Q_idx_bc = 0;
@@ -701,16 +730,37 @@ void TopologyDlg::SaveBerryCurvatureData()
 	for(t_size band = 0; band < num_bands; ++band)
 	{
 		std::string E = "E_" + tl2::var_to_str(band);
+		std::string S = "Sperp_" + tl2::var_to_str(band);
 		std::string ReB = "Re{B_" + tl2::var_to_str(band) + "}";
-		std::string ImB = "Re{B_" + tl2::var_to_str(band) + "}";
+		std::string ImB = "Im{B_" + tl2::var_to_str(band) + "}";
 
 		ofstr << std::setw(field_len) << std::left << E << " ";
+		ofstr << std::setw(field_len) << std::left << S << " ";
 		ofstr << std::setw(field_len) << std::left << ReB << " ";
 		ofstr << std::setw(field_len) << std::left << ImB << " ";
 	}
 	ofstr << "\n";
 
-	// TODO: write data
+	// write data
+	for(const BerryCurvatureData& data: m_data_bc)
+	{
+		ofstr << std::setw(field_len) << std::left << data.momentum[0] << " ";
+		ofstr << std::setw(field_len) << std::left << data.momentum[1] << " ";
+		ofstr << std::setw(field_len) << std::left << data.momentum[2] << " ";
+
+		assert(num_bands == data.curvatures.size());
+		for(t_size band = 0; band < num_bands; ++band)
+		{
+			ofstr << std::setw(field_len) << std::left << data.energies[band] << " ";
+			ofstr << std::setw(field_len) << std::left << data.weights[band] << " ";
+			ofstr << std::setw(field_len) << std::left << data.curvatures[band].real() << " ";
+			ofstr << std::setw(field_len) << std::left << data.curvatures[band].imag() << " ";
+		}
+
+		ofstr << "\n";
+	}
+
+	ofstr.flush();
 }
 
 

@@ -484,11 +484,11 @@ public:
 	// --------------------------------------------------------------------
 	// topological calculations
 	// --------------------------------------------------------------------
-	std::vector<t_vec> CalcBerryConnections(const t_vec_real& Q_start,
+	std::tuple<std::vector<t_vec>, SofQE> CalcBerryConnections(const t_vec_real& Q_start,
 		t_real delta = 1e-12, const std::vector<t_size>* perm = nullptr,
 		bool evecs_ortho = true) const;
 
-	std::vector<t_cplx> CalcBerryCurvatures(const t_vec_real& Q_start,
+	std::tuple<std::vector<t_cplx>, SofQE> CalcBerryCurvatures(const t_vec_real& Q_start,
 		t_real delta = 1e-12, const std::vector<t_size>* perm = nullptr,
 		t_size dim1 = 0, t_size dim2 = 1, bool evecs_ortho = true) const;
 

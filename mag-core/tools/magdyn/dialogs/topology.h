@@ -43,6 +43,16 @@
 
 
 
+struct BerryCurvatureData
+{
+	t_vec_real momentum{};
+
+	std::vector<t_real> energies{};    // E
+	std::vector<t_real> weights{};     // S_perp
+	std::vector<t_cplx> curvatures{};  // B
+};
+
+
 
 /**
  * topology dialog
@@ -96,10 +106,12 @@ private:
 
 	// ------------------------------------------------------------------------
 	// berry curvature tab
+	std::vector<BerryCurvatureData> m_data_bc{};  // all (non-filtered) berry curvature data
+
 	QCustomPlot *m_plot_bc{};                 // berry curvature plotter
 	std::vector<QCPCurve*> m_curves_bc{};     // berry cyrvature plot curves
-	std::vector<QVector<qreal>> m_Qs_data_bc{};  // momentum transfer per band
-	std::vector<QVector<qreal>> m_Bs_data_bc{};  // berry curvature per band
+	std::vector<QVector<qreal>> m_Qs_data_bc{};  // filtered momentum transfer per band
+	std::vector<QVector<qreal>> m_Bs_data_bc{};  // filtered berry curvature per band
 	t_size m_Q_idx_bc{};                      // index of dominant Q component
 	t_real m_Q_min_bc{}, m_Q_max_bc{};        // range of dominant Q component
 	t_real m_B_min_bc{}, m_B_max_bc{};        // range of berry curvature

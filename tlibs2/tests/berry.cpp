@@ -128,13 +128,8 @@ int main(int argc, char** argv)
 		Q[0] = Q0[0] + q;
 		std::cout << std::left << std::setw(print_width) << q << " ";
 
-		t_SofQE S = magdyn.CalcEnergies(Q, false);
+		t_SofQE S; // = magdyn.CalcEnergies(Q, false);
 		//print_states(S);
-
-		/*std::vector<t_vec> conns = magdyn.CalcBerryConnections(Q, 0.001);
-		for(const t_vec& conn : conns)
-			std::cout << conn << std::endl;
-		std::cout << std::endl;*/
 
 		// band permutations
 		/*t_size num_bands = S.E_and_S.size();
@@ -147,7 +142,8 @@ int main(int argc, char** argv)
 			std::swap(perm[2], perm[3]);
 		}*/
 
-		std::vector<t_cplx> curves = magdyn.CalcBerryCurvatures(Q, delta/*, &perm*/);
+		std::vector<t_cplx> curves;
+		std::tie(curves, S) = magdyn.CalcBerryCurvatures(Q, delta/*, &perm*/);
 
 		for(t_size band = 0; band < curves.size(); ++band)
 		{
