@@ -30,6 +30,8 @@
 #include "libs/loadcif.h"
 
 #include <QtCore/QMimeData>
+#include <QtWidgets/QMessageBox>
+
 #include <iostream>
 
 
@@ -256,4 +258,16 @@ void MagDynDlg::EnableInput(bool enable)
 		m_btnStartStop->setToolTip("Stop calculation.");
 		m_btnStartStop->setIcon(QIcon::fromTheme("media-playback-stop"));
 	}
+}
+
+
+
+void MagDynDlg::ShowError(const char* msg, bool critical) const
+{
+	MagDynDlg *dlg = const_cast<MagDynDlg*>(this);
+
+	if(critical)
+		QMessageBox::critical(dlg, windowTitle() + " -- Error", msg);
+	else
+		QMessageBox::warning(dlg, windowTitle() + " -- Warning", msg);
 }

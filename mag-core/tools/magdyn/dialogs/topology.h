@@ -64,16 +64,20 @@ public:
 protected:
 	virtual void accept() override;
 
+	void ShowError(const char* msg);
+
 	// ------------------------------------------------------------------------
 	// berry curvature tab
 	void RescaleBerryCurvaturePlot();
 	void ClearBerryCurvaturePlot(bool replot = true);
 	void PlotBerryCurvature();
+	void SaveBerryCurvaturePlotFigure();
 	void BerryCurvaturePlotMouseMove(QMouseEvent *evt);
 	void BerryCurvaturePlotMousePress(QMouseEvent *evt);
 
 	void EnableBerryCurvatureCalculation(bool enable = true);
 	void CalculateBerryCurvature();
+	void SaveBerryCurvatureData();
 
 	void SetBerryCurvatureQ();
 	// ------------------------------------------------------------------------

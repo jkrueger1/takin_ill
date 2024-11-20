@@ -31,7 +31,6 @@
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QLabel>
-#include <QtWidgets/QMessageBox>
 
 #include <QtGui/QDesktopServices>
 
@@ -1442,6 +1441,7 @@ void MagDynDlg::CreateDispersionPanel()
 
 	// plotter
 	m_plot = new QCustomPlot(m_disppanel);
+	m_plot->setFont(this->font());
 	m_plot->xAxis->setLabel("Q (rlu)");
 	m_plot->yAxis->setLabel("E (meV)");
 	m_plot->setInteraction(QCP::iRangeDrag, true);
@@ -2499,7 +2499,7 @@ void MagDynDlg::CreateMenuBar()
 	{
 		QUrl url("https://github.com/ILLGrenoble/takin/wiki/Modelling-Magnetic-Structures");
 		if(!QDesktopServices::openUrl(url))
-			QMessageBox::critical(this, "Magnetic Dynamics", "Could not open the wiki.");
+			ShowError("Could not open the wiki.");
 	});
 
 	connect(acAboutQt, &QAction::triggered, []()

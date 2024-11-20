@@ -642,7 +642,7 @@ void TableImportDlg::ShowHelp()
 {
 	QUrl url("https://github.com/ILLGrenoble/takin/wiki/Importing-Magnetic-Structures");
 	if(!QDesktopServices::openUrl(url))
-		QMessageBox::critical(this, "Magnetic Dynamics", "Could not open the wiki.");
+		QMessageBox::critical(this, windowTitle() + " -- Error", "Could not open the wiki.");
 }
 
 

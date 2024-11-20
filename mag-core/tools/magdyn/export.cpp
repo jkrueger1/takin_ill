@@ -95,8 +95,7 @@ bool MagDynDlg::ExportToSunny(const QString& _filename)
 	std::ofstream ofstr(filename);
 	if(!ofstr)
 	{
-		QMessageBox::critical(this, "Magnetic Dynamics",
-			"Cannot open file for writing.");
+		ShowError("Cannot open file for writing.");
 		return false;
 	}
 
@@ -383,8 +382,7 @@ bool MagDynDlg::ExportToSpinW(const QString& _filename)
 	std::ofstream ofstr(filename);
 	if(!ofstr)
 	{
-		QMessageBox::critical(this, "Magnetic Dynamics",
-			"Cannot open file for writing.");
+		ShowError("Cannot open file for writing.");
 		return false;
 	}
 

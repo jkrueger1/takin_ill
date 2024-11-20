@@ -183,7 +183,7 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 		if(auto optInfo = node.get_optional<std::string>("magdyn.meta.info");
 			!optInfo || !(*optInfo==std::string{"magdyn_tool"}))
 		{
-			QMessageBox::critical(this, "Magnetic Dynamics", "Unrecognised file format.");
+			ShowError("Unrecognised file format.");
 			return false;
 		}
 
@@ -310,9 +310,8 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 		{
 			if(!m_allow_general_J && *optVal)
 			{
-				QMessageBox::warning(this, "Magnetic Structure",
-					"This file requires support for general exchange matrices J, "
-					"please activate them in the preferences.");
+				ShowError("This file requires support for general exchange matrices J, "
+					"please activate them in the preferences and reload.", false);
 			}
 			else if(m_allow_general_J)
 			{
@@ -322,7 +321,7 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 
 		if(!m_dyn.Load(magdyn))
 		{
-			QMessageBox::critical(this, "Magnetic Dynamics", "Cannot load magdyn file.");
+			ShowError("Cannot load magdyn file.");
 			return false;
 		}
 
@@ -435,7 +434,7 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 	}
 	catch(const std::exception& ex)
 	{
-		QMessageBox::critical(this, "Magnetic Dynamics", ex.what());
+		ShowError(ex.what());
 		return false;
 	}
 
@@ -496,7 +495,7 @@ bool MagDynDlg::ImportStructure(const QString& filename)
 		if(auto optInfo = node.get_optional<std::string>("sfact.meta.info");
 		   !optInfo || !(*optInfo==std::string{"magsfact_tool"} || *optInfo==std::string{"sfact_tool"}))
 		{
-			QMessageBox::critical(this, "Magnetic Structure", "Unrecognised structure file format.");
+			ShowError("Unrecognised structure file format.");
 			return false;
 		}
 
@@ -556,15 +555,12 @@ bool MagDynDlg::ImportStructure(const QString& filename)
 			}
 
 			if(propvecs->size() > 1)
-			{
-				QMessageBox::warning(this, "Magnetic Structure",
-					"Only one propagation vector is supported.");
-			}
+				ShowError("Only one propagation vector is supported.", false);
 		}
 	}
 	catch(const std::exception& ex)
 	{
-		QMessageBox::critical(this, "Magnetic Structure", ex.what());
+		ShowError(ex.what());
 		return false;
 	}
 
@@ -687,8 +683,7 @@ bool MagDynDlg::Save(const QString& filename)
 		// save magnon calculator configuration
 		if(!m_dyn.Save(magdyn))
 		{
-			QMessageBox::critical(this, "Magnetic Dynamics",
-				"Cannot save magdyn file.");
+			ShowError("Cannot save magdyn file.");
 			return false;
 		}
 
@@ -773,8 +768,7 @@ bool MagDynDlg::Save(const QString& filename)
 		std::ofstream ofstr{filename.toStdString()};
 		if(!ofstr)
 		{
-			QMessageBox::critical(this, "Magnetic Dynamics",
-				"Cannot open file for writing.");
+			ShowError("Cannot open file for writing.");
 			return false;
 		}
 
@@ -784,7 +778,7 @@ bool MagDynDlg::Save(const QString& filename)
 	}
 	catch(const std::exception& ex)
 	{
-		QMessageBox::critical(this, "Magnetic Dynamics", ex.what());
+		ShowError(ex.what());
 		return false;
 	}
 

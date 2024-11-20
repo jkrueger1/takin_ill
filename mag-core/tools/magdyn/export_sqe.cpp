@@ -117,7 +117,7 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 
 	if(!file_opened)
 	{
-		QMessageBox::critical(this, "Magnetic Dynamics", "File could not be opened.");
+		ShowError("Cannot open file for writing.");
 		return false;
 	}
 

@@ -200,6 +200,13 @@ void MagDynDlg::PlotDispersion()
 		m_plot->yAxis->setRange(0., 1.);
 	}
 
+	// set font
+	m_plot->setFont(font());
+	m_plot->xAxis->setLabelFont(font());
+	m_plot->yAxis->setLabelFont(font());
+	m_plot->xAxis->setTickLabelFont(font());
+	m_plot->yAxis->setTickLabelFont(font());
+
 	m_plot->replot();
 }
 

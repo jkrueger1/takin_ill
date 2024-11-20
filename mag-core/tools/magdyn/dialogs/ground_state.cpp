@@ -545,7 +545,7 @@ void GroundStateDlg::CalcGroundStateEnergy()
 
 void GroundStateDlg::ShowError(const char* msg)
 {
-	QMessageBox::critical(this, "Magnetic Dynamics", msg);
+	QMessageBox::critical(this, windowTitle() + " -- Error", msg);
 }
 
 

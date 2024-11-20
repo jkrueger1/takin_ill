@@ -31,13 +31,18 @@ namespace asio = boost::asio;
 #include <mutex>
 #include <memory>
 #include <sstream>
+#include <fstream>
+#include <iomanip>
+#include <cstdlib>
 
 #include <QtWidgets/QGridLayout>
+#include <QtWidgets/QMessageBox>
 
 #include "topology.h"
 #include "helper.h"
 
 #include "tlibs2/libs/algos.h"
+#include "tlibs2/libs/str.h"
 
 
 
@@ -87,6 +92,7 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 
 	// plotter
 	m_plot_bc = new QCustomPlot(panelBerryCurvature);
+	m_plot_bc->setFont(font());
 	m_plot_bc->xAxis->setLabel("Momentum Transfer Q (rlu)");
 	m_plot_bc->yAxis->setLabel("Berry Curvature B");
 	m_plot_bc->setInteraction(QCP::iRangeDrag, true);
@@ -97,7 +103,14 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	// context menu for plotter
 	m_menuPlot_bc = new QMenu("Plotter", panelBerryCurvature);
 	QAction *acRescalePlot = new QAction("Rescale Axes", m_menuPlot_bc);
+	QAction *acSaveFigure = new QAction("Save Figure...", m_menuPlot_bc);
+	QAction *acSaveData = new QAction("Save Data...", m_menuPlot_bc);
+	acSaveFigure->setIcon(QIcon::fromTheme("image-x-generic"));
+	acSaveData->setIcon(QIcon::fromTheme("text-x-generic"));
 	m_menuPlot_bc->addAction(acRescalePlot);
+	m_menuPlot_bc->addSeparator();
+	m_menuPlot_bc->addAction(acSaveFigure);
+	m_menuPlot_bc->addAction(acSaveData);
 
 	// start and stop coordinates
 	m_Q_start_bc[0] = new QDoubleSpinBox(panelBerryCurvature);
@@ -222,6 +235,8 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	connect(m_plot_bc, &QCustomPlot::mouseMove, this, &TopologyDlg::BerryCurvaturePlotMouseMove);
 	connect(m_plot_bc, &QCustomPlot::mousePress, this, &TopologyDlg::BerryCurvaturePlotMousePress);
 	connect(acRescalePlot, &QAction::triggered, this, &TopologyDlg::RescaleBerryCurvaturePlot);
+	connect(acSaveFigure, &QAction::triggered, this, &TopologyDlg::SaveBerryCurvaturePlotFigure);
+	connect(acSaveData, &QAction::triggered, this, &TopologyDlg::SaveBerryCurvatureData);
 	connect(btnQ, &QAbstractButton::clicked, this, &TopologyDlg::SetBerryCurvatureQ);
 	connect(m_btnStartStop_bc, &QAbstractButton::clicked, [this]()
 	{
@@ -262,6 +277,13 @@ void TopologyDlg::SetDispersionQ(const t_vec_real& Qstart, const t_vec_real& Qen
 {
 	m_Qstart = Qstart;
 	m_Qend = Qend;
+}
+
+
+
+void TopologyDlg::ShowError(const char* msg)
+{
+	QMessageBox::critical(this, windowTitle() + " -- Error", msg);
 }
 
 
@@ -329,6 +351,13 @@ void TopologyDlg::PlotBerryCurvature()
 	// set ranges
 	m_plot_bc->xAxis->setRange(m_Q_min_bc, m_Q_max_bc);
 	m_plot_bc->yAxis->setRange(m_B_min_bc, m_B_max_bc);
+
+	// set font
+	m_plot_bc->setFont(font());
+	m_plot_bc->xAxis->setLabelFont(font());
+	m_plot_bc->yAxis->setLabelFont(font());
+	m_plot_bc->xAxis->setTickLabelFont(font());
+	m_plot_bc->yAxis->setTickLabelFont(font());
 
 	m_plot_bc->replot();
 }
@@ -592,6 +621,96 @@ void TopologyDlg::RescaleBerryCurvaturePlot()
 
 	m_plot_bc->rescaleAxes();
 	m_plot_bc->replot();
+}
+
+
+
+/**
+ * save plot as image file
+ */
+void TopologyDlg::SaveBerryCurvaturePlotFigure()
+{
+	if(!m_plot_bc)
+		return;
+
+	QString dirLast;
+	if(m_sett)
+		dirLast = m_sett->value("topology/dir", "").toString();
+	QString filename = QFileDialog::getSaveFileName(
+		this, "Save Figure", dirLast, "PDF Files (*.pdf)");
+	if(filename == "")
+		return;
+	if(m_sett)
+		m_sett->setValue("topology/dir", QFileInfo(filename).path());
+
+	if(!m_plot_bc->savePdf(filename))
+		ShowError(QString("Could not save figure to file \"%1\".").arg(filename).toStdString().c_str());
+}
+
+
+
+/**
+ * save plot as data file
+ */
+void TopologyDlg::SaveBerryCurvatureData()
+{
+	if(m_Qs_data_bc.size() == 0 || m_Bs_data_bc.size() == 0)
+		return;
+
+	QString dirLast;
+	if(m_sett)
+		dirLast = m_sett->value("topology/dir", "").toString();
+	QString filename = QFileDialog::getSaveFileName(
+		this, "Save Data", dirLast, "Data Files (*.dat)");
+	if(filename == "")
+		return;
+	if(m_sett)
+		m_sett->setValue("topology/dir", QFileInfo(filename).path());
+
+	std::ofstream ofstr(filename.toStdString());
+	if(!ofstr)
+	{
+		ShowError(QString("Could not save data to file \"%1\".").arg(filename).toStdString().c_str());
+		return;
+	}
+
+	t_size num_bands = m_Bs_data_bc.size();
+
+	ofstr.precision(g_prec);
+	int field_len = g_prec * 2.5;
+
+	// write meta header
+	const char* user = std::getenv("USER");
+	if(!user)
+		user = "";
+
+	ofstr << "#\n"
+		<< "# Created by Takin/Magdyn\n"
+		<< "# URL: https://github.com/ILLGrenoble/takin\n"
+		<< "# DOI: https://doi.org/10.5281/zenodo.4117437\n"
+		<< "# User: " << user << "\n"
+		<< "# Date: " << tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()) << "\n"
+		<< "#\n# Number of energy bands: " << num_bands << "\n"
+		<< "#\n\n";
+
+	// write column header
+	ofstr << std::setw(field_len) << std::left << "# h" << " ";
+	ofstr << std::setw(field_len) << std::left << "k" << " ";
+	ofstr << std::setw(field_len) << std::left << "l" << " ";
+
+	for(t_size band = 0; band < num_bands; ++band)
+	{
+		std::string E = "E_" + tl2::var_to_str(band);
+		std::string ReB = "Re{B_" + tl2::var_to_str(band) + "}";
+		std::string ImB = "Re{B_" + tl2::var_to_str(band) + "}";
+
+		ofstr << std::setw(field_len) << std::left << E << " ";
+		ofstr << std::setw(field_len) << std::left << ReB << " ";
+		ofstr << std::setw(field_len) << std::left << ImB << " ";
+	}
+	ofstr << "\n";
+
+	// TODO: write data
 }
 
 

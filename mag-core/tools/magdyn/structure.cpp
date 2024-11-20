@@ -24,7 +24,6 @@
  */
 
 #include "magdyn.h"
-#include <QtWidgets/QMessageBox>
 
 #include <iostream>
 #include <boost/scope_exit.hpp>
@@ -164,7 +163,7 @@ void MagDynDlg::GenerateSitesFromSG()
 	}
 	catch(const std::exception& ex)
 	{
-		QMessageBox::critical(this, "Magnetic Dynamics", ex.what());
+		ShowError(ex.what());
 	}
 }
 
@@ -188,7 +187,7 @@ void MagDynDlg::GenerateCouplingsFromSG()
 	}
 	catch(const std::exception& ex)
 	{
-		QMessageBox::critical(this, "Magnetic Dynamics", ex.what());
+		ShowError(ex.what());
 	}
 }
 
@@ -219,7 +218,7 @@ void MagDynDlg::ExtendStructure()
 	}
 	catch(const std::exception& ex)
 	{
-		QMessageBox::critical(this, "Magnetic Dynamics", ex.what());
+		ShowError(ex.what());
 	}
 }
 
@@ -248,7 +247,7 @@ void MagDynDlg::GeneratePossibleCouplings()
 	}
 	catch(const std::exception& ex)
 	{
-		QMessageBox::critical(this, "Magnetic Dynamics", ex.what());
+		ShowError(ex.what());
 	}
 }
 
@@ -265,11 +264,7 @@ const std::vector<t_mat_real>& MagDynDlg::GetSymOpsForCurrentSG(bool show_err) c
 	if(sgidx < 0 || t_size(sgidx) >= m_SGops.size())
 	{
 		if(show_err)
-		{
-			QMessageBox::critical(const_cast<MagDynDlg*>(this),
-				"Magnetic Dynamics",
-				"Invalid space group selected.");
-		}
+			ShowError("Invalid space group selected.");
 
 		// return empty symop list
 		static const std::vector<t_mat_real> nullvec{};

@@ -183,8 +183,7 @@ void MagDynDlg::SaveMultiDispersion(bool as_scr)
 
 	if(Qs.size() <= 1)
 	{
-		QMessageBox::critical(this, "Magnetic Dynamics",
-			"Not enough Q coordinates available, "
+		ShowError("Not enough Q coordinates available, "
 			"please define them in the \"Coordinates\" tab.");
 		return;
 	}
