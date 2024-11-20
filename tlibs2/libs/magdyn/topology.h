@@ -248,8 +248,8 @@ requires tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
 		for(Q[dim] = -bz; Q[dim] < bz; Q[dim] += delta_int)
 		{
 			std::vector<t_vec> conns =
-				berry_connections<t_vec, t_vec_real, t_mat, t_S, t_cplx, t_real>(
-					get_evecs, Q, delta_diff);
+				std::get<0>(berry_connections<t_vec, t_vec_real, t_mat, t_S, t_cplx, t_real>(
+					get_evecs, Q, delta_diff));
 
 			// initialise by resetting chern numbers to zeros
 			if(!chern_nums.size())
@@ -296,9 +296,9 @@ requires tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
 		for(Q[dim1] = -bz; Q[dim1] < bz; Q[dim1] += delta_int)
 		for(Q[dim2] = -bz; Q[dim2] < bz; Q[dim2] += delta_int)
 		{
-			std::vector<t_cplx> curvs = berry_curvatures<
+			std::vector<t_cplx> curvs = std::get<0>(berry_curvatures<
 				t_vec, t_vec_real, t_mat, t_S, t_cplx, t_real, t_size>(
-					get_evecs, Q, delta_diff, dim1, dim2);
+					get_evecs, Q, delta_diff, dim1, dim2));
 
 			// initialise by resetting chern numbers to zeros
 			if(!chern_nums.size())
