@@ -1542,27 +1542,16 @@ void MagDynDlg::CreateDispersionPanel()
 	{
 		connect(m_Q_start[i],
 			static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
-			[this]()
-		{
-			if(this->m_autocalc->isChecked())
-				this->CalcDispersion();
-		});
+			this, &MagDynDlg::DispersionQChanged);
+
 		connect(m_Q_end[i],
 			static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
-			[this]()
-		{
-			if(this->m_autocalc->isChecked())
-				this->CalcDispersion();
-		});
+			this, &MagDynDlg::DispersionQChanged);
 	}
 
 	connect(m_num_points,
 		static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-		[this]()
-	{
-		if(this->m_autocalc->isChecked())
-			this->CalcDispersion();
-	});
+		this, &MagDynDlg::DispersionQChanged);
 
 	for(auto* comp : {m_weight_scale, m_weight_min, m_weight_max})
 	{

@@ -174,12 +174,16 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	m_imag_bc->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
 	m_imag_bc->setToolTip("Show imaginary component of Berry curvature?");
 
-	// start/stop button
-	m_btnStartStop_bc = new QPushButton("Calculate", panelBerryCurvature);
-
 	// progress bar
 	m_progress_bc = new QProgressBar(panelBerryCurvature);
 	m_progress_bc->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+	// dispersion Q button
+	QPushButton *btnQ = new QPushButton("Set Main Q", panelBerryCurvature);
+	btnQ->setToolTip("Set the Q start and end points from the dispersion in the main window.");
+
+	// start/stop button
+	m_btnStartStop_bc = new QPushButton("Calculate", panelBerryCurvature);
 
 	// component grid
 	auto grid = new QGridLayout(panelBerryCurvature);
@@ -204,7 +208,8 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	grid->addWidget(m_coords_bc[0], y, 1, 1, 1);
 	grid->addWidget(m_coords_bc[1], y, 2, 1, 1);
 	grid->addWidget(m_imag_bc, y++, 3, 1, 1);
-	grid->addWidget(m_progress_bc, y, 0, 1, 3);
+	grid->addWidget(m_progress_bc, y, 0, 1, 2);
+	grid->addWidget(btnQ, y, 2, 1, 1);
 	grid->addWidget(m_btnStartStop_bc, y++, 3, 1, 1);
 
 	// restore settings
@@ -217,6 +222,7 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	connect(m_plot_bc, &QCustomPlot::mouseMove, this, &TopologyDlg::BerryCurvaturePlotMouseMove);
 	connect(m_plot_bc, &QCustomPlot::mousePress, this, &TopologyDlg::BerryCurvaturePlotMousePress);
 	connect(acRescalePlot, &QAction::triggered, this, &TopologyDlg::RescaleBerryCurvaturePlot);
+	connect(btnQ, &QAbstractButton::clicked, this, &TopologyDlg::SetBerryCurvatureQ);
 	connect(m_btnStartStop_bc, &QAbstractButton::clicked, [this]()
 	{
 		// behaves as start or stop button?
@@ -245,6 +251,17 @@ TopologyDlg::~TopologyDlg()
 void TopologyDlg::SetKernel(const t_magdyn* dyn)
 {
 	m_dyn = dyn;
+}
+
+
+
+/**
+ * set the Q start and end points from the main window's dispersion
+ */
+void TopologyDlg::SetDispersionQ(const t_vec_real& Qstart, const t_vec_real& Qend)
+{
+	m_Qstart = Qstart;
+	m_Qend = Qend;
 }
 
 
@@ -468,7 +485,7 @@ void TopologyDlg::CalculateBerryCurvature()
 	{
 		// sort vectors by Q component
 		std::vector<std::size_t> perm = tl2::get_perm(Qvec.size(),
-			[&Qvec, &Bvec](std::size_t idx1, std::size_t idx2) -> bool
+			[&Qvec](std::size_t idx1, std::size_t idx2) -> bool
 		{
 			return Qvec[idx1] < Qvec[idx2];
 		});
@@ -597,6 +614,23 @@ void TopologyDlg::EnableBerryCurvatureCalculation(bool enable)
 		m_btnStartStop_bc->setText("Stop");
 		m_btnStartStop_bc->setToolTip("Stop running calculation.");
 		m_btnStartStop_bc->setIcon(QIcon::fromTheme("media-playback-stop"));
+	}
+}
+
+
+
+/**
+ * set the berry curvature's Q positions to the main window dispersion Qs
+ */
+void TopologyDlg::SetBerryCurvatureQ()
+{
+	if(m_Qstart.size() < 3 || m_Qend.size() < 3)
+		return;
+
+	for(int i = 0; i < 3; ++i)
+	{
+		m_Q_start_bc[i]->setValue(m_Qstart[i]);
+		m_Q_end_bc[i]->setValue(m_Qend[i]);
 	}
 }
 // ============================================================================

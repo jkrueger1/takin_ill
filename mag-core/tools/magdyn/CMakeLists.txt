@@ -157,10 +157,10 @@ if(USE_QT)
 		# main program
 		main.cpp main_gui.cpp
 		magdyn.cpp magdyn.h
-		struct.cpp gui.cpp tables.cpp
+		structure.cpp gui.cpp tables.cpp
 		config.cpp file.cpp
 		export.cpp export_sqe.cpp
-		kernel.cpp disp.cpp
+		kernel.cpp dispersion.cpp
 		defs.cpp defs.h
 		gui_defs.h graph.h
 

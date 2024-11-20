@@ -437,6 +437,10 @@ private:
 	t_real m_Q_min{}, m_Q_max{};      // plot x axis range
 
 
+protected slots:
+	void DispersionQChanged();
+
+
 public slots:
 	void SelectSite(const std::string& site);
 	void DeleteSite(const std::string& site);

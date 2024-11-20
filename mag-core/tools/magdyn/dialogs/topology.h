@@ -56,7 +56,9 @@ public:
 	TopologyDlg(const TopologyDlg&) = delete;
 	TopologyDlg& operator=(const TopologyDlg&) = delete;
 
+	// set kernel and Q path from main window
 	void SetKernel(const t_magdyn* dyn);
+	void SetDispersionQ(const t_vec_real& Qstart, const t_vec_real& Qend);
 
 
 protected:
@@ -72,11 +74,14 @@ protected:
 
 	void EnableBerryCurvatureCalculation(bool enable = true);
 	void CalculateBerryCurvature();
+
+	void SetBerryCurvatureQ();
 	// ------------------------------------------------------------------------
 
 
 private:
 	const t_magdyn *m_dyn{};            // main calculation kernel
+	t_vec_real m_Qstart{}, m_Qend{};    // Qs from main window
 
 	// ------------------------------------------------------------------------
 	// main dialog

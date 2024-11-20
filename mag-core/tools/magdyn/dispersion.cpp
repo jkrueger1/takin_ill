@@ -76,6 +76,36 @@ void MagDynDlg::ClearDispersion(bool replot)
 
 
 /**
+ * a new start or end Q coordinate has been entered
+ */
+void MagDynDlg::DispersionQChanged()
+{
+	if(this->m_autocalc->isChecked())
+		this->CalcDispersion();
+
+	if(m_topo_dlg)
+	{
+		t_vec_real Q_start = tl2::create<t_vec_real>(
+		{
+			(t_real)m_Q_start[0]->value(),
+			(t_real)m_Q_start[1]->value(),
+			(t_real)m_Q_start[2]->value(),
+		});
+
+		t_vec_real Q_end = tl2::create<t_vec_real>(
+		{
+			(t_real)m_Q_end[0]->value(),
+			(t_real)m_Q_end[1]->value(),
+			(t_real)m_Q_end[2]->value(),
+		});
+
+		m_topo_dlg->SetDispersionQ(Q_start, Q_end);
+	}
+}
+
+
+
+/**
  * draw the calculated dispersion curve
  */
 void MagDynDlg::PlotDispersion()
