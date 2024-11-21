@@ -33,6 +33,7 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpinBox>
 #include <QtWidgets/QCheckBox>
+#include <QtWidgets/QAction>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QProgressBar>
 
@@ -108,13 +109,10 @@ private:
 	// berry curvature tab
 	std::vector<BerryCurvatureData> m_data_bc{};  // all (non-filtered) berry curvature data
 
-	QCustomPlot *m_plot_bc{};                 // berry curvature plotter
-	std::vector<QCPCurve*> m_curves_bc{};     // berry cyrvature plot curves
-	std::vector<QVector<qreal>> m_Qs_data_bc{};  // filtered momentum transfer per band
-	std::vector<QVector<qreal>> m_Bs_data_bc{};  // filtered berry curvature per band
-	t_size m_Q_idx_bc{};                      // index of dominant Q component
-	t_real m_Q_min_bc{}, m_Q_max_bc{};        // range of dominant Q component
-	t_real m_B_min_bc{}, m_B_max_bc{};        // range of berry curvature
+	QCustomPlot *m_plot_bc{};           // berry curvature plotter
+	std::vector<QCPCurve*> m_curves_bc{};  // berry curvature plot curves
+	t_size m_Q_idx_bc{};                // index of dominant Q component
+	t_real m_Q_min_bc{}, m_Q_max_bc{};  // range of dominant Q component
 
 	QDoubleSpinBox *m_Q_start_bc[3]{};  // Q start coordinate
 	QDoubleSpinBox *m_Q_end_bc[3]{};    // Q end coordinate
@@ -126,10 +124,9 @@ private:
 	QCheckBox *m_S_filter_enable_bc{};  // switch to enable maximum S(Q,E) value
 	QDoubleSpinBox *m_S_filter_bc{};    // maximum S(Q,E) value
 
-	QCheckBox *m_E_positive{};          // ignore magnon annihilation
-
 	QSpinBox *m_coords_bc[2]{};         // berry curvature component indices
-	QCheckBox *m_imag_bc{};             // imaginary or real components?
+	QAction *m_imag_bc{};               // imaginary or real components?
+	QAction *m_E_positive{};            // ignore magnon annihilation
 
 	QPushButton *m_btnStartStop_bc{};   // start/stop calculation
 	bool m_calcEnabled_bc{};            // enable calculations

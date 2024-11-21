@@ -105,12 +105,26 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	QAction *acRescalePlot = new QAction("Rescale Axes", m_menuPlot_bc);
 	QAction *acSaveFigure = new QAction("Save Figure...", m_menuPlot_bc);
 	QAction *acSaveData = new QAction("Save Data...", m_menuPlot_bc);
+
 	acSaveFigure->setIcon(QIcon::fromTheme("image-x-generic"));
 	acSaveData->setIcon(QIcon::fromTheme("text-x-generic"));
+
+	m_E_positive = new QAction("Ignore Magnon Annihilation", m_menuPlot_bc);
+	m_E_positive->setCheckable(true);
+	m_E_positive->setChecked(false);
+
+	m_imag_bc = new QAction("Show Imaginary B Component", m_menuPlot_bc);
+	m_imag_bc->setCheckable(true);
+	m_imag_bc->setChecked(false);
+	m_imag_bc->setToolTip("Show the imaginary component of the Berry curvature.");
+
 	m_menuPlot_bc->addAction(acRescalePlot);
 	m_menuPlot_bc->addSeparator();
 	m_menuPlot_bc->addAction(acSaveFigure);
 	m_menuPlot_bc->addAction(acSaveData);
+	m_menuPlot_bc->addSeparator();
+	m_menuPlot_bc->addAction(m_E_positive);
+	m_menuPlot_bc->addAction(m_imag_bc);
 
 	// start and stop coordinates
 	m_Q_start_bc[0] = new QDoubleSpinBox(panelBerryCurvature);
@@ -155,10 +169,9 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	m_num_Q_bc->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
 	m_num_Q_bc->setToolTip("Number of Q points to calculate.");
 
-	m_E_positive = new QCheckBox("Only E ≥ 0", panelBerryCurvature);
-	m_E_positive->setChecked(false);
-	m_E_positive->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
-	m_E_positive->setToolTip("Ignore Magnon Annihilation.");
+	// dispersion Q button
+	QPushButton *btnQ = new QPushButton("Set Main Q", panelBerryCurvature);
+	btnQ->setToolTip("Set the Q start and end points from the dispersion in the main window.");
 
 	// coordinate components
 	m_coords_bc[0] = new QSpinBox(panelBerryCurvature);
@@ -176,11 +189,6 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	m_coords_bc[1]->setPrefix("j = ");
 	m_coords_bc[1]->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
 	m_coords_bc[1]->setToolTip("Second component index of B_ij matrix.");
-
-	m_imag_bc = new QCheckBox("Imaginary", panelBerryCurvature);
-	m_imag_bc->setChecked(false);
-	m_imag_bc->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
-	m_imag_bc->setToolTip("Show imaginary component of Berry curvature.");
 
 	// cutoff switch for filtering numerical artefacts
 	m_B_filter_enable_bc = new QCheckBox("B Cutoff", panelBerryCurvature);
@@ -204,10 +212,10 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 
 	// cutoff value for filtering numerical artefacts
 	m_S_filter_bc = new QDoubleSpinBox(panelBerryCurvature);
-	m_S_filter_bc->setDecimals(4);
+	m_S_filter_bc->setDecimals(5);
 	m_S_filter_bc->setMinimum(0.);
-	m_S_filter_bc->setMaximum(+99999.9999);
-	m_S_filter_bc->setSingleStep(1.);
+	m_S_filter_bc->setMaximum(+9999.99999);
+	m_S_filter_bc->setSingleStep(0.1);
 	m_S_filter_bc->setValue(m_S_filter_bc->maximum());
 	m_S_filter_bc->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
 	m_S_filter_bc->setToolTip("Cutoff S(Q, E).");
@@ -215,10 +223,6 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	// progress bar
 	m_progress_bc = new QProgressBar(panelBerryCurvature);
 	m_progress_bc->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-
-	// dispersion Q button
-	QPushButton *btnQ = new QPushButton("Set Main Q", panelBerryCurvature);
-	btnQ->setToolTip("Set the Q start and end points from the dispersion in the main window.");
 
 	// start/stop button
 	m_btnStartStop_bc = new QPushButton("Calculate", panelBerryCurvature);
@@ -240,17 +244,15 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	grid->addWidget(m_Q_end_bc[2], y++, 3, 1, 1);
 	grid->addWidget(new QLabel("Q Count:", panelBerryCurvature), y, 0, 1, 1);
 	grid->addWidget(m_num_Q_bc, y, 1, 1, 1);
-	grid->addWidget(m_E_positive, y++, 3, 1, 1);
+	grid->addWidget(btnQ, y++, 3, 1, 1);
 	grid->addWidget(new QLabel("B Component:", panelBerryCurvature), y, 0, 1, 1);
 	grid->addWidget(m_coords_bc[0], y, 1, 1, 1);
-	grid->addWidget(m_coords_bc[1], y, 2, 1, 1);
-	grid->addWidget(m_imag_bc, y++, 3, 1, 1);
+	grid->addWidget(m_coords_bc[1], y++, 2, 1, 1);
 	grid->addWidget(m_B_filter_enable_bc, y, 0, 1, 1);
 	grid->addWidget(m_B_filter_bc, y, 1, 1, 1);
 	grid->addWidget(m_S_filter_enable_bc, y, 2, 1, 1);
 	grid->addWidget(m_S_filter_bc, y++, 3, 1, 1);
-	grid->addWidget(m_progress_bc, y, 0, 1, 2);
-	grid->addWidget(btnQ, y, 2, 1, 1);
+	grid->addWidget(m_progress_bc, y, 0, 1, 3);
 	grid->addWidget(m_btnStartStop_bc, y++, 3, 1, 1);
 
 	// restore settings
@@ -268,6 +270,8 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	connect(btnQ, &QAbstractButton::clicked, this, &TopologyDlg::SetBerryCurvatureQ);
 	connect(m_B_filter_enable_bc, &QCheckBox::toggled, m_B_filter_bc, &QDoubleSpinBox::setEnabled);
 	connect(m_S_filter_enable_bc, &QCheckBox::toggled, m_S_filter_bc, &QDoubleSpinBox::setEnabled);
+
+	// calculation
 	connect(m_btnStartStop_bc, &QAbstractButton::clicked, [this]()
 	{
 		// behaves as start or stop button?
@@ -276,6 +280,16 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 		else
 			m_stopRequested_bc = true;
 	});
+
+	// replotting
+	connect(m_E_positive, &QAction::toggled, this, &TopologyDlg::PlotBerryCurvature);
+	connect(m_imag_bc, &QAction::toggled, this, &TopologyDlg::PlotBerryCurvature);
+	connect(m_B_filter_enable_bc, &QCheckBox::toggled, this, &TopologyDlg::PlotBerryCurvature);
+	connect(m_S_filter_enable_bc, &QCheckBox::toggled, this, &TopologyDlg::PlotBerryCurvature);
+	connect(m_B_filter_bc, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+		this, &TopologyDlg::PlotBerryCurvature);
+	connect(m_S_filter_bc, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+		this, &TopologyDlg::PlotBerryCurvature);
 
 	m_tabs->addTab(panelBerryCurvature, "Berry Curvature");
 
@@ -339,18 +353,102 @@ void TopologyDlg::accept()
 // calculate berry curvature
 // ============================================================================
 /**
- * plot the berry curvature
+ * calculate the filtered data sets and plot the berry curvature
  */
 void TopologyDlg::PlotBerryCurvature()
 {
 	if(!m_plot_bc)
 		return;
 
-	m_plot_bc->clearPlottables();
-	m_curves_bc.clear();
+	ClearBerryCurvaturePlot(false);
+
+	if(m_data_bc.size() == 0)
+	{
+		m_plot_bc->replot();
+		return;
+	}
+
+	// get settings
+	t_real max_B = m_B_filter_bc->value();
+	if(!m_B_filter_enable_bc->isChecked())
+		max_B = -1.;  // disable B filter
+
+	t_real max_S = m_S_filter_bc->value();
+	if(!m_S_filter_enable_bc->isChecked())
+		max_S = -1.;  // disable S(Q, E) filter
+
+	bool show_imag_comp = m_imag_bc->isChecked();
+	bool only_creation = m_E_positive->isChecked();
+
+	t_size num_Q = m_data_bc.size();
+	t_size num_bands = m_data_bc[0].curvatures.size();
+
+	// filtered momentum transfer and berry curvature per band
+	std::vector<QVector<qreal>> Qs_data_bc{num_bands};
+	std::vector<QVector<qreal>> Bs_data_bc{num_bands};
+
+	for(t_size Q_idx = 0; Q_idx < num_Q; ++Q_idx)
+	{
+		const t_vec_real& Q = m_data_bc[Q_idx].momentum;
+
+		for(t_size band = 0; band < num_bands; ++band)
+		{
+			t_real berry_comp = show_imag_comp
+				? m_data_bc[Q_idx].curvatures[band].imag()
+				: m_data_bc[Q_idx].curvatures[band].real();
+
+			// filter numerical artefacts in B
+			if(max_B >= 0. && std::abs(berry_comp) > max_B)
+				continue;
+
+			// filter maximum S(Q, E)
+			if(max_S >= 0. && std::abs(m_data_bc[Q_idx].weights[band]) > max_S)
+				continue;
+
+			// filter magnon annihilation
+			if(only_creation && m_data_bc[Q_idx].energies[band] < 0.)
+				continue;
+
+			Qs_data_bc[band].push_back(Q[m_Q_idx_bc]);
+			Bs_data_bc[band].push_back(berry_comp);
+		}
+	}
+
+	// sort filtered data by Q
+	auto sort_data = [](QVector<qreal>& Qvec, QVector<qreal>& Bvec)
+	{
+		// sort vectors by Q component
+		std::vector<std::size_t> perm = tl2::get_perm(Qvec.size(),
+			[&Qvec](std::size_t idx1, std::size_t idx2) -> bool
+		{
+			return Qvec[idx1] < Qvec[idx2];
+		});
+
+		Qvec = tl2::reorder(Qvec, perm);
+		Bvec = tl2::reorder(Bvec, perm);
+	};
+
+	for(t_size band = 0; band < Bs_data_bc.size(); ++band)
+		sort_data(Qs_data_bc[band], Bs_data_bc[band]);
+
+	// berry curvature range
+	t_real B_min_bc = std::numeric_limits<t_real>::max();
+	t_real B_max_bc = -B_min_bc;
+
+	// get berry curvature range
+	for(const QVector<t_real>& Bs_data : Bs_data_bc)
+	{
+		auto [min_B_iter, max_B_iter] = std::minmax_element(Bs_data.begin(), Bs_data.end());
+		if(min_B_iter != Bs_data.end() && max_B_iter != Bs_data.end())
+		{
+			t_real B_range = *max_B_iter - *min_B_iter;
+
+			B_max_bc = std::max(B_max_bc, *max_B_iter + B_range*0.05);
+			B_min_bc = std::min(B_min_bc, *min_B_iter - B_range*0.05);
+		}
+	}
 
 	// plot berry curvatures per band
-	const t_size num_bands = m_Bs_data_bc.size();
 	for(t_size band = 0; band < num_bands; ++band)
 	{
 		QCPCurve *curve = new QCPCurve(m_plot_bc->xAxis, m_plot_bc->yAxis);
@@ -372,7 +470,7 @@ void TopologyDlg::PlotBerryCurvature()
 		curve->setLineStyle(QCPCurve::lsLine);
 		curve->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssNone, 1));
 		curve->setAntialiased(true);
-		curve->setData(m_Qs_data_bc[band], m_Bs_data_bc[band]);
+		curve->setData(Qs_data_bc[band], Bs_data_bc[band]);
 
 		m_curves_bc.push_back(curve);
 	}
@@ -383,7 +481,7 @@ void TopologyDlg::PlotBerryCurvature()
 
 	// set ranges
 	m_plot_bc->xAxis->setRange(m_Q_min_bc, m_Q_max_bc);
-	m_plot_bc->yAxis->setRange(m_B_min_bc, m_B_max_bc);
+	m_plot_bc->yAxis->setRange(B_min_bc, B_max_bc);
 
 	// set font
 	m_plot_bc->setFont(font());
@@ -440,28 +538,21 @@ void TopologyDlg::CalculateBerryCurvature()
 	if(Q_start[m_Q_idx_bc] > Q_end[m_Q_idx_bc])
 		std::swap(Q_start, Q_end);
 
+	// Q range
+	m_Q_min_bc = Q_start[m_Q_idx_bc];
+	m_Q_max_bc = Q_end[m_Q_idx_bc];
+
 	// get settings
 	t_size Q_count = m_num_Q_bc->value();
 	std::vector<t_size> *perm = nullptr;
 	t_size dim1 = m_coords_bc[0]->value();
 	t_size dim2 = m_coords_bc[1]->value();
 
-	t_real max_B = m_B_filter_bc->value();
-	if(!m_B_filter_enable_bc->isChecked())
-		max_B = -1.;  // disable B filter
-
-	t_real max_S = m_S_filter_bc->value();
-	if(!m_S_filter_enable_bc->isChecked())
-		max_S = -1.;  // disable S(Q, E) filter
-
-	bool show_imag_comp = m_imag_bc->isChecked();
-	bool only_creation = m_E_positive->isChecked();
-
 	// calculate berry curvature
 	t_magdyn dyn = *m_dyn;
 	dyn.SetUniteDegenerateEnergies(false);
 
-	// tread pool and mutex to protect m_Qs_data_bc and m_Bs_data_bc
+	// tread pool and mutex to protect the data vectors
 	asio::thread_pool pool{g_num_threads};
 	std::mutex mtx;
 
@@ -479,12 +570,13 @@ void TopologyDlg::CalculateBerryCurvature()
 	using t_taskptr = std::shared_ptr<t_task>;
 	std::vector<t_taskptr> tasks;
 	tasks.reserve(Q_count);
+
+	m_data_bc.clear();
 	m_data_bc.reserve(Q_count);
 
 	for(t_size Q_idx = 0; Q_idx < Q_count; ++Q_idx)
 	{
-		auto task = [this, &mtx, &dyn, &Q_start, &Q_end, Q_idx, Q_count,
-			perm, dim1, dim2, show_imag_comp, only_creation, max_B, max_S]()
+		auto task = [this, &mtx, &dyn, &Q_start, &Q_end, Q_idx, Q_count, perm, dim1, dim2]()
 		{
 			const t_vec_real Q = Q_count > 1
 				? tl2::lerp(Q_start, Q_end, t_real(Q_idx) / t_real(Q_count - 1))
@@ -509,34 +601,6 @@ void TopologyDlg::CalculateBerryCurvature()
 			}
 
 			std::lock_guard<std::mutex> _lck{mtx};
-
-			if(num_bands > m_Bs_data_bc.size())
-				m_Bs_data_bc.resize(num_bands);
-			if(num_bands > m_Qs_data_bc.size())
-				m_Qs_data_bc.resize(num_bands);
-
-			for(t_size band = 0; band < num_bands; ++band)
-			{
-				t_real berry_comp = show_imag_comp
-					? data_bc.curvatures[band].imag()
-					: data_bc.curvatures[band].real();
-
-				// filter numerical artefacts in B
-				if(max_B >= 0. && std::abs(berry_comp) > max_B)
-					continue;
-
-				// filter maximum S(Q, E)
-				if(max_S >= 0. && std::abs(S.E_and_S[band].weight) > max_S)
-					continue;
-
-				// filter magnon annihilation
-				if(only_creation && S.E_and_S[band].E < 0.)
-					continue;
-
-				m_Qs_data_bc[band].push_back(Q[m_Q_idx_bc]);
-				m_Bs_data_bc[band].push_back(berry_comp);
-			}
-
 			m_data_bc.emplace_back(std::move(data_bc));
 		};
 
@@ -587,42 +651,6 @@ void TopologyDlg::CalculateBerryCurvature()
 
 	m_data_bc = tl2::reorder(m_data_bc, perm_all);
 
-	// sort filtered data by Q
-	auto sort_data = [](QVector<qreal>& Qvec, QVector<qreal>& Bvec)
-	{
-		// sort vectors by Q component
-		std::vector<std::size_t> perm = tl2::get_perm(Qvec.size(),
-			[&Qvec](std::size_t idx1, std::size_t idx2) -> bool
-		{
-			return Qvec[idx1] < Qvec[idx2];
-		});
-
-		Qvec = tl2::reorder(Qvec, perm);
-		Bvec = tl2::reorder(Bvec, perm);
-	};
-
-	for(t_size band = 0; band < m_Bs_data_bc.size(); ++band)
-		sort_data(m_Qs_data_bc[band], m_Bs_data_bc[band]);
-
-	// data ranges
-	m_Q_min_bc = Q_start[m_Q_idx_bc];
-	m_Q_max_bc = Q_end[m_Q_idx_bc];
-	m_B_min_bc = std::numeric_limits<t_real>::max();
-	m_B_max_bc = -m_B_min_bc;
-
-	// get berry curvature range
-	for(const QVector<t_real>& Bs_data : m_Bs_data_bc)
-	{
-		auto [min_B_iter, max_B_iter] = std::minmax_element(Bs_data.begin(), Bs_data.end());
-		if(min_B_iter != Bs_data.end() && max_B_iter != Bs_data.end())
-		{
-			t_real B_range = *max_B_iter - *min_B_iter;
-
-			m_B_max_bc = std::max(m_B_max_bc, *max_B_iter + B_range*0.05);
-			m_B_min_bc = std::min(m_B_min_bc, *min_B_iter - B_range*0.05);
-		}
-	}
-
 	PlotBerryCurvature();
 }
 
@@ -641,11 +669,6 @@ void TopologyDlg::ClearBerryCurvaturePlot(bool replot)
 		if(replot)
 			m_plot_bc->replot();
 	}
-
-	m_data_bc.clear();
-	m_Qs_data_bc.clear();
-	m_Bs_data_bc.clear();
-	m_Q_idx_bc = 0;
 }
 
 
@@ -733,7 +756,7 @@ void TopologyDlg::SaveBerryCurvaturePlotFigure()
  */
 void TopologyDlg::SaveBerryCurvatureData()
 {
-	if(m_Qs_data_bc.size() == 0 || m_Bs_data_bc.size() == 0)
+	if(m_data_bc.size() == 0)
 		return;
 
 	QString dirLast;
@@ -753,7 +776,7 @@ void TopologyDlg::SaveBerryCurvatureData()
 		return;
 	}
 
-	t_size num_bands = m_Bs_data_bc.size();
+	t_size num_bands = m_data_bc[0].curvatures.size();
 
 	ofstr.precision(g_prec);
 	int field_len = g_prec * 2.5;
