@@ -155,15 +155,10 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	m_num_Q_bc->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
 	m_num_Q_bc->setToolTip("Number of Q points to calculate.");
 
-	// cutoff value for filtering numerical artefacts
-	m_B_filter_bc = new QDoubleSpinBox(panelBerryCurvature);
-	m_B_filter_bc->setDecimals(2);
-	m_B_filter_bc->setMinimum(-1.);
-	m_B_filter_bc->setMaximum(+99999.99);
-	m_B_filter_bc->setSingleStep(1.);
-	m_B_filter_bc->setValue(m_B_filter_bc->maximum());
-	m_B_filter_bc->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
-	m_B_filter_bc->setToolTip("Cutoff Berry curvature for filtering numerical artefacts (-1: deactivated).");
+	m_E_positive = new QCheckBox("Only E ≥ 0", panelBerryCurvature);
+	m_E_positive->setChecked(false);
+	m_E_positive->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
+	m_E_positive->setToolTip("Ignore Magnon Annihilation.");
 
 	// coordinate components
 	m_coords_bc[0] = new QSpinBox(panelBerryCurvature);
@@ -185,7 +180,37 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	m_imag_bc = new QCheckBox("Imaginary", panelBerryCurvature);
 	m_imag_bc->setChecked(false);
 	m_imag_bc->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
-	m_imag_bc->setToolTip("Show imaginary component of Berry curvature?");
+	m_imag_bc->setToolTip("Show imaginary component of Berry curvature.");
+
+	// cutoff switch for filtering numerical artefacts
+	m_B_filter_enable_bc = new QCheckBox("B Cutoff", panelBerryCurvature);
+	m_B_filter_enable_bc->setChecked(true);
+	m_B_filter_enable_bc->setToolTip("Enable cutoff Berry curvature for filtering numerical artefacts.");
+
+	// cutoff value for filtering numerical artefacts
+	m_B_filter_bc = new QDoubleSpinBox(panelBerryCurvature);
+	m_B_filter_bc->setDecimals(2);
+	m_B_filter_bc->setMinimum(0.);
+	m_B_filter_bc->setMaximum(+999999.99);
+	m_B_filter_bc->setSingleStep(1.);
+	m_B_filter_bc->setValue(m_B_filter_bc->maximum());
+	m_B_filter_bc->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
+	m_B_filter_bc->setToolTip("Cutoff Berry curvature for filtering numerical artefacts.");
+
+	// cutoff switch for filtering numerical artefacts
+	m_S_filter_enable_bc = new QCheckBox("S(Q, E) Cutoff", panelBerryCurvature);
+	m_S_filter_enable_bc->setChecked(false);
+	m_S_filter_enable_bc->setToolTip("Enable cutoff S(Q, E).");
+
+	// cutoff value for filtering numerical artefacts
+	m_S_filter_bc = new QDoubleSpinBox(panelBerryCurvature);
+	m_S_filter_bc->setDecimals(4);
+	m_S_filter_bc->setMinimum(0.);
+	m_S_filter_bc->setMaximum(+99999.9999);
+	m_S_filter_bc->setSingleStep(1.);
+	m_S_filter_bc->setValue(m_S_filter_bc->maximum());
+	m_S_filter_bc->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
+	m_S_filter_bc->setToolTip("Cutoff S(Q, E).");
 
 	// progress bar
 	m_progress_bc = new QProgressBar(panelBerryCurvature);
@@ -215,12 +240,15 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	grid->addWidget(m_Q_end_bc[2], y++, 3, 1, 1);
 	grid->addWidget(new QLabel("Q Count:", panelBerryCurvature), y, 0, 1, 1);
 	grid->addWidget(m_num_Q_bc, y, 1, 1, 1);
-	grid->addWidget(new QLabel("B Cutoff:", panelBerryCurvature), y, 2, 1, 1);
-	grid->addWidget(m_B_filter_bc, y++, 3, 1, 1);
+	grid->addWidget(m_E_positive, y++, 3, 1, 1);
 	grid->addWidget(new QLabel("B Component:", panelBerryCurvature), y, 0, 1, 1);
 	grid->addWidget(m_coords_bc[0], y, 1, 1, 1);
 	grid->addWidget(m_coords_bc[1], y, 2, 1, 1);
 	grid->addWidget(m_imag_bc, y++, 3, 1, 1);
+	grid->addWidget(m_B_filter_enable_bc, y, 0, 1, 1);
+	grid->addWidget(m_B_filter_bc, y, 1, 1, 1);
+	grid->addWidget(m_S_filter_enable_bc, y, 2, 1, 1);
+	grid->addWidget(m_S_filter_bc, y++, 3, 1, 1);
 	grid->addWidget(m_progress_bc, y, 0, 1, 2);
 	grid->addWidget(btnQ, y, 2, 1, 1);
 	grid->addWidget(m_btnStartStop_bc, y++, 3, 1, 1);
@@ -238,6 +266,8 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	connect(acSaveFigure, &QAction::triggered, this, &TopologyDlg::SaveBerryCurvaturePlotFigure);
 	connect(acSaveData, &QAction::triggered, this, &TopologyDlg::SaveBerryCurvatureData);
 	connect(btnQ, &QAbstractButton::clicked, this, &TopologyDlg::SetBerryCurvatureQ);
+	connect(m_B_filter_enable_bc, &QCheckBox::toggled, m_B_filter_bc, &QDoubleSpinBox::setEnabled);
+	connect(m_S_filter_enable_bc, &QCheckBox::toggled, m_S_filter_bc, &QDoubleSpinBox::setEnabled);
 	connect(m_btnStartStop_bc, &QAbstractButton::clicked, [this]()
 	{
 		// behaves as start or stop button?
@@ -248,6 +278,9 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	});
 
 	m_tabs->addTab(panelBerryCurvature, "Berry Curvature");
+
+	m_B_filter_bc->setEnabled(m_B_filter_enable_bc->isChecked());
+	m_S_filter_bc->setEnabled(m_S_filter_enable_bc->isChecked());
 	EnableBerryCurvatureCalculation();
 	// ------------------------------------------------------------------------
 }
@@ -412,8 +445,17 @@ void TopologyDlg::CalculateBerryCurvature()
 	std::vector<t_size> *perm = nullptr;
 	t_size dim1 = m_coords_bc[0]->value();
 	t_size dim2 = m_coords_bc[1]->value();
-	t_real max_curv = m_B_filter_bc->value();
+
+	t_real max_B = m_B_filter_bc->value();
+	if(!m_B_filter_enable_bc->isChecked())
+		max_B = -1.;  // disable B filter
+
+	t_real max_S = m_S_filter_bc->value();
+	if(!m_S_filter_enable_bc->isChecked())
+		max_S = -1.;  // disable S(Q, E) filter
+
 	bool show_imag_comp = m_imag_bc->isChecked();
+	bool only_creation = m_E_positive->isChecked();
 
 	// calculate berry curvature
 	t_magdyn dyn = *m_dyn;
@@ -442,7 +484,7 @@ void TopologyDlg::CalculateBerryCurvature()
 	for(t_size Q_idx = 0; Q_idx < Q_count; ++Q_idx)
 	{
 		auto task = [this, &mtx, &dyn, &Q_start, &Q_end, Q_idx, Q_count,
-			perm, dim1, dim2, show_imag_comp, max_curv]()
+			perm, dim1, dim2, show_imag_comp, only_creation, max_B, max_S]()
 		{
 			const t_vec_real Q = Q_count > 1
 				? tl2::lerp(Q_start, Q_end, t_real(Q_idx) / t_real(Q_count - 1))
@@ -479,8 +521,16 @@ void TopologyDlg::CalculateBerryCurvature()
 					? data_bc.curvatures[band].imag()
 					: data_bc.curvatures[band].real();
 
-				// filter numerical artefacts
-				if(max_curv >= 0. && std::abs(berry_comp) > max_curv)
+				// filter numerical artefacts in B
+				if(max_B >= 0. && std::abs(berry_comp) > max_B)
+					continue;
+
+				// filter maximum S(Q, E)
+				if(max_S >= 0. && std::abs(S.E_and_S[band].weight) > max_S)
+					continue;
+
+				// filter magnon annihilation
+				if(only_creation && S.E_and_S[band].E < 0.)
 					continue;
 
 				m_Qs_data_bc[band].push_back(Q[m_Q_idx_bc]);

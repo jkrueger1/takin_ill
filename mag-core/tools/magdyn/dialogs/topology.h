@@ -120,7 +120,14 @@ private:
 	QDoubleSpinBox *m_Q_end_bc[3]{};    // Q end coordinate
 	QSpinBox *m_num_Q_bc{};             // number of Q coordinates
 
+	QCheckBox *m_B_filter_enable_bc{};  // switch to enable maximum B value
 	QDoubleSpinBox *m_B_filter_bc{};    // maximum B value
+
+	QCheckBox *m_S_filter_enable_bc{};  // switch to enable maximum S(Q,E) value
+	QDoubleSpinBox *m_S_filter_bc{};    // maximum S(Q,E) value
+
+	QCheckBox *m_E_positive{};          // ignore magnon annihilation
+
 	QSpinBox *m_coords_bc[2]{};         // berry curvature component indices
 	QCheckBox *m_imag_bc{};             // imaginary or real components?
 
