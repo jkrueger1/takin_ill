@@ -157,7 +157,8 @@ if(USE_QT)
 		# main program
 		main.cpp main_gui.cpp
 		magdyn.cpp magdyn.h
-		structure.cpp gui.cpp tables.cpp
+		dialogs.cpp panels.cpp
+		structure.cpp tables.cpp
 		config.cpp file.cpp
 		export.cpp export_sqe.cpp
 		kernel.cpp dispersion.cpp

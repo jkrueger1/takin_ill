@@ -190,35 +190,33 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	m_coords_bc[1]->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
 	m_coords_bc[1]->setToolTip("Second component index of B_ij matrix.");
 
-	// cutoff switch for filtering numerical artefacts
-	m_B_filter_enable_bc = new QCheckBox("B Cutoff", panelBerryCurvature);
+	// maximum cutoff for filtering numerical artefacts in berry curvature
+	m_B_filter_enable_bc = new QCheckBox("Maximum B:", panelBerryCurvature);
 	m_B_filter_enable_bc->setChecked(true);
-	m_B_filter_enable_bc->setToolTip("Enable cutoff Berry curvature for filtering numerical artefacts.");
+	m_B_filter_enable_bc->setToolTip("Enable maximum cutoff Berry curvature for filtering numerical artefacts.");
 
-	// cutoff value for filtering numerical artefacts
 	m_B_filter_bc = new QDoubleSpinBox(panelBerryCurvature);
 	m_B_filter_bc->setDecimals(2);
 	m_B_filter_bc->setMinimum(0.);
-	m_B_filter_bc->setMaximum(+999999.99);
+	m_B_filter_bc->setMaximum(999999.99);
 	m_B_filter_bc->setSingleStep(1.);
 	m_B_filter_bc->setValue(m_B_filter_bc->maximum());
 	m_B_filter_bc->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
-	m_B_filter_bc->setToolTip("Cutoff Berry curvature for filtering numerical artefacts.");
+	m_B_filter_bc->setToolTip("Maximum cutoff Berry curvature for filtering numerical artefacts.");
 
-	// cutoff switch for filtering numerical artefacts
-	m_S_filter_enable_bc = new QCheckBox("S(Q, E) Cutoff", panelBerryCurvature);
+	// minimum cutoff for filtering S(Q, E)
+	m_S_filter_enable_bc = new QCheckBox("Minimum S(Q, E):", panelBerryCurvature);
 	m_S_filter_enable_bc->setChecked(false);
-	m_S_filter_enable_bc->setToolTip("Enable cutoff S(Q, E).");
+	m_S_filter_enable_bc->setToolTip("Enable minimum S(Q, E).");
 
-	// cutoff value for filtering numerical artefacts
 	m_S_filter_bc = new QDoubleSpinBox(panelBerryCurvature);
 	m_S_filter_bc->setDecimals(5);
 	m_S_filter_bc->setMinimum(0.);
-	m_S_filter_bc->setMaximum(+9999.99999);
-	m_S_filter_bc->setSingleStep(0.1);
-	m_S_filter_bc->setValue(m_S_filter_bc->maximum());
+	m_S_filter_bc->setMaximum(9999.99999);
+	m_S_filter_bc->setSingleStep(0.01);
+	m_S_filter_bc->setValue(0.01);
 	m_S_filter_bc->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Fixed});
-	m_S_filter_bc->setToolTip("Cutoff S(Q, E).");
+	m_S_filter_bc->setToolTip("Minimum S(Q, E) to keep.");
 
 	// progress bar
 	m_progress_bc = new QProgressBar(panelBerryCurvature);
@@ -373,9 +371,9 @@ void TopologyDlg::PlotBerryCurvature()
 	if(!m_B_filter_enable_bc->isChecked())
 		max_B = -1.;  // disable B filter
 
-	t_real max_S = m_S_filter_bc->value();
+	t_real min_S = m_S_filter_bc->value();
 	if(!m_S_filter_enable_bc->isChecked())
-		max_S = -1.;  // disable S(Q, E) filter
+		min_S = -1.;  // disable S(Q, E) filter
 
 	bool show_imag_comp = m_imag_bc->isChecked();
 	bool only_creation = m_E_positive->isChecked();
@@ -401,8 +399,8 @@ void TopologyDlg::PlotBerryCurvature()
 			if(max_B >= 0. && std::abs(berry_comp) > max_B)
 				continue;
 
-			// filter maximum S(Q, E)
-			if(max_S >= 0. && std::abs(m_data_bc[Q_idx].weights[band]) > max_S)
+			// filter minimum S(Q, E)
+			if(min_S >= 0. && std::abs(m_data_bc[Q_idx].weights[band]) <= min_S)
 				continue;
 
 			// filter magnon annihilation
@@ -560,7 +558,7 @@ void TopologyDlg::CalculateBerryCurvature()
 	m_progress_bc->setMinimum(0);
 	m_progress_bc->setMaximum(Q_count);
 	m_progress_bc->setValue(0);
-	m_status->setText(QString("Starting calculation using %1 thread(s).").arg(g_num_threads));
+	m_status->setText(QString("Starting calculation using %1 threads.").arg(g_num_threads));
 
 	tl2::Stopwatch<t_real> stopwatch;
 	stopwatch.start();
@@ -609,7 +607,7 @@ void TopologyDlg::CalculateBerryCurvature()
 		asio::post(pool, [taskptr]() { (*taskptr)(); });
 	}
 
-	m_status->setText(QString("Calculating in %1 thread(s)...").arg(g_num_threads));
+	m_status->setText(QString("Calculating in %1 threads...").arg(g_num_threads));
 
 	// get results from tasks
 	for(std::size_t task_idx = 0; task_idx < tasks.size(); ++task_idx)

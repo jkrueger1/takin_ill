@@ -314,7 +314,7 @@ void MagDynDlg::CalcDispersion()
 	m_progress->setMinimum(0);
 	m_progress->setMaximum(num_pts);
 	m_progress->setValue(0);
-	m_status->setText(QString("Starting dispersion calculation using %1 thread(s).").arg(g_num_threads));
+	m_status->setText(QString("Starting dispersion calculation using %1 threads.").arg(g_num_threads));
 	tl2::Stopwatch<t_real> stopwatch;
 	stopwatch.start();
 
@@ -389,7 +389,7 @@ void MagDynDlg::CalcDispersion()
 		asio::post(pool, [taskptr]() { (*taskptr)(); });
 	}
 
-	m_status->setText(QString("Calculating dispersion in %1 thread(s)...").arg(g_num_threads));
+	m_status->setText(QString("Calculating dispersion in %1 threads...").arg(g_num_threads));
 
 	// get results from tasks
 	for(std::size_t task_idx = 0; task_idx < tasks.size(); ++task_idx)

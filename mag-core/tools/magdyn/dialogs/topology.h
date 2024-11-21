@@ -121,8 +121,8 @@ private:
 	QCheckBox *m_B_filter_enable_bc{};  // switch to enable maximum B value
 	QDoubleSpinBox *m_B_filter_bc{};    // maximum B value
 
-	QCheckBox *m_S_filter_enable_bc{};  // switch to enable maximum S(Q,E) value
-	QDoubleSpinBox *m_S_filter_bc{};    // maximum S(Q,E) value
+	QCheckBox *m_S_filter_enable_bc{};  // switch to enable minimum S(Q,E) value
+	QDoubleSpinBox *m_S_filter_bc{};    // minimum S(Q,E) value
 
 	QSpinBox *m_coords_bc[2]{};         // berry curvature component indices
 	QAction *m_imag_bc{};               // imaginary or real components?
