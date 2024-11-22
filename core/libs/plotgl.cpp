@@ -58,7 +58,7 @@ static const int g_iTimerInterval = int(t_real(1e3) / t_real(RENDER_FPS));
 
 
 PlotGl::PlotGl(QWidget* pParent, QSettings *pSettings, t_real dMouseScale) :
-	t_qglwidget(pParent), m_pSettings(pSettings),
+	QOpenGLWidget(pParent), m_pSettings(pSettings),
 	m_bEnabled(true), m_matProj(tl::unit_m<t_mat4>(4)), m_matView(tl::unit_m<t_mat4>(4))
 {
 	m_dMouseRot[0] = m_dMouseRot[1] = 0.;
@@ -916,5 +916,5 @@ void PlotGl::keyPressEvent(QKeyEvent* pEvt)
 	else if(pEvt->key() == Qt::Key_S)
 		ToggleDrawSpheres();
 
-	t_qglwidget::keyPressEvent(pEvt);
+	QOpenGLWidget::keyPressEvent(pEvt);
 }
