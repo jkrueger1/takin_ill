@@ -516,20 +516,32 @@ void PlotGl::paintGL()
 
 			glCallList(m_iLstSphere[iLOD]);
 		}
+		glPopMatrix();
+	}
 
+
+	// draw object labels (after all objects to make sure they are drawn last)
+	for(std::size_t iObjIdx : GetObjSortOrder())
+	{
+		//tl::log_debug("Plotting object ", iObjIdx);
+		if(iObjIdx >= m_vecObjs.size())
+			continue;
+		const PlotObjGl& obj = m_vecObjs[iObjIdx];
 
 		// draw label of selected object
 		if(obj.bSelected && obj.strLabel.length() && m_pFont && m_pFont->IsOk())
 		{
+			glPushMatrix();
 			glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_LIGHTING_BIT | GL_DEPTH_BUFFER_BIT);
 
 			m_pFont->BindTexture();
+			tl::gl_traits<t_real>::SetTranslate(obj.vecPos[0], obj.vecPos[1], obj.vecPos[2]);
 			tl::gl_traits<t_real>::SetColor(0., 0., 0., 1.);
 			m_pFont->DrawText(0., 0., 0., obj.strLabel);
 
 			glPopAttrib();
+			glPopMatrix();
 		}
-		glPopMatrix();
 	}
 
 
