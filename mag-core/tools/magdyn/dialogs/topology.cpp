@@ -426,6 +426,11 @@ void TopologyDlg::AddBerryCurvatureBand(const std::string& name, const QColor& c
 	bg.setStyle(Qt::SolidPattern);
 	item->setBackground(bg);
 
+	QBrush fg = item->foreground();
+	fg.setColor(QColor{0xff, 0xff, 0xff});
+	fg.setStyle(Qt::SolidPattern);
+	item->setForeground(fg);
+
 	m_tableBands->setItem(row, COL_BC_BAND, item);
 }
 
