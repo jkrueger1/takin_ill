@@ -45,7 +45,7 @@ using t_cplx = std::complex<t_real>;
 // ----------------------------------------------------------------------------
 
 
-#define MAGCORE_VER "2.8.0"
+#define MAGCORE_VER "2.8.1"
 
 
 #endif
