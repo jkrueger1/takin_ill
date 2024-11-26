@@ -37,6 +37,7 @@ namespace asio = boost::asio;
 
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QDialogButtonBox>
 
 #include "topology.h"
 #include "helper.h"
@@ -64,11 +65,15 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 
 	// status bar
 	m_status = new QLabel(this);
+	m_status->setFrameShape(QFrame::Panel);
+	m_status->setFrameShadow(QFrame::Sunken);
 	m_status->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-	m_status->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	m_status->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
 	// close button
-	QPushButton *btnOk = new QPushButton("OK", this);
+	QDialogButtonBox *btnbox = new QDialogButtonBox(this);
+	btnbox->addButton(QDialogButtonBox::Ok);
+	btnbox->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
 
 	// main grid
 	QGridLayout *maingrid = new QGridLayout(this);
@@ -76,13 +81,13 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	maingrid->setContentsMargins(8, 8, 8, 8);
 	maingrid->addWidget(m_tabs, 0, 0, 1, 4);
 	maingrid->addWidget(m_status, 1, 0, 1, 3);
-	maingrid->addWidget(btnOk, 1, 3, 1, 1);
+	maingrid->addWidget(btnbox, 1, 3, 1, 1);
 
 	// tab panels
 	m_tabs->addTab(CreateBerryCurvaturePanel(), "Berry Curvature");
 
 	// connections
-	connect(btnOk, &QAbstractButton::clicked, this, &QDialog::accept);
+	connect(btnbox, &QDialogButtonBox::accepted, this, &TopologyDlg::accept);
 }
 
 

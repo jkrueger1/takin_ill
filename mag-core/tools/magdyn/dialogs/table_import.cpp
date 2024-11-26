@@ -36,6 +36,7 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QMessageBox>
 #include <QtGui/QDesktopServices>
+
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         #include <QtWidgets/QAction>
 #else
@@ -226,10 +227,20 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	m_checkIgnoreSymmetricCoupling->setChecked(false);
 	m_checkClearExisting->setChecked(true);
 
+	for(QCheckBox *box : { m_checkIndices1Based, m_checkUniteIncompleteTokens,
+		m_checkIgnoreSymmetricCoupling, m_checkClearExisting })
+		box->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
 	QPushButton *btnImportAtoms = new QPushButton("Import Sites", this);
 	QPushButton *btnImportCouplings = new QPushButton("Import Couplings", this);
 	QPushButton *btnHelp = new QPushButton("Help", this);
-	QPushButton *btnOk = new QPushButton("Close", this);
+	QPushButton *btnOK = new QPushButton("OK", this);
+
+	btnHelp->setIcon(style()->standardIcon(QStyle::SP_DialogHelpButton));
+	btnOK->setIcon(style()->standardIcon(QStyle::SP_DialogOkButton));
+
+	for(QPushButton *btn : { btnImportAtoms, btnImportCouplings, btnHelp, btnOK })
+		btn->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
 	// grid
 	QGridLayout* grid = new QGridLayout(this);
@@ -273,7 +284,7 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	grid->addWidget(btnImportAtoms, y, 0, 1, 1);
 	grid->addWidget(btnImportCouplings, y, 1, 1, 1);
 	grid->addWidget(btnHelp, y, 2, 1, 1);
-	grid->addWidget(btnOk, y++, 3, 1, 1);
+	grid->addWidget(btnOK, y++, 3, 1, 1);
 
 	if(m_sett)
 	{
@@ -442,7 +453,7 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	connect(btnImportAtoms, &QAbstractButton::clicked, this, &TableImportDlg::ImportAtoms);
 	connect(btnImportCouplings, &QAbstractButton::clicked, this, &TableImportDlg::ImportCouplings);
 	connect(btnHelp, &QAbstractButton::clicked, this, &TableImportDlg::ShowHelp);
-	connect(btnOk, &QAbstractButton::clicked, this, &QDialog::close);
+	connect(btnOK, &QAbstractButton::clicked, this, &TableImportDlg::accept);
 }
 
 

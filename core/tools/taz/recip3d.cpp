@@ -68,6 +68,7 @@ Recip3DDlg::Recip3DDlg(QWidget* pParent, QSettings *pSettings)
 	m_pPlot->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
 	QPushButton *pOK = new QPushButton("OK", this);
+	pOK->setIcon(style()->standardIcon(QStyle::SP_DialogOkButton));
 
 	QGridLayout *gridLayout = new QGridLayout(this);
 	gridLayout->setContentsMargins(4, 4, 4, 4);

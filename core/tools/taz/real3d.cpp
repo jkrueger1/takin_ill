@@ -69,12 +69,14 @@ Real3DDlg::Real3DDlg(QWidget* pParent, QSettings *pSettings)
 	m_pPlot->SetPrec(g_iPrecGfx);
 	m_pPlot->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
-	QPushButton *pPerspective = new QPushButton("Perspective projection", this);
+	QPushButton *pPerspective = new QPushButton("Perspective Projection", this);
 	QPushButton *pTransparency = new QPushButton("Transparency", this);
 	QPushButton *pDrawFaces = new QPushButton("Draw Faces", this);
 	QPushButton *pDrawEdges = new QPushButton("Draw Edges", this);
 	QPushButton *pDrawSpheres = new QPushButton("Draw Atoms", this);
 	QPushButton *pOK = new QPushButton("OK", this);
+
+	pOK->setIcon(style()->standardIcon(QStyle::SP_DialogOkButton));
 
 	connect(pPerspective, &QPushButton::clicked, [this]() { m_pPlot->TogglePerspective(); });
 	connect(pTransparency, &QPushButton::clicked, [this]() { m_pPlot->ToggleZTest(); });

@@ -27,14 +27,17 @@
  */
 
 #include "EllipseDlg3D.h"
+
 #include <QGridLayout>
+#include <QPushButton>
 
 
 EllipseDlg3D::EllipseDlg3D(QWidget* pParent, QSettings* pSett)
 	: QDialog(pParent, Qt::Tool), m_pSettings(pSett)
 {
 	setWindowTitle("Resolution Ellipsoids (HWHM Contour Surface)");
-	setSizeGripEnabled(1);
+	setSizeGripEnabled(true);
+
 	if(m_pSettings)
 	{
 		QFont font;
@@ -61,17 +64,22 @@ EllipseDlg3D::EllipseDlg3D(QWidget* pParent, QSettings* pSett)
 	m_pComboCoord->insertItem(1, "Crystal (hkl) System (rlu)");
 	m_pComboCoord->insertItem(2, "Scattering Plane System (rlu)");
 
+	QPushButton *pOK = new QPushButton("OK", this);
+	pOK->setIcon(style()->standardIcon(QStyle::SP_DialogOkButton));
+
 	QGridLayout *pgridLayout = new QGridLayout(this);
 	pgridLayout->setContentsMargins(4, 4, 4, 4);
-	pgridLayout->addWidget(pPlotLeft, 0, 0, 1, 1);
-	pgridLayout->addWidget(pPlotRight, 0, 1, 1, 1);
-	pgridLayout->addWidget(m_pComboCoord, 1, 0, 1, 2);
+	pgridLayout->addWidget(pPlotLeft, 0, 0, 1, 2);
+	pgridLayout->addWidget(pPlotRight, 0, 2, 1, 2);
+	pgridLayout->addWidget(m_pComboCoord, 1, 0, 1, 3);
+	pgridLayout->addWidget(pOK, 1, 3, 1, 1);
 
 	m_elliProj.resize(2);
 	m_elliSlice.resize(2);
 
-	QObject::connect(m_pComboCoord, static_cast<void(QComboBox::*)(int)>
+	connect(m_pComboCoord, static_cast<void(QComboBox::*)(int)>
 		(&QComboBox::currentIndexChanged), this, &EllipseDlg3D::Calc);
+	connect(pOK, &QPushButton::clicked, this, &QDialog::accept);
 
 	if(m_pSettings && m_pSettings->contains("reso/ellipsoid3d_geo"))
 		restoreGeometry(m_pSettings->value("reso/ellipsoid3d_geo").toByteArray());

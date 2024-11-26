@@ -31,6 +31,7 @@
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QTableWidgetItem>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QDialogButtonBox>
 
 #include <string>
 #include <sstream>
@@ -99,14 +100,26 @@ GroundStateDlg::GroundStateDlg(QWidget *parent, QSettings *sett)
 	m_btnFromKernel = new QPushButton("Get Spins", this);
 	m_btnToKernel = new QPushButton("Set Spins", this);
 	m_btnMinimise = new QPushButton("Minimise", this);
-	QPushButton *btnOk = new QPushButton("OK", this);
+
+	m_btnFromKernel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+	m_btnToKernel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+	m_btnMinimise->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
 	m_btnFromKernel->setToolTip("Fetch spins from main dialog.");
 	m_btnToKernel->setToolTip("Send spins back to main dialog.");
+	m_btnMinimise->setToolTip("Minimise ground state energy.");
 
+	// close button
+	QDialogButtonBox *btnbox = new QDialogButtonBox(this);
+	btnbox->addButton(QDialogButtonBox::Ok);
+	btnbox->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+
+	// status bar
 	m_status = new QLabel(this);
+	m_status->setFrameShape(QFrame::Panel);
+	m_status->setFrameShadow(QFrame::Sunken);
 	m_status->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-	m_status->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	m_status->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
 	int y = 0;
 	auto grid = new QGridLayout(this);
@@ -116,7 +129,7 @@ GroundStateDlg::GroundStateDlg(QWidget *parent, QSettings *sett)
 	grid->addWidget(m_btnFromKernel, y, 0, 1, 1);
 	grid->addWidget(m_btnToKernel, y, 1, 1, 1);
 	grid->addWidget(m_btnMinimise, y, 2, 1, 1);
-	grid->addWidget(btnOk, y++, 3, 1, 1);
+	grid->addWidget(btnbox, y++, 3, 1, 1);
 	grid->addWidget(m_status, y, 0, 1, 4);
 
 	if(m_sett && m_sett->contains("ground_state/geo"))
@@ -125,7 +138,7 @@ GroundStateDlg::GroundStateDlg(QWidget *parent, QSettings *sett)
 		resize(640, 480);
 
 	connect(m_spinstab, &QTableWidget::itemChanged, this, &GroundStateDlg::SpinsTableItemChanged);
-	connect(btnOk, &QAbstractButton::clicked, this, &QDialog::accept);
+	connect(btnbox, &QDialogButtonBox::accepted, this, &GroundStateDlg::accept);
 	connect(m_btnMinimise, &QAbstractButton::clicked, this, &GroundStateDlg::Minimise);
 	connect(m_btnToKernel, &QAbstractButton::clicked, this, &GroundStateDlg::SyncToKernel);
 	connect(m_btnFromKernel, &QAbstractButton::clicked, [this]()

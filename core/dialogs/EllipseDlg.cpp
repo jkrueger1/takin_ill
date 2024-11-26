@@ -48,6 +48,7 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett, Qt::WindowFlags fl)
 {
 	setupUi(this);
 	setWindowTitle(ELLIPSE_DLG_TITLE);
+	setSizeGripEnabled(true);
 
 	if(m_pSettings)
 	{
