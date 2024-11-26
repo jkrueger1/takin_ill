@@ -95,6 +95,7 @@ public:
 
 		// start convolution simulator for new parameters and wait for it to finish
 		m_convodlg->StartSim1D(true, m_seed);
+		//m_convodlg->WaitForThread();
 
 		// if a stop is requested, we have no other way of getting out of here than throwing an exception...
 		// if not in StartFit(), this exception will be handled at the latest by TakAppl::notify()

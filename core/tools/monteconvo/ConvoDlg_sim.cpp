@@ -244,7 +244,7 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 		m_vecS.reserve(iNumSteps);
 		m_vecScaledS.reserve(iNumSteps);
 
-		unsigned int iNumThreads = bForceDeferred ? 0 : get_max_threads();
+		unsigned int iNumThreads = get_max_threads();
 		tl::log_debug("Calculating using ", iNumThreads, (iNumThreads == 1 ? " thread." : " threads."));
 
 		// function to be called before each thread
@@ -521,12 +521,7 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 	}
 	else
 	{
-		if(m_pth)
-		{
-			if(m_pth->joinable())
-				m_pth->join();
-			delete m_pth;
-		}
+		WaitForThread();  // wait for a possible previous job
 		m_pth = new std::thread(std::move(fkt));
 	}
 }
@@ -778,7 +773,7 @@ void ConvoDlg::Start2D()
 			}
 		}
 
-		unsigned int iNumThreads = bForceDeferred ? 0 : get_max_threads();
+		unsigned int iNumThreads = get_max_threads();
 		tl::log_debug("Calculating using ", iNumThreads, (iNumThreads == 1 ? " thread." : " threads."));
 
 		void (*pThStartFunc)() = []{ tl::init_rand(); };
@@ -945,12 +940,7 @@ void ConvoDlg::Start2D()
 	}
 	else
 	{
-		if(m_pth)
-		{
-			if(m_pth->joinable())
-				m_pth->join();
-			delete m_pth;
-		}
+		WaitForThread();  // wait for a possible previous job
 		m_pth = new std::thread(std::move(fkt));
 	}
 }
@@ -1068,7 +1058,7 @@ void ConvoDlg::StartDisp()
 		m_vecvecE.clear();
 		m_vecvecW.clear();
 
-		unsigned int iNumThreads = bForceDeferred ? 0 : get_max_threads();
+		unsigned int iNumThreads = get_max_threads();
 		tl::log_debug("Calculating using ", iNumThreads, (iNumThreads == 1 ? " thread." : " threads."));
 
 		tl::ThreadPool<std::tuple<bool, std::vector<t_real>, std::vector<t_real>>()>
@@ -1199,12 +1189,7 @@ void ConvoDlg::StartDisp()
 	}
 	else
 	{
-		if(m_pth)
-		{
-			if(m_pth->joinable())
-				m_pth->join();
-			delete m_pth;
-		}
+		WaitForThread();  // wait for a possible previous job
 		m_pth = new std::thread(std::move(fkt));
 	}
 }

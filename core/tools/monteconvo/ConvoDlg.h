@@ -142,6 +142,8 @@ public:
 
 	void StartSim1D(bool bForceDeferred = false, unsigned int seed = tl::get_rand_seed());
 
+	void WaitForThread();
+
 	bool StopRequested() const
 	{
 		return m_atStop.load();
