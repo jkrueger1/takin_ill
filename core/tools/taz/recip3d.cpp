@@ -28,7 +28,9 @@
 
 #include "recip3d.h"
 #include "tlibs/math/geo.h"
+
 #include <QGridLayout>
+#include <QPushButton>
 
 
 #define DEF_PEAK_SIZE 0.04
@@ -49,7 +51,7 @@ Recip3DDlg::Recip3DDlg(QWidget* pParent, QSettings *pSettings)
 	m_pPlot->SetEnabled(false);
 
 	setWindowTitle("Reciprocal Space");
-	m_pStatus->setSizeGripEnabled(1);
+	m_pStatus->setSizeGripEnabled(true);
 	if(m_pSettings)
 	{
 		QFont font;
@@ -65,10 +67,15 @@ Recip3DDlg::Recip3DDlg(QWidget* pParent, QSettings *pSettings)
 	m_pPlot->SetPrec(g_iPrecGfx);
 	m_pPlot->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
+	QPushButton *pOK = new QPushButton("OK", this);
+
 	QGridLayout *gridLayout = new QGridLayout(this);
 	gridLayout->setContentsMargins(4, 4, 4, 4);
-	gridLayout->addWidget(m_pPlot, 0, 0, 1, 1);
-	gridLayout->addWidget(m_pStatus, 1, 0, 1, 1);
+	gridLayout->addWidget(m_pPlot, 0, 0, 1, 6);
+	gridLayout->addWidget(pOK, 1, 5, 1, 1);
+	gridLayout->addWidget(m_pStatus, 1, 0, 1, 5);
+
+	connect(pOK, &QPushButton::clicked, this, &QDialog::accept);
 
 	m_pPlot->AddHoverSlot([this](const PlotObjGl* pObj)
 	{
