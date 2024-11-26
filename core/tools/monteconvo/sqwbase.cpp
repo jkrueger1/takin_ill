@@ -30,6 +30,7 @@
 #include "tlibs/log/log.h"
 
 
+
 /**
  * set or override S(Q, E) model parameters from a string
  */
@@ -58,36 +59,35 @@ std::tuple<bool, std::string> SqwBase::SetVars(const std::string& sqw_params,
 		if(vecModParam.size() < 2)
 			continue;
 
-		tl::trim(vecModParam[0]);
-		tl::trim(vecModParam[1]);
+		std::string key = vecModParam[0];
+		std::string val = vecModParam[1];
+		tl::trim(key);
+		tl::trim(val);
 
 		// save all parameters to a map
 		if(all_params)
-			all_params->insert(std::make_pair(vecModParam[0], vecModParam[1]));
+			all_params->insert(std::make_pair(key, val));
 
 		// skip ignored parameters
-		if(ingored_params && ingored_params->find(vecModParam[0]) != ingored_params->end())
+		if(ingored_params && ingored_params->find(key) != ingored_params->end())
 			continue;
 
-		if(SetVarIfAvail(vecModParam[0], vecModParam[1]))
+		if(SetVarIfAvail(key, val))
 		{
 			// list changed parameters in a readable form
 			if(ostrStatus.str().length())
 				ostrStatus << ", ";
-			ostrStatus << vecModParam[0] << " = " << vecModParam[1];
+			ostrStatus << key << " = " << val;
 
 			if(print_messages)
-			{
-				tl::log_info("Setting S(Q, E) model parameter \"", vecModParam[0],
-					"\" to \"", vecModParam[1], "\".");
-			}
+				tl::log_info("Setting S(Q, E) model parameter \"", key, "\" to \"", val, "\".");
 		}
 		else
 		{
 			ok = false;
 
-			tl::log_err("No parameter named \"", vecModParam[0], "\" available in S(Q, E) model, ",
-				"cannot set new value \"", vecModParam[1], "\".");
+			tl::log_err("No parameter named \"", key, "\" available in S(Q, E) model, ",
+				"cannot set new value \"", val, "\".");
 		}
 	}
 
@@ -103,13 +103,13 @@ bool SqwBase::SetVarIfAvail(const std::string& strKey, const std::string& strNew
 	std::vector<t_var> vecVars = GetVars();
 	for(const t_var& var : vecVars)
 	{
-		if(strKey == std::get<0>(var))
-		{
-			t_var varNew = var;
-			std::get<2>(varNew) = strNewVal;
-			SetVars(std::vector<t_var>({varNew}));
-			return true;
-		}
+		if(strKey != std::get<0>(var))
+			continue;
+
+		t_var varNew = var;
+		std::get<2>(varNew) = strNewVal;
+		SetVars(std::vector<t_var>({ varNew }));
+		return true;
 	}
 
 	return false;
@@ -123,11 +123,11 @@ bool SqwBase::SetErrIfAvail(const std::string& strKey, const std::string& strNew
 {
 	for(t_var_fit& var : m_vecFit)
 	{
-		if(strKey == std::get<0>(var))
-		{
-			std::get<1>(var) = strNewErr;
-			return true;
-		}
+		if(strKey != std::get<0>(var))
+			continue;
+
+		std::get<1>(var) = strNewErr;
+		return true;
 	}
 
 	return false;
@@ -141,11 +141,11 @@ bool SqwBase::SetRangeIfAvail(const std::string& strKey, const std::string& strN
 {
 	for(t_var_fit& var : m_vecFit)
 	{
-		if(strKey == std::get<0>(var))
-		{
-			std::get<3>(var) = strNewRange;
-			return true;
-		}
+		if(strKey != std::get<0>(var))
+			continue;
+
+		std::get<3>(var) = strNewRange;
+		return true;
 	}
 
 	return false;

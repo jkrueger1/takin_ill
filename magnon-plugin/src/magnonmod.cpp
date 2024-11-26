@@ -192,7 +192,8 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 	vars.push_back(SqwBase::t_var{
 		"Q_signs", "vector", vec_to_str(m_Qsigns)});
 #endif
-	// get variables from the model
+
+	// get variables from the magdyn model
 	for(const auto& modelvar : m_dyn.GetVariables())
 	{
 #ifdef MAGNONMOD_USE_CPLX
@@ -212,7 +213,8 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 
 void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 {
-	if(!vars.size()) return;
+	if(!vars.size())
+		return;
 
 	bool set_model_temp = false;
 	bool calc_sites = false;

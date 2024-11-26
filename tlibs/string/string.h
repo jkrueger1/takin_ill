@@ -55,8 +55,8 @@ namespace tl {
 
 // -----------------------------------------------------------------------------
 
-template<class t_str=std::string> const t_str& get_dir_seps();
-template<class t_str=std::string> const t_str& get_trim_chars();
+template<class t_str = std::string> const t_str& get_dir_seps();
+template<class t_str = std::string> const t_str& get_trim_chars();
 
 template<> inline const std::string& get_dir_seps()
 {
@@ -105,7 +105,7 @@ static inline const std::string& wstr_to_str(const std::string& str) { return st
 // -----------------------------------------------------------------------------
 
 
-template<class t_str=std::string>
+template<class t_str = std::string>
 t_str str_to_upper(const t_str& str)
 {
 	t_str strOut;
@@ -125,7 +125,7 @@ t_str str_to_upper(const t_str& str)
 }
 
 
-template<class t_str=std::string>
+template<class t_str = std::string>
 t_str str_to_lower(const t_str& str)
 {
 	t_str strLower;
@@ -147,7 +147,7 @@ t_str str_to_lower(const t_str& str)
 // -----------------------------------------------------------------------------
 
 
-template<class t_str=std::string>
+template<class t_str = std::string>
 t_str get_file_noext(const t_str& str, bool bToLower=0)
 {
 	std::size_t iPos = str.find_last_of('.');
@@ -163,7 +163,7 @@ t_str get_file_noext(const t_str& str, bool bToLower=0)
 }
 
 
-template<class t_str=std::string>
+template<class t_str = std::string>
 t_str get_fileext(const t_str& str, bool bToLower=0)
 {
 	std::size_t iPos = str.find_last_of('.');
@@ -182,7 +182,7 @@ t_str get_fileext(const t_str& str, bool bToLower=0)
 /**
  *  e.g. returns "tof" for "123.tof.bz2"
  */
-template<class t_str=std::string>
+template<class t_str = std::string>
 t_str get_fileext2(const t_str& str, bool bToLower=0)
 {
 	std::size_t iPos = str.find_last_of('.');
@@ -197,7 +197,7 @@ t_str get_fileext2(const t_str& str, bool bToLower=0)
 /**
  * e.g. returns "tof" for "123.tof.bz2" and for "123.tof"
  */
-template<class t_str=std::string>
+template<class t_str = std::string>
 t_str get_fileext_nocomp(const t_str& str, bool bToLower=0)
 {
 	std::size_t iCnt = std::count(str.begin(), str.end(), '.');
@@ -210,7 +210,7 @@ t_str get_fileext_nocomp(const t_str& str, bool bToLower=0)
 }
 
 
-template<class t_str=std::string>
+template<class t_str = std::string>
 t_str get_dir(const t_str& str, bool bToLower=0)
 {
 	std::size_t iPos = str.find_last_of(get_dir_seps<t_str>());
@@ -226,7 +226,7 @@ t_str get_dir(const t_str& str, bool bToLower=0)
 }
 
 
-template<class t_str=std::string>
+template<class t_str = std::string>
 t_str get_file_nodir(const t_str& str, bool bToLower=0)
 {
 	std::size_t iPos = str.find_last_of(get_dir_seps<t_str>());
@@ -246,7 +246,7 @@ t_str get_file_nodir(const t_str& str, bool bToLower=0)
 
 
 
-template<class t_str=std::string>
+template<class t_str = std::string>
 bool str_is_equal(const t_str& str0, const t_str& str1, bool bCase=0)
 {
 	std::locale loc;
@@ -276,7 +276,7 @@ bool str_is_equal(const t_str& str0, const t_str& str1, bool bCase=0)
 }
 
 
-template<class t_str=std::string>
+template<class t_str = std::string>
 bool str_is_equal_to_either(const t_str& str0,
 	const std::initializer_list<t_str>& lststr1, bool bCase=0)
 {
@@ -287,7 +287,7 @@ bool str_is_equal_to_either(const t_str& str0,
 }
 
 
-template<class t_str=std::string>
+template<class t_str = std::string>
 bool str_contains(const t_str& str, const t_str& strSub, bool bCase=0)
 {
 	std::locale loc;
@@ -316,7 +316,7 @@ bool str_contains(const t_str& str, const t_str& strSub, bool bCase=0)
 // -----------------------------------------------------------------------------
 
 
-template<class t_str=std::string>
+template<class t_str = std::string>
 void trim(t_str& str)
 {
 	using t_char = typename t_str::value_type;
@@ -349,7 +349,7 @@ void trim(t_str& str)
 }
 
 
-template<class t_str=std::string>
+template<class t_str = std::string>
 t_str trimmed(const t_str& str)
 {
 	t_str strret = str;
@@ -361,7 +361,7 @@ t_str trimmed(const t_str& str)
 // -----------------------------------------------------------------------------
 
 
-template<class t_str=std::string>
+template<class t_str = std::string>
 bool find_and_replace(t_str& str1, const t_str& str_old,
 	const t_str& str_new)
 {
@@ -374,7 +374,7 @@ bool find_and_replace(t_str& str1, const t_str& str_old,
 }
 
 
-template<class t_str=std::string>
+template<class t_str = std::string>
 void find_all_and_replace(t_str& str1, const t_str& str_old,
 	const t_str& str_new)
 {
@@ -408,7 +408,7 @@ void find_all_and_replace(t_str& str1, const t_str& str_old,
 /**
  * removes all occurrences of a char in a string
  */
-template<class t_str=std::string>
+template<class t_str = std::string>
 t_str remove_char(const t_str& str, typename t_str::value_type ch)
 {
 	t_str strRet;
@@ -424,7 +424,7 @@ t_str remove_char(const t_str& str, typename t_str::value_type ch)
 /**
  * removes all occurrences of specified chars in a string
  */
-template<class t_str=std::string>
+template<class t_str = std::string>
 t_str remove_chars(const t_str& str, const t_str& chs)
 {
 	t_str strRet;
@@ -479,7 +479,7 @@ std::size_t string_rm(t_str& str, const t_str& strStart, const t_str& strEnd)
 // -----------------------------------------------------------------------------
 
 
-template<class t_str=std::string>
+template<class t_str = std::string>
 t_str insert_before(const t_str& str, const t_str& strChar, const t_str& strInsert)
 {
 	std::size_t pos = str.find(strChar);
@@ -493,7 +493,7 @@ t_str insert_before(const t_str& str, const t_str& strChar, const t_str& strInse
 }
 
 
-template<class t_str=std::string>
+template<class t_str = std::string>
 bool begins_with(const t_str& str, const t_str& strBeg, bool bCase=1)
 {
 	std::locale loc;
@@ -528,7 +528,7 @@ bool begins_with(const t_str& str, const t_str& strBeg, bool bCase=1)
 }
 
 
-template<class t_str=std::string>
+template<class t_str = std::string>
 bool ends_with(const t_str& str, const t_str& strEnd, bool bCase=1)
 {
 	std::locale loc;
@@ -567,7 +567,7 @@ bool ends_with(const t_str& str, const t_str& strEnd, bool bCase=1)
 // -----------------------------------------------------------------------------
 
 
-template<class t_str=std::string>
+template<class t_str = std::string>
 std::pair<t_str, t_str>
 split_first(const t_str& str, const t_str& strSep, bool bTrim=0, bool bSeq=0)
 {
@@ -596,7 +596,7 @@ split_first(const t_str& str, const t_str& strSep, bool bTrim=0, bool bSeq=0)
 /**
  * get string between strSep1 and strSep2
  */
-template<class t_str=std::string>
+template<class t_str = std::string>
 t_str str_between(const t_str& str, const t_str& strSep1, const t_str& strSep2,
 	bool bTrim=0, bool bSeq=0)
 {
@@ -612,7 +612,7 @@ t_str str_between(const t_str& str, const t_str& strSep1, const t_str& strSep2,
 // ----------------------------------------------------------------------------
 
 
-template<typename T, class t_str=std::string, bool bTIsStr=0>
+template<typename T, class t_str = std::string, bool bTIsStr=0>
 struct _str_to_var_impl;
 
 
@@ -650,7 +650,7 @@ struct _str_to_var_impl<T, t_str, 0>
 /**
  * Tokenises string on any of the chars in strDelim
  */
-template<class T, class t_str=std::string, class t_cont=std::vector<T>>
+template<class T, class t_str = std::string, class t_cont=std::vector<T>>
 void get_tokens(const t_str& str, const t_str& strDelim, t_cont& vecRet)
 {
 	using t_char = typename t_str::value_type;
@@ -673,7 +673,7 @@ void get_tokens(const t_str& str, const t_str& strDelim, t_cont& vecRet)
 /**
  * Tokenises string on strDelim
  */
-template<class T, class t_str=std::string, template<class...> class t_cont=std::vector>
+template<class T, class t_str = std::string, template<class...> class t_cont=std::vector>
 void get_tokens_seq(const t_str& str, const t_str& strDelim, t_cont<T>& vecRet, bool bCase=1)
 {
 	using t_char = typename t_str::value_type;
@@ -708,7 +708,7 @@ void get_tokens_seq(const t_str& str, const t_str& strDelim, t_cont<T>& vecRet, 
 
 namespace tl {
 
-template<class T, class t_str=std::string, class t_cont=std::vector<T>>
+template<class T, class t_str = std::string, class t_cont=std::vector<T>>
 bool parse_tokens(const t_str& str, const t_str& strDelim, t_cont& vecRet)
 {
 	std::vector<t_str> vecStrs;
@@ -726,7 +726,7 @@ bool parse_tokens(const t_str& str, const t_str& strDelim, t_cont& vecRet)
 }
 
 
-template<typename T, class t_str=std::string>
+template<typename T, class t_str = std::string>
 T str_to_var_parse(const t_str& str)
 {
 	std::pair<bool, T> pairResult = eval_expr<t_str, T>(str);
@@ -739,7 +739,7 @@ T str_to_var_parse(const t_str& str)
 #else	// simply call non-parsing versions
 
 
-template<class T, class t_str=std::string, class t_cont=std::vector<T>>
+template<class T, class t_str = std::string, class t_cont=std::vector<T>>
 bool parse_tokens(const t_str& str, const t_str& strDelim, t_cont& vecRet)
 {
 	get_tokens<T, t_str, t_cont>(str, strDelim, vecRet);
@@ -747,7 +747,7 @@ bool parse_tokens(const t_str& str, const t_str& strDelim, t_cont& vecRet)
 }
 
 
-template<typename T, class t_str=std::string>
+template<typename T, class t_str = std::string>
 T str_to_var_parse(const t_str& str)
 {
 	return str_to_var<T, t_str>(str);
@@ -758,7 +758,7 @@ T str_to_var_parse(const t_str& str)
 
 
 
-template<typename T, class t_str=std::string>
+template<typename T, class t_str = std::string>
 T str_to_var(const t_str& str)
 {
 	return _str_to_var_impl<T, t_str, std::is_convertible<T, t_str>::value>()(str);
@@ -792,7 +792,7 @@ template<class T, class t_ch> struct _var_to_str_print_impl<T, t_ch, true>
 };
 
 
-template<typename T, class t_str=std::string>
+template<typename T, class t_str = std::string>
 struct _var_to_str_impl
 {
 	t_str operator()(const T& t,
@@ -855,7 +855,7 @@ struct _var_to_str_impl<t_str, t_str>
 };
 
 
-template<typename T, class t_str=std::string>
+template<typename T, class t_str = std::string>
 t_str var_to_str(const T& t,
 	std::streamsize iPrec = std::numeric_limits<T>::max_digits10-1,
 	int iGroup = -1)
@@ -868,7 +868,7 @@ t_str var_to_str(const T& t,
 /**
  * converts a container (e.g. a vector) to a string
  */
-template<class t_cont, class t_str=std::string>
+template<class t_cont, class t_str = std::string>
 t_str cont_to_str(const t_cont& cont, const char* pcDelim=",",
 	std::streamsize iPrec = std::numeric_limits<typename t_cont::value_type>::max_digits10-1)
 {

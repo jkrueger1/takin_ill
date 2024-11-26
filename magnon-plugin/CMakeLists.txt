@@ -23,6 +23,11 @@
 # ----------------------------------------------------------------------------
 #
 
+#
+# Warning: When compiling this dynamic library with g++-13, tl::trim doesn't work,
+# because the static variable in tl::get_trim_chars doesn't seem to get initialised!
+#
+
 cmake_minimum_required(VERSION 3.5)
 project(magnonmod)
 enable_language(CXX)
