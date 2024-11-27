@@ -771,7 +771,7 @@ bool Convofit::run_job(const std::string& _strJob)
 	chi2fkt.AddFunc(&mod, vecSc[0].vecX.size(), vecSc[0].vecX.data(), vecSc[0].vecCts.data(), vecSc[0].vecCtsErr.data());
 	chi2fkt.SetDebug(true);
 	chi2fkt.SetSigma(dSigma);
-	chi2fkt.SetNumThreads(iNumThreads);
+	//chi2fkt.SetNumThreads(iNumThreads);  // TODO
 
 
 	minuit::MnUserParameters params = mod.GetMinuitParams();
