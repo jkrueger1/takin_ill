@@ -465,11 +465,27 @@ ConvoDlg::~ConvoDlg()
 {
 	WaitForThread();
 
-	if(m_pSqwParamDlg) { delete m_pSqwParamDlg; m_pSqwParamDlg = nullptr; }
-	if(m_pFavDlg) { delete m_pFavDlg; m_pFavDlg = nullptr; }
-	if(m_pMenuBar) { delete m_pMenuBar; m_pMenuBar = nullptr; }
+	if(m_pSqwParamDlg)
+	{
+		delete m_pSqwParamDlg;
+		m_pSqwParamDlg = nullptr;
+	}
 
-	if(m_pSqw) m_pSqw.reset();
+	if(m_pFavDlg)
+	{
+		delete m_pFavDlg;
+		m_pFavDlg = nullptr;
+		}
+
+	if(m_pMenuBar)
+	{
+		delete m_pMenuBar;
+		m_pMenuBar = nullptr;
+	}
+
+	if(m_pSqw)
+		m_pSqw.reset();
+
 	unload_sqw_plugins();
 }
 

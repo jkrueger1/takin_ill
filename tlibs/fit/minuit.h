@@ -91,6 +91,8 @@ protected:
 	t_real_min m_dSigma = 1.;
 	bool m_bDebug = false;
 
+	unsigned int m_iThreads = 0;  // 0: deferred
+
 public:
 	Chi2Function(const MinuitFuncModel* fkt=0,
 		std::size_t uiLen=0, const t_real *px=0,
@@ -116,22 +118,42 @@ public:
 		//if(!bParamsOk)
 		//	return std::numeric_limits<t_real_min>::max();
 
-		return tl::chi2<t_real_min, decltype(*pfkt), const t_real*>(*pfkt, m_uiLen, m_px, m_py, m_pdy);
+		return tl::chi2<t_real_min, decltype(*pfkt), const t_real*>
+			(*pfkt, m_uiLen, m_px, m_py, m_pdy, m_iThreads);
 	}
 
-	virtual t_real_min Up() const override { return m_dSigma*m_dSigma; }
+	virtual t_real_min Up() const override
+	{
+		return m_dSigma*m_dSigma;
+	}
 
 	virtual t_real_min operator()(const std::vector<t_real_min>& vecParams) const override
 	{
 		t_real_min dChi2 = chi2(vecParams);
-		if(m_bDebug) tl::log_debug("Chi2 = ", dChi2, ".");
+		if(m_bDebug)
+			tl::log_debug("Chi2 = ", dChi2, ".");
 		return dChi2;
 	}
 
-	void SetSigma(t_real_min dSig) { m_dSigma = dSig; }
-	t_real_min GetSigma() const { return m_dSigma; }
+	void SetSigma(t_real_min dSig)
+	{
+		m_dSigma = dSig;
+	}
 
-	void SetDebug(bool b) { m_bDebug = b; }
+	t_real_min GetSigma() const
+	{
+		return m_dSigma;
+	}
+
+	void SetDebug(bool b)
+	{
+		m_bDebug = b;
+	}
+
+	void SetNumThreads(unsigned int num)
+	{
+		m_iThreads = num;
+	}
 };
 
 
@@ -149,7 +171,10 @@ public:
 	MiniFunction(const MinuitFuncModel* fkt=0) : m_pfkt(fkt) {}
 	virtual ~MiniFunction() = default;
 
-	virtual t_real_min Up() const override { return m_dSigma*m_dSigma; }
+	virtual t_real_min Up() const override
+	{
+		return m_dSigma*m_dSigma;
+	}
 
 	virtual t_real_min operator()(const std::vector<t_real_min>& vecParams) const override
 	{
@@ -162,8 +187,15 @@ public:
 		return (*pfkt)(t_real_min(0));	// "0" is an ignored dummy value here
 	}
 
-	void SetSigma(t_real_min dSig) { m_dSigma = dSig; }
-	t_real_min GetSigma() const { return m_dSigma; }
+	void SetSigma(t_real_min dSig)
+	{
+		m_dSigma = dSig;
+	}
+
+	t_real_min GetSigma() const
+	{
+		return m_dSigma;
+	}
 };
 
 
@@ -187,6 +219,8 @@ protected:
 
 	t_real_min m_dSigma = 1.;
 	bool m_bDebug = false;
+
+	unsigned int m_iThreads = 0;  // 0: deferred
 
 public:
 	Chi2Function_mult() = default;
@@ -230,7 +264,7 @@ public:
 			pfkt->SetParams(vecParams);
 
 			t_real_min dSingleChi = tl::chi2<t_real_min, decltype(*pfkt), const t_real*>
-				(*pfkt, iLen, pX, pY, pDY);
+				(*pfkt, iLen, pX, pY, pDY, m_iThreads);
 			dChi += dSingleChi;
 
 			if(m_bDebug && iNumParamSets>1)
@@ -257,7 +291,10 @@ public:
 		return dChi;
 	}
 
-	virtual t_real_min Up() const override { return m_dSigma*m_dSigma; }
+	virtual t_real_min Up() const override
+	{
+		return m_dSigma*m_dSigma;
+	}
 
 	virtual t_real_min operator()(const std::vector<t_real_min>& vecParams) const override
 	{
@@ -267,10 +304,25 @@ public:
 		return dChi2;
 	}
 
-	void SetSigma(t_real_min dSig) { m_dSigma = dSig; }
-	t_real_min GetSigma() const { return m_dSigma; }
+	void SetSigma(t_real_min dSig)
+	{
+		m_dSigma = dSig;
+	}
 
-	void SetDebug(bool b) { m_bDebug = b; }
+	t_real_min GetSigma() const
+	{
+		return m_dSigma;
+	}
+
+	void SetDebug(bool b)
+	{
+		m_bDebug = b;
+	}
+
+	void SetNumThreads(unsigned int num)
+	{
+		m_iThreads = num;
+	}
 };
 
 // for most cases data type of measured values and internal data type is the same: t_real_min
@@ -293,6 +345,8 @@ protected:
 
 	bool m_bDebug = false;
 
+	unsigned int m_iThreads = 0;  // 0: deferred
+
 public:
 	Chi2Function_nd(const MinuitFuncModel_nd* fkt,
 		const t_cont<t_cont<t_real>> &vecvecX,
@@ -310,7 +364,7 @@ public:
 		pfkt->SetParams(vecParams);
 
 		return tl::chi2_nd<t_real_min, t_real, decltype(*pfkt), t_cont>
-			(*pfkt, *m_pvecvecX, *m_pvecY, *m_pvecDY);
+			(*pfkt, *m_pvecvecX, *m_pvecY, *m_pvecDY, m_iThreads);
 	}
 
 	virtual t_real_min Up() const override
@@ -327,7 +381,15 @@ public:
 		return dChi2;
 	}
 
-	void SetDebug(bool b) { m_bDebug = b; }
+	void SetDebug(bool b)
+	{
+		m_bDebug = b;
+	}
+
+	void SetNumThreads(unsigned int num)
+	{
+		m_iThreads = num;
+	}
 };
 
 
@@ -349,7 +411,8 @@ bool fit(t_func&& func,
 	std::vector<t_real_min>& vecErrs,
 	const std::vector<bool>* pVecFixed = nullptr,
 
-	bool bDebug = true) noexcept
+	bool bDebug = true,
+	unsigned int m_iThreads = 0 /* 0: deferred */) noexcept
 {
 	try
 	{
@@ -369,6 +432,7 @@ bool fit(t_func&& func,
 
 		MinuitLamFuncModel<iNumArgs, t_func> mod(func);
 		Chi2Function<t_real_min> chi2(&mod, vecX.size(), vecX.data(), vecY.data(), vecYErr.data());
+		chi2.SetNumThreads(m_iThreads);
 
 		ROOT::Minuit2::MnUserParameters params;
 		for(std::size_t iParam=0; iParam<vecParamNames.size(); ++iParam)
@@ -435,7 +499,7 @@ bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
 		ROOT::Minuit2::FunctionMinimum mini = migrad();
 		bool bMinimumValid = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
 
-		for(std::size_t iParam=0; iParam<vecParamNames.size(); ++iParam)
+		for(std::size_t iParam = 0; iParam < vecParamNames.size(); ++iParam)
 		{
 			vecVals[iParam] = mini.UserState().Value(vecParamNames[iParam]);
 			vecErrs[iParam] = std::fabs(mini.UserState().Error(vecParamNames[iParam]));

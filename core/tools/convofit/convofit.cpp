@@ -323,6 +323,7 @@ bool Convofit::run_job(const std::string& _strJob)
 	unsigned iNumSample = prop.Query<unsigned>("montecarlo/sample_positions", 1);
 	bool bRecycleMC = prop.Query<bool>("montecarlo/recycle_neutrons", true);
 
+	// global override
 	if(g_iNumNeutrons > 0)
 		iNumNeutrons = g_iNumNeutrons;
 
@@ -337,6 +338,11 @@ bool Convofit::run_job(const std::string& _strJob)
 	std::string strMinimiser = prop.Query<std::string>("fitter/minimiser");
 	int iStrat = prop.Query<int>("fitter/strategy", 0);
 	t_real dSigma = prop.Query<t_real>("fitter/sigma", 1.);
+	unsigned iNumThreads = prop.Query<unsigned>("fitter/num_threads", 0);
+
+	// global override
+	if(g_iMaxThreads > 0)
+		iNumThreads = g_iMaxThreads;
 
 	bool bDoFit = prop.Query<bool>("fitter/do_fit", true);
 	if(g_bSkipFit) bDoFit = 0;
@@ -759,11 +765,13 @@ bool Convofit::run_job(const std::string& _strJob)
 	mod.SetNonSQEParams(vecNonSQEParms);
 
 
+	tl::log_info("Number of threads: ", iNumThreads, ".");
 	tl::Chi2Function_mult<t_real_sc, std::vector> chi2fkt;
 	// the vecSc[0] data sets are the default data set (will not be used if scan groups are defined)
 	chi2fkt.AddFunc(&mod, vecSc[0].vecX.size(), vecSc[0].vecX.data(), vecSc[0].vecCts.data(), vecSc[0].vecCtsErr.data());
 	chi2fkt.SetDebug(true);
 	chi2fkt.SetSigma(dSigma);
+	chi2fkt.SetNumThreads(iNumThreads);
 
 
 	minuit::MnUserParameters params = mod.GetMinuitParams();

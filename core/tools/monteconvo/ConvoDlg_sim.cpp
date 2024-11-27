@@ -762,9 +762,9 @@ void ConvoDlg::Start2D()
 		std::vector<t_real> vecL; vecL.reserve(iNumSteps*iNumSteps);
 		std::vector<t_real> vecE; vecE.reserve(iNumSteps*iNumSteps);
 
-		for(unsigned int iStepY=0; iStepY<iNumSteps; ++iStepY)
+		for(unsigned int iStepY = 0; iStepY < iNumSteps; ++iStepY)
 		{
-			for(unsigned int iStepX=0; iStepX<iNumSteps; ++iStepX)
+			for(unsigned int iStepX = 0; iStepX < iNumSteps; ++iStepX)
 			{
 				vecH.push_back(dStartHKL[0] + dDeltaHKL2[0]*t_real(iStepY) + dDeltaHKL1[0]*t_real(iStepX));
 				vecK.push_back(dStartHKL[1] + dDeltaHKL2[1]*t_real(iStepY) + dDeltaHKL1[1]*t_real(iStepX));

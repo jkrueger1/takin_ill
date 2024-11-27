@@ -32,6 +32,7 @@
 #include "linalg.h"
 #include "distr.h"
 #include "numint.h"
+#include "../helper/thread.h"
 
 #include <boost/math/special_functions/binomial.hpp>
 
@@ -363,26 +364,45 @@ covariance(const std::vector<ublas::vector<T>>& vecVals, const std::vector<T>* p
 /**
  * calculates chi^2 distance of a function model to data points
  * chi^2 = sum( (y_i - f(x_i))^2 / sigma_i^2 )
- *
  * @see (Arfken 2013), p. 1170
  */
-template<class T, class t_func, class t_iter_dat=T*>
+template<class T, class t_func, class t_iter_dat = T*>
 T chi2(const t_func& func, std::size_t N,
-	const t_iter_dat x, const t_iter_dat y, const t_iter_dat dy)
+	const t_iter_dat x, const t_iter_dat y, const t_iter_dat dy,
+	unsigned int num_threads = 0 /* 0: deferred */)
 {
 	using t_dat = typename std::remove_pointer<t_iter_dat>::type;
 	T tchi2 = T(0);
 
+	std::unique_ptr<tl::ThreadPool<T()>> tp;
+	if(num_threads > 0)
+		tp = std::make_unique<tl::ThreadPool<T()>>(num_threads);
+
 	for(std::size_t i = 0; i < N; ++i)
 	{
-		T td = T(y[i]) - func(T(x[i]));
-		T tdy = dy ? T(dy[i]) : T(0.1*td);	// 10% error if none given
+		auto task = [i, &x, &y, &dy, &func]() -> T
+		{
+			T td = T(y[i]) - func(T(x[i]));
+			T tdy = dy ? T(dy[i]) : T(0.1*td);	// 10% error if none given
 
-		if(std::abs(tdy) < std::numeric_limits<t_dat>::min())
-			tdy = std::numeric_limits<t_dat>::min();
+			if(std::abs(tdy) < std::numeric_limits<t_dat>::min())
+				tdy = std::numeric_limits<t_dat>::min();
 
-		T tchi = T(td) / T(tdy);
-		tchi2 += tchi*tchi;
+			T tchi = T(td) / T(tdy);
+			return tchi*tchi;
+		};
+
+		if(num_threads > 0)  // move task to threadpool
+			tp->AddTask(task);
+		else                 // directly execute task
+			tchi2 += task();
+	}
+
+	// get the results from the thread pool (if used)
+	if(num_threads > 0)
+	{
+		for(auto& fut : tp->GetResults())
+			tchi2 += fut.get();
 	}
 
 	return tchi2;
@@ -391,33 +411,55 @@ T chi2(const t_func& func, std::size_t N,
 
 template<class t_vec, class t_func>
 typename t_vec::value_type chi2(const t_func& func,
-	const t_vec& x, const t_vec& y, const t_vec& dy)
+	const t_vec& x, const t_vec& y, const t_vec& dy,
+	unsigned int num_threads = 0 /* 0: deferred */)
 {
 	using T = typename t_vec::value_type;
 	return chi2<T, t_func, T*>(func, x.size(), x.data(), y.data(),
-		dy.size() ? dy.data() : nullptr);
+		dy.size() ? dy.data() : nullptr, num_threads);
 }
 
 
 /**
  * chi^2 which doesn't use an x value, but an index instead: y[idx] - func(idx)
+ * @see (Arfken 2013), p. 1170
  */
-template<class T, class t_func, class t_iter_dat=T*>
-T chi2_idx(const t_func& func, std::size_t N, const t_iter_dat y, const t_iter_dat dy)
+template<class T, class t_func, class t_iter_dat = T*>
+T chi2_idx(const t_func& func, std::size_t N, const t_iter_dat y, const t_iter_dat dy,
+	unsigned int num_threads = 0 /* 0: deferred */)
 {
 	using t_dat = typename std::remove_pointer<t_iter_dat>::type;
 	T tchi2 = T(0);
 
-	for(std::size_t i=0; i<N; ++i)
+	std::unique_ptr<tl::ThreadPool<T()>> tp;
+	if(num_threads > 0)
+		tp = std::make_unique<tl::ThreadPool<T()>>(num_threads);
+
+	for(std::size_t i = 0; i < N; ++i)
 	{
-		T td = T(y[i]) - func(i);
-		T tdy = dy ? T(dy[i]) : T(0.1*td);	// 10% error if none given
+		auto task = [i, &y, &dy, &func]() -> T
+		{
+			T td = T(y[i]) - func(i);
+			T tdy = dy ? T(dy[i]) : T(0.1*td);	// 10% error if none given
 
-		if(std::abs(tdy) < std::numeric_limits<t_dat>::min())
-			tdy = std::numeric_limits<t_dat>::min();
+			if(std::abs(tdy) < std::numeric_limits<t_dat>::min())
+				tdy = std::numeric_limits<t_dat>::min();
 
-		T tchi = T(td) / T(tdy);
-		tchi2 += tchi*tchi;
+			T tchi = T(td) / T(tdy);
+			return tchi*tchi;
+		};
+
+		if(num_threads > 0)  // move task to threadpool
+			tp->AddTask(task);
+		else                 // directly execute task
+			tchi2 += task();
+	}
+
+	// get the results from the thread pool (if used)
+	if(num_threads > 0)
+	{
+		for(auto& fut : tp->GetResults())
+			tchi2 += fut.get();
 	}
 
 	return tchi2;
@@ -426,23 +468,44 @@ T chi2_idx(const t_func& func, std::size_t N, const t_iter_dat y, const t_iter_d
 
 /**
  * direct chi^2 calculation with a model array instead of a model function
+ * @see (Arfken 2013), p. 1170
  */
-template<class T, class t_iter_dat=T*>
-T chi2_direct(std::size_t N, const t_iter_dat func_y, const t_iter_dat y, const t_iter_dat dy)
+template<class T, class t_iter_dat = T*>
+T chi2_direct(std::size_t N, const t_iter_dat func_y, const t_iter_dat y, const t_iter_dat dy,
+	unsigned int num_threads = 0 /* 0: deferred */)
 {
 	using t_dat = typename std::remove_pointer<t_iter_dat>::type;
 	T tchi2 = T(0);
 
-	for(std::size_t i=0; i<N; ++i)
+	std::unique_ptr<tl::ThreadPool<T()>> tp;
+	if(num_threads > 0)
+		tp = std::make_unique<tl::ThreadPool<T()>>(num_threads);
+
+	for(std::size_t i = 0; i < N; ++i)
 	{
-		T td = T(y[i]) - T(func_y[i]);
-		T tdy = dy ? T(dy[i]) : T(0.1*td);	// 10% error if none given
+		auto task = [i, &y, &dy, &func_y]() -> T
+		{
+			T td = T(y[i]) - T(func_y[i]);
+			T tdy = dy ? T(dy[i]) : T(0.1*td);	// 10% error if none given
 
-		if(std::abs(tdy) < std::numeric_limits<t_dat>::min())
-			tdy = std::numeric_limits<t_dat>::min();
+			if(std::abs(tdy) < std::numeric_limits<t_dat>::min())
+				tdy = std::numeric_limits<t_dat>::min();
 
-		T tchi = T(td) / T(tdy);
-		tchi2 += tchi*tchi;
+			T tchi = T(td) / T(tdy);
+			return tchi*tchi;
+		};
+
+		if(num_threads > 0)  // move task to threadpool
+			tp->AddTask(task);
+		else                 // directly execute task
+			tchi2 += task();
+	}
+
+	// get the results from the thread pool (if used)
+	if(num_threads > 0)
+	{
+		for(auto& fut : tp->GetResults())
+			tchi2 += fut.get();
 	}
 
 	return tchi2;
@@ -451,23 +514,44 @@ T chi2_direct(std::size_t N, const t_iter_dat func_y, const t_iter_dat y, const 
 
 /**
  * multi-dimensional chi^2 function
+ * @see (Arfken 2013), p. 1170
  */
-template<class T, class T_dat, class t_func, template<class...> class t_vec=std::vector>
-T chi2_nd(const t_func& func,
-	const t_vec<t_vec<T_dat>>& vecvecX, const t_vec<T_dat>& vecY, const t_vec<T_dat>& vecDY)
+template<class T, class T_dat, class t_func, template<class...> class t_vec = std::vector>
+T chi2_nd(const t_func& func, const t_vec<t_vec<T_dat>>& vecvecX,
+	const t_vec<T_dat>& vecY, const t_vec<T_dat>& vecDY,
+	unsigned int num_threads = 0 /* 0: deferred */)
 {
 	T tchi2 = T(0);
 
-	for(std::size_t i=0; i<vecvecX.size(); ++i)
+	std::unique_ptr<tl::ThreadPool<T()>> tp;
+	if(num_threads > 0)
+		tp = std::make_unique<tl::ThreadPool<T()>>(num_threads);
+
+	for(std::size_t i = 0; i < vecvecX.size(); ++i)
 	{
-		T td = T(vecY[i]) - func(vecvecX[i]);
-		T tdy = vecDY[i];
+		auto task = [i, &vecvecX, &vecY, &vecDY, &func]() -> T
+		{
+			T td = T(vecY[i]) - func(vecvecX[i]);
+			T tdy = vecDY[i];
 
-		if(std::abs(tdy) < std::numeric_limits<T_dat>::min())
-			tdy = std::numeric_limits<T_dat>::min();
+			if(std::abs(tdy) < std::numeric_limits<T_dat>::min())
+				tdy = std::numeric_limits<T_dat>::min();
 
-		T tchi = T(td) / T(tdy);
-		tchi2 += tchi*tchi;
+			T tchi = T(td) / T(tdy);
+			return tchi*tchi;
+		};
+
+		if(num_threads > 0)  // move task to threadpool
+			tp->AddTask(task);
+		else                 // directly execute task
+			tchi2 += task();
+	}
+
+	// get the results from the thread pool (if used)
+	if(num_threads > 0)
+	{
+		for(auto& fut : tp->GetResults())
+			tchi2 += fut.get();
 	}
 
 	return tchi2;

@@ -25,10 +25,11 @@
  * ----------------------------------------------------------------------------
  */
 
-// gcc -std=c++14 -I/usr/include/root -o fit fit.cpp ../log/log.cpp -lstdc++ -L/usr/lib64/root -lMinuit2
+// g++ -std=c++14 -I.. -I /usr/local/include/Minuit2 -o fit fit.cpp ../../log/log.cpp -L/usr/local/lib -lMinuit2
 
 #include "../fit/minuit.h"
 #include "../log/debug.h"
+
 #include <boost/type_traits/function_traits.hpp>
 
 using T = tl::t_real_min;
@@ -45,6 +46,7 @@ void tst(t_func&& func)
 	std::cout << boost::function_traits<t_func(t_args...)>::arity << std::endl;
 }
 
+
 int main()
 {
 	tst([](T x, T m)->T { return m*x; });
@@ -57,11 +59,14 @@ int main()
 	std::vector<T> vecVals = { 0.5, 0. };
 	std::vector<T> vecErrs = { 0.5, 0. };
 
+	bool debug = true;
+	unsigned int num_threads = 4;
 	bool bOk = tl::fit<3>([](T x, T m, T t)->T { return m*x + t; },
 		vecX, vecY, vecYErr,
-		vecParamNames, vecVals, vecErrs);
+		vecParamNames, vecVals, vecErrs, nullptr,
+		debug, num_threads);
 
-	std::cout << "Fit: valid = " << bOk 
+	std::cout << "Fit: valid = " << bOk
 		<< ", m = " << vecVals[0] << " +- " << vecErrs[0]
 		<< ", t = " << vecVals[1] << " +- " << vecErrs[1]
 		<< std::endl;

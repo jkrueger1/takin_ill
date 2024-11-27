@@ -46,7 +46,7 @@ int main()
 
 	tp.StartTasks();
 
-	auto& lstFut = tp.GetFutures();
+	auto& lstFut = tp.GetResults();
 	for(auto& fut : lstFut)
 		std::cout << fut.get() << std::endl;
 	return 0;

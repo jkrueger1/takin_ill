@@ -175,7 +175,8 @@ static std::vector<SqwBase::t_var> str_to_pars(const t_sh_str& _str)
 
 		for(const std::string& strLine : vecLines)
 		{
-			if(strLine.length() == 0) continue;
+			if(strLine.length() == 0)
+				continue;
 
 			std::vector<std::string> vecVals;
 			tl::get_tokens_seq<std::string, std::string, std::vector>
@@ -290,11 +291,12 @@ static void child_proc(ipr::message_queue& msgToParent, ipr::message_queue& msgF
 
 	t_sh_str *pPars = static_cast<t_sh_str*>(pSharedPars);
 
-	while(1)
+	// message loop
+	while(true)
 	{
 		ProcMsg msg = msg_recv(msgFromParent);
 		ProcMsg msgRet;
-		bool bFailure = 0;
+		bool bFailure = false;
 
 		switch(msg.ty)
 		{
@@ -330,7 +332,7 @@ static void child_proc(ipr::message_queue& msgToParent, ipr::message_queue& msgF
 			{
 				pSqw->SetVars(str_to_pars(*pPars));
 				msgRet.ty = ProcMsgTypes::READY;
-				msgRet.bRet = 1;
+				msgRet.bRet = true;
 				msg_send(msgToParent, msgRet);
 				break;
 			}
@@ -341,7 +343,7 @@ static void child_proc(ipr::message_queue& msgToParent, ipr::message_queue& msgF
 				msg_send(msgToParent, msgRet);
 
 				if(!msgRet.bRet)
-					bFailure = 1;
+					bFailure = true;
 				break;
 			}
 			case ProcMsgTypes::QUIT:
@@ -510,7 +512,7 @@ SqwProc<t_sqw>::SqwProc(const char* pcCfg, SqwProcStartMode mode,
 	}
 	catch(const std::exception& ex)
 	{
-		m_bOk = 0;
+		m_bOk = false;
 		tl::log_err(ex.what());
 	}
 }
