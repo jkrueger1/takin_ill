@@ -220,7 +220,7 @@ if [ $build_plugins -ne 0 ]; then
 	pushd "${TAKIN_ROOT}/magnon-plugin"
 		rm -rf ${BUILD_DIR}
 
-		if ! cmake --DCMAKE_BUILD_TYPE=Release -B ${BUILD_DIR} . ; then
+		if ! cmake -DCMAKE_BUILD_TYPE=Release -B ${BUILD_DIR} . ; then
 			echo -e "Failed configuring magnon plugin."
 			exit -1
 		fi
