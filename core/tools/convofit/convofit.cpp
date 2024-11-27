@@ -57,6 +57,9 @@ using t_real = t_real_reso;
 //#define DEFAULT_TERM "qt noraise"
 
 
+/**
+ * plotter init callback function
+ */
 static void* init_convofit_plot(const std::string& strTerm)
 {
 	tl::GnuPlot<t_real> *pPlt = new tl::GnuPlot<t_real>();
@@ -68,6 +71,9 @@ static void* init_convofit_plot(const std::string& strTerm)
 }
 
 
+/**
+ * plotter deinit callback function
+ */
 static void deinit_convofit_plot(void *&_pPlt)
 {
 	if(_pPlt)
@@ -79,6 +85,9 @@ static void deinit_convofit_plot(void *&_pPlt)
 }
 
 
+/**
+ * plotter callback function
+ */
 static void convofit_plot(void* _pPlt, const char* pcX, const char* pcY, const char *pcTitle,
 	const tl::PlotObj<t_real>& pltMeas, const tl::PlotObj<t_real>& pltMod, bool bIsFinal)
 {
@@ -529,6 +538,7 @@ bool Convofit::run_job(const std::string& _strJob)
 	{
 		pltMeas.reserve(vecSc.size());
 
+		// data points for plotter
 		for(std::size_t scan_group=0; scan_group<vecSc.size(); ++scan_group)
 		{
 			tl::PlotObj<t_real> thescan;
@@ -537,6 +547,7 @@ bool Convofit::run_job(const std::string& _strJob)
 			thescan.vecY = vecSc[scan_group].vecCts;
 			thescan.vecErrY = vecSc[scan_group].vecCtsErr;
 			thescan.linestyle = tl::STYLE_POINTS;
+			thescan.oiColor = 0xff0000;
 
 			pltMeas.emplace_back(std::move(thescan));
 		}
@@ -621,11 +632,13 @@ bool Convofit::run_job(const std::string& _strJob)
 	mod.SetSqwParamOverrides(vecSetParams);
 
 
-	std::vector<t_real> vecModTmpX, vecModTmpY;
+	// temporary data buffer for plotting
+	std::vector<t_real> vecModPlotX, vecModPlotY;
+	std::mutex mtxPlot;
 
 	// callback for outputting results
 	mod.AddFuncResultSlot(
-	[this, &pltMeas, &vecModTmpX, &vecModTmpY, bPlotIntermediate, &vecScanAxes]
+	[this, &pltMeas, &vecModPlotX, &vecModPlotY, bPlotIntermediate, &vecScanAxes, &mtxPlot]
 		(t_real h, t_real k, t_real l, t_real E, t_real S, std::size_t scan_group)
 	{
 		if(g_bVerbose)
@@ -646,34 +659,38 @@ bool Convofit::run_job(const std::string& _strJob)
 				default: x = E; scan_axis = "E (meV)"; break;
 			}
 
-			vecModTmpX.push_back(x);
-			vecModTmpY.push_back(S);
+			std::lock_guard<std::mutex> lock(mtxPlot);
+			vecModPlotX.push_back(x);
+			vecModPlotY.push_back(S);
+			tl::sort_2(vecModPlotX.begin(), vecModPlotX.end(), vecModPlotY.begin());
 
+			// convolution curve
 			tl::PlotObj<t_real> pltMod;
-			pltMod.vecX = vecModTmpX;
-			pltMod.vecY = vecModTmpY;
+			pltMod.vecX = vecModPlotX;
+			pltMod.vecY = vecModPlotY;
 			pltMod.linestyle = tl::STYLE_LINES_SOLID;
+			pltMod.oiColor = 0x0000ff;
 			pltMod.odSize = 1.5;
 
 			if(scan_group < pltMeas.size())
 			{
 				std::string title = "Takin/Convofit, scan group #" + tl::var_to_str(scan_group);
 				m_sigPlot(this->m_pPlt, scan_axis.c_str(), "Intensity", title.c_str(),
-				pltMeas[scan_group], pltMod, false);
+					pltMeas[scan_group], pltMod, false);
 			}
 		}
 	});
 
 	// callback for changed parameters
 	mod.AddParamsChangedSlot(
-	[&vecModTmpX, &vecModTmpY, bPlotIntermediate, iSeed, bRecycleMC](const std::string& strDescr)
+	[&vecModPlotX, &vecModPlotY, bPlotIntermediate, iSeed, bRecycleMC](const std::string& strDescr)
 	{
 		tl::log_info("Changed model parameters: ", strDescr);
 
 		if(bPlotIntermediate)
 		{
-			vecModTmpX.clear();
-			vecModTmpY.clear();
+			vecModPlotX.clear();
+			vecModPlotY.clear();
 		}
 
 		// do we use the same MC neutrons again?
@@ -771,7 +788,7 @@ bool Convofit::run_job(const std::string& _strJob)
 	chi2fkt.AddFunc(&mod, vecSc[0].vecX.size(), vecSc[0].vecX.data(), vecSc[0].vecCts.data(), vecSc[0].vecCtsErr.data());
 	chi2fkt.SetDebug(true);
 	chi2fkt.SetSigma(dSigma);
-	//chi2fkt.SetNumThreads(iNumThreads);  // TODO
+	chi2fkt.SetNumThreads(iNumThreads);
 
 
 	minuit::MnUserParameters params = mod.GetMinuitParams();
@@ -862,10 +879,12 @@ bool Convofit::run_job(const std::string& _strJob)
 		tl::DatFile<t_real, char> datMod;
 		if(datMod.Load(strModOutFile))
 		{
+			// convolution curve
 			tl::PlotObj<t_real> pltMod;
 			pltMod.vecX = datMod.GetColumn(0);
 			pltMod.vecY = datMod.GetColumn(1);
 			pltMod.linestyle = tl::STYLE_LINES_SOLID;
+			pltMod.oiColor = 0x0000ff;
 			pltMod.odSize = 1.5;
 
 			if(pltMeas.size())
