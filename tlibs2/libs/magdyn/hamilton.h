@@ -50,7 +50,7 @@
 
 
 // --------------------------------------------------------------------
-// calculation functions
+// calculation functions for interaction matrix and hamiltonian
 // --------------------------------------------------------------------
 
 /**
@@ -134,18 +134,18 @@ MAGDYN_INST::CalcReciprocalJs(const t_vec_real& Qvec) const
 		const t_mat J = CalcRealJ(term);
 		if(J.size1() == 0 || J.size2() == 0)
 			continue;
-		const t_mat J_T = tl2::trans(J);
 
 		// get J in reciprocal space by fourier trafo
 		// equations (14), (12), (11), and (52) from (Toth 2015)
-		const t_cplx phase = m_phase_sign * s_imag * s_twopi *
-			tl2::inner<t_vec_real>(term.dist_calc, Qvec);
+		const t_mat J_fourier = J * std::exp(m_phase_sign * s_imag * s_twopi *
+			tl2::inner<t_vec_real>(term.dist_calc, Qvec));
 
-		insert_or_add(J_Q, indices, J * std::exp(phase));
-		insert_or_add(J_Q, indices_t, J_T * std::exp(-phase));
+		// symmetry: equation (15) from (Toth 2015)
+		insert_or_add(J_Q, indices, J_fourier);
+		insert_or_add(J_Q, indices_t, tl2::herm(J_fourier));
 
 		insert_or_add(J_Q0, indices, J);
-		insert_or_add(J_Q0, indices_t, J_T);
+		insert_or_add(J_Q0, indices_t, tl2::herm(J));
 	}  // end of iteration over couplings
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
@@ -183,9 +183,7 @@ t_mat MAGDYN_INST::CalcHamiltonian(const t_vec_real& Qvec) const
 	const auto [J_Q, J_Q0] = CalcReciprocalJs(Qvec);
 
 	// create the hamiltonian of equation (25) and (26) from (Toth 2015)
-	t_mat H00     = tl2::zero<t_mat>(N, N);
-	t_mat H00c_mQ = tl2::zero<t_mat>(N, N);  // H00*(-Q)
-	t_mat H0N     = tl2::zero<t_mat>(N, N);
+	t_mat H = tl2::create<t_mat>(2*N, 2*N);
 
 	bool use_field = !tl2::equals_0<t_real>(m_field.mag, m_eps)
 		&& m_field.dir.size() == 3;
@@ -197,7 +195,7 @@ t_mat MAGDYN_INST::CalcHamiltonian(const t_vec_real& Qvec) const
 
 		// get the pre-calculated u and v vectors for the commensurate case
 		const t_vec& u_i  = s_i.trafo_plane_calc;
-		const t_vec& uc_i = s_i.trafo_plane_conj_calc;  // u*_i
+		const t_vec& uc_i = s_i.trafo_plane_conj_calc;  // = u*_i
 		const t_vec& v_i  = s_i.trafo_z_calc;
 
 		for(t_size j = 0; j < N; ++j)
@@ -206,7 +204,7 @@ t_mat MAGDYN_INST::CalcHamiltonian(const t_vec_real& Qvec) const
 
 			// get the pre-calculated u and v vectors for the commensurate case
 			const t_vec& u_j  = s_j.trafo_plane_calc;
-			const t_vec& uc_j = s_j.trafo_plane_conj_calc;  // u*_j
+			const t_vec& uc_j = s_j.trafo_plane_conj_calc;  // = u*_j
 			const t_vec& v_j  = s_j.trafo_z_calc;
 
 			// get the pre-calculated exchange matrices for the (i, j) coupling
@@ -223,9 +221,9 @@ t_mat MAGDYN_INST::CalcHamiltonian(const t_vec_real& Qvec) const
 				// equation (26) from (Toth 2015)
 				const t_real S_mag = 0.5 * std::sqrt(s_i.spin_mag_calc * s_j.spin_mag_calc);
 
-				H00(i, j)     += S_mag * tl2::inner_noconj<t_vec>(u_i,  (*J_Q33) * uc_j);
-				H00c_mQ(i, j) += S_mag * tl2::inner_noconj<t_vec>(uc_i, (*J_Q33) * u_j);
-				H0N(i, j)     += S_mag * tl2::inner_noconj<t_vec>(u_i,  (*J_Q33) * u_j);
+				H(    i,     j) += S_mag * tl2::inner<t_vec>(uc_i, (*J_Q33) * uc_j);
+				H(N + i, N + j) += S_mag * tl2::inner<t_vec>(u_i,  (*J_Q33) * u_j);
+				H(    i, N + j) += S_mag * tl2::inner<t_vec>(uc_i, (*J_Q33) * u_j);
 			}
 
 			if(J_Q033)
@@ -233,8 +231,8 @@ t_mat MAGDYN_INST::CalcHamiltonian(const t_vec_real& Qvec) const
 				// equation (26) from (Toth 2015)
 				t_cplx c = s_j.spin_mag_calc * tl2::inner_noconj<t_vec>(v_i, (*J_Q033) * v_j);
 
-				H00(i, i)     -= c;
-				H00c_mQ(i, i) -= c;
+				H(    i,     i) -= c;
+				H(N + i, N + i) -= c;
 			}
 		}  // end of iteration over j sites
 
@@ -249,17 +247,19 @@ t_mat MAGDYN_INST::CalcHamiltonian(const t_vec_real& Qvec) const
 			constexpr const t_real muB = tl2::mu_B<t_real>
 				/ tl2::meV<t_real> * tl2::tesla<t_real>;
 
-			H00(i, i)     -= muB * Bgv;
-			H00c_mQ(i, i) -= std::conj(muB * Bgv);
+			H(    i,     i) -= muB * Bgv;
+			H(N + i, N + i) -= std::conj(muB * Bgv);
 		}
 	}  // end of iteration over i sites
 
 	// equation (25) from (Toth 2015)
-	const t_mat HN0 = tl2::herm(H0N);
-	t_mat H = tl2::create<t_mat>(2*N, 2*N);
-	tl2::set_submat(H, H00, 0, 0); tl2::set_submat(H, H0N,     0, N);
-	tl2::set_submat(H, HN0, N, 0); tl2::set_submat(H, H00c_mQ, N, N);
+	tl2::set_submat(H, tl2::herm(tl2::submat(H, 0, N, N, N)), N, 0);
 
+#ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
+	using namespace tl2_ops;
+	std::cout << "H[ Q = " << Qvec << " ] =\n";
+	tl2::niceprint(std::cout, H, 1e-4, 4);
+#endif
 	return H;
 }
 
@@ -270,140 +270,126 @@ t_mat MAGDYN_INST::CalcHamiltonian(const t_vec_real& Qvec) const
  * @note implements the formalism given by (Toth 2015)
  */
 MAGDYN_TEMPL
-MAGDYN_TYPE::EnergiesAndWeights MAGDYN_INST::CalcEnergiesFromHamiltonian(
-	t_mat _H, const t_vec_real& Qvec, bool only_energies) const
+MAGDYN_TYPE::SofQE MAGDYN_INST::CalcEnergiesFromHamiltonian(
+	const t_mat& _H, const t_vec_real& Qvec, bool only_energies) const
 {
+	SofQE S;
+	S.Q_rlu = Qvec;
+	S.H = _H;
+
 	using namespace tl2_ops;
 	const t_size N = GetMagneticSitesCount();
-	if(N == 0 || _H.size1() == 0 || _H.size2() == 0)
-		return EnergiesAndWeights{};
+	if(N == 0 || S.H.size1() == 0 || S.H.size2() == 0)
+		return S;
 
-	// equation (30) from (Toth 2015)
-	t_mat g_sign = tl2::unit<t_mat>(2*N);
-	for(t_size i = N; i < g_sign.size1(); ++i)
-		g_sign(i, i) = -1.;
+	// equation (30) from (Toth 2015), to ensure correct commutators
+	S.comm = tl2::unit<t_mat>(2*N);
+	for(t_size i = N; i < S.comm.size1(); ++i)
+		S.comm(i, i) = -1.;
 
 	// equation (31) from (Toth 2015)
-	t_mat chol_mat;
 	t_size chol_try = 0;
 	bool chol_failed = false;
 	for(; chol_try < m_tries_chol; ++chol_try)
 	{
-		const auto [chol_ok, _C] = tl2_la::chol<t_mat>(_H);
+		// upper cholesky decomposition: S.H = _C^H _C
+		const auto [chol_ok, _C] = tl2_la::chol<t_mat>(S.H);
 
 		if(chol_ok)
 		{
-			chol_mat = std::move(_C);
+			S.H_chol = std::move(_C);
 			break;
 		}
-		else
-		{
-			if(chol_try >= m_tries_chol - 1)
-			{
-				std::cerr << "Magdyn error: Cholesky decomposition failed"
-					<< " at Q = " << Qvec << "." << std::endl;
-				chol_mat = std::move(_C);
-				chol_failed = true;
-				break;
-			}
 
-			// try forcing the hamilton to be positive definite
-			for(t_size i = 0; i < _H.size1(); ++i)
-				_H(i, i) += m_delta_chol;
+		if(chol_try >= m_tries_chol - 1)
+		{
+			CERR_OPT << "Magdyn error: Cholesky decomposition failed"
+				<< " at Q = " << Qvec << "." << std::endl;
+
+			S.H_chol = std::move(_C);
+			chol_failed = true;
+			break;
 		}
+
+		// try forcing the hamiltonian to be positive definite
+		for(t_size i = 0; i < S.H.size1(); ++i)
+			S.H(i, i) += m_delta_chol;
 	}
 
-	if(chol_failed || chol_mat.size1() == 0 || chol_mat.size2() == 0)
+	if(chol_failed || S.H_chol.size1() == 0 || S.H_chol.size2() == 0)
 	{
-		std::cerr << "Magdyn error: Invalid Cholesky decomposition"
+		CERR_OPT << "Magdyn error: Invalid Cholesky decomposition"
 			<< " at Q = " << Qvec << "." << std::endl;
-		return EnergiesAndWeights{};
+		return S;
 	}
 
 	if(m_perform_checks && chol_try > 0)
 	{
-		std::cerr << "Magdyn warning: Needed " << chol_try
+		CERR_OPT << "Magdyn warning: Needed " << chol_try
 			<< " correction(s) for Cholesky decomposition"
 			<< " at Q = " << Qvec << "." << std::endl;
 	}
 
 	// see p. 5 in (Toth 2015)
-	t_mat H_mat = chol_mat * g_sign * tl2::herm<t_mat>(chol_mat);
+	S.H_comm = S.H_chol * S.comm * tl2::herm<t_mat>(S.H_chol);
 
-	const bool is_herm = tl2::is_symm_or_herm<t_mat, t_real>(H_mat, m_eps);
+	const bool is_herm = tl2::is_symm_or_herm<t_mat, t_real>(S.H_comm, m_eps);
 	if(m_perform_checks && !is_herm)
 	{
-		std::cerr << "Magdyn warning: Hamiltonian is not hermitian"
+		CERR_OPT << "Magdyn warning: Hamiltonian is not hermitian"
 			<< " at Q = " << Qvec << "." << std::endl;
 	}
 
 	// eigenvalues of the hamiltonian correspond to the energies
-	// eigenvectors correspond to the spectral weights
 	const auto [evecs_ok, evals, evecs] =
 		tl2_la::eigenvec<t_mat, t_vec, t_cplx, t_real>(
-			H_mat, only_energies, is_herm, true);
+			S.H_comm, only_energies, is_herm, true);
 	if(!evecs_ok)
 	{
-		std::cerr << "Magdyn error: Eigensystem calculation failed"
+		CERR_OPT << "Magdyn error: Eigensystem calculation failed"
 			<< " at Q = " << Qvec << "." << std::endl;
-		return EnergiesAndWeights{};
+		return S;
 	}
 
-	EnergiesAndWeights Es_and_Ws{};
-	Es_and_Ws.reserve(evals.size());
+	S.E_and_S.reserve(evals.size());
 
-	// register energies
-	for(const auto& eval : evals)
+	// register energies and states
+	for(t_size eval_idx = 0; eval_idx < evals.size(); ++eval_idx)
 	{
-		const EnergyAndWeight EandS { .E = eval.real(), };
-		Es_and_Ws.emplace_back(std::move(EandS));
+		const t_cplx& eval = evals[eval_idx];
+		const t_vec* evec = nullptr;
+		if(!only_energies && eval_idx < evecs.size())
+			evec = &evecs[eval_idx];
+
+		if(m_perform_checks && !tl2::equals_0(eval.imag(), m_eps))
+		{
+			CERR_OPT << "Magdyn warning: Remaining imaginary energy component at Q = "
+				<< Qvec << " and E = " << eval
+				<< "." << std::endl;
+		}
+
+		EnergyAndWeight EandS
+		{
+			.E = eval.real(),
+			.state = evec ? *evec : t_vec{},
+		};
+
+		S.E_and_S.emplace_back(std::move(EandS));
 	}
 
 	// weight factors
 	if(!only_energies)
 	{
-		if(!CalcCorrelationsFromHamiltonian(Es_and_Ws,
-			H_mat, chol_mat, g_sign, Qvec, evecs))
+		bool corr_ok = CalcCorrelationsFromHamiltonian(S);
+		if(!corr_ok)
 		{
-			std::cerr << "Magdyn warning: Invalid correlations"
+			CERR_OPT << "Magdyn warning: Invalid correlations"
 				<< " at Q = " << Qvec << "." << std::endl;
 		}
 	}
 
-	return Es_and_Ws;
+	return S;
 }
-
-
-
-/**
- * converts the rotation matrix rotating the local spins to ferromagnetic
- * [001] directions into the vectors comprised of the matrix columns
- * @see equation (9) and (51) from (Toth 2015)
- */
-MAGDYN_TEMPL
-std::tuple<t_vec, t_vec> MAGDYN_INST::rot_to_trafo(const t_mat& R)
-{
-	const t_vec xy_plane = tl2::col<t_mat, t_vec>(R, 0)
-		 + s_imag * tl2::col<t_mat, t_vec>(R, 1);
-	const t_vec z = tl2::col<t_mat, t_vec>(R, 2);
-
-	return std::make_tuple(xy_plane, z);
-}
-
-
-
-/**
- * rotate local spin to ferromagnetic [001] direction
- * @see equations (7) and (9) from (Toth 2015)
- */
-MAGDYN_TEMPL
-std::tuple<t_vec, t_vec> MAGDYN_INST::spin_to_trafo(const t_vec_real& spin_dir)
-{
-	const t_mat_real _rot = tl2::rotation<t_mat_real, t_vec_real>(
-		spin_dir, m_zdir, &m_rotaxis, m_eps);
-
-	const t_mat rot = tl2::convert<t_mat, t_mat_real>(_rot);
-	return rot_to_trafo(rot);
-}
+// --------------------------------------------------------------------
 
 #endif

@@ -27,7 +27,7 @@
 #include "defs.h"
 
 #include <QtWidgets/QGridLayout>
-#include <QtWidgets/QPushButton>
+#include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QLabel>
 
 #include <boost/version.hpp>
@@ -169,14 +169,16 @@ InfoDlg::InfoDlg(QWidget* parent, QSettings *sett)
 		QSizePolicy::Minimum, QSizePolicy::Expanding),
 		y++,0, 1,1);
 
-	QPushButton *infoDlgOk = new QPushButton("OK", this);
-	connect(infoDlgOk, &QAbstractButton::clicked, this, &QDialog::accept);
+	QDialogButtonBox *btnbox = new QDialogButtonBox(this);
+	btnbox->addButton(QDialogButtonBox::Ok);
+	btnbox->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+	connect(btnbox, &QDialogButtonBox::accepted, this, &InfoDlg::accept);
 
 	auto dlgGrid = new QGridLayout(this);
 	dlgGrid->setSpacing(4);
 	dlgGrid->setContentsMargins(8, 8, 8, 8);
 	dlgGrid->addWidget(infopanel, 0,0, 1,4);
-	dlgGrid->addWidget(infoDlgOk, 1,3, 1,1);
+	dlgGrid->addWidget(btnbox, 1,3, 1,1);
 
 	// restore settings
 	if(m_sett)

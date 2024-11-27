@@ -102,7 +102,7 @@ namespace tl2_la {
 		class t_real = typename t_cplx::value_type>
 	std::tuple<bool, std::vector<t_cplx>, std::vector<t_vec_cplx>>
 	eigenvec(const t_mat_cplx& mat,
-		bool only_evals=false, bool is_hermitian=false, bool normalise=false,
+		bool only_evals = false, bool is_hermitian = false, bool normalise = false,
 		t_real mineval = -1, t_real maxeval = -2, t_real eps = -1)
 		requires tl2::is_mat<t_mat_cplx> && tl2::is_vec<t_vec_cplx> && tl2::is_complex<t_cplx>;
 

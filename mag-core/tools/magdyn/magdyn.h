@@ -64,12 +64,15 @@
 
 #include "gui_defs.h"
 #include "graph.h"
-#include "table_import.h"
-#include "struct_plot.h"
-#include "ground_state.h"
-#include "trafos.h"
-#include "notes.h"
-#include "infos.h"
+
+// dialogs
+#include "dialogs/table_import.h"
+#include "dialogs/struct_plot.h"
+#include "dialogs/ground_state.h"
+#include "dialogs/topology.h"
+#include "dialogs/trafos.h"
+#include "dialogs/notes.h"
+#include "dialogs/infos.h"
 
 
 
@@ -232,6 +235,7 @@ protected:
 	InfoDlg *m_info_dlg{};                 // info dialog
 	StructPlotDlg *m_structplot_dlg{};     // magnetic structure plotter
 	GroundStateDlg *m_groundstate_dlg{};   // ground state minimiser
+	TopologyDlg *m_topo_dlg{};             // topological calculations
 
 
 protected:
@@ -244,6 +248,7 @@ protected:
 	void ShowNotesDlg(bool only_create = false);
 	void ShowStructPlotDlg(bool only_create = false);
 	void ShowGroundStateDlg(bool only_create = false);
+	void ShowTopologyDlg(bool only_create = false);
 	void InitSettingsDlg();
 	void InitSettings();
 
@@ -315,8 +320,18 @@ protected:
 	void SetCurrentField();
 	void SetCurrentCoordinate(int which = 0);
 
+	std::vector<t_magdyn::Variable> GetVariables() const;
+	t_size ReplaceValueWithVariable(const std::string& var, const t_cplx& val);
+	t_size ReplaceValuesWithVariables();
+
 	void DelTabItem(QTableWidget *pTab, int begin=-2, int end=-2);
 	void UpdateVerticalHeader(QTableWidget *pTab);
+
+	void SitesSelectionChanged();
+	void TermsSelectionChanged();
+	void VariablesSelectionChanged();
+	void FieldsSelectionChanged();
+	void CoordinatesSelectionChanged();
 
 	void SitesTableItemChanged(QTableWidgetItem *item);
 	void TermsTableItemChanged(QTableWidgetItem *item);
@@ -335,8 +350,8 @@ protected:
 	void ExportSQE();
 
 	void SavePlotFigure();
-	void SaveDispersion();
-	void SaveMultiDispersion();
+	void SaveDispersion(bool as_scr = false);
+	void SaveMultiDispersion(bool as_scr = false);
 
 	void MirrorAtoms();
 	void RotateField(bool ccw = true);
@@ -355,8 +370,8 @@ protected:
 	void CalcAll();              // syncs sites and terms and calculates all dynamics
 	void SetKernel(const t_magdyn* dyn, bool sync_sites = true, bool sync_terms = true, bool sync_idx = true);
 
+	// plotter functions
 	void PlotDispersion();
-
 	void PlotMouseMove(QMouseEvent* evt);
 	void PlotMousePress(QMouseEvent* evt);
 
@@ -371,14 +386,15 @@ protected:
 	void ImportCouplings(const std::vector<TableImportCoupling>&, bool clear_existing = true);
 
 	// disable/enable gui input for threaded operations
-	void EnableInput();
-	void DisableInput();
+	void EnableInput(bool enable = true);
 
 	// get the site corresponding to the given table index
-	const t_magdyn::MagneticSite* GetSiteFromTableIndex(int idx) const;
+	const t_site* GetSiteFromTableIndex(int idx) const;
 
 	// get the coupling corresponding to the given table index
-	const t_magdyn::ExchangeTerm* GetTermFromTableIndex(int idx) const;
+	const t_term* GetTermFromTableIndex(int idx) const;
+
+	void ShowError(const char* msg, bool critical = true) const;
 
 
 public:
@@ -421,6 +437,10 @@ private:
 	QVector<qreal> m_qs_data_channel[3]{}, m_Es_data_channel[3]{}, m_ws_data_channel[3]{};
 	t_size m_Q_idx{};                 // plot x axis
 	t_real m_Q_min{}, m_Q_max{};      // plot x axis range
+
+
+protected slots:
+	void DispersionQChanged();
 
 
 public slots:

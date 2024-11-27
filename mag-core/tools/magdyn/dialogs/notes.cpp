@@ -26,7 +26,6 @@
 #include "notes.h"
 
 #include <QtWidgets/QGridLayout>
-#include <QtWidgets/QPushButton>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QLabel>
 
@@ -52,8 +51,10 @@ NotesDlg::NotesDlg(QWidget* parent, QSettings *sett)
 	m_notes->setSizePolicy(QSizePolicy{
 		QSizePolicy::Expanding, QSizePolicy::Expanding});
 
-	QPushButton *notesDlgOk = new QPushButton("OK", this);
-	connect(notesDlgOk, &QAbstractButton::clicked, this, &QDialog::accept);
+	QDialogButtonBox *btnbox = new QDialogButtonBox(this);
+	btnbox->addButton(QDialogButtonBox::Ok);
+	btnbox->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+	connect(btnbox, &QDialogButtonBox::accepted, this, &NotesDlg::accept);
 
 	auto grid = new QGridLayout(this);
 	grid->setSpacing(4);
@@ -62,7 +63,7 @@ NotesDlg::NotesDlg(QWidget* parent, QSettings *sett)
 	int y = 0;
 	grid->addWidget(new QLabel(QString("Comments / Notes:"), this), y++, 0, 1, 1);
 	grid->addWidget(m_notes, y++, 0, 1, 4);
-	grid->addWidget(notesDlgOk, y++, 3, 1, 1);
+	grid->addWidget(btnbox, y++, 3, 1, 1);
 
 	// restore settings
 	if(m_sett)

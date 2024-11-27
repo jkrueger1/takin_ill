@@ -112,22 +112,32 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 
 t_real MagnonMod::operator()(t_real h, t_real k, t_real l, t_real E) const
 {
+	// bose factor
+	t_real bose = 1.;
+	if(!m_use_model_bose)
+	{
+		// calculate bose factor here (not in model)
+		bose = tl::bose_cutoff(E, m_T, m_dyn.GetBoseCutoffEnergy());
+	}
+
 	std::vector<t_real> Es, Ws;
 	std::tie(Es, Ws) = disp(h, k, l);
 
+	// incoherent peak
 	t_real incoh = 0.;
 	if(!tl::float_equal(m_incoh_amp, t_real(0)))
 		incoh = tl::gauss_model(E, t_real(0),
 			m_incoh_sigma, m_incoh_amp, t_real(0));
 
+	// magnon peaks
 	t_real S = 0.;
-	for(std::size_t iE=0; iE<Es.size(); ++iE)
+	for(std::size_t iE = 0; iE < Es.size(); ++iE)
 	{
 		if(!tl::float_equal(Ws[iE], t_real(0)))
 			S += tl::gauss_model(E, Es[iE], m_sigma, Ws[iE], t_real(0));
 	}
 
-	return m_S0*S + incoh;
+	return m_S0*S*bose + incoh;
 }
 
 // ----------------------------------------------------------------------------
@@ -163,9 +173,11 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 	vars.push_back(SqwBase::t_var{
 		"S0", "real", tl::var_to_str(m_S0)});
 	vars.push_back(SqwBase::t_var{
-		"T", "real", tl::var_to_str(m_dyn.GetTemperature())});
+		"T", "real", tl::var_to_str(m_T /*m_dyn.GetTemperature()*/)});
 	vars.push_back(SqwBase::t_var{
 		"cutoff", "real", tl::var_to_str(m_dyn.GetBoseCutoffEnergy())});
+	vars.push_back(SqwBase::t_var{
+		"use_model_bose", "int", tl::var_to_str((int)m_use_model_bose)});
 	vars.push_back(SqwBase::t_var{
 		"channel", "int", tl::var_to_str(m_channel)});
 	vars.push_back(SqwBase::t_var{
@@ -173,13 +185,15 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 	vars.push_back(SqwBase::t_var{
 		"B_mag", "real", tl::var_to_str(field.mag)});
 	vars.push_back(SqwBase::t_var{
-		"B_align_spins", "real", tl::var_to_str((int)field.align_spins)});
+		"B_align_spins", "int", tl::var_to_str((int)field.align_spins)});
+	vars.push_back(SqwBase::t_var{
+		"silent", "real", tl::var_to_str((int)m_dyn.GetSilent())});
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 	vars.push_back(SqwBase::t_var{
 		"Q_signs", "vector", vec_to_str(m_Qsigns)});
 #endif
 
-	// get variables from the model
+	// get variables from the magdyn model
 	for(const auto& modelvar : m_dyn.GetVariables())
 	{
 #ifdef MAGNONMOD_USE_CPLX
@@ -199,8 +213,10 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 
 void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 {
-	if(!vars.size()) return;
+	if(!vars.size())
+		return;
 
+	bool set_model_temp = false;
 	bool calc_sites = false;
 	bool calc_terms = false;
 
@@ -218,9 +234,17 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 		else if(strVar == "S0")
 			m_S0 = tl::str_to_var<decltype(m_S0)>(strVal);
 		else if(strVar == "T")
-			m_dyn.SetTemperature(tl::str_to_var<t_real>(strVal));
+		{
+			m_T = tl::str_to_var<t_real>(strVal);
+			set_model_temp = true;
+		}
 		else if(strVar == "cutoff")
 			m_dyn.SetBoseCutoffEnergy(tl::str_to_var<t_real>(strVal));
+		else if(strVar == "use_model_bose")
+		{
+			m_use_model_bose = (tl::str_to_var<int>(strVal) != 0);
+			set_model_temp = true;
+		}
 		else if(strVar == "channel")
 			m_channel = tl::str_to_var<int>(strVal);
 		else if(strVar == "B_dir")
@@ -255,6 +279,8 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 			m_dyn.SetExternalField(field);
 			calc_sites = true;
 		}
+		else if(strVar == "silent")
+			m_dyn.SetSilent(tl::str_to_var<int>(strVal) != 0);
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 		else if(strVar == "Q_signs")
 		{
@@ -282,6 +308,14 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 			m_dyn.SetVariable(std::move(modelvar));
 			calc_terms = true;
 		}
+	}
+
+	if(set_model_temp)
+	{
+		if(!m_use_model_bose)
+			m_dyn.SetTemperature(-1.);
+		else
+			m_dyn.SetTemperature(m_T);
 	}
 
 	if(calc_sites)
@@ -315,6 +349,8 @@ SqwBase* MagnonMod::shallow_copy() const
 	mod->m_S0 = this->m_S0;
 	mod->m_dyn = this->m_dyn;
 	mod->m_channel = this->m_channel;
+	mod->m_use_model_bose = this->m_use_model_bose;
+	mod->m_T = this->m_T;
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 	mod->m_Qsigns = this->m_Qsigns;
 #endif

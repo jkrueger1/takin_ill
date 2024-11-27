@@ -30,14 +30,15 @@
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QTableWidgetItem>
-#include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QDialogButtonBox>
 
 #include <string>
 #include <sstream>
 #include <unordered_set>
 
 #include "tlibs2/libs/qt/numerictablewidgetitem.h"
+using t_numitem = tl2::NumericTableWidgetItem<t_real>;
 
 
 
@@ -99,14 +100,26 @@ GroundStateDlg::GroundStateDlg(QWidget *parent, QSettings *sett)
 	m_btnFromKernel = new QPushButton("Get Spins", this);
 	m_btnToKernel = new QPushButton("Set Spins", this);
 	m_btnMinimise = new QPushButton("Minimise", this);
-	QPushButton *btnOk = new QPushButton("OK", this);
+
+	m_btnFromKernel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+	m_btnToKernel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+	m_btnMinimise->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
 	m_btnFromKernel->setToolTip("Fetch spins from main dialog.");
 	m_btnToKernel->setToolTip("Send spins back to main dialog.");
+	m_btnMinimise->setToolTip("Minimise ground state energy.");
 
+	// close button
+	QDialogButtonBox *btnbox = new QDialogButtonBox(this);
+	btnbox->addButton(QDialogButtonBox::Ok);
+	btnbox->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+
+	// status bar
 	m_status = new QLabel(this);
+	m_status->setFrameShape(QFrame::Panel);
+	m_status->setFrameShadow(QFrame::Sunken);
 	m_status->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-	m_status->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	m_status->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
 	int y = 0;
 	auto grid = new QGridLayout(this);
@@ -116,7 +129,7 @@ GroundStateDlg::GroundStateDlg(QWidget *parent, QSettings *sett)
 	grid->addWidget(m_btnFromKernel, y, 0, 1, 1);
 	grid->addWidget(m_btnToKernel, y, 1, 1, 1);
 	grid->addWidget(m_btnMinimise, y, 2, 1, 1);
-	grid->addWidget(btnOk, y++, 3, 1, 1);
+	grid->addWidget(btnbox, y++, 3, 1, 1);
 	grid->addWidget(m_status, y, 0, 1, 4);
 
 	if(m_sett && m_sett->contains("ground_state/geo"))
@@ -125,7 +138,7 @@ GroundStateDlg::GroundStateDlg(QWidget *parent, QSettings *sett)
 		resize(640, 480);
 
 	connect(m_spinstab, &QTableWidget::itemChanged, this, &GroundStateDlg::SpinsTableItemChanged);
-	connect(btnOk, &QAbstractButton::clicked, this, &QDialog::accept);
+	connect(btnbox, &QDialogButtonBox::accepted, this, &GroundStateDlg::accept);
 	connect(m_btnMinimise, &QAbstractButton::clicked, this, &GroundStateDlg::Minimise);
 	connect(m_btnToKernel, &QAbstractButton::clicked, this, &GroundStateDlg::SyncToKernel);
 	connect(m_btnFromKernel, &QAbstractButton::clicked, [this]()
@@ -179,19 +192,16 @@ void GroundStateDlg::SpinsTableItemChanged(QTableWidgetItem *item)
 		case COL_SPIN_PHI:
 		{
 			// get phi and theta
-			auto *item_phi = static_cast<tl2::NumericTableWidgetItem<t_real>*>(item);
-			auto *item_theta = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_spinstab->item(row, COL_SPIN_THETA));
+			auto *item_phi = static_cast<t_numitem*>(item);
+			auto *item_theta = static_cast<t_numitem*>(m_spinstab->item(row, COL_SPIN_THETA));
 
 			// calculate new u and v
 			const auto [ u, v ] = tl2::sph_to_uv<t_real>(
 				tl2::d2r(item_phi->GetValue()), tl2::d2r(item_theta->GetValue()));
 
 			// set new u and v
-			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_spinstab->item(row, COL_SPIN_U))->SetValue(u);
-			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_spinstab->item(row, COL_SPIN_V))->SetValue(v);
+			static_cast<t_numitem*>(m_spinstab->item(row, COL_SPIN_U))->SetValue(u);
+			static_cast<t_numitem*>(m_spinstab->item(row, COL_SPIN_V))->SetValue(v);
 
 			break;
 		}
@@ -200,19 +210,16 @@ void GroundStateDlg::SpinsTableItemChanged(QTableWidgetItem *item)
 		case COL_SPIN_THETA:
 		{
 			// get phi and theta
-			auto *item_theta = static_cast<tl2::NumericTableWidgetItem<t_real>*>(item);
-			auto *item_phi = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_spinstab->item(row, COL_SPIN_PHI));
+			auto *item_theta = static_cast<t_numitem*>(item);
+			auto *item_phi = static_cast<t_numitem*>(m_spinstab->item(row, COL_SPIN_PHI));
 
 			// calculate new u and v
 			const auto [ u, v ] = tl2::sph_to_uv<t_real>(
 				tl2::d2r(item_phi->GetValue()), tl2::d2r(item_theta->GetValue()));
 
 			// set new u and v
-			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_spinstab->item(row, COL_SPIN_U))->SetValue(u);
-			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_spinstab->item(row, COL_SPIN_V))->SetValue(v);
+			static_cast<t_numitem*>(m_spinstab->item(row, COL_SPIN_U))->SetValue(u);
+			static_cast<t_numitem*>(m_spinstab->item(row, COL_SPIN_V))->SetValue(v);
 
 			break;
 		}
@@ -221,18 +228,17 @@ void GroundStateDlg::SpinsTableItemChanged(QTableWidgetItem *item)
 		case COL_SPIN_U:
 		{
 			// get u and v
-			auto *item_u = static_cast<tl2::NumericTableWidgetItem<t_real>*>(item);
-			auto *item_v = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_spinstab->item(row, COL_SPIN_V));
+			auto *item_u = static_cast<t_numitem*>(item);
+			auto *item_v = static_cast<t_numitem*>(m_spinstab->item(row, COL_SPIN_V));
 
 			// calculate new phi and theta
 			const auto [ phi, theta ] = tl2::uv_to_sph<t_real>(
 				item_u->GetValue(), item_v->GetValue());
 
 			// set new phi and theta
-			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			static_cast<t_numitem*>(
 				m_spinstab->item(row, COL_SPIN_PHI))->SetValue(tl2::r2d(phi));
-			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			static_cast<t_numitem*>(
 				m_spinstab->item(row, COL_SPIN_THETA))->SetValue(tl2::r2d(theta));
 
 			break;
@@ -242,18 +248,17 @@ void GroundStateDlg::SpinsTableItemChanged(QTableWidgetItem *item)
 		case COL_SPIN_V:
 		{
 			// get u and v
-			auto *item_v = static_cast<tl2::NumericTableWidgetItem<t_real>*>(item);
-			auto *item_u = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_spinstab->item(row, COL_SPIN_U));
+			auto *item_v = static_cast<t_numitem*>(item);
+			auto *item_u = static_cast<t_numitem*>(m_spinstab->item(row, COL_SPIN_U));
 
 			// calculate new phi and theta
 			const auto [ phi, theta ] = tl2::uv_to_sph<t_real>(
 				item_u->GetValue(), item_v->GetValue());
 
 			// set new phi and theta
-			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			static_cast<t_numitem*>(
 				m_spinstab->item(row, COL_SPIN_PHI))->SetValue(tl2::r2d(phi));
-			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			static_cast<t_numitem*>(
 				m_spinstab->item(row, COL_SPIN_THETA))->SetValue(tl2::r2d(theta));
 
 			break;
@@ -291,10 +296,8 @@ void GroundStateDlg::UpdateSpinFromTable(int row)
 	std::string site_name = m_spinstab->item(row, COL_SPIN_NAME)->text().toStdString();
 
 	// get phi and theta
-	auto *item_phi = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-		m_spinstab->item(row, COL_SPIN_PHI));
-	auto *item_theta = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-		m_spinstab->item(row, COL_SPIN_THETA));
+	auto *item_phi = static_cast<t_numitem*>(m_spinstab->item(row, COL_SPIN_PHI));
+	auto *item_theta = static_cast<t_numitem*>(m_spinstab->item(row, COL_SPIN_THETA));
 
 	if(!item_phi || !item_theta)
 		return;
@@ -368,10 +371,10 @@ void GroundStateDlg::SyncFromKernel(const t_magdyn *dyn,
 		m_spinstab->insertRow(row);
 
 		QTableWidgetItem *item_name = new QTableWidgetItem(site.name.c_str());
-		QTableWidgetItem *item_phi = new tl2::NumericTableWidgetItem<t_real>(tl2::r2d(phi));
-		QTableWidgetItem *item_theta = new tl2::NumericTableWidgetItem<t_real>(tl2::r2d(theta));
-		QTableWidgetItem *item_u = new tl2::NumericTableWidgetItem<t_real>(u);
-		QTableWidgetItem *item_v = new tl2::NumericTableWidgetItem<t_real>(v);
+		QTableWidgetItem *item_phi = new t_numitem(tl2::r2d(phi));
+		QTableWidgetItem *item_theta = new t_numitem(tl2::r2d(theta));
+		QTableWidgetItem *item_u = new t_numitem(u);
+		QTableWidgetItem *item_v = new t_numitem(v);
 
 		// write-protect site identifier
 		item_name->setFlags(item_name->flags() & ~Qt::ItemIsEditable);
@@ -416,6 +419,9 @@ void GroundStateDlg::SyncToKernel()
 
 
 
+/**
+ * toggle between "calculate" and "stop" button
+ */
 void GroundStateDlg::EnableMinimisation(bool enable)
 {
 	if(enable)
@@ -426,6 +432,7 @@ void GroundStateDlg::EnableMinimisation(bool enable)
 		m_spinstab->setEnabled(true);
 
 		m_btnMinimise->setToolTip("Start minimisation of ground state energy.");
+		m_btnMinimise->setIcon(QIcon::fromTheme("media-playback-start"));
 	}
 	else
 	{
@@ -435,6 +442,7 @@ void GroundStateDlg::EnableMinimisation(bool enable)
 		m_spinstab->setEnabled(false);
 
 		m_btnMinimise->setToolTip("Stop minimisation of ground state energy.");
+		m_btnMinimise->setIcon(QIcon::fromTheme("media-playback-stop"));
 	}
 }
 
@@ -550,7 +558,7 @@ void GroundStateDlg::CalcGroundStateEnergy()
 
 void GroundStateDlg::ShowError(const char* msg)
 {
-	QMessageBox::critical(this, "Magnetic Dynamics", msg);
+	QMessageBox::critical(this, windowTitle() + " -- Error", msg);
 }
 
 

@@ -46,6 +46,17 @@ namespace tl2 {
 // ----------------------------------------------------------------------------
 
 /**
+ * linear interpolation
+ */
+template<class T, typename t_real = double>
+T lerp(const T& a, const T& b, t_real pos)
+{
+	return a + T((b - a) * pos);
+}
+
+
+
+/**
  * @see http://mathworld.wolfram.com/BernsteinPolynomial.html
  */
 template<typename T> T bernstein(int i, int n, T t)

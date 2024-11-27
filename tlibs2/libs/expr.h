@@ -1017,7 +1017,7 @@ protected:
 
 		if constexpr(std::is_floating_point_v<t_num>)
 		{	// real
-			std::regex regex{"[0-9]+(\\.)?[0-9]*(E|e|E\\+|E-|e\\+|e-)?[0-9]*"};
+			std::regex regex{"[0-9]*(\\.)?[0-9]*(E|e|E\\+|E-|e\\+|e-)?[0-9]*"};
 			std::smatch smatch;
 			if(std::regex_match(str, smatch, regex))
 			{
@@ -1028,7 +1028,7 @@ protected:
 		}
 		else if constexpr(is_complex<t_num>)
 		{	// TODO: complex
-			std::regex regex{"[0-9]+(\\.)?[0-9]*(E|e|E\\+|E-|e\\+|e-)?[0-9]*"};
+			std::regex regex{"[0-9]*(\\.)?[0-9]*(E|e|E\\+|E-|e\\+|e-)?[0-9]*"};
 			std::smatch smatch;
 			if(std::regex_match(str, smatch, regex))
 			{

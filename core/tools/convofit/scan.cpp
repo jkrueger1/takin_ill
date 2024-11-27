@@ -165,7 +165,7 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 	scan.vecCts = pInstr->GetCol(strCountVar);
 	scan.vecMon = pInstr->GetCol(strMonVar);
 
-	tl::log_info("Counter column: ", strCountVar, "\nMonitor column: ", strMonVar, ".");
+	tl::log_info("Counter column: ", strCountVar, ", monitor column: ", strMonVar, ".");
 
 	// error
 	std::function<t_real_sc(t_real_sc)> funcErr = [](t_real_sc d) -> t_real_sc

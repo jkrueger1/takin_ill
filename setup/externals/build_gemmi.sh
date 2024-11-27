@@ -57,7 +57,7 @@ cd gemmi-master
 
 if [ $BUILD_FOR_MINGW -ne 0 ]; then
 	mkdir build_lib && cd build_lib
-	mingw64-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=True
+	mingw64-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=True ..
 	mingw64-make -j${NUM_CORES} && sudo mingw64-make install/strip
 else
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=True -B build_lib .

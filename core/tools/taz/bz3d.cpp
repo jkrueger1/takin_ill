@@ -1,6 +1,7 @@
 /**
  * 3d Brillouin zone drawing
  * @author Tobias Weber <tobias.weber@tum.de>
+ * @modif_by Victor Mecoli <mecoli@ill.fr> (November 2024)
  * @date apr-2017
  * @license GPLv2
  *
@@ -33,6 +34,7 @@
 
 #include "bz3d.h"
 #include <QGridLayout>
+#include <QPushButton>
 
 #include "tlibs/math/linalg.h"
 #include "tlibs/string/string.h"
@@ -44,15 +46,15 @@ using t_mat = ublas::matrix<t_real>;
 
 
 
-BZ3DDlg::BZ3DDlg(QWidget* pParent, QSettings *pSettings)
+BZ3DDlg::BZ3DDlg(QWidget *pParent, QSettings *pSettings)
 	: QDialog(pParent, Qt::Tool), m_pSettings(pSettings),
 	m_pStatus(new QStatusBar(this)),
 	m_pPlot(new PlotGl(this, pSettings, 0.25))
 {
-	m_pPlot->SetEnabled(0);
+	m_pPlot->SetEnabled(false);
 
 	setWindowTitle("Reciprocal Space / Brillouin Zone");
-	m_pStatus->setSizeGripEnabled(1);
+	m_pStatus->setSizeGripEnabled(true);
 	m_pStatus->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
 	if(m_pSettings)
@@ -70,10 +72,33 @@ BZ3DDlg::BZ3DDlg(QWidget* pParent, QSettings *pSettings)
 	m_pPlot->SetPrec(g_iPrecGfx);
 	m_pPlot->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
+	QPushButton *pPerspective = new QPushButton("Perspective Projection", this);
+	QPushButton *pTransparency = new QPushButton("Transparency", this);
+	QPushButton *pDrawFaces = new QPushButton("Draw Faces", this);
+	QPushButton *pDrawEdges = new QPushButton("Draw Edges", this);
+	QPushButton *pDrawSpheres = new QPushButton("Draw Q Points", this);
+	QPushButton *pOK = new QPushButton("OK", this);
+
+	pOK->setIcon(style()->standardIcon(QStyle::SP_DialogOkButton));
+
+	connect(pPerspective, &QPushButton::clicked, [this]() { m_pPlot->TogglePerspective(); });
+	connect(pTransparency, &QPushButton::clicked, [this]() { m_pPlot->ToggleZTest(); });
+	connect(pDrawFaces, &QPushButton::clicked, [this]() { m_pPlot->ToggleDrawPolys(); });
+	connect(pDrawEdges, &QPushButton::clicked, [this]() { m_pPlot->ToggleDrawLines(); });
+	connect(pDrawSpheres, &QPushButton::clicked, [this]() { m_pPlot->ToggleDrawSpheres(); });
+	connect(pOK, &QPushButton::clicked, this, &QDialog::accept);
+
 	QGridLayout *gridLayout = new QGridLayout(this);
 	gridLayout->setContentsMargins(4, 4, 4, 4);
-	gridLayout->addWidget(m_pPlot.get(), 0, 0, 1, 1);
-	gridLayout->addWidget(m_pStatus, 1, 0, 1, 1);
+
+	gridLayout->addWidget(m_pPlot.get(), 0, 0, 1, 6);
+	gridLayout->addWidget(pPerspective, 1, 0, 1, 3);
+	gridLayout->addWidget(pTransparency, 1, 3, 1, 3);
+	gridLayout->addWidget(pDrawFaces, 2, 0, 1, 2);
+	gridLayout->addWidget(pDrawEdges, 2, 2, 1, 2);
+	gridLayout->addWidget(pDrawSpheres, 2, 4, 1, 2);
+	gridLayout->addWidget(pOK, 3, 5, 1, 1);
+	gridLayout->addWidget(m_pStatus, 3, 0, 1, 5);
 
 	m_pPlot->AddHoverSlot([this](const PlotObjGl* pObj)
 	{
@@ -91,14 +116,14 @@ BZ3DDlg::BZ3DDlg(QWidget* pParent, QSettings *pSettings)
 	m_vecq_rlu = m_vecq = tl::ublas::zero_vector<t_real>(3);
 	m_pPlot->SetLabels("x (1/A)", "y (1/A)", "z (1/A)");
 	m_pPlot->SetDrawMinMax(0);
-	m_pPlot->SetEnabled(1);
+	m_pPlot->SetEnabled(true);
 }
 
 
 BZ3DDlg::~BZ3DDlg()
 {
 	if(m_pPlot)
-		m_pPlot->SetEnabled(0);
+		m_pPlot->SetEnabled(false);
 }
 
 
@@ -124,15 +149,15 @@ void BZ3DDlg::RenderBZ(const tl::Brillouin3D<t_real_glob>& bz,
 	static const std::vector<t_real> vecColScatPlane = { 1., 1., 0., 1. };
 	static const std::vector<t_real> vecColCurq = { 0., 0., 0., 1. };
 
-	m_pPlot->SetEnabled(0);
+	m_pPlot->SetEnabled(false);
 	m_pPlot->clear();
 
 	t_mat matBinv = tl::transpose(lattice.matA) / (tl::get_pi<t_real>()*t_real(2));
 
 
-	const bool bShowVerts = 0;
-	const bool bShowSymmPts = 1;
-	const bool bShowCurq = 1;
+	const bool bShowVerts = false;
+	const bool bShowSymmPts = true;
+	const bool bShowCurq = true;
 
 	// all objects: polys + edges
 	std::size_t iNumObjs =  2*bz.GetPolys().size();
@@ -252,7 +277,7 @@ void BZ3DDlg::RenderBZ(const tl::Brillouin3D<t_real_glob>& bz,
 	}
 
 	m_pPlot->SetMinMax(vecMin, vecMax);
-	m_pPlot->SetEnabled(1);
+	m_pPlot->SetEnabled(true);
 }
 
 
@@ -270,7 +295,7 @@ void BZ3DDlg::RecipParamsChanged(const RecipParams& recip)
 	// if a 3d object is already assigned, update it
 	if(m_pPlot && m_iqIdx)
 	{
-		m_pPlot->SetEnabled(0);
+		m_pPlot->SetEnabled(false);
 
 		m_pPlot->PlotSphere(m_vecq, 0.02/**0.1*g_dFontSize*/, *m_iqIdx);
 
@@ -281,7 +306,7 @@ void BZ3DDlg::RecipParamsChanged(const RecipParams& recip)
 		ostrTip << "\nq = (" << m_vecq[0] << ", " << m_vecq[1] << ", " << m_vecq[2] << ") 1/A";
 		m_pPlot->SetObjectLabel(*m_iqIdx, ostrTip.str());
 
-		m_pPlot->SetEnabled(1);
+		m_pPlot->SetEnabled(true);
 	}
 }
 
@@ -309,7 +334,7 @@ void BZ3DDlg::closeEvent(QCloseEvent* pEvt)
 void BZ3DDlg::hideEvent(QHideEvent *pEvt)
 {
 	if(m_pPlot)
-		m_pPlot->SetEnabled(0);
+		m_pPlot->SetEnabled(false);
 	QDialog::hideEvent(pEvt);
 }
 
@@ -318,7 +343,7 @@ void BZ3DDlg::showEvent(QShowEvent *pEvt)
 {
 	QDialog::showEvent(pEvt);
 	if(m_pPlot)
-		m_pPlot->SetEnabled(1);
+		m_pPlot->SetEnabled(true);
 }
 
 

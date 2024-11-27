@@ -402,6 +402,8 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 
 	connect(comboSqw, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &ConvoDlg::SqwModelChanged);
 	connect(editSqw, &QLineEdit::textChanged, this, &ConvoDlg::createSqwModel);
+	connect(btnSqwReload, &QAbstractButton::clicked, [this]()
+	{ createSqwModel(editSqw->text()); });
 
 	connect(editScan, &QLineEdit::textChanged, this, &ConvoDlg::scanFileChanged);
 	connect(editFilterCol, &QLineEdit::textChanged, this, [this]() -> void
@@ -461,13 +463,7 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 
 ConvoDlg::~ConvoDlg()
 {
-	if(m_pth)
-	{
-		if(m_pth->joinable())
-			m_pth->join();
-		delete m_pth;
-		m_pth = nullptr;
-	}
+	WaitForThread();
 
 	if(m_pSqwParamDlg) { delete m_pSqwParamDlg; m_pSqwParamDlg = nullptr; }
 	if(m_pFavDlg) { delete m_pFavDlg; m_pFavDlg = nullptr; }
@@ -475,6 +471,19 @@ ConvoDlg::~ConvoDlg()
 
 	if(m_pSqw) m_pSqw.reset();
 	unload_sqw_plugins();
+}
+
+
+void ConvoDlg::WaitForThread()
+{
+	if(!m_pth)
+		return;
+
+	if(m_pth->joinable())
+		m_pth->join();
+
+	delete m_pth;
+	m_pth = nullptr;
 }
 
 

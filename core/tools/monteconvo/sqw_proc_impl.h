@@ -214,6 +214,7 @@ enum class ProcMsgTypes
 
 	DISP,
 	SQW,
+	BCK,
 	GET_VARS,
 	SET_VARS,
 
@@ -311,6 +312,13 @@ static void child_proc(ipr::message_queue& msgToParent, ipr::message_queue& msgF
 				msg_send(msgToParent, msgRet);
 				break;
 			}
+			case ProcMsgTypes::BCK:		// background
+			{
+				msgRet.ty = msg.ty;
+				msgRet.dRet = pSqw->GetBackground(msg.dParam1, msg.dParam2, msg.dParam3, msg.dParam4);
+				msg_send(msgToParent, msgRet);
+				break;
+			}
 			case ProcMsgTypes::GET_VARS:	// get variables
 			{
 				msgRet.ty = msg.ty;
@@ -388,7 +396,7 @@ SqwProc<t_sqw>::SqwProc(const char* pcCfg, SqwProcStartMode mode,
 			tl::log_debug("Starting ", m_iNumChildProcesses, " child process(es).");
 
 			// start all child processes
-			for(unsigned int iChild=0; iChild<m_iNumChildProcesses; ++iChild)
+			for(unsigned int iChild = 0; iChild < m_iNumChildProcesses; ++iChild)
 			{
 				std::string strProcName = m_strProcBaseName + "_" + tl::var_to_str(iChild);
 				tl::log_debug("Creating process memory \"", "takin_sqw_proc_*_", strProcName, "\".");
@@ -611,7 +619,7 @@ SqwProc<t_sqw>::disp(t_real dh, t_real dk, t_real dl) const
 		return std::make_tuple(std::vector<t_real>{}, std::vector<t_real>{});
 
 	// find a free child process
-	for(unsigned int iChild=0; iChild<m_iNumChildProcesses; ++iChild)
+	for(unsigned int iChild = 0; iChild < m_iNumChildProcesses; ++iChild)
 	{
 		std::unique_lock<std::mutex> lock(*m_pmtx[iChild], std::defer_lock);
 		if(lock.try_lock())
@@ -650,7 +658,7 @@ t_real SqwProc<t_sqw>::operator()(t_real dh, t_real dk, t_real dl, t_real dE) co
 		return 0.;
 
 	// find a free child process
-	for(unsigned int iChild=0; iChild<m_iNumChildProcesses; ++iChild)
+	for(unsigned int iChild = 0; iChild < m_iNumChildProcesses; ++iChild)
 	{
 		std::unique_lock<std::mutex> lock(*m_pmtx[iChild], std::defer_lock);
 		if(lock.try_lock())
@@ -660,6 +668,45 @@ t_real SqwProc<t_sqw>::operator()(t_real dh, t_real dk, t_real dl, t_real dE) co
 	// if all processes are occupied, queue at the first one
 	std::lock_guard<std::mutex> lock(*m_pmtx[0]);
 	return query_sqw(0, dh, dk, dl, dE);
+}
+
+
+/**
+ * get background
+ */
+template<class t_sqw>
+t_real SqwProc<t_sqw>::GetBackground(t_real dh, t_real dk, t_real dl, t_real dE) const
+{
+	auto query_bck = [this](std::size_t iChild, t_real dh, t_real dk, t_real dl, t_real dE)
+		-> t_real
+	{
+		ProcMsg msg;
+		msg.ty = ProcMsgTypes::BCK;
+		msg.dParam1 = dh;
+		msg.dParam2 = dk;
+		msg.dParam3 = dl;
+		msg.dParam4 = dE;
+		msg_send(*m_pmsgOut[iChild], msg);
+
+		ProcMsg msgBck = msg_recv(*m_pmsgIn[iChild]);
+		return msgBck.dRet;
+	};
+
+
+	if(!m_bOk)
+		return 0.;
+
+	// find a free child process
+	for(unsigned int iChild = 0; iChild < m_iNumChildProcesses; ++iChild)
+	{
+		std::unique_lock<std::mutex> lock(*m_pmtx[iChild], std::defer_lock);
+		if(lock.try_lock())
+			return query_bck(iChild, dh, dk, dl, dE);
+	}
+
+	// if all processes are occupied, queue at the first one
+	std::lock_guard<std::mutex> lock(*m_pmtx[0]);
+	return query_bck(0, dh, dk, dl, dE);
 }
 
 

@@ -66,7 +66,6 @@ protected:
 	virtual void hideEvent(QHideEvent*) override;
 	virtual void showEvent(QShowEvent*) override;
 	virtual void closeEvent(QCloseEvent*) override;
-
 	virtual void keyPressEvent(QKeyEvent*) override;
 
 public slots:

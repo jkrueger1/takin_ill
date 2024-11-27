@@ -8,10 +8,11 @@
  *   - (Toth 2015) S. Toth and B. Lake, J. Phys.: Condens. Matter 27 166002 (2015):
  *                 https://doi.org/10.1088/0953-8984/27/16/166002
  *                 https://arxiv.org/abs/1402.6069
+ *   - (McClarty 2022) https://doi.org/10.1146/annurev-conmatphys-031620-104715
  *   - (Heinsdorf 2021) N. Heinsdorf, manual example calculation for a simple
  *                      ferromagnetic case, personal communications, 2021/2022.
  *
- * @desc This file implements the formalism given by (Toth 2015).
+ * @desc The magdyn library implements the formalism given by (Toth 2015).
  * @desc For further references, see the 'LITERATURE' file.
  *
  * ----------------------------------------------------------------------------
@@ -43,6 +44,7 @@
 #include <tuple>
 #include <unordered_set>
 #include <unordered_map>
+#include <functional>
 #include <string>
 #include <string_view>
 
@@ -80,6 +82,9 @@
 #define MAGDYN_TYPE typename MAGDYN_INST
 
 
+// only print if it's not set to silent mode
+#define CERR_OPT if(!m_silent) std::cerr
+
 
 namespace tl2_mag {
 
@@ -115,10 +120,10 @@ public:
 
 	using ExternalField = t_ExternalField<t_vec_real, t_real>;
 
-	using EnergyAndWeight = t_EnergyAndWeight<t_mat, t_real, t_cplx>;
+	using EnergyAndWeight = t_EnergyAndWeight<t_mat, t_vec, t_real, t_cplx>;
 	using EnergiesAndWeights = std::vector<EnergyAndWeight>;
 
-	using SofQE = t_SofQE<t_mat, t_real, t_cplx>;
+	using SofQE = t_SofQE<t_mat, t_vec, t_vec_real, t_real, t_cplx>;
 	using SofQEs = std::vector<SofQE>;
 
 	using t_indices = std::pair<t_size, t_size>;
@@ -181,6 +186,7 @@ public:
 	const ExchangeTerm& GetExchangeTerm(t_size idx) const;
 
 	bool IsIncommensurate() const;
+	bool GetSilent() const;
 
 	/**
 	 * get number of magnetic sites with the given name (to check if the name is unique)
@@ -214,7 +220,6 @@ public:
 	// --------------------------------------------------------------------
 
 
-
 	// --------------------------------------------------------------------
 	// setter
 	// --------------------------------------------------------------------
@@ -226,6 +231,7 @@ public:
 	void SetUniteDegenerateEnergies(bool b);
 	void SetForceIncommensurate(bool b);
 	void SetPerformChecks(bool b);
+	void SetSilent(bool b);
 
 	void SetPhaseSign(t_real sign);
 	void SetCholeskyMaxTries(t_size max_tries);
@@ -294,9 +300,8 @@ public:
 	/**
 	 * check if imaginary weights remain
 	 */
-	bool CheckImagWeights(const t_vec_real& Q_rlu, const EnergiesAndWeights& Es_and_S) const;
+	bool CheckImagWeights(const SofQE& S) const;
 	// --------------------------------------------------------------------
-
 
 
 	// --------------------------------------------------------------------
@@ -412,23 +417,21 @@ public:
 	 * get the energies from a hamiltonian
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	EnergiesAndWeights CalcEnergiesFromHamiltonian(
-		t_mat _H, const t_vec_real& Qvec,
+	SofQE CalcEnergiesFromHamiltonian(
+		const t_mat& _H, const t_vec_real& Qvec,
 		bool only_energies = false) const;
 
 	/**
 	 * get the dynamical structure factor from a hamiltonian
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	bool CalcCorrelationsFromHamiltonian(EnergiesAndWeights& energies_and_correlations,
-		const t_mat& H_mat, const t_mat& chol_mat, const t_mat& g_sign,
-		const t_vec_real& Qvec, const std::vector<t_vec>& evecs) const;
+	bool CalcCorrelationsFromHamiltonian(SofQE& S) const;
 
 	/**
 	 * applies projectors, form and weight factors to get neutron intensities
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	void CalcIntensities(const t_vec_real& Q_rlu, EnergiesAndWeights& E_and_S) const;
+	void CalcIntensities(SofQE& S) const;
 
 	/**
 	 * calculates the polarisation matrix
@@ -438,16 +441,14 @@ public:
 	/**
 	 * unite degenerate energies and their corresponding eigenstates
 	 */
-	EnergiesAndWeights UniteEnergies(const EnergiesAndWeights&
-		energies_and_correlations) const;
+	SofQE UniteEnergies(const SofQE& S) const;
 
 	/**
 	 * get the energies and the spin-correlation at the given momentum
 	 * (also calculates incommensurate contributions and applies weight factors)
 	 * @note implements the formalism given by (Toth 2015)
 	 */
-	EnergiesAndWeights CalcEnergies(const t_vec_real& Q_rlu,
-		bool only_energies = false) const;
+	SofQE CalcEnergies(const t_vec_real& Q_rlu, bool only_energies = false) const;
 
 	EnergiesAndWeights CalcEnergies(t_real h, t_real k, t_real l,
 		bool only_energies = false) const;
@@ -457,7 +458,8 @@ public:
 	 */
 	SofQEs CalcDispersion(t_real h_start, t_real k_start, t_real l_start,
 		t_real h_end, t_real k_end, t_real l_end, t_size num_Qs = 128,
-		t_size num_threads = 4, const bool *stop_request = nullptr) const;
+		t_size num_threads = 4,
+		std::function<bool(int, int)> *progress_fkt = nullptr) const;
 
 	/**
 	 * get the energy minimum
@@ -480,6 +482,23 @@ public:
 
 
 	// --------------------------------------------------------------------
+	// topological calculations
+	// --------------------------------------------------------------------
+	std::tuple<std::vector<t_vec>, SofQE> CalcBerryConnections(const t_vec_real& Q_start,
+		t_real delta = 1e-12, const std::vector<t_size>* perm = nullptr,
+		bool evecs_ortho = true) const;
+
+	std::tuple<std::vector<t_cplx>, SofQE> CalcBerryCurvatures(const t_vec_real& Q_start,
+		t_real delta = 1e-12, const std::vector<t_size>* perm = nullptr,
+		t_size dim1 = 0, t_size dim2 = 1, bool evecs_ortho = true) const;
+
+	std::vector<t_cplx> CalcChernNumbers(t_real bz = 0.5,
+		t_real delta_diff = 1e-12, t_real delta_int = 1e-3,
+		t_size dim1 = 0, t_size dim2 = 1, bool evecs_ortho = true) const;
+	// --------------------------------------------------------------------
+
+
+	// --------------------------------------------------------------------
 	// loading and saving
 	// --------------------------------------------------------------------
 	/**
@@ -489,7 +508,8 @@ public:
 		t_real h_start, t_real k_start, t_real l_start,
 		t_real h_end, t_real k_end, t_real l_end,
 		t_size num_Qs = 128, t_size num_threads = 4,
-		const bool *stop_request = nullptr) const;
+		bool as_py = false,
+		std::function<bool(int, int)> *progress_fkt = nullptr) const;
 
 	/**
 	 * generates the dispersion plot along the given Q path
@@ -498,24 +518,28 @@ public:
 		t_real h_start, t_real k_start, t_real l_start,
 		t_real h_end, t_real k_end, t_real l_end,
 		t_size num_Qs = 128, t_size num_threads = 4,
-		const bool *stop_request = nullptr) const;
+		bool as_py = false,
+		std::function<bool(int, int)> *progress_fkt = nullptr,
+		bool write_header = true) const;
 
 	/**
 	 * generates the dispersion plot along multiple Q paths
 	 */
 	bool SaveMultiDispersion(const std::string& filename,
-		const std::vector<std::array<t_real, 3>>& Qs,
+		const std::vector<t_vec_real>& Qs,
 		t_size num_Qs = 128, t_size num_threads = 4,
-		const bool *stop_request = nullptr,
+		bool as_py = false,
+		std::function<bool(int, int)> *progress_fkt = nullptr,
 		const std::vector<std::string>* Q_names = nullptr) const;
 
 	/**
 	 * generates the dispersion plot along multiple Q paths
 	 */
 	bool SaveMultiDispersion(std::ostream& ostr,
-		const std::vector<std::array<t_real, 3>>& Qs,
+		const std::vector<t_vec_real>& Qs,
 		t_size num_Qs = 128, t_size num_threads = 4,
-		const bool *stop_request = nullptr,
+		bool as_py = false,
+		std::function<bool(int, int)> *progress_fkt = nullptr,
 		const std::vector<std::string>* Q_names = nullptr) const;
 
 	/**
@@ -620,6 +644,7 @@ private:
 	bool m_force_incommensurate{ false };
 	bool m_unite_degenerate_energies{ true };
 	bool m_perform_checks{ true };
+	bool m_silent { false };
 
 	// settings for cholesky decomposition
 	t_size m_tries_chol{ 50 };

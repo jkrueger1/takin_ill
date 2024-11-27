@@ -4,16 +4,6 @@
  * @date 2022 - 2024
  * @license GPLv3, see 'LICENSE' file
  *
- * References:
- *   - (Toth 2015) S. Toth and B. Lake, J. Phys.: Condens. Matter 27 166002 (2015):
- *                 https://doi.org/10.1088/0953-8984/27/16/166002
- *                 https://arxiv.org/abs/1402.6069
- *   - (Heinsdorf 2021) N. Heinsdorf, manual example calculation for a simple
- *                      ferromagnetic case, personal communications, 2021/2022.
- *
- * @desc This file implements the formalism given by (Toth 2015).
- * @desc For further references, see the 'LITERATURE' file.
- *
  * ----------------------------------------------------------------------------
  * tlibs
  * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
@@ -78,7 +68,8 @@ bool MAGDYN_INST::Load(const std::string& filename)
 	}
 	catch(const std::exception& ex)
 	{
-		std::cerr << "Magdyn error: Could not load \"" << filename << "\"."
+		CERR_OPT << "Magdyn error: Could not load \""
+			<< filename << "\"."
 			<< " Reason: " << ex.what()
 			<< std::endl;
 
@@ -256,7 +247,7 @@ bool MAGDYN_INST::Load(const boost::property_tree::ptree& node)
 				}
 				else
 				{
-					std::cerr << "Magdyn error: Site 1 name \"" << *name1 << "\" "
+					CERR_OPT << "Magdyn error: Site 1 name \"" << *name1 << "\" "
 						<< "was not found in coupling \"" << exchange_term.name
 						<< "\"." << std::endl;
 				}
@@ -275,7 +266,7 @@ bool MAGDYN_INST::Load(const boost::property_tree::ptree& node)
 				}
 				else
 				{
-					std::cerr << "Magdyn error: Site 2 name \"" << *name2 << "\" "
+					CERR_OPT << "Magdyn error: Site 2 name \"" << *name2 << "\" "
 						<< "was not found in coupling \"" << exchange_term.name
 						<< "\"." << std::endl;
 				}

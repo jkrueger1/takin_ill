@@ -64,18 +64,19 @@ MAGDYN_TEMPL
 t_real MAGDYN_INST::CalcMinimumEnergy() const
 {
 	// energies at (000)
-	const auto energies_and_correlations = CalcEnergies(0., 0., 0., true);
+	const auto E_and_S = CalcEnergies(0., 0., 0., true);
 
 	// get minimum
 	const auto min_iter = std::min_element(
-		energies_and_correlations.begin(), energies_and_correlations.end(),
+		E_and_S.begin(), E_and_S.end(),
 		[](const EnergyAndWeight& E_and_S_1, const EnergyAndWeight& E_and_S_2) -> bool
 	{
 		return std::abs(E_and_S_1.E) < std::abs(E_and_S_2.E);
 	});
 
-	if(min_iter == energies_and_correlations.end())
+	if(min_iter == E_and_S.end())
 		return 0.;
+
 	return min_iter->E;
 }
 
@@ -196,7 +197,7 @@ bool MAGDYN_INST::CalcGroundState(const std::unordered_set<std::string>* fixed_p
 
 	if(tl2::minimise_dynargs<t_real>(num_args, func,
 		params, vals, errs, &fixed, &lower_lims, &upper_lims,
-		verbose, stop_request))
+		verbose && !m_silent, stop_request))
 	{
 		// set the spins to the newly-found ground state
 		for(t_size site_idx = 0; site_idx < GetMagneticSitesCount(); ++site_idx)
@@ -235,7 +236,9 @@ bool MAGDYN_INST::CalcGroundState(const std::unordered_set<std::string>* fixed_p
 	}
 	else
 	{
-		std::cerr << "Magdyn error: Ground state minimisation did not converge." << std::endl;
+		CERR_OPT << "Magdyn error: Ground state minimisation did not converge."
+			<< std::endl;
+
 		return false;
 	}
 }
@@ -249,6 +252,5 @@ bool MAGDYN_INST::CalcGroundState(const std::unordered_set<std::string>*, bool, 
 #endif
 
 // --------------------------------------------------------------------
-
 
 #endif

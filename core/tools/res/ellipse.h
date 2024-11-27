@@ -535,7 +535,9 @@ std::vector<t_real> calc_bragg_fwhms(const t_mat& reso)
 	static const t_real sig2fwhm = tl::get_SIGMA2FWHM<t_real>();
 
 	std::vector<t_real> vecFwhms;
-	for(std::size_t i=0; i<reso.size1(); ++i)
+	vecFwhms.reserve(reso.size1());
+
+	for(std::size_t i = 0; i < reso.size1(); ++i)
 		vecFwhms.push_back(sig2fwhm/sqrt(reso(i,i)));
 
 	return vecFwhms;

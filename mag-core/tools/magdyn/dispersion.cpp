@@ -76,6 +76,36 @@ void MagDynDlg::ClearDispersion(bool replot)
 
 
 /**
+ * a new start or end Q coordinate has been entered
+ */
+void MagDynDlg::DispersionQChanged()
+{
+	if(this->m_autocalc->isChecked())
+		this->CalcDispersion();
+
+	if(m_topo_dlg)
+	{
+		t_vec_real Q_start = tl2::create<t_vec_real>(
+		{
+			(t_real)m_Q_start[0]->value(),
+			(t_real)m_Q_start[1]->value(),
+			(t_real)m_Q_start[2]->value(),
+		});
+
+		t_vec_real Q_end = tl2::create<t_vec_real>(
+		{
+			(t_real)m_Q_end[0]->value(),
+			(t_real)m_Q_end[1]->value(),
+			(t_real)m_Q_end[2]->value(),
+		});
+
+		m_topo_dlg->SetDispersionQ(Q_start, Q_end);
+	}
+}
+
+
+
+/**
  * draw the calculated dispersion curve
  */
 void MagDynDlg::PlotDispersion()
@@ -149,9 +179,11 @@ void MagDynDlg::PlotDispersion()
 	const char* Q_label[]{ "h (rlu)", "k (rlu)", "l (rlu)" };
 	m_plot->xAxis->setLabel(Q_label[m_Q_idx]);
 
-	// set ranges
-	auto [min_E_iter, max_E_iter] = std::minmax_element(m_Es_data.begin(), m_Es_data.end());
+	// set x plot range
 	m_plot->xAxis->setRange(m_Q_min, m_Q_max);
+
+	// set y plot range
+	auto [min_E_iter, max_E_iter] = std::minmax_element(m_Es_data.begin(), m_Es_data.end());
 	if(min_E_iter != m_Es_data.end() && max_E_iter != m_Es_data.end())
 	{
 		t_real E_range = *max_E_iter - *min_E_iter;
@@ -168,6 +200,13 @@ void MagDynDlg::PlotDispersion()
 		m_plot->yAxis->setRange(0., 1.);
 	}
 
+	// set font
+	m_plot->setFont(font());
+	m_plot->xAxis->setLabelFont(font());
+	m_plot->yAxis->setLabelFont(font());
+	m_plot->xAxis->setTickLabelFont(font());
+	m_plot->yAxis->setTickLabelFont(font());
+
 	m_plot->replot();
 }
 
@@ -183,9 +222,9 @@ void MagDynDlg::CalcDispersion()
 
 	BOOST_SCOPE_EXIT(this_)
 	{
-		this_->EnableInput();
+		this_->EnableInput(true);
 	} BOOST_SCOPE_EXIT_END
-	DisableInput();
+	EnableInput(false);
 
 	// nothing to calculate?
 	if(m_dyn.GetMagneticSitesCount() == 0 || m_dyn.GetExchangeTermsCount() == 0)
@@ -242,6 +281,14 @@ void MagDynDlg::CalcDispersion()
 	m_Q_min = Q_start[m_Q_idx];
 	m_Q_max = Q_end[m_Q_idx];
 
+	// keep the scanned Q component in ascending order
+	if(Q_start[m_Q_idx] > Q_end[m_Q_idx])
+	{
+		std::swap(Q_start[0], Q_end[0]);
+		std::swap(Q_start[1], Q_end[1]);
+		std::swap(Q_start[2], Q_end[2]);
+	}
+
 	// options
 	const bool is_comm = !m_dyn.IsIncommensurate();
 	const bool use_min_E = false;
@@ -259,32 +306,23 @@ void MagDynDlg::CalcDispersion()
 		m_hamiltonian_comp[1]->isChecked(),
 		m_hamiltonian_comp[2]->isChecked());
 
-	// tread pool
+	// tread pool and mutex to protect m_qs_data, m_Es_data, and m_ws_data
 	asio::thread_pool pool{g_num_threads};
-
-	// mutex to protect m_qs_data, m_Es_data, and m_ws_data
 	std::mutex mtx;
-
-	using t_task = std::packaged_task<void()>;
-	using t_taskptr = std::shared_ptr<t_task>;
-	std::vector<t_taskptr> tasks;
-	tasks.reserve(num_pts);
-
-	// keep the scanned Q component in ascending order
-	if(Q_start[m_Q_idx] > Q_end[m_Q_idx])
-	{
-		std::swap(Q_start[0], Q_end[0]);
-		std::swap(Q_start[1], Q_end[1]);
-		std::swap(Q_start[2], Q_end[2]);
-	}
 
 	m_stopRequested = false;
 	m_progress->setMinimum(0);
 	m_progress->setMaximum(num_pts);
 	m_progress->setValue(0);
-	m_status->setText("Starting calculation.");
+	m_status->setText(QString("Starting dispersion calculation using %1 threads.").arg(g_num_threads));
 	tl2::Stopwatch<t_real> stopwatch;
 	stopwatch.start();
+
+	// create calculation tasks
+	using t_task = std::packaged_task<void()>;
+	using t_taskptr = std::shared_ptr<t_task>;
+	std::vector<t_taskptr> tasks;
+	tasks.reserve(num_pts);
 
 	for(t_size i = 0; i < num_pts; ++i)
 	{
@@ -300,9 +338,9 @@ void MagDynDlg::CalcDispersion()
 				})
 				: tl2::create<t_vec_real>({ Q_start[0], Q_start[1], Q_start[2] });
 
-			auto energies_and_correlations = m_dyn.CalcEnergies(Q, !use_weights);
+			auto S = m_dyn.CalcEnergies(Q, !use_weights);
 
-			for(const auto& E_and_S : energies_and_correlations)
+			for(const auto& E_and_S : S.E_and_S)
 			{
 				if(m_stopRequested)
 					break;
@@ -351,8 +389,9 @@ void MagDynDlg::CalcDispersion()
 		asio::post(pool, [taskptr]() { (*taskptr)(); });
 	}
 
-	m_status->setText("Performing calculation.");
+	m_status->setText(QString("Calculating dispersion in %1 threads...").arg(g_num_threads));
 
+	// get results from tasks
 	for(std::size_t task_idx = 0; task_idx < tasks.size(); ++task_idx)
 	{
 		t_taskptr task = tasks[task_idx];
@@ -371,6 +410,7 @@ void MagDynDlg::CalcDispersion()
 	pool.join();
 	stopwatch.stop();
 
+	// show elapsed time
 	std::ostringstream ostrMsg;
 	ostrMsg.precision(g_prec_gui);
 	ostrMsg << "Calculation";
@@ -437,12 +477,15 @@ void MagDynDlg::CalcHamiltonian()
 	std::ostringstream ostr;
 	ostr.precision(g_prec_gui);
 
+
 	// print hamiltonian
 	auto print_H = [&ostr](const t_mat& H, const t_vec_real& Qvec,
-		const std::string& Qstr = "Q", const std::string& mQstr = "-Q")
+		const std::string& Qstr = "Q", const std::string& mQstr = "-Q",
+		const std::string& title = "")
 	{
 		ostr << "<p><h3>Hamiltonian at " << Qstr <<  " = ("
-			<< Qvec[0] << ", " << Qvec[1] << ", " << Qvec[2] << ")</h3>";
+			<< Qvec[0] << ", " << Qvec[1] << ", " << Qvec[2] << ")"
+			<< title << "</h3>";
 		ostr << "<table style=\"border:0px\">";
 
 		// horizontal header
@@ -489,16 +532,23 @@ void MagDynDlg::CalcHamiltonian()
 		ostr << "</table></p>";
 	};
 
+
 	// get hamiltonian at Q
 	t_mat H = m_dyn.CalcHamiltonian(Q);
 	const bool is_comm = !m_dyn.IsIncommensurate();
 	if(m_hamiltonian_comp[0]->isChecked() || is_comm)  // always calculate commensurate case
 		print_H(H, Q, "Q", "-Q");
 
+
 	// print shifted hamiltonians for incommensurate case
+	bool print_incomm_p = false;
+	bool print_incomm_m = false;
+	t_vec_real O;
+
 	if(!is_comm)
 	{
-		const t_vec_real O = tl2::create<t_vec_real>(
+		// ordering wave vector
+		O = tl2::create<t_vec_real>(
 		{
 			(t_real)m_ordering[0]->value(),
 			(t_real)m_ordering[1]->value(),
@@ -512,6 +562,8 @@ void MagDynDlg::CalcHamiltonian()
 				// get hamiltonian at Q + ordering vector
 				t_mat H_p = m_dyn.CalcHamiltonian(Q + O);
 				print_H(H_p, Q + O, "Q + O", "Q - O");
+
+				print_incomm_p = true;
 			}
 
 			if(m_hamiltonian_comp[2]->isChecked())
@@ -519,34 +571,47 @@ void MagDynDlg::CalcHamiltonian()
 				// get hamiltonian at Q - ordering vector
 				t_mat H_m = m_dyn.CalcHamiltonian(Q - O);
 				print_H(H_m, Q - O, "Q - O", "Q + O");
+
+				print_incomm_m = true;
 			}
 		}
 	}
 
+
 	// get energies and correlation functions
 	using t_E_and_S = typename decltype(m_dyn)::EnergyAndWeight;
-	std::vector<t_E_and_S> energies_and_correlations;
+	typename t_magdyn::SofQE S;
 
 	if(is_comm)
 	{
 		// commensurate case
-		energies_and_correlations = m_dyn.CalcEnergiesFromHamiltonian(H, Q, only_energies);
+		S = m_dyn.CalcEnergiesFromHamiltonian(H, Q, only_energies);
 		if(!only_energies)
-			m_dyn.CalcIntensities(Q, energies_and_correlations);
+			m_dyn.CalcIntensities(S);
 		if(unite_degeneracies)
-			energies_and_correlations = m_dyn.UniteEnergies(energies_and_correlations);
+			S = m_dyn.UniteEnergies(S);
 	}
 	else
 	{
 		// incommensurate case
-		energies_and_correlations = m_dyn.CalcEnergies(Q, only_energies);
+		S = m_dyn.CalcEnergies(Q, only_energies);
 	}
 
-	if(only_energies)
+
+	ostr << "<hr>";
+	print_H(S.H_comm, Q, "Q", "-Q", ", Correct Commutators");
+	if(print_incomm_p)
+		print_H(S.H_comm_p, Q + O, "Q + O", "Q - O", ", Correct Commutators");
+	if(print_incomm_m)
+		print_H(S.H_comm_m, Q - O, "Q - O", "Q + O", ", Correct Commutators");
+	ostr << "<hr>";
+
+
+	if(only_energies)  // print energies
 	{
 		// split into positive and negative energies
 		std::vector<t_magdyn::EnergyAndWeight> Es_neg, Es_pos;
-		for(const t_E_and_S& E_and_S : energies_and_correlations)
+		for(const t_E_and_S& E_and_S : S.E_and_S)
 		{
 			t_real E = E_and_S.E;
 
@@ -603,9 +668,9 @@ void MagDynDlg::CalcHamiltonian()
 
 		ostr << "</table></p>";
 	}
-	else
+	else  // print energies and weights
 	{
-		std::stable_sort(energies_and_correlations.begin(), energies_and_correlations.end(),
+		std::stable_sort(S.E_and_S.begin(), S.E_and_S.end(),
 			[](const t_E_and_S& E_and_S_1, const t_E_and_S& E_and_S_2) -> bool
 		{
 			t_real E1 = E_and_S_1.E;
@@ -622,7 +687,7 @@ void MagDynDlg::CalcHamiltonian()
 		ostr << "<th style=\"padding-right:16px\">Weight</td>";
 		ostr << "</tr>";
 
-		for(const t_E_and_S& E_and_S : energies_and_correlations)
+		for(const t_E_and_S& E_and_S : S.E_and_S)
 		{
 			t_real E = E_and_S.E;
 			if(ignore_annihilation && E < t_real(0))
@@ -686,6 +751,51 @@ void MagDynDlg::CalcHamiltonian()
 		ostr << "</table></p>";
 	}
 
+
+	// print eigenstates
+	if(S.E_and_S.size() && S.E_and_S[0].state.size())
+	{
+		ostr << "<hr>";
+
+		ostr << "<p><h3>Eigenstates</h3>";
+		ostr << "<table style=\"border:0px\">";
+		ostr << "<tr>";
+		ostr << "<th style=\"padding-right:16px\">Energy E</td>";
+		ostr << "<th style=\"padding-right:16px\">State |s></td>";
+		ostr << "</tr>";
+
+		for(const t_E_and_S& E_and_S : S.E_and_S)
+		{
+			t_real E = E_and_S.E;
+			if(ignore_annihilation && E < t_real(0))
+				continue;
+
+			t_vec state = E_and_S.state;
+
+			tl2::set_eps_0(E);
+			tl2::set_eps_0(state);
+
+			// energy
+			ostr << "<tr>";
+			ostr << "<td style=\"padding-right:16px\">"
+				<< E << " meV" << "</td>";
+
+			// state
+			ostr << "<td style=\"padding-right:16px\">";
+			for(t_size idx = 0; idx < state.size(); ++idx)
+			{
+				ostr << state[idx];
+				if(idx < state.size() - 1)
+					ostr << ", ";
+			}
+			ostr << "</td>";
+			ostr << "</tr>";
+		}
+
+		ostr << "</table></p>";
+	}
+
+
 	m_hamiltonian->setHtml(ostr.str().c_str());
 }
 
@@ -739,16 +849,15 @@ void MagDynDlg::SetCoordinates(const t_vec_real& Qi, const t_vec_real& Qf, bool 
  */
 void MagDynDlg::SetCurrentCoordinate(int which)
 {
+	using t_item = tl2::NumericTableWidgetItem<t_real>;
+
 	int idx_i = m_coordinates_cursor_row;
 	if(idx_i < 0 || idx_i >= m_coordinatestab->rowCount())
 		return;
 
-	const auto* hi = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-		m_coordinatestab->item(idx_i, COL_COORD_H));
-	const auto* ki = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-		m_coordinatestab->item(idx_i, COL_COORD_K));
-	const auto* li = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-		m_coordinatestab->item(idx_i, COL_COORD_L));
+	const auto* hi = static_cast<t_item*>(m_coordinatestab->item(idx_i, COL_COORD_H));
+	const auto* ki = static_cast<t_item*>(m_coordinatestab->item(idx_i, COL_COORD_K));
+	const auto* li = static_cast<t_item*>(m_coordinatestab->item(idx_i, COL_COORD_L));
 
 	// set dispersion start and end coordinates
 	if(which == 0)
@@ -764,12 +873,9 @@ void MagDynDlg::SetCurrentCoordinate(int which)
 		if(idx_f < 0 || idx_f >= m_coordinatestab->rowCount())
 			return;
 
-		const auto* hf = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_coordinatestab->item(idx_f, COL_COORD_H));
-		const auto* kf = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_coordinatestab->item(idx_f, COL_COORD_K));
-		const auto* lf = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_coordinatestab->item(idx_f, COL_COORD_L));
+		const auto* hf = static_cast<t_item*>(m_coordinatestab->item(idx_f, COL_COORD_H));
+		const auto* kf = static_cast<t_item*>(m_coordinatestab->item(idx_f, COL_COORD_K));
+		const auto* lf = static_cast<t_item*>(m_coordinatestab->item(idx_f, COL_COORD_L));
 
 		if(!hi || !ki || !li || !hf || !kf || !lf)
 			return;

@@ -25,7 +25,7 @@
  * ----------------------------------------------------------------------------
  */
 
-// gcc -I/usr/include/lapacke -o eig2 eig2.cpp ../log/log.cpp -lstdc++ -lm -llapacke -llapack -std=c++11
+// g++ -I/usr/include/lapacke -I.. -o eig2 eig2.cpp ../../log/log.cpp -lm -llapacke -llapack -lblas -lgfortran -std=c++14
 
 #define TLIBS_INC_HDR_IMPLS
 #include "../math/linalg.h"
@@ -36,20 +36,34 @@ using T = double;
 
 int main()
 {
-	ublas::matrix<T> M = tl::make_mat({
+	/*ublas::matrix<T> M = tl::make_mat({
 		{1.1,-2.2,3.3},
 		{-2.2,5.5,8.8},
-		{3.3,8.8,-9.9}	});
+		{3.3,8.8,-9.9}	});*/
+
 	//ublas::matrix<T> M = tl::make_mat({{123.4,0},{0,567.8}});
+
+	/*ublas::matrix<T> M = tl::make_mat({
+		{ 37933,    -115.293, -0,      1271.25 },
+		{ -115.293, 37147.6,  -0,      6045.78 },
+		{ 0,        0,        888.689, 0 },
+		{ 1271.25,  6045.78,  0,       1349.17 }  });*/
+
+	ublas::matrix<T> M = tl::make_mat({
+		{ 22958,    -20322.3, 0,       -2646.17 },
+		{ -20322.3, 22886.9,  0,       3268.98 },
+		{ 0,        0,        982.411, 0 },
+		{ -2646.17, 3268.98,  0,       957.473 } });
+
 
 	ublas::matrix<T> M_org = M;
 	std::cout << "symmetric: " << M << "\n" << std::endl;
 
 	std::vector<ublas::vector<T>> evecs;
 	std::vector<T> evals, evals_check;
-	tl::eigenvec_sym<T>(M, evecs, evals);
+	bool sym_ok = tl::eigenvec_sym<T>(M, evecs, evals);
 	tl::eigenval_sym<T>(M, evals_check);
-	std::cout << "tl::eigenvec_sym\n";
+	std::cout << "tl::eigenvec_sym, ok = " << sym_ok << "\n";
 	for(int i=0; i<evals.size(); ++i)
 		std::cout << "eval: " << evals[i] <<
 		", eval_check: " << evals_check[i] <<
@@ -64,8 +78,9 @@ int main()
 
 	std::vector<ublas::vector<T>> evecs2;
 	std::vector<T> evals2;
-	tl::eigenvec_sym_simple(M, evecs2, evals2);
-	std::cout << "tl::eigenvec_sym_simple\n";
+	bool sym_simple_ok = tl::eigenvec_sym_simple(M, evecs2, evals2,
+		512/*, tl::get_epsilon<T>()*/);
+	std::cout << "tl::eigenvec_sym_simple, " << "ok = " << sym_simple_ok << "\n";
 	for(int i=0; i<evals2.size(); ++i)
 		std::cout << "eval: " << evals2[i] <<
 		", evec: " << (evecs2[i]/ublas::norm_2(evecs2[i])) <<
@@ -74,8 +89,8 @@ int main()
 
 	std::vector<ublas::vector<T>> evecs3;
 	std::vector<T> evals3;
-	tl::eigenvec_approxsym(M, evecs3, evals3);
-	std::cout << "tl::eigenvec_approxsym\n";
+	bool approx_sym_ok = tl::eigenvec_approxsym(M, evecs3, evals3);
+	std::cout << "tl::eigenvec_approxsym, ok = " << approx_sym_ok << "\n";
 	for(int i=0; i<evals3.size(); ++i)
 		std::cout << "eval: " << evals3[i] <<
 		", evec: " << (evecs3[i]/ublas::norm_2(evecs3[i])) <<
@@ -84,8 +99,9 @@ int main()
 
 	std::vector<ublas::vector<T>> evecs4;
 	std::vector<T> evals4;
-	tl::eigenvec_approxsym_simple(M, evecs4, evals4);
-	std::cout << "tl::eigenvec_approxsym_simple\n";
+	bool approxsym_simple_ok = tl::eigenvec_approxsym_simple(M, evecs4, evals4,
+		512/*, tl::get_epsilon<T>()*/);
+	std::cout << "tl::eigenvec_approxsym_simple, ok = " << approxsym_simple_ok << "\n";
 	for(int i=0; i<evals4.size(); ++i)
 		std::cout << "eval: " << evals4[i] <<
 		", evec: " << (evecs4[i]/ublas::norm_2(evecs4[i])) <<

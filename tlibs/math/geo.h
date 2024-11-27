@@ -1129,7 +1129,7 @@ public:
 	 * O: eigenvecs, D: eigenvals
 	 */
 	bool GetPrincipalAxes(t_mat& matEvecs, std::vector<T>& vecEvals,
-		Quadric<T>* pquadPrincipal=nullptr) const
+		Quadric<T>* pquadPrincipal = nullptr) const
 	{
 		std::vector<t_vec> evecs;
 
@@ -1138,11 +1138,10 @@ public:
 			bEV = eigenvec_sym(m_Q, evecs, vecEvals);
 		else
 			bEV = eigenvec_approxsym(m_Q, evecs, vecEvals);
-
 		if(!bEV)
 		{
-			log_err("Cannot determine eigenvectors.");
-			return false;
+			log_err("Could not exactly determine quadric's principal axes, Q = ", m_Q, ".");
+			//return false;
 		}
 
 		sort_eigenvecs<T>(evecs, vecEvals, 1,
@@ -1168,7 +1167,7 @@ public:
 			pquadPrincipal->SetR(prod_mv(matEvecsT, GetR()));
 		}
 
-		return true;
+		return bEV;
 	}
 
 

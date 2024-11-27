@@ -114,7 +114,7 @@ get_mono_vals(const length& src_w, const length& src_h,
 	const angle& coll_v_pre_mono, const angle& coll_v_pre_sample,
 	const angle& mono_mosaic, const angle& mono_mosaic_v,
 	const inv_length& inv_mono_curvh, const inv_length& inv_mono_curvv,
-	const length& pos_x , const length& pos_y, const length& pos_z,
+	const length& pos_y, const length& pos_z,
 	t_real dRefl)
 {
 	const t_real s_th_m = units::abs(units::sin(thetam));
@@ -363,7 +363,7 @@ ResoResults calc_eck(const EckParams& eck)
 			coll_v_pre_mono, eck.coll_v_pre_sample,
 			eck.mono_mosaic, mono_mosaic_v,
 			inv_mono_curvh, inv_mono_curvv,
-			eck.pos_x , eck.pos_y, eck.pos_z,
+			eck.pos_y, eck.pos_z,
 			dmono_refl);
 
 	//--------------------------------------------------------------------------
@@ -396,7 +396,7 @@ ResoResults calc_eck(const EckParams& eck)
 			eck.coll_v_post_ana, eck.coll_v_post_sample,
 			eck.ana_mosaic, ana_mosaic_v,
 			inv_ana_curvh, inv_ana_curvv,
-			eck.pos_x, pos_y2, pos_z2,
+			pos_y2, pos_z2,
 			dana_effic);
 
 	//--------------------------------------------------------------------------
@@ -483,7 +483,7 @@ ResoResults calc_eck(const EckParams& eck)
 	// integrate last 2 vars -> equs 57 & 58 in [eck14]
 	t_mat U2 = quadric_proj(U1, ECK_K_Z);
 	// careful: factor -0.5*... missing in U matrix compared to normal gaussian!
-	t_mat U = /*sig2fwhm*sig2fwhm /*/ t_real(2) * quadric_proj(U2, ECK_K_Y);
+	t_mat U = t_real(2) * quadric_proj(U2, ECK_K_Y);
 
 	t_vec V2 = quadric_proj(V1, U1, ECK_K_Z);
 	t_vec V = quadric_proj(V2, U2, ECK_K_Y);

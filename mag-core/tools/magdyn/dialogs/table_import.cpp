@@ -32,10 +32,16 @@
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QFrame>
+#include <QtWidgets/QMenu>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QMessageBox>
-
 #include <QtGui/QDesktopServices>
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        #include <QtWidgets/QAction>
+#else
+        #include <QtGui/QAction>
+#endif
 
 #include "tlibs2/libs/str.h"
 
@@ -51,6 +57,22 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	// gui elements
 	// --------------------------------------------------------------------------------
 	QLabel *labelAtomIdx = new QLabel("Column Indices in Magnetic Sites Table:", this);
+	QPushButton *btnSiteIndices = new QPushButton("Set Indices", this);
+	QMenu *menuSiteIndices = new QMenu(this);
+	btnSiteIndices->setMenu(menuSiteIndices);
+
+	QAction *acSunSites = new QAction("Set Site Indices For Sunny", menuSiteIndices);
+	acSunSites->setIcon(QIcon::fromTheme("weather-clear"));
+	menuSiteIndices->addAction(acSunSites);
+	menuSiteIndices->addSeparator();
+
+	QAction *acSWAtomSites = new QAction("Set Site Indices For SpinW's \"Atom\" Table",
+		menuSiteIndices);
+	QAction *acSWMagSites = new QAction("Set Site Indices For SpinW's \"Mag\" Table",
+		menuSiteIndices);
+	menuSiteIndices->addAction(acSWAtomSites);
+	menuSiteIndices->addAction(acSWMagSites);
+
 	m_spinAtomName = new QSpinBox(this);
 	m_spinAtomX = new QSpinBox(this);
 	m_spinAtomY = new QSpinBox(this);
@@ -94,7 +116,7 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	m_spinAtomSZ->setValue(6);
 	m_spinAtomSMag->setValue(7);
 
-	QLabel *labelAtoms = new QLabel("Magnetic Sites Table:", this);
+	QLabel *labelAtoms = new QLabel("Paste Magnetic Sites Table Here:", this);
 	m_editAtoms = new QTextEdit(this);
 	m_editAtoms->setLineWrapMode(QTextEdit::NoWrap);
 
@@ -104,6 +126,22 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 
 	// --------------------------------------------------------------------------------
 	QLabel *labelCouplingIdx = new QLabel("Column Indices in Magnetic Couplings Table:", this);
+	QPushButton *btnCouplingIndices = new QPushButton("Set Indices", this);
+	QMenu *menuCouplingIndices = new QMenu(this);
+	btnCouplingIndices->setMenu(menuCouplingIndices);
+
+	QAction *acSunCouplings = new QAction("Set Coupling Indices For Sunny", menuCouplingIndices);
+	acSunCouplings->setIcon(QIcon::fromTheme("weather-clear"));
+	menuCouplingIndices->addAction(acSunCouplings);
+	menuCouplingIndices->addSeparator();
+
+	QAction *acSWCouplings = new QAction("Set Coupling Indices For SpinW's \"Bond\" Table",
+		menuCouplingIndices);
+	QAction *acSWSIA = new QAction("Set Coupling Indices For SpinW's \"Ion\" Table",
+		menuCouplingIndices);
+	menuCouplingIndices->addAction(acSWCouplings);
+	menuCouplingIndices->addAction(acSWSIA);
+
 	m_spinCouplingName = new QSpinBox(this);
 	m_spinCouplingAtom1 = new QSpinBox(this);
 	m_spinCouplingAtom2 = new QSpinBox(this);
@@ -161,7 +199,7 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	m_spinCouplingDMIZ->setValue(9);
 	m_spinCouplingJGen->setValue(-1);
 
-	QLabel *labelCouplings = new QLabel("Magnetic Couplings Table:", this);
+	QLabel *labelCouplings = new QLabel("Paste Magnetic Couplings Table Here:", this);
 	m_editCouplings = new QTextEdit(this);
 	m_editCouplings->setLineWrapMode(QTextEdit::NoWrap);
 	// --------------------------------------------------------------------------------
@@ -189,17 +227,28 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	m_checkIgnoreSymmetricCoupling->setChecked(false);
 	m_checkClearExisting->setChecked(true);
 
+	for(QCheckBox *box : { m_checkIndices1Based, m_checkUniteIncompleteTokens,
+		m_checkIgnoreSymmetricCoupling, m_checkClearExisting })
+		box->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
 	QPushButton *btnImportAtoms = new QPushButton("Import Sites", this);
 	QPushButton *btnImportCouplings = new QPushButton("Import Couplings", this);
 	QPushButton *btnHelp = new QPushButton("Help", this);
-	QPushButton *btnOk = new QPushButton("Close", this);
+	QPushButton *btnOK = new QPushButton("OK", this);
+
+	btnHelp->setIcon(style()->standardIcon(QStyle::SP_DialogHelpButton));
+	btnOK->setIcon(style()->standardIcon(QStyle::SP_DialogOkButton));
+
+	for(QPushButton *btn : { btnImportAtoms, btnImportCouplings, btnHelp, btnOK })
+		btn->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
 	// grid
 	QGridLayout* grid = new QGridLayout(this);
 	grid->setSpacing(4);
 	grid->setContentsMargins(8, 8, 8, 8);
 	int y = 0;
-	grid->addWidget(labelAtomIdx, y++, 0, 1, 4);
+	grid->addWidget(labelAtomIdx, y, 0, 1, 3);
+	grid->addWidget(btnSiteIndices, y++, 3, 1, 1);
 	grid->addWidget(m_spinAtomName, y, 0, 1, 1);
 	grid->addWidget(m_spinAtomX, y, 1, 1, 1);
 	grid->addWidget(m_spinAtomY, y, 2, 1, 1);
@@ -211,7 +260,9 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	grid->addWidget(labelAtoms, y++, 0, 1, 4);
 	grid->addWidget(m_editAtoms, y++, 0, 1, 4);
 	grid->addWidget(sep1, y++, 0, 1, 4);
-	grid->addWidget(labelCouplingIdx, y++, 0, 1, 4);
+
+	grid->addWidget(labelCouplingIdx, y, 0, 1, 3);
+	grid->addWidget(btnCouplingIndices, y++, 3, 1, 1);
 	grid->addWidget(m_spinCouplingName, y, 0, 1, 1);
 	grid->addWidget(m_spinCouplingAtom1, y, 1, 1, 1);
 	grid->addWidget(m_spinCouplingAtom2, y++, 2, 1, 1);
@@ -233,7 +284,7 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	grid->addWidget(btnImportAtoms, y, 0, 1, 1);
 	grid->addWidget(btnImportCouplings, y, 1, 1, 1);
 	grid->addWidget(btnHelp, y, 2, 1, 1);
-	grid->addWidget(btnOk, y++, 3, 1, 1);
+	grid->addWidget(btnOK, y++, 3, 1, 1);
 
 	if(m_sett)
 	{
@@ -292,10 +343,117 @@ TableImportDlg::TableImportDlg(QWidget* parent, QSettings* sett)
 	}
 
 	// connections
+	connect(acSunSites, &QAction::triggered, [this]()
+	{
+		m_spinAtomName->setValue(0);
+		m_spinAtomX->setValue(1);
+		m_spinAtomY->setValue(2);
+		m_spinAtomZ->setValue(3);
+		m_spinAtomSX->setValue(4);
+		m_spinAtomSY->setValue(5);
+		m_spinAtomSZ->setValue(6);
+		m_spinAtomSMag->setValue(7);
+
+		m_checkIndices1Based->setChecked(true);
+		m_checkUniteIncompleteTokens->setChecked(false);
+		m_checkIgnoreSymmetricCoupling->setChecked(true);
+		m_checkClearExisting->setChecked(true);
+	});
+	connect(acSWAtomSites, &QAction::triggered, [this]()
+	{
+		m_spinAtomName->setValue(0);
+		m_spinAtomX->setValue(3);
+		m_spinAtomY->setValue(4);
+		m_spinAtomZ->setValue(5);
+		m_spinAtomSX->setValue(-1);
+		m_spinAtomSY->setValue(-1);
+		m_spinAtomSZ->setValue(-1);
+		m_spinAtomSMag->setValue(2);
+
+		m_checkIndices1Based->setChecked(true);
+		m_checkUniteIncompleteTokens->setChecked(true);
+		m_checkIgnoreSymmetricCoupling->setChecked(false);
+		m_checkClearExisting->setChecked(true);
+	});
+	connect(acSWMagSites, &QAction::triggered, [this]()
+	{
+		m_spinAtomName->setValue(1);
+		m_spinAtomX->setValue(7);
+		m_spinAtomY->setValue(8);
+		m_spinAtomZ->setValue(9);
+		m_spinAtomSX->setValue(4);
+		m_spinAtomSY->setValue(5);
+		m_spinAtomSZ->setValue(6);
+		m_spinAtomSMag->setValue(3);
+
+		m_checkIndices1Based->setChecked(true);
+		m_checkUniteIncompleteTokens->setChecked(true);
+		m_checkIgnoreSymmetricCoupling->setChecked(false);
+		m_checkClearExisting->setChecked(true);
+	});
+
+	connect(acSunCouplings, &QAction::triggered, [this]()
+	{
+		m_spinCouplingName->setValue(0);
+		m_spinCouplingAtom1->setValue(1);
+		m_spinCouplingAtom2->setValue(2);
+		m_spinCouplingDX->setValue(3);
+		m_spinCouplingDY->setValue(4);
+		m_spinCouplingDZ->setValue(5);
+		m_spinCouplingJ->setValue(6);
+		m_spinCouplingDMIX->setValue(7);
+		m_spinCouplingDMIY->setValue(8);
+		m_spinCouplingDMIZ->setValue(9);
+		m_spinCouplingJGen->setValue(-1);
+
+		m_checkIndices1Based->setChecked(true);
+		m_checkUniteIncompleteTokens->setChecked(false);
+		m_checkIgnoreSymmetricCoupling->setChecked(true);
+		m_checkClearExisting->setChecked(true);
+	});
+	connect(acSWCouplings, &QAction::triggered, [this]()
+	{
+		m_spinCouplingName->setValue(-1);
+		m_spinCouplingAtom1->setValue(10);
+		m_spinCouplingAtom2->setValue(12);
+		m_spinCouplingDX->setValue(2);
+		m_spinCouplingDY->setValue(3);
+		m_spinCouplingDZ->setValue(4);
+		m_spinCouplingJ->setValue(16);
+		m_spinCouplingDMIX->setValue(25);
+		m_spinCouplingDMIY->setValue(26);
+		m_spinCouplingDMIZ->setValue(27);
+		m_spinCouplingJGen->setValue(-1);
+
+		m_checkIndices1Based->setChecked(true);
+		m_checkUniteIncompleteTokens->setChecked(true);
+		m_checkIgnoreSymmetricCoupling->setChecked(false);
+		m_checkClearExisting->setChecked(true);
+	});
+	connect(acSWSIA, &QAction::triggered, [this]()
+	{
+		m_spinCouplingName->setValue(-1);
+		m_spinCouplingAtom1->setValue(1);
+		m_spinCouplingAtom2->setValue(1);
+		m_spinCouplingDX->setValue(-1);
+		m_spinCouplingDY->setValue(-1);
+		m_spinCouplingDZ->setValue(-1);
+		m_spinCouplingJ->setValue(-1);
+		m_spinCouplingDMIX->setValue(-1);
+		m_spinCouplingDMIY->setValue(-1);
+		m_spinCouplingDMIZ->setValue(-1);
+		m_spinCouplingJGen->setValue(4);
+
+		m_checkIndices1Based->setChecked(true);
+		m_checkUniteIncompleteTokens->setChecked(true);
+		m_checkIgnoreSymmetricCoupling->setChecked(false);
+		m_checkClearExisting->setChecked(false);
+	});
+
 	connect(btnImportAtoms, &QAbstractButton::clicked, this, &TableImportDlg::ImportAtoms);
 	connect(btnImportCouplings, &QAbstractButton::clicked, this, &TableImportDlg::ImportCouplings);
 	connect(btnHelp, &QAbstractButton::clicked, this, &TableImportDlg::ShowHelp);
-	connect(btnOk, &QAbstractButton::clicked, this, &QDialog::close);
+	connect(btnOK, &QAbstractButton::clicked, this, &TableImportDlg::accept);
 }
 
 
@@ -495,7 +653,7 @@ void TableImportDlg::ShowHelp()
 {
 	QUrl url("https://github.com/ILLGrenoble/takin/wiki/Importing-Magnetic-Structures");
 	if(!QDesktopServices::openUrl(url))
-		QMessageBox::critical(this, "Magnetic Dynamics", "Could not open the wiki.");
+		QMessageBox::critical(this, windowTitle() + " -- Error", "Could not open the wiki.");
 }
 
 

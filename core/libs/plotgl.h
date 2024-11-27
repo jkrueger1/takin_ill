@@ -50,9 +50,6 @@ namespace ublas = boost::numeric::ublas;
 namespace sig = boost::signals2;
 
 
-using t_qglwidget = QOpenGLWidget;
-
-
 /**
  * types of plottable objects
  */
@@ -85,11 +82,11 @@ struct PlotObjGl
 	std::vector<ublas::vector<t_real_glob>> vecVertices;
 	ublas::vector<t_real_glob> vecNorm;
 
-	bool bSelected = 0;
-	bool bUseLOD = 1;
-	bool bCull = 1;
+	bool bSelected = false;
+	bool bUseLOD = true;
+	bool bCull = true;
 
-	bool bAnimated = 0;
+	bool bAnimated = false;
 	t_real_glob dScaleMult = 1.;
 
 	std::string strLabel;
@@ -104,7 +101,7 @@ struct PlotGlSize
 };
 
 
-class PlotGl : public t_qglwidget, public QTimer
+class PlotGl : public QOpenGLWidget, public QTimer
 {
 public:
 	using t_sigHover = sig::signal<void(const PlotObjGl*)>;
@@ -116,13 +113,13 @@ protected:
 
 	static constexpr t_real_glob m_dFOV = 45./180.*M_PI;
 	tl::t_mat4_gen<t_real_glob> m_matProj, m_matView;
-	bool m_bPerspective = 1;	// perspective or orthogonal projection?
-	bool m_bResetPrespective = 0;
+	bool m_bPerspective = true;	// perspective or orthogonal projection?
+	bool m_bResetPrespective = false;
 	ublas::vector<t_real_glob> m_vecCam;
-	bool m_bDoZTest = 0;
-	bool m_bDrawPolys = 1;
-	bool m_bDrawLines = 1;
-	bool m_bDrawSpheres = 1;
+	bool m_bDoZTest = false;
+	bool m_bDrawPolys = true;
+	bool m_bDrawLines = true;
+	bool m_bDrawSpheres = true;
 
 	tl::GlFontMap<t_real_glob> *m_pFont = nullptr;
 
@@ -131,23 +128,23 @@ protected:
 	QString m_strLabels[3];
 
 	std::size_t m_iPrec = 6;
-	bool m_bDrawMinMax = 1;
+	bool m_bDrawMinMax = true;
 
 	t_real_glob m_dTime = 0.;
 
 	t_sigHover m_sigHover;
 
-	t_real_glob m_dXMin=-10., m_dXMax=10.;
-	t_real_glob m_dYMin=-10., m_dYMax=10.;
-	t_real_glob m_dZMin=-10., m_dZMax=10.;
+	t_real_glob m_dXMin = -10., m_dXMax = 10.;
+	t_real_glob m_dYMin = -10., m_dYMax = 10.;
+	t_real_glob m_dZMin = -10., m_dZMax = 10.;
 	t_real_glob m_dXMinMaxOffs, m_dYMinMaxOffs, m_dZMinMaxOffs;
 
 	// mouse stuff
-	bool m_bMouseRotateActive = 0;
+	bool m_bMouseRotateActive = false;
 	t_real_glob m_dMouseRot[2];
 	t_real_glob m_dMouseBegin[2];
 
-	bool m_bMouseScaleActive = 0;
+	bool m_bMouseScaleActive = false;
 	t_real_glob m_dMouseScale;
 	t_real_glob m_dMouseScaleBegin;
 
@@ -157,71 +154,70 @@ protected:
 protected:
 	virtual void timerEvent(QTimerEvent *pEvt) override;
 
-	void SetColor(t_real_glob r, t_real_glob g, t_real_glob b, t_real_glob a=1.);
-	void SetColor(std::size_t iIdx);
-
 	virtual void initializeGL() override;
 	virtual void resizeGL(int w, int h) override;
 	virtual void paintGL() override;
-	//virtual void paintEvent(QPaintEvent*) override;
-
-	void updateViewMatrix();
-	void mouseSelectObj(t_real_glob dX, t_real_glob dY);
-
-	void SetPerspective(int w, int h);
 	void freeGL();
-	void tick(t_real_glob dTime);
 
 	virtual void mousePressEvent(QMouseEvent*) override;
 	virtual void mouseReleaseEvent(QMouseEvent*) override;
 	virtual void mouseMoveEvent(QMouseEvent*) override;
 	virtual void wheelEvent(QWheelEvent*) override;
 
+	void SetColor(t_real_glob r, t_real_glob g, t_real_glob b, t_real_glob a = 1.);
+	void SetColor(std::size_t iIdx);
+
+	void updateViewMatrix();
+	void mouseSelectObj(t_real_glob dX, t_real_glob dY);
+
+	void SetPerspective(int w, int h);
+	void tick(t_real_glob dTime);
+
 	t_real_glob GetCamObjDist(const PlotObjGl& obj) const;
 	std::vector<std::size_t> GetObjSortOrder() const;
 
 
 public:
-	PlotGl(QWidget* pParent, QSettings *pSettings=nullptr, t_real_glob dMouseScale=25.);
+	PlotGl(QWidget* pParent, QSettings *pSettings = nullptr, t_real_glob dMouseScale = 25.);
 	virtual ~PlotGl();
 
-	virtual void AddHoverSlot(const typename t_sigHover::slot_type& conn);
+	void AddHoverSlot(const typename t_sigHover::slot_type& conn);
 
-	virtual void clear();
-	virtual void TogglePerspective();
-	virtual void ToggleZTest() { m_bDoZTest = !m_bDoZTest; }
-	virtual void ToggleDrawPolys() { m_bDrawPolys = !m_bDrawPolys; }
-	virtual void ToggleDrawLines() { m_bDrawLines = !m_bDrawLines; }
-	virtual void ToggleDrawSpheres() { m_bDrawSpheres = !m_bDrawSpheres; }
+	void clear();
 
-	virtual void PlotSphere(const ublas::vector<t_real_glob>& vecPos, t_real_glob dRadius, int iObjIdx=-1);
-	virtual void PlotEllipsoid(const ublas::vector<t_real_glob>& widths,
+	void TogglePerspective();
+	void ToggleZTest();
+	void ToggleDrawPolys();
+	void ToggleDrawLines();
+	void ToggleDrawSpheres();
+
+	void PlotSphere(const ublas::vector<t_real_glob>& vecPos,
+		t_real_glob dRadius, int iObjIdx = -1);
+	void PlotEllipsoid(const ublas::vector<t_real_glob>& widths,
 		const ublas::vector<t_real_glob>& offsets,
 		const ublas::matrix<t_real_glob>& rot,
-		int iObjsIdx=-1);
-	virtual void PlotPoly(const std::vector<ublas::vector<t_real_glob>>& vecVertices,
-		const ublas::vector<t_real_glob>& vecNorm, int iObjIdx=-1);
-	virtual void PlotLines(const std::vector<ublas::vector<t_real_glob>>& vecVertices,
-		t_real_glob dLW=2., int iObjIdx=-1);
+		int iObjsIdx = -1);
+	void PlotPoly(const std::vector<ublas::vector<t_real_glob>>& vecVertices,
+		const ublas::vector<t_real_glob>& vecNorm,
+		int iObjIdx = -1);
+	void PlotLines(const std::vector<ublas::vector<t_real_glob>>& vecVertices,
+		t_real_glob dLW = 2., int iObjIdx = -1);
 
-	virtual void SetObjectCount(std::size_t iSize) { m_vecObjs.resize(iSize); }
-	virtual void SetObjectColor(std::size_t iObjIdx, const std::vector<t_real_glob>& vecCol);
-	virtual void SetObjectLabel(std::size_t iObjIdx, const std::string& strLab);
-	virtual void SetObjectUseLOD(std::size_t iObjIdx, bool bLOD);
-	virtual void SetObjectCull(std::size_t iObjIdx, bool bCull);
-	virtual void SetObjectAnimation(std::size_t iObjIdx, bool bAnimate);
+	void SetObjectCount(std::size_t iSize) { m_vecObjs.resize(iSize); }
+	void SetObjectColor(std::size_t iObjIdx, const std::vector<t_real_glob>& vecCol);
+	void SetObjectLabel(std::size_t iObjIdx, const std::string& strLab);
+	void SetObjectUseLOD(std::size_t iObjIdx, bool bLOD);
+	void SetObjectCull(std::size_t iObjIdx, bool bCull);
+	void SetObjectAnimation(std::size_t iObjIdx, bool bAnimate);
 
-	virtual void SetLabels(const char* pcLabX, const char* pcLabY, const char* pcLabZ);
-	virtual void SetDrawMinMax(bool b) { m_bDrawMinMax = b; }
+	void SetLabels(const char* pcLabX, const char* pcLabY, const char* pcLabZ);
+	void SetDrawMinMax(bool b) { m_bDrawMinMax = b; }
 
-	virtual void SetEnabled(bool b);
-	virtual void SetPrec(std::size_t iPrec) { m_iPrec = iPrec; }
-
-	virtual void keyPressEvent(QKeyEvent *pEvt) override;
-
+	void SetEnabled(bool b);
+	void SetPrec(std::size_t iPrec) { m_iPrec = iPrec; }
 
 	template<class t_vec>
-	/*virtual*/ void SetMinMax(const t_vec& vecMin, const t_vec& vecMax, const t_vec* pOffs=0)
+	void SetMinMax(const t_vec& vecMin, const t_vec& vecMax, const t_vec* pOffs = nullptr)
 	{
 		m_dXMin = vecMin[0]; m_dXMax = vecMax[0];
 		m_dYMin = vecMin[1]; m_dYMax = vecMax[1];
@@ -233,7 +229,7 @@ public:
 	}
 
 	template<class t_vec=ublas::vector<t_real_glob>>
-	/*virtual*/ void SetMinMax(const t_vec& vec, const t_vec* pOffs=0)
+	void SetMinMax(const t_vec& vec, const t_vec* pOffs = nullptr)
 	{
 		m_dXMin = -vec[0]; m_dXMax = vec[0];
 		m_dYMin = -vec[1]; m_dYMax = vec[1];
@@ -243,6 +239,8 @@ public:
 		m_dYMinMaxOffs =  pOffs ? (*pOffs)[1] : 0.;
 		m_dZMinMaxOffs =  pOffs ? (*pOffs)[2] : 0.;
 	}
+
+	virtual void keyPressEvent(QKeyEvent *pEvt) override;
 };
 
 

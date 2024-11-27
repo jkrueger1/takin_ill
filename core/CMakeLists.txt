@@ -39,7 +39,7 @@ option(USE_GENTAB "build setup utilities" TRUE)
 option(USE_RtMp "use auxilliary libraries" TRUE)
 option(USE_Dl "use dl libraries" TRUE)
 option(USE_Py "search for python" TRUE)
-option(USE_LAPACKE "search for Lapacke" FALSE)
+option(USE_LAPACKE "search for Lapacke" TRUE)
 option(USE_CUSTOM_THREADPOOL "use custom threadpool implementation" FALSE)
 option(USE_INTERPROC_EMUL "force shared memory emulation mode" FALSE)
 option(DISABLE_INTERPROC_XSI "disable xsi shared memory syscalls" FALSE)
@@ -676,72 +676,3 @@ if(BUILD_EXT_TOOLS)
 	endif()
 	# -----------------------------------------------------------------------------
 endif()
-
-
-
-
-# -----------------------------------------------------------------------------
-# install
-# -----------------------------------------------------------------------------
-install(TARGETS takin DESTINATION bin COMPONENT apptakin)
-
-# remnants of old plugin system
-#if(USE_PLUGINS)
-#	install(DIRECTORY ${PROJECT_SOURCE_DIR}/plugins DESTINATION share/takin COMPONENT takinplugins)
-#endif()
-
-if(Py_FOUND)
-	install(TARGETS takinmod_py DESTINATION bin COMPONENT apptakinmod_py)
-endif()
-
-if(Julia_FOUND)
-	install(TARGETS takinmod_jl DESTINATION bin COMPONENT apptakinmod_jl)
-endif()
-
-
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/examples ${PROJECT_SOURCE_DIR}/doc
-	DESTINATION share/takin COMPONENT takindata1)
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/res/data ${PROJECT_SOURCE_DIR}/res/doc
-	${PROJECT_SOURCE_DIR}/res/icons ${PROJECT_SOURCE_DIR}/res/fonts
-	${PROJECT_SOURCE_DIR}/res/conf
-	DESTINATION share/takin/res COMPONENT takindata2)
-install(FILES ${PROJECT_SOURCE_DIR}/COPYING ${PROJECT_SOURCE_DIR}/AUTHORS
-	${PROJECT_SOURCE_DIR}/LICENSES.txt ${PROJECT_SOURCE_DIR}/LITERATURE.txt
-	${PROJECT_SOURCE_DIR}/REPOSITORIES.txt
-	DESTINATION share/takin COMPONENT takininfo)
-install(FILES ${PROJECT_SOURCE_DIR}/takin.sh
-	PERMISSIONS OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE OWNER_READ GROUP_READ WORLD_READ
-	DESTINATION bin COMPONENT takinstarter)
-install(FILES ${PROJECT_SOURCE_DIR}/setup_lin/takin.desktop DESTINATION share/applications COMPONENT takindesk)
-
-
-if(BUILD_EXT_TOOLS)
-	install(TARGETS takin_convofit takin_convoseries DESTINATION bin COMPONENT appconvofit)
-endif()
-# -----------------------------------------------------------------------------
-
-
-
-
-# -----------------------------------------------------------------------------
-# TODO: fix package
-# -----------------------------------------------------------------------------
-set(CPACK_PACKAGE_NAME "takin")
-set(CPACK_PACKAGE_CONTACT "tweber@ill.fr")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "inelastic neutron scattering package")
-set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/COPYING")
-set(CPACK_PACKAGE_EXECUTABLES "takin;Takin")
-set(CPACK_PACKAGE_VERSION "2.0.0")
-#set(CPACK_COMPONENTS_ALL apptakin appconvofit takindata1 takindata2 takininfo takinstarter takindesk)
-set(CPACK_SET_DESTDIR TRUE)
-
-set(CPACK_GENERATOR "DEB")
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "n/a")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libstdc++6, libboost, libqtcore5 (>=5.8.0), libqtgui5 (>=5.8.0), libqtopengl5 (>=5.8.0), libqtsvg5 (>=5.8.0), libqtxml5 (>=5.8.0), libqwt, python, freetype6")
-
-execute_process(COMMAND dpkg --print-architecture OUTPUT_VARIABLE CPACK_DEBIAN_ARCHITECTURE)
-message("Deb Arch: ${CPACK_DEBIAN_ARCHITECTURE}")
-
-
-#include(CPack)
-# -----------------------------------------------------------------------------

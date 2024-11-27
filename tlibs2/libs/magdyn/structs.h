@@ -11,7 +11,7 @@
  *   - (Heinsdorf 2021) N. Heinsdorf, manual example calculation for a simple
  *                      ferromagnetic case, personal communications, 2021/2022.
  *
- * @desc This file implements the formalism given by (Toth 2015).
+ * @desc The magdyn library implements the formalism given by (Toth 2015).
  * @desc For further references, see the 'LITERATURE' file.
  *
  * ----------------------------------------------------------------------------
@@ -43,7 +43,6 @@
 #include <string>
 
 #include "../maths.h"
-
 
 
 namespace tl2_mag {
@@ -160,35 +159,61 @@ struct t_ExternalField
 /**
  * eigenenergies and spin-spin correlation matrix
  */
-template<class t_mat, class t_real, class t_cplx = typename t_mat::value_type>
+template<class t_mat, class t_vec, class t_real,
+	class t_cplx = typename t_mat::value_type>
 #ifndef SWIG  // TODO: remove this as soon as swig understands concepts
 requires tl2::is_mat<t_mat>
 #endif
 struct t_EnergyAndWeight
 {
-	t_real E{};
+	t_real E{};                  // eigenenergy of hamiltonian
+	t_vec state{};               // eigenstate of hamiltonian
 
-	// full dynamical structure factor
-	t_mat S{};
+	t_mat S{};                   // full dynamical structure factor
 	t_cplx S_sum{};
 	t_real weight_full{};
 
-	// projected dynamical structure factor for neutron scattering
-	t_mat S_perp{};
+	t_mat S_perp{};              // projected dynamical structure factor for neutron scattering
 	t_cplx S_perp_sum{};
 	t_real weight{};
 };
 
 
 
-template<class t_mat, class t_real, class t_cplx = typename t_mat::value_type>
+/**
+ * energies and correlations
+ */
+template<class t_mat, class t_vec, class t_vec_real,
+	class t_real = typename t_vec_real::value_type,
+	class t_cplx = typename t_mat::value_type>
 #ifndef SWIG  // TODO: remove this as soon as swig understands concepts
 requires tl2::is_mat<t_mat>
 #endif
 struct t_SofQE
 {
-	t_real h, k, l;
-	std::vector<t_EnergyAndWeight<t_mat, t_real, t_cplx>> E_and_S;
+	t_vec_real Q_rlu{};          // momentum transfer
+	t_mat comm{};                // commutators
+
+	t_mat H{};                   // hamiltonian
+	t_mat H_chol{};              // hamiltonian after cholesky correction
+	t_mat H_comm{};              // final hamiltonian with correct commutators
+	t_mat evec_mat{};            // eigenvector matrix for H
+
+	// ------------------------------------------------------------------------
+	// incommensurate case
+	t_mat H_p{};                 // additional hamiltonian for the incommensurate case Q+O
+	t_mat H_chol_p{};            // ... after cholesky correction
+	t_mat H_comm_p{};            // ... and with correct commutators
+	t_mat evec_mat_p{};          // eigenvector matrix for H_p
+
+	t_mat H_m{};                 // additional hamiltonian for the incommensurate case Q-O
+	t_mat H_chol_m{};            // ... after cholesky correction
+	t_mat H_comm_m{};            // ... and with correct commutators
+	t_mat evec_mat_m{};          // eigenvector matrix for H_m
+	// ------------------------------------------------------------------------
+
+	// energies and correlations
+	std::vector<t_EnergyAndWeight<t_mat, t_vec, t_real, t_cplx>> E_and_S{};
 };
 
 

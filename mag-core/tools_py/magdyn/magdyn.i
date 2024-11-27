@@ -71,7 +71,7 @@
 %include "../../tlibs2/libs/magdyn/structs.h"
 %include "../../tlibs2/libs/magdyn/helpers.h"
 %include "../../tlibs2/libs/magdyn/getters.h"
-%include "../../tlibs2/libs/magdyn/gen.h"
+%include "../../tlibs2/libs/magdyn/generators.h"
 %include "../../tlibs2/libs/magdyn/file.h"
 %include "../../tlibs2/libs/magdyn/configuration.h"
 %include "../../tlibs2/libs/magdyn/groundstate.h"
@@ -80,6 +80,7 @@
 %include "../../tlibs2/libs/magdyn/correlation.h"
 %include "../../tlibs2/libs/magdyn/polarisation.h"
 %include "../../tlibs2/libs/magdyn/dispersion.h"
+%include "../../tlibs2/libs/magdyn/topology.h"
 
 
 // ----------------------------------------------------------------------------
@@ -131,19 +132,25 @@
 
 %template(EnergyAndWeight) tl2_mag::t_EnergyAndWeight<
 	tl2::mat<std::complex<double>>,
+	tl2::vec<std::complex<double>>,
 	double, std::complex<double>>;
 %template(VecEnergyAndWeight) std::vector<
 	tl2_mag::t_EnergyAndWeight<
 		tl2::mat<std::complex<double>>,
+		tl2::vec<std::complex<double>>,
 		double, std::complex<double>>
 	>;
 
 %template(SofQE) tl2_mag::t_SofQE<
 	tl2::mat<std::complex<double>>,
+	tl2::vec<std::complex<double>>,
+	tl2::vec<double>,
 	double, std::complex<double>>;
 %template(VecSofQE) std::vector<
 	tl2_mag::t_SofQE<
 		tl2::mat<std::complex<double>>,
+		tl2::vec<std::complex<double>>,
+		tl2::vec<double>,
 		double, std::complex<double>>
 	>;
 
@@ -193,6 +200,8 @@
 	using t_MagDyn = tl2_mag::MagDyn<
 		t_mat, t_vec, t_mat_real, t_vec_real,
 		t_cplx, t_real, std::size_t>;
+
+	using t_SofQE = typename t_MagDyn::SofQE;
 
 
 	/**
@@ -249,7 +258,6 @@
 	}
 
 
-
 	/**
 	 * sets up the rotation axis for the ordering wave vector
 	 */
@@ -258,7 +266,6 @@
 		t_vec_real vec = tl2::create<t_vec_real>({ x, y, z });
 		magdyn.SetRotationAxis(vec);
 	}
-
 
 
 	/**
@@ -469,6 +476,36 @@
 		}
 
 		magdyn.SymmetriseExchangeTerms(ops);
+	 }
+
+
+	 /**
+	  * helper function to access vector components which are not (yet) seen by swig
+	  * TODO: remove this once swig understands concepts
+	  */
+	 t_real get_h(const t_SofQE& S)
+	 {
+		return S.Q_rlu[0];
+	 }
+
+
+	 /**
+	  * helper function to access vector components which are not (yet) seen by swig
+	  * TODO: remove this once swig understands concepts
+	  */
+	 t_real get_k(const t_SofQE& S)
+	 {
+		return S.Q_rlu[1];
+	 }
+
+
+	 /**
+	  * helper function to access vector components which are not (yet) seen by swig
+	  * TODO: remove this once swig understands concepts
+	  */
+	 t_real get_l(const t_SofQE& S)
+	 {
+		return S.Q_rlu[2];
 	 }
 %}
 // ----------------------------------------------------------------------------

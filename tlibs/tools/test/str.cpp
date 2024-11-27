@@ -27,6 +27,7 @@
 
 #include "../string/string.h"
 
+
 int main()
 {
 	std::cout << tl::var_to_str<int>(1234567890, 10, 3) << std::endl;
@@ -43,6 +44,10 @@ int main()
 	std::cout << tl::ends_with<std::string>("Test123", "123") << std::endl;;
 	std::cout << tl::ends_with<std::string>("Test1234", "123") << std::endl;;
 	std::cout << tl::ends_with<std::string>("Test123", "21") << std::endl;;
+
+	std::string str = "	  123 abc  ";
+	tl::trim(str);
+	std::cout << "\"" << str << "\"" << std::endl;
 
 	return 0;
 }

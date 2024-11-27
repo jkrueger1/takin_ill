@@ -1,6 +1,7 @@
 /**
  * 3d unit cell drawing
  * @author Tobias Weber <tobias.weber@tum.de>
+ * @modif_by Victor Mecoli <mecoli@ill.fr> (November 2024)
  * @date oct-2016
  * @license GPLv2
  *
@@ -32,7 +33,9 @@
 #endif
 
 #include "real3d.h"
+
 #include <QGridLayout>
+#include <QPushButton>
 
 
 using t_real = t_real_glob;
@@ -45,10 +48,10 @@ Real3DDlg::Real3DDlg(QWidget* pParent, QSettings *pSettings)
 	m_pStatus(new QStatusBar(this)),
 	m_pPlot(new PlotGl(this, pSettings, 0.25))
 {
-	m_pPlot->SetEnabled(0);
+	m_pPlot->SetEnabled(false);
 
 	setWindowTitle("Real Space / Unit Cell");
-	m_pStatus->setSizeGripEnabled(1);
+	m_pStatus->setSizeGripEnabled(true);
 	m_pStatus->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
 	if(m_pSettings)
@@ -66,10 +69,33 @@ Real3DDlg::Real3DDlg(QWidget* pParent, QSettings *pSettings)
 	m_pPlot->SetPrec(g_iPrecGfx);
 	m_pPlot->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
+	QPushButton *pPerspective = new QPushButton("Perspective Projection", this);
+	QPushButton *pTransparency = new QPushButton("Transparency", this);
+	QPushButton *pDrawFaces = new QPushButton("Draw Faces", this);
+	QPushButton *pDrawEdges = new QPushButton("Draw Edges", this);
+	QPushButton *pDrawSpheres = new QPushButton("Draw Atoms", this);
+	QPushButton *pOK = new QPushButton("OK", this);
+
+	pOK->setIcon(style()->standardIcon(QStyle::SP_DialogOkButton));
+
+	connect(pPerspective, &QPushButton::clicked, [this]() { m_pPlot->TogglePerspective(); });
+	connect(pTransparency, &QPushButton::clicked, [this]() { m_pPlot->ToggleZTest(); });
+	connect(pDrawFaces, &QPushButton::clicked, [this]() { m_pPlot->ToggleDrawPolys(); });
+	connect(pDrawEdges, &QPushButton::clicked, [this]() { m_pPlot->ToggleDrawLines(); });
+	connect(pDrawSpheres, &QPushButton::clicked, [this]() { m_pPlot->ToggleDrawSpheres(); });
+	connect(pOK, &QPushButton::clicked, this, &QDialog::accept);
+
 	QGridLayout *gridLayout = new QGridLayout(this);
 	gridLayout->setContentsMargins(4, 4, 4, 4);
-	gridLayout->addWidget(m_pPlot.get(), 0, 0, 1, 1);
-	gridLayout->addWidget(m_pStatus, 1, 0, 1, 1);
+
+	gridLayout->addWidget(m_pPlot.get(), 0, 0, 1, 6);
+	gridLayout->addWidget(pPerspective, 1, 0, 1, 3);
+	gridLayout->addWidget(pTransparency, 1, 3, 1, 3);
+	gridLayout->addWidget(pDrawFaces, 2, 0, 1, 2);
+	gridLayout->addWidget(pDrawEdges, 2, 2, 1, 2);
+	gridLayout->addWidget(pDrawSpheres, 2, 4, 1, 2);
+	gridLayout->addWidget(pOK, 3, 5, 1, 1);
+	gridLayout->addWidget(m_pStatus, 3, 0, 1, 5);
 
 	m_pPlot->AddHoverSlot([this](const PlotObjGl* pObj)
 	{
@@ -86,14 +112,14 @@ Real3DDlg::Real3DDlg(QWidget* pParent, QSettings *pSettings)
 
 	m_pPlot->SetLabels("a (A)", "b (A)", "c (A)");
 	m_pPlot->SetDrawMinMax(0);
-	m_pPlot->SetEnabled(1);
+	m_pPlot->SetEnabled(true);
 }
 
 
 Real3DDlg::~Real3DDlg()
 {
 	if(m_pPlot)
-		m_pPlot->SetEnabled(0);
+		m_pPlot->SetEnabled(false);
 }
 
 
@@ -103,10 +129,10 @@ void Real3DDlg::CalcPeaks(const tl::Brillouin3D<t_real_glob>& ws,
 	if(!ws.IsValid() || !m_pPlot)
 		return;
 
-	const bool bShowUCVerts = 0;
-	const bool bShowUCPolys = 0;
+	const bool bShowUCVerts = false;
+	const bool bShowUCPolys = false;
 
-	m_pPlot->SetEnabled(0);
+	m_pPlot->SetEnabled(false);
 	m_pPlot->clear();
 	m_pPlot->SetObjectCount(lattice.vecAllAtoms.size());
 
@@ -157,7 +183,7 @@ void Real3DDlg::CalcPeaks(const tl::Brillouin3D<t_real_glob>& ws,
 	// minimum and maximum coordinates
 	for(const t_vec& vecPeak : vecPeaks)
 	{
-		for(unsigned int i=0; i<3; ++i)
+		for(unsigned int i = 0; i < 3; ++i)
 		{
 			vecMin[i] = std::min(vecPeak[i], vecMin[i]);
 			vecMax[i] = std::max(vecPeak[i], vecMax[i]);
@@ -274,7 +300,7 @@ void Real3DDlg::CalcPeaks(const tl::Brillouin3D<t_real_glob>& ws,
 
 
 	m_pPlot->SetMinMax(vecMin, vecMax);
-	m_pPlot->SetEnabled(1);
+	m_pPlot->SetEnabled(true);
 }
 
 
@@ -301,7 +327,8 @@ void Real3DDlg::closeEvent(QCloseEvent* pEvt)
 
 void Real3DDlg::hideEvent(QHideEvent *pEvt)
 {
-	if(m_pPlot) m_pPlot->SetEnabled(0);
+	if(m_pPlot)
+		m_pPlot->SetEnabled(false);
 	QDialog::hideEvent(pEvt);
 }
 
@@ -309,7 +336,8 @@ void Real3DDlg::hideEvent(QHideEvent *pEvt)
 void Real3DDlg::showEvent(QShowEvent *pEvt)
 {
 	QDialog::showEvent(pEvt);
-	if(m_pPlot) m_pPlot->SetEnabled(1);
+	if(m_pPlot)
+		m_pPlot->SetEnabled(true);
 }
 
 

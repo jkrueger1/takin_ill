@@ -244,7 +244,7 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 		m_vecS.reserve(iNumSteps);
 		m_vecScaledS.reserve(iNumSteps);
 
-		unsigned int iNumThreads = bForceDeferred ? 0 : get_max_threads();
+		unsigned int iNumThreads = get_max_threads();
 		tl::log_debug("Calculating using ", iNumThreads, (iNumThreads == 1 ? " thread." : " threads."));
 
 		// function to be called before each thread
@@ -314,7 +314,8 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 
 					for(const ublas::vector<t_real>& vecHKLE : vecNeutrons)
 					{
-						if(this->StopRequested()) return std::pair<bool, t_real>(false, 0.);
+						if(this->StopRequested())
+							return std::pair<bool, t_real>(false, 0.);
 
 						dS += (*m_pSqw)(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]);
 
@@ -324,13 +325,13 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 
 					// normalise to mc neutron count
 					dS /= t_real(iNumNeutrons*iNumSampleSteps);
+					for(int i = 0; i < 4; ++i)
+						dhklE_mean[i] /= t_real(iNumNeutrons*iNumSampleSteps);
 
 					// add background
 					dS += m_pSqw->GetBackground(dCurH, dCurK, dCurL, dCurE);
 
-					for(int i=0; i<4; ++i)
-						dhklE_mean[i] /= t_real(iNumNeutrons*iNumSampleSteps);
-
+					// scale factor
 					dS *= localreso.GetResoResults().dR0 * localreso.GetR0Scale();
 				}
 				return std::pair<bool, t_real>(true, dS);
@@ -520,12 +521,7 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 	}
 	else
 	{
-		if(m_pth)
-		{
-			if(m_pth->joinable())
-				m_pth->join();
-			delete m_pth;
-		}
+		WaitForThread();  // wait for a possible previous job
 		m_pth = new std::thread(std::move(fkt));
 	}
 }
@@ -777,7 +773,7 @@ void ConvoDlg::Start2D()
 			}
 		}
 
-		unsigned int iNumThreads = bForceDeferred ? 0 : get_max_threads();
+		unsigned int iNumThreads = get_max_threads();
 		tl::log_debug("Calculating using ", iNumThreads, (iNumThreads == 1 ? " thread." : " threads."));
 
 		void (*pThStartFunc)() = []{ tl::init_rand(); };
@@ -799,7 +795,7 @@ void ConvoDlg::Start2D()
 					return std::pair<bool, t_real>(false, 0.);
 
 				t_real dS = 0.;
-				t_real dhklE_mean[4] = {0., 0., 0., 0.};
+				t_real dhklE_mean[4] = { 0., 0., 0., 0. };
 
 				if(iNumNeutrons == 0)
 				{	// if no neutrons are given, just plot the unconvoluted S(Q,E)
@@ -843,10 +839,15 @@ void ConvoDlg::Start2D()
 							dhklE_mean[i] += vecHKLE[i];
 					}
 
+					// normalise to mc neutron count
 					dS /= t_real(iNumNeutrons*iNumSampleSteps);
 					for(int i = 0; i < 4; ++i)
 						dhklE_mean[i] /= t_real(iNumNeutrons*iNumSampleSteps);
 
+					// add background
+					dS += m_pSqw->GetBackground(dCurH, dCurK, dCurL, dCurE);
+
+					// scale factor
 					dS *= localreso.GetResoResults().dR0 * localreso.GetR0Scale();
 				}
 				return std::pair<bool, t_real>(true, dS);
@@ -939,12 +940,7 @@ void ConvoDlg::Start2D()
 	}
 	else
 	{
-		if(m_pth)
-		{
-			if(m_pth->joinable())
-				m_pth->join();
-			delete m_pth;
-		}
+		WaitForThread();  // wait for a possible previous job
 		m_pth = new std::thread(std::move(fkt));
 	}
 }
@@ -1062,7 +1058,7 @@ void ConvoDlg::StartDisp()
 		m_vecvecE.clear();
 		m_vecvecW.clear();
 
-		unsigned int iNumThreads = bForceDeferred ? 0 : get_max_threads();
+		unsigned int iNumThreads = get_max_threads();
 		tl::log_debug("Calculating using ", iNumThreads, (iNumThreads == 1 ? " thread." : " threads."));
 
 		tl::ThreadPool<std::tuple<bool, std::vector<t_real>, std::vector<t_real>>()>
@@ -1193,12 +1189,7 @@ void ConvoDlg::StartDisp()
 	}
 	else
 	{
-		if(m_pth)
-		{
-			if(m_pth->joinable())
-				m_pth->join();
-			delete m_pth;
-		}
+		WaitForThread();  // wait for a possible previous job
 		m_pth = new std::thread(std::move(fkt));
 	}
 }

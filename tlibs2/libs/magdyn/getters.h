@@ -4,16 +4,6 @@
  * @date 2022 - 2024
  * @license GPLv3, see 'LICENSE' file
  *
- * References:
- *   - (Toth 2015) S. Toth and B. Lake, J. Phys.: Condens. Matter 27 166002 (2015):
- *                 https://doi.org/10.1088/0953-8984/27/16/166002
- *                 https://arxiv.org/abs/1402.6069
- *   - (Heinsdorf 2021) N. Heinsdorf, manual example calculation for a simple
- *                      ferromagnetic case, personal communications, 2021/2022.
- *
- * @desc This file implements the formalism given by (Toth 2015).
- * @desc For further references, see the 'LITERATURE' file.
- *
  * ----------------------------------------------------------------------------
  * tlibs
  * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
@@ -267,6 +257,13 @@ MAGDYN_TEMPL bool MAGDYN_INST::IsIncommensurate() const
 
 
 
+MAGDYN_TEMPL bool MAGDYN_INST::GetSilent() const
+{
+	return m_silent;
+}
+
+
+
 /**
  * get number of magnetic sites with the given name (to check if the name is unique)
  */
@@ -326,7 +323,7 @@ MAGDYN_TEMPL t_size MAGDYN_INST::GetMagneticSiteIndex(const std::string& name) c
 	}
 	else
 	{
-		std::cerr << "Magdyn error: "
+		CERR_OPT << "Magdyn error: "
 			<< "Invalid site name \"" << name << "\"."
 			<< std::endl;
 	}
@@ -360,7 +357,7 @@ MAGDYN_TEMPL t_size MAGDYN_INST::GetExchangeTermIndex(const std::string& name) c
 	}
 	else
 	{
-		std::cerr << "Magdyn error: Invalid coupling name \"" << name << "\"."
+		CERR_OPT << "Magdyn error: Invalid coupling name \"" << name << "\"."
 			<< std::endl;
 	}
 
@@ -476,6 +473,12 @@ MAGDYN_TEMPL void MAGDYN_INST::SetPerformChecks(bool b)
 }
 
 
+MAGDYN_TEMPL void MAGDYN_INST::SetSilent(bool b)
+{
+	m_silent = b;
+}
+
+
 MAGDYN_TEMPL void MAGDYN_INST::SetPhaseSign(t_real sign)
 {
 	m_phase_sign = sign;
@@ -510,7 +513,7 @@ MAGDYN_TEMPL void MAGDYN_INST::SetMagneticFormFactor(const std::string& ffact)
 	{
 		m_magffact_formula = "";
 
-		std::cerr << "Magdyn error: Magnetic form facor formula: \""
+		CERR_OPT << "Magdyn error: Magnetic form facor formula: \""
 			<< ffact << "\" could not be parsed."
 			<< std::endl;
 	}
@@ -649,7 +652,8 @@ void MAGDYN_INST::SetCrystalLattice(t_real a, t_real b, t_real c,
 	catch(const std::exception& ex)
 	{
 		m_xtalA = m_xtalB = tl2::unit<t_mat_real>(3);
-		std::cerr << "Magdyn error: Could not calculate crystal matrices."
+
+		CERR_OPT << "Magdyn error: Could not calculate crystal matrices."
 			<< std::endl;
 	}
 }
@@ -679,13 +683,16 @@ void MAGDYN_INST::SetScatteringPlane(t_real ah, t_real ak, t_real al,
 		std::tie(m_xtalUBinv, inv_ok) = tl2::inv(m_xtalUB);
 
 		if(!inv_ok)
-			std::cerr << "Magdyn error: UB matrix is not invertible."
+		{
+			CERR_OPT << "Magdyn error: UB matrix is not invertible."
 				<< std::endl;
+		}
 	}
 	catch(const std::exception& ex)
 	{
 		m_xtalUB = m_xtalUBinv = tl2::unit<t_mat_real>(3);
-		std::cerr << "Magdyn error: Could not calculate scattering plane matrices."
+
+		CERR_OPT << "Magdyn error: Could not calculate scattering plane matrices."
 			<< std::endl;
 	}
 }
@@ -722,14 +729,17 @@ tl2::ExprParser<t_cplx> MAGDYN_INST::GetExprParser() const
 MAGDYN_TEMPL
 bool MAGDYN_INST::CheckMagneticSite(t_size idx, bool print_error) const
 {
-	if(!m_perform_checks)
-		return true;
+	// always perform this check as the GUI deliberately sets invalid
+	// indices when adding a new coupling to the table
+
+	//if(!m_perform_checks)
+	//	return true;
 
 	if(idx >= m_sites.size())
 	{
 		if(print_error)
 		{
-			std::cerr << "Magdyn error: Site index " << idx
+			CERR_OPT << "Magdyn error: Site index " << idx
 				<< " is out of bounds."
 				<< std::endl;
 		}
@@ -755,7 +765,7 @@ bool MAGDYN_INST::CheckExchangeTerm(t_size idx, bool print_error) const
 	{
 		if(print_error)
 		{
-			std::cerr << "Magdyn error: Coupling index " << idx
+			CERR_OPT << "Magdyn error: Coupling index " << idx
 				<< " is out of bounds."
 				<< std::endl;
 		}
@@ -772,8 +782,7 @@ bool MAGDYN_INST::CheckExchangeTerm(t_size idx, bool print_error) const
  * check if imaginary weights remain
  */
 MAGDYN_TEMPL
-bool MAGDYN_INST::CheckImagWeights(const t_vec_real& Q_rlu,
-	const MAGDYN_TYPE::EnergiesAndWeights& Es_and_S) const
+bool MAGDYN_INST::CheckImagWeights(const MAGDYN_TYPE::SofQE& S) const
 {
 	if(!m_perform_checks)
 		return true;
@@ -781,16 +790,16 @@ bool MAGDYN_INST::CheckImagWeights(const t_vec_real& Q_rlu,
 	using namespace tl2_ops;
 	bool ok = true;
 
-	for(const EnergyAndWeight& EandS : Es_and_S)
+	for(const EnergyAndWeight& EandS : S.E_and_S)
 	{
 		// imaginary parts should be gone after UniteEnergies()
-		if(std::abs(EandS.S_perp_sum.imag()) > m_eps ||
-			std::abs(EandS.S_sum.imag()) > m_eps)
+		if(!tl2::equals_0(EandS.S_perp_sum.imag(), m_eps) ||
+			!tl2::equals_0(EandS.S_sum.imag(), m_eps))
 		{
 			ok = false;
 
-			std::cerr << "Magdyn warning: Remaining imaginary S(Q, E) component at Q = "
-				<< Q_rlu << " and E = " << EandS.E
+			CERR_OPT << "Magdyn warning: Remaining imaginary S(Q, E) component at Q = "
+				<< S.Q_rlu << " and E = " << EandS.E
 				<< ": imag(S) = " << EandS.S_sum.imag()
 				<< ", imag(S_perp) = " << EandS.S_perp_sum.imag()
 				<< "." << std::endl;

@@ -106,6 +106,8 @@ public:
 		disp(t_real_reso dh, t_real_reso dk, t_real_reso dl) const override;
 	virtual t_real_reso
 		operator()(t_real_reso dh, t_real_reso dk, t_real_reso dl, t_real_reso dE) const override;
+	virtual t_real_reso
+		GetBackground(t_real_reso dh, t_real_reso dk, t_real_reso dl, t_real_reso dE) const override;
 	virtual bool IsOk() const override;
 
 	virtual std::vector<SqwBase::t_var> GetVars() const override;
