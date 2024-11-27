@@ -40,7 +40,7 @@ fi
 mkdir -p ${INSTDIR}/usr/local/bin
 mkdir -p ${INSTDIR}/usr/local/lib
 mkdir -p ${INSTDIR}/usr/local/lib/takin_plugins
-mkdir -p ${INSTDIR}/usr/local/lib/python3.12/dist-packages
+mkdir -p ${INSTDIR}/usr/local/lib/python3.12/dist-packages/takin
 mkdir -p ${INSTDIR}/usr/local/share/takin/res
 mkdir -p ${INSTDIR}/usr/local/share/takin/3rdparty_licenses
 mkdir -p ${INSTDIR}/usr/share/applications
@@ -48,7 +48,7 @@ mkdir -p ${INSTDIR}/DEBIAN
 
 
 # control file
-echo -e "Package: takin\nVersion: 2.8" > ${INSTDIR}/DEBIAN/control
+echo -e "Package: takin\nVersion: 2.8.1" > ${INSTDIR}/DEBIAN/control
 echo -e "Description: inelastic neutron scattering software" >> ${INSTDIR}/DEBIAN/control
 echo -e "Maintainer: n/a" >> ${INSTDIR}/DEBIAN/control
 echo -e "Architecture: $(dpkg --print-architecture)" >> ${INSTDIR}/DEBIAN/control
@@ -137,7 +137,7 @@ cp -v bin/takin_moldyn		${INSTDIR}/usr/local/bin
 cp -v plugins/*.so		${INSTDIR}/usr/local/lib/takin_plugins
 
 # copy py modules
-cp -v pymods/*			${INSTDIR}/usr/local/lib/python3.12/dist-packages
+cp -v pymods/*			${INSTDIR}/usr/local/lib/python3.12/dist-packages/takin
 
 
 # permissions
@@ -147,7 +147,7 @@ chmod a+x ${INSTDIR}/usr/local/bin/*
 strip -v ${INSTDIR}/usr/local/bin/*
 strip -v ${INSTDIR}/usr/local/lib/*
 strip -v ${INSTDIR}/usr/local/lib/takin_plugins/*
-strip -v ${INSTDIR}/usr/local/lib/python3.12/dist-packages/*.so
+strip -v ${INSTDIR}/usr/local/lib/python3.12/dist-packages/takin/*.so
 
 
 # startup script
